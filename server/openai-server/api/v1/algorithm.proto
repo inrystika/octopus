@@ -1,0 +1,366 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service Algorithm {
+    // 查询预置算法列表
+    rpc ListPreAlgorithm (ListPreAlgorithmRequest) returns (ListPreAlgorithmReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/prealgorithm"
+      };
+    };
+    // 查询我的算法列表
+    rpc ListMyAlgorithm (ListMyAlgorithmRequest) returns (ListMyAlgorithmReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/myalgorithm"
+      };
+    };
+    // 查询公共算法列表
+    rpc ListCommAlgorithm (ListCommAlgorithmRequest) returns (ListCommAlgorithmReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/commalgorithm"
+      };
+    };
+    // 查询算法版本列表
+    rpc ListAlgorithmVersion (ListAlgorithmVersionRequest) returns (ListAlgorithmVersionReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/algorithm/{algorithmId}"
+      };
+    };
+    // 查询公共算法版本列表
+    rpc ListCommAlgorithmVersion (ListCommAlgorithmVersionRequest) returns (ListCommAlgorithmVersionReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/commalgorithm/{algorithmId}"
+      };
+    };
+    // 分享算法版本到公共算法
+	  rpc ShareAlgorithmVersion(ShareAlgorithmVersionRequest) returns (ShareAlgorithmVersionReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/share"
+            body: "*"
+      };
+    };
+    // 取消分享算法版本到公共算法
+	  rpc CloseShareAlgorithmVersion(CloseShareAlgorithmVersionRequest) returns (CloseShareAlgorithmVersionReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/closeshare"
+            body: "*"
+      };
+    };
+
+     // 新增我的算法版本
+    rpc AddMyAlgorithmVersion(AddMyAlgorithmVersionRequest) returns (AddMyAlgorithmVersionReply){
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/myalgorithm/{algorithmId}"
+            body: "*"
+        };
+    }
+
+    // 复制算法版本
+    rpc CopyAlgorithmVersion (CopyAlgorithmVersionRequest) returns (CopyAlgorithmVersionReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/copy"
+            body: "*"
+      };
+    };
+
+    // 删除我的算法版本
+    rpc DeleteMyAlgorithmVersion (DeleteMyAlgorithmVersionRequest) returns (DeleteMyAlgorithmVersionReply) {
+        option (google.api.http) = {
+            delete: "/v1/algorithmmanage/myalgorithm/{algorithmId}/version/{version}"
+      };
+    };
+
+    // 删除我的算法
+    rpc DeleteMyAlgorithm (DeleteMyAlgorithmRequest) returns (DeleteMyAlgorithmReply) {
+        option (google.api.http) = {
+            delete: "/v1/algorithmmanage/myalgorithm/{algorithmId}"
+      };
+    };
+
+    // 压缩算法包
+    rpc DownloadAlgorithmVersionCompress (DownloadAlgorithmVersionCompressRequest) returns (DownloadAlgorithmVersionCompressReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/downloadcompress"
+            body: "*"
+      };
+    };
+
+    // 下载算法版本
+    rpc DownloadAlgorithmVersion (DownloadAlgorithmVersionRequest) returns (DownloadAlgorithmVersionReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/download"
+      };
+    };
+
+    // 新增我的算法
+	  rpc AddMyAlgorithm(AddMyAlgorithmRequest) returns (AddMyAlgorithmReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/myalgorithm"
+            body: "*"
+      };
+    };
+
+     // 上传算法
+	  rpc UploadAlgorithm(UploadAlgorithmRequest) returns (UploadAlgorithmReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/upload"
+            body: "*"
+      };
+    };
+
+	  // 上传算法确认
+	  rpc ConfirmUploadAlgorithm(ConfirmUploadAlgorithmRequest) returns (ConfirmUploadAlgorithmReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}/uploadconfirm"
+            body: "*"
+      };
+    };
+
+    // 查询算法版本详情
+    rpc QueryAlgorithmVersion (QueryAlgorithmVersionRequest) returns (QueryAlgorithmVersionReply) {
+        option (google.api.http) = {
+            get: "/v1/algorithmmanage/algorithm/{algorithmId}/version/{version}"
+      };
+    }
+
+    // 批量查询算法
+    rpc BatchQueryAlgorithm(BatchQueryAlgorithmRequest) returns(BatchQueryAlgorithmReply) {
+        option (google.api.http) = {
+            post: "/v1/algorithmmanage/batchalgorithm"
+            body: "*"
+      };
+    }
+}
+
+message AlgorithmDetail {
+  string algorithmId = 1;
+  string algorithmVersion = 2;
+  string spaceId = 3;
+  string spaceName = 4;
+  string userId = 5;
+  string userName = 6;
+  string algorithmName = 7;
+  string modelName = 8;
+  int64 fileStatus = 9;
+  int64 latestCompressed = 10;
+  string algorithmDescript = 11;
+  string path = 12;
+  bool isPrefab = 13;
+  int64 createdAt = 14;
+}
+
+message MyAlgorithmDetail {
+  bool isShared = 1;
+  AlgorithmDetail algorithmDetail = 2;
+}
+
+message ListPreAlgorithmRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
+  string searchKey = 6[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 7;
+  int64 createdAtLt = 8;
+}
+message ListPreAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListMyAlgorithmRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
+  string searchKey = 6[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 7;
+  int64 createdAtLt = 8;
+}
+message ListMyAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListCommAlgorithmRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
+  string searchKey = 6[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 7;
+  int64 createdAtLt = 8;
+}
+message ListCommAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  int64 pageIndex = 2[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 fileStatus = 4;
+}
+message ListAlgorithmVersionReply {
+  int64 totalSize = 1;
+  repeated MyAlgorithmDetail algorithms = 2;
+}
+
+message ListCommAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  int64 pageIndex = 2[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 fileStatus = 4;
+}
+message ListCommAlgorithmVersionReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ShareAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+}
+
+message ShareAlgorithmVersionReply {
+  int64 sharedAt = 1;
+}
+
+message CloseShareAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+}
+
+message CloseShareAlgorithmVersionReply {
+  int64 closeSharedAt = 1;
+}
+
+message DeleteMyAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+}
+message DeleteMyAlgorithmVersionReply {
+  int64 deletedAt = 1;
+}
+
+message DeleteMyAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message DeleteMyAlgorithmReply {
+  int64 deletedAt = 1;
+}
+
+message AddMyAlgorithmVersionRequest {
+  string algorithmId = 1;
+  string oriVersion = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 3;
+}
+message AddMyAlgorithmVersionReply {
+  string algorithmId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message DownloadAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  int64  compressAt = 3[(validate.rules).int64 = {gte:1}]; 
+  string domain = 4[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+message DownloadAlgorithmVersionReply {
+  string downloadUrl = 1; 
+}
+
+message CopyAlgorithmVersionRequest {
+  string algorithmId = 1;
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string newAlgorithmName = 3[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 4[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 5;
+}
+message CopyAlgorithmVersionReply {
+  string newAlgorithmId = 1;
+  string newVersion = 2;
+  int64 createdAt = 3;
+}
+
+message AddMyAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  bool isPrefab = 3;
+  bool isEmpty = 4;
+  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 7;
+}
+message AddMyAlgorithmReply {
+  string algorithmId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message UploadAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+  string fileName = 3[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+  string domain = 4[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+message UploadAlgorithmReply {
+  string uploadUrl = 1;
+}
+
+message ConfirmUploadAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string fileName = 3[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+}
+message ConfirmUploadAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
+message DownloadAlgorithmVersionCompressRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+}
+message DownloadAlgorithmVersionCompressReply {
+  int64 compressAt = 1; 
+}
+
+message QueryAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}]; 
+}
+message QueryAlgorithmVersionReply {
+  AlgorithmDetail algorithm = 1;
+  repeated AlgorithmVersionAccess versionAccesses = 2; 
+}
+message AlgorithmVersionAccess {
+  string algorithmId = 1;
+  string version = 2;
+  string spaceId = 3;
+}
+
+message AlgorithmInfo {
+  string algorithmId = 1;
+  string algorithmName = 2;
+  int64 createdAt = 3;
+}
+message BatchQueryAlgorithmRequest {
+  repeated string algorithmId = 1;
+}
+message BatchQueryAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmInfo algorithms = 2;
+}

@@ -1,0 +1,358 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service TrainJobService {
+    // 创建训练任务
+    rpc TrainJob (TrainJobRequest) returns (TrainJobReply) {
+      option (google.api.http) = {
+        post: "/v1/trainmanage/trainjob"
+        body: "*"
+      };
+    };
+    //停止训练任务
+    rpc StopJob (StopJobRequest) returns (StopJobReply) {
+       option (google.api.http) = {
+           post: "/v1/trainmanage/trainjob/{id}/stop"
+           body: "*"
+       };
+    };
+    //删除训练任务
+    rpc DeleteJob (DeleteJobRequest) returns (DeleteJobReply) {
+       option (google.api.http) = {
+         delete: "/v1/trainmanage/trainjob"
+       };
+    };
+    // 获取训练任务详情
+    rpc GetJobInfo(TrainJobInfoRequest) returns (TrainJobInfoReply){
+       option (google.api.http) = {
+          get: "/v1/trainmanage/trainjob/{id}"
+       };
+    };
+    //获取训练任务列表
+    rpc TrainJobList(TrainJobListRequest) returns (TrainJobListReply){
+       option (google.api.http) = {
+         get: "/v1/trainmanage/trainjob"
+       };
+    };
+    // 创建训练任务模板
+    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
+      option (google.api.http) = {
+         post: "/v1/trainmanage/trainjobtemplate"
+         body: "*"
+      };
+    };
+    // 编辑训练任务模板
+    rpc UpdateJobTemplate (TrainJobTemplate) returns (TrainJobTemplateReply) {
+      option (google.api.http) = {
+         put: "/v1/trainmanage/trainjobtemplate/{id}"
+         body: "*"
+      };
+    };
+    // 删除训练任务模板
+    rpc DeleteTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply) {
+      option (google.api.http) = {
+          delete: "/v1/trainmanage/trainjobtemplate"
+       };
+    };
+    // 获取训练任务模板详情
+    rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply) {
+      option (google.api.http) = {
+        get: "/v1/trainmanage/trainjobtemplate/{id}"
+      };
+    };
+    // 获取训练任务列表
+    rpc TrainJobTemplateList (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply) {
+      option (google.api.http) = {
+         get: "/v1/trainmanage/trainjobtemplate"
+      };
+    };
+
+}
+
+message TrainJobRequest {
+  //训练任务名称，必填，长度1-30
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  //训练任务描述，非必填
+  string desc = 2[(validate.rules).string = {max_len: 300}];
+  //算法ID，必填
+  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
+  //算法版本，必填
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
+  //镜像ID，必填
+  string imageId = 5[(validate.rules).string = {min_len: 1}];
+  //数据集ID，必填
+  string dataSetId = 7[(validate.rules).string = {min_len: 1}];
+  //数据集版本，必填
+  string dataSetVersion = 8[(validate.rules).string = {min_len: 1}];
+  //是否分布式任务，非必填，默认false，若为分布式任务则为true
+  bool isDistributed = 9;
+  //job子任务及其配置信息，必填
+  repeated Config config = 10[(validate.rules).repeated.min_items = 1];
+}
+
+message Config {
+  //子任务名称，非必填，校验规则"^[0-9a-zA-Z_]*$"，最大长度15个字符
+  string name = 1[(validate.rules).string = {min_len: 0, max_len: 30}];
+  //子任务执行命令
+  string command = 2[(validate.rules).string = {min_len: 1}];
+  //command执行命令参数,key-value
+  repeated Parameter parameters = 3;
+  //资源规格ID，必填
+  string resourceSpecId = 4[(validate.rules).string = {min_len: 1}];
+  //子任务个数，非必填
+  int64 taskNumber = 5[(validate.rules).int64 = {gte:1}];
+  //子任务最小失败数，非必填
+  int64  minFailedTaskCount = 6[(validate.rules).int64 = {gte:1}];
+  //子任务最小成功数，非必填
+  int64  minSucceededTaskCount = 7[(validate.rules).int64 = {gte:1}];
+  //是否主任务，非必填
+  bool isMainRole = 8;
+  //资源规格名称
+  string resourceSpecName = 9;
+  //资源规格价格
+  uint32 resourceSpecPrice = 10;
+  //子任务副本状态
+  repeated ReplicaState replicaStates = 11;
+  //子任务状态
+  string subTaskState = 12;
+}
+
+message ReplicaState {
+  string  key = 1;
+  string  state = 2;
+}
+
+
+message Parameter {
+  //命令参数key，非必填
+  string key = 1;
+  //命令参数value，非必填
+  string value = 2;
+}
+
+message TrainJobReply {
+  //训练任务ID，必填
+  string jobId = 1;
+}
+
+message TrainJobTemplateRequest {
+  //模板名称，必填，长度1-30
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  //模板描述，非必填
+  string desc = 2[(validate.rules).string = {max_len: 300}];
+  //算法ID，必填
+  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
+  //算法版本，必填
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
+  //镜像ID，必填
+  string imageId = 5[(validate.rules).string = {min_len: 1}];
+  //数据集ID，必填
+  string dataSetId = 7[(validate.rules).string = {min_len: 1}];
+  //数据集版本，必填
+  string dataSetVersion = 8[(validate.rules).string = {min_len: 1}];
+  //是否分布式任务，非必填，默认false，若为分布式任务则为true
+  bool isDistributed = 9;
+  //job子任务及其配置信息，必填
+  repeated Config config = 10[(validate.rules).repeated.min_items = 1];
+}
+
+message TrainJobTemplateReply {
+  //训练模板ID
+  string templateId = 1;
+}
+
+message TrainJobTemplateListRequest{
+  // 页码，从1开始，非必填
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条，非必填
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 分组依据，非必填
+  string sortBy = 3;
+  //升序、降序，非必填
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 5;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 6;
+  //状态查询，非必填
+  string status = 7;
+  //模糊查找字段，可用于name等模糊查找，非必填
+  string searchKey = 8;
+}
+
+message TrainJobTemplateListReply{
+  //查询结果总数
+  int64 totalSize = 1 ;
+  //任务模板
+  repeated TrainJobTemplate jobTemplates = 2;
+}
+
+message DeleteJobTemplateRequest{
+  //任务模板ID，数组
+  repeated string templateIds = 1[(validate.rules).repeated.min_items = 1];
+}
+
+message DeleteJobTemplateReply{
+  //模板删除时间
+  int64 deletedAt = 1;
+}
+
+message GetJobTemplateRequest{
+  //模板ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message GetJobTemplateReply{
+  //模板详情
+  TrainJobTemplate  jobTemplate = 1;
+}
+
+message  StopJobRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StopJobReply {
+  //停止时间
+  int64 stoppedAt = 1;
+}
+
+message DeleteJobRequest {
+  //任务ID
+  repeated string jobIds = 1[(validate.rules).repeated.min_items = 1];
+}
+
+message DeleteJobReply{
+  //删除时间
+  int64 deletedAt = 1;
+}
+
+message   TrainJobListRequest{
+  // 页码，从1开始，非必填
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条，非必填
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 分组依据，非必填
+  string sortBy = 3;
+  //升序、降序，非必填
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 5;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 6;
+  //状态查询，非必填
+  string status = 7;
+  //模糊查找字段，可用于name等模糊查找，非必填
+  string searchKey = 8;
+}
+
+message TrainJobListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务
+  repeated TrainJob trainJobs = 2;
+}
+
+message TrainJob{
+  //任务ID
+  string  id = 1;
+  //用户ID
+  string userId = 2;
+  //用户空间ID
+  string workspaceId = 3;
+  //job名称
+  string name = 4;
+  //job描述
+  string desc = 5;
+  //算法ID
+  string algorithmId = 6;
+  //算法版本
+  string algorithmVersion = 7;
+  //镜像ID
+  string imageId = 8;
+  //数据集ID
+  string dataSetId = 9;
+  //数据集版本
+  string dataSetVersion = 10;
+  //是否分布式任务
+  bool isDistributed = 11;
+  //子任务配置信息
+  repeated Config config = 12;
+  //创建时间
+  int64 createdAt = 13;
+  //更新时间
+  int64 updatedAt = 14;
+  //任务状态
+  string status   = 15;
+  //job完成时间
+  int64  completedAt = 16;
+  //算法名称
+  string algorithmName = 17;
+  //镜像名称
+  string imageName = 18;
+  //数据集名称
+  string dataSetName = 19;
+  //运行时
+  int64 runSec = 20;
+  //镜像版本
+  string imageVersion = 21;
+  //启动时间
+  int64  startedAt = 22;
+}
+
+message TrainJobTemplate{
+  //模板ID
+  string  id = 1;
+  //用户ID
+  string userId = 2;
+  //用户空间ID
+  string workspaceId = 3;
+  //模板名称
+  string name = 4;
+  //描述
+  string desc = 5;
+  //算法ID
+  string algorithmId = 6;
+  //算法版本
+  string algorithmVersion = 7;
+  //镜像ID
+  string imageId = 8;
+  //数据集ID
+  string dataSetId = 9;
+  //数据集版本
+  string dataSetVersion = 10;
+  //是否分布式任务
+  bool isDistributed = 11;
+  //子任务配置信息
+  repeated Config config = 12;
+  //创建时间
+  int64 createdAt = 13;
+  //更新时间
+  int64 updatedAt = 14;
+  //算法名称
+  string algorithmName = 15;
+  //镜像名称
+  string imageName = 16;
+  //数据集名称
+  string dataSetName = 17;
+  //镜像版本
+  string imageVersion = 18;
+}
+
+message TrainJobInfoRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message TrainJobInfoReply{
+  //训练任务
+  TrainJob trainJob = 4;
+}

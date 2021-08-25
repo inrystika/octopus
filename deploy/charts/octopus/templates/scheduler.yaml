@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "scheduler.fullname" . }}
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "scheduler.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "scheduler.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "scheduler.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+{{ include "scheduler.select-labels" . | indent 8 }}
+  replicas: {{ .Values.scheduler.replicas }}
+  template:
+    metadata:
+      labels:
+{{ include "scheduler.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "scheduler.fullname" . }}
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.scheduler.image.name }}:{{ default .Chart.AppVersion .Values.scheduler.image.tag }}"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        volumeMounts:
+          - name: localtime
+            mountPath: /etc/localtime
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.global.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

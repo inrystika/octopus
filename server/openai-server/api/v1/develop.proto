@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service Develop {
+  // 创建notebook
+  rpc CreateNotebook (CreateNotebookRequest) returns (CreateNotebookReply) {
+    option (google.api.http) = {
+      post: "/v1/developmanage/notebook"
+      body: "*"
+    };
+  };
+  // 启动notebook
+  rpc StartNotebook (StartNotebookRequest) returns (StartNotebookReply) {
+    option (google.api.http) = {
+      post: "/v1/developmanage/notebook/{id}/start"
+    };
+  };
+  // 停止notebook
+  rpc StopNotebook (StopNotebookRequest) returns (StopNotebookReply) {
+    option (google.api.http) = {
+      post: "/v1/developmanage/notebook/{id}/stop"
+    };
+  };
+  // 删除notebook
+  rpc DeleteNotebook (DeleteNotebookRequest) returns (DeleteNotebookReply) {
+    option (google.api.http) = {
+      delete: "/v1/developmanage/notebook/{id}"
+    };
+  };
+  // 查询notebook列表
+  rpc ListNotebook (ListNotebookRequest) returns (ListNotebookReply) {
+    option (google.api.http) = {
+      get: "/v1/developmanage/notebook"
+    };
+  };
+}
+
+message CreateNotebookRequest {
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string desc = 2[(validate.rules).string = {max_len: 300}];
+  string imageId = 3[(validate.rules).string = {min_len: 1}];
+  string algorithmId = 4[(validate.rules).string = {min_len: 1}];
+  string algorithmVersion = 5[(validate.rules).string = {min_len: 1}];
+  string resourceSpecId = 6[(validate.rules).string = {min_len: 1}];
+  string datasetId = 7;
+  string datasetVersion = 8;
+}
+
+message CreateNotebookReply {
+  string id = 1;
+}
+
+message StartNotebookRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StartNotebookReply {
+  string id = 1;
+}
+
+message StopNotebookRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StopNotebookReply {
+  string id = 1;
+}
+
+message DeleteNotebookRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message DeleteNotebookReply {
+  string id = 1;
+}
+
+message ListNotebookRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte: 1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte: 1, lt: 100}];
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string status = 7;
+  string searchKey = 8; //name等模糊查找
+}
+
+message Notebook {
+  int64 createdAt = 1;
+  int64 updatedAt = 2;
+  string id = 3;
+  string userId = 4;
+  string workspaceId = 5;
+  string name = 6;
+  string desc = 7;
+  string imageId = 8;
+  string imageName = 9;
+  string algorithmId = 10;
+  string algorithmVersion = 11;
+  string algorithmName = 12;
+  string resourceSpecId = 13;
+  string resourceSpecName = 14;
+  string status = 15;
+  string url = 16;
+  string datasetId = 17;
+  string datasetVersion = 18;
+  string datasetName = 19;
+  uint32 resourceSpecPrice = 20;
+}
+
+message ListNotebookReply {
+  int64 totalSize = 1;
+  repeated Notebook notebooks = 2;
+}

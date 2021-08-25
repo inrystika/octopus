@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+service ResourceSpecService {
+  rpc ListResourceSpec(google.protobuf.Empty) returns (ListResourceSpecReply){
+    option (google.api.http) = {
+      get: "/v1/resourcemanage/resourcespec",
+    };
+  };
+}
+
+message ListResourceSpecReply {
+  map<string,ResourceSpecList> mapResourceSpecIdList = 5;
+}
+
+message ResourceSpec {
+  string id = 1;
+  string name = 2;
+  uint32 price = 3;
+  map<string,string> resourceQuantity = 4;
+}
+
+message ResourceSpecList {
+  repeated ResourceSpec resourceSpecs = 1;
+}

@@ -1,0 +1,69 @@
+# output configuration options
+output:
+  # colored-line-number|line-number|json|tab|checkstyle|code-climate, default is "colored-line-number"
+  format: colored-line-number
+  # 打印行号
+  print-issued-lines: true
+  # 打印检查器的名称
+  print-linter-name: true
+
+linters:
+  # 关闭其他linter
+  disable-all: true
+  enable:
+    - deadcode    # 死代码检查
+    - errcheck    # 返回错误是否使用检查
+    - gofmt       # go格式化工具
+    - goimports   # 检查没使用的imports
+    - gosimple    # 检查代码是否可以简化
+    - govet       # 代码可疑检查，比如格式化字符串和类型不一致
+    - ineffassign # 检查是否有未使用的代码
+    - ineffassign # 检查无效赋值
+    - structcheck # 查找未使用的结构体字段
+    - unconvert   # 去掉不必要的类型转换
+    - unparam     # 报告没使用的函数入参
+    - varcheck    # 未使用的全局变量和常量检查
+    - unused      # 未使用代码检查
+    - gosimple    # 简化代码工具
+    - govet       # 检查Go 代码正确性的工具
+    - lll         # 每行代码长度检查，不超过150字符
+    - typecheck   # 类型检查
+    #- revive      # 不同于fmt，主要检查代码风格问题
+    #- misspell    # 拼写检查，防止线上出现拼写出错导致的bug
+    #- gomnd       # 检测幻数的工具
+
+# linter配置
+linters-settings:
+  # 检查函数的圈复杂
+  gocyclo:
+    # 最小复杂性
+    min-complexity: 35
+  gocognit:
+    # 最小复杂性
+    min-complexity: 35
+  maligned:
+    # 为内存对齐优化给出新的结构体字段排序建议
+    suggest-new: true
+    # 自动修复
+    auto-fix: true
+  # 检查代码长度
+  lll:
+    line-length: 180
+    tab-width: 4
+
+run:
+  # 要使用的CPU核心数
+  concurrency: 4
+  # 分析超时              
+  timeout: 5m
+  # 是否包含测试文件          
+  tests: true
+  # 要跳过检查的目录                    
+  skip-dirs:                      
+    - third_party
+    - taskset
+    - harbor
+  # 跳过文件
+  skip-files:                     
+    - go.mod
+    - go.sum

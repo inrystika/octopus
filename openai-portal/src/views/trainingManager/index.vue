@@ -1,0 +1,83 @@
+<template>
+  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+    <el-tab-pane label="训练任务" name="menu1">
+      <traningTask :trainingTask="trainingTask" v-if="tabRefresh.menu1"></traningTask>
+    </el-tab-pane>
+    <el-tab-pane label="任务模板" name="menu2">
+      <taskTemplate :trainingTemplate="trainingTemplate" v-if="tabRefresh.menu2" @createTraning="createTraning"></taskTemplate>
+    </el-tab-pane>
+  </el-tabs>
+</template>
+<script>
+  import traningTask from "./traningTask.vue";
+  import taskTemplate from "./taskTemplate.vue";
+  export default {
+    components: {
+      traningTask,
+      taskTemplate
+
+    },
+    data() {
+      return {
+        activeName: undefined,
+        tabRefresh: {
+          menu1: true,
+          menu2: false,
+        },
+        trainingTemplate: false,
+        trainingTask: false
+      }
+    },
+    created(){
+      if (this.$route.params.data === undefined) {
+        this.activeName = 'menu1'
+        this.switchTab('menu1')
+      } else if (this.$route.params.data.trainingTemplate) {
+        this.activeName = 'menu2'
+        this.switchTab('menu2')
+        this.trainingTemplate = true
+      } else if (this.$route.params.data.trainingTask) {
+        this.activeName = 'menu1'
+        this.switchTab('menu1')
+        this.trainingTask = true
+      }
+    },
+    methods: {
+      handleTabClick(tab) {
+        this.activeName = tab.name
+        this.$route.params.data=null
+        switch (this.activeName) {
+          case 'menu1':
+            this.switchTab('menu1')
+            this.trainingTemplate = false
+            break
+          case 'menu2':
+            this.switchTab('menu2')
+            this.trainingTask = false
+            break
+        }
+      },
+      switchTab(tab) {
+        for (let key in this.tabRefresh) {
+          if (key === tab) {
+            this.tabRefresh[key] = true
+          } else {
+            this.tabRefresh[key] = false
+          }
+        }
+      },
+      createTraning() {
+        this.activeName = "menu1"
+        this.tabRefresh.menu1=true
+      }
+    }
+  }
+</script>
+<style lang="scss" scoped>
+  .Wrapper {
+    margin: 20px !important;
+    background-color: #fff;
+    padding: 20px;
+    min-height: 900px;
+  }
+</style>

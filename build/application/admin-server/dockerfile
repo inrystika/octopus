@@ -1,0 +1,13 @@
+from 192.168.202.74:5000/common_mirror/kratos:v2 as builder
+WORKDIR /app
+COPY ./ ./
+
+RUN make admin-server_build binary_dir="/app/server/bin"
+
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/server/bin/admin-server /app/admin-server
+RUN chmod +x /app/admin-server
+EXPOSE 8002
+
+ENTRYPOINT ["/app/admin-server"]

@@ -1,0 +1,13 @@
+from 192.168.202.74:5000/common_mirror/kratos:v2 as builder
+WORKDIR /app
+COPY ./ ./
+
+RUN make openai-server_build binary_dir="/app/server/bin"
+
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/server/bin/openai-server /app/openai-server
+RUN chmod +x /app/openai-server
+EXPOSE 8001
+
+ENTRYPOINT ["/app/openai-server"]

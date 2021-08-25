@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-minio-pv
+  labels:
+    pv: minio-pv
+spec:
+  capacity:
+    storage: {{ .Values.pv.minio.requests }}
+  accessModes:
+    - ReadWriteMany
+{{ toYaml .Values.pv.minio.storageType | indent 2 }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-mysql-pv
+  labels:
+    pv: mysql-pv
+spec:
+  capacity:
+    storage: {{ .Values.pv.mysql.requests }}
+  accessModes:
+    - ReadWriteMany
+{{ toYaml .Values.pv.mysql.storageType | indent 2 }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-redis-pv
+  labels:
+    pv: redis-pv
+spec:
+  capacity:
+    storage: {{ .Values.pv.redis.requests }}
+  accessModes:
+    - ReadWriteMany
+{{ toYaml .Values.pv.redis.storageType | indent 2 }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-logger-pv
+  labels:
+    pv: logger-pv
+spec:
+  capacity:
+    storage: {{ .Values.pv.logger.requests }}
+  accessModes:
+    - ReadWriteMany
+{{ toYaml .Values.pv.logger.storageType | indent 2 }}

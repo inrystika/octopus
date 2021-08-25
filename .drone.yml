@@ -1,0 +1,395 @@
+---
+kind: pipeline
+name: linter
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  branch:
+  - master
+  - dev
+  event:
+  - push
+steps:
+- name: 代码检查
+  image: golangci/golangci-lint:v1.40.1
+  environment:
+    GO111MODULE: on
+    GOPROXY: https://goproxy.cn,direct
+  commands:
+    - make lint
+
+---
+kind: pipeline
+name: base-server
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make base-server_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make base-server_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make base-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD 
+
+---
+kind: pipeline
+name: admin-server
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make admin-server_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make admin-server_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make admin-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: openai-server
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make openai-server_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make openai-server_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make openai-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: taskset/pipeline
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make taskset_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make pipeline_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make pipeline_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: taskset/vc-controller
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make taskset_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make vc-controller_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make vc-controller_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: taskset/scheduler
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+  - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+# - name: 代码检查
+#   image: golangci/golangci-lint:v1.40.1
+#   environment:
+#     GO111MODULE: on
+#     GOPROXY: https://goproxy.cn,direct
+#   commands:
+#     - make taskset_lint
+
+- name: 构建镜像
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - make scheduler_image tag=${DRONE_TAG}
+
+- name: 镜像推送
+  image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_HUB_HOST:
+      from_secret: docker_hub_host
+    DOCKER_HUB_USERNAME:
+      from_secret: docker_hub_userame
+    DOCKER_HUB_PASSWD:
+      from_secret: docker_hub_passwd
+  commands:
+    - make scheduler_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: charts
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+    - tag
+volumes:
+  - name: dockeretc
+    host:
+      path: /etc/docker
+steps:
+  - name: Chart构建
+    image: 192.168.202.110:5000/common_mirror/helm:3.5.4-make
+    volumes:
+      - name: dockeretc
+        path: /etc/docker
+    environment:
+      HARBOR_HUB_HOST:
+        from_secret: harbor_hub_host
+      HARBOR_HUB_USERNAME:
+        from_secret: harbor_hub_userame
+      HARBOR_HUB_PASSWD:
+        from_secret: harbor_hub_passwd
+      HARBOR_HUB_CA_FILE:
+        from_secret: harbor_hub_ca_file
+      HARBOR_HUB_CERT_FILE:
+        from_secret: harbor_hub_cert_file
+    commands:
+      - make charts tag=${DRONE_TAG} harbor_hub_project=${DRONE_REPO_NAME} harbor_hub_host=$HARBOR_HUB_HOST harbor_hub_userame=$HARBOR_HUB_USERNAME harbor_hub_passwd=$HARBOR_HUB_PASSWD harbor_hub_ca_file=$HARBOR_HUB_CA_FILE HARBOR_HUB_CERT_FILE=$HARBOR_HUB_CERT_FILE
+
+---
+kind: pipeline
+name: admin-portal
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+    - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+  - name: 构建镜像
+    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    commands:
+      - make admin-portal_image tag=${DRONE_TAG}
+  - name: 镜像推送
+    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    environment:
+      DOCKER_HUB_HOST:
+        from_secret: docker_hub_host
+      DOCKER_HUB_USERNAME:
+        from_secret: docker_hub_userame
+      DOCKER_HUB_PASSWD:
+        from_secret: docker_hub_passwd
+    commands:
+      - make admin-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
+name: openai-portal
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+    - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+steps:
+  - name: 构建镜像
+    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    commands:
+      - make openai-portal_image tag=${DRONE_TAG}
+  - name: 镜像推送
+    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    environment:
+      DOCKER_HUB_HOST:
+        from_secret: docker_hub_host
+      DOCKER_HUB_USERNAME:
+        from_secret: docker_hub_userame
+      DOCKER_HUB_PASSWD:
+        from_secret: docker_hub_passwd
+    commands:
+      - make openai-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DRONE_REPO_NAME} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD

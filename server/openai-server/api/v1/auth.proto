@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service Auth {
+    rpc GetToken (GetTokenRequest) returns (GetTokenReply) {
+      option (google.api.http) = {
+        post: "/v1/authmanage/token"
+        body: "*"
+      };
+    };
+    rpc DeleteToken (DeleteTokenRequest) returns (DeleteTokenReply) {
+      option (google.api.http) = {
+        delete: "/v1/authmanage/token"
+      };
+    };
+}
+
+message GetTokenRequest {
+  string username = 1 [(validate.rules).string = {email: true}];
+  string password = 2 [(validate.rules).string = {min_len: 8, max_len: 30}];
+}
+
+message GetTokenReply {
+  string token = 1;
+  int64 expiration = 2;
+}
+
+message DeleteTokenRequest {
+}
+
+message DeleteTokenReply {
+}

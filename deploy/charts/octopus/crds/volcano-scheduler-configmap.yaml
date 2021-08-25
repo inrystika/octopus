@@ -1,0 +1,24 @@
+# Source: volcano/templates/scheduler.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: volcano-scheduler-configmap
+  namespace: volcano-system
+data:
+  volcano-scheduler.conf: |
+    actions: "enqueue, allocate, privilege, backfill"
+    tiers:
+    - plugins:
+      - name: priority
+      - name: gang
+    - plugins:
+      - name: drf
+      - name: predicates
+      - name: proportion
+      - name: binpack
+        arguments:
+          binpack.weight: 10
+          binpack.cpu: 1
+          binpack.memory: 1
+          binpack.resources: nvidia.com/gpu
+          binpack.resources.nvidia.com/gpu: 5

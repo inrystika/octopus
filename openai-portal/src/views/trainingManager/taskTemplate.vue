@@ -1,0 +1,323 @@
+<template>
+    <div>
+        <div class="searchForm">
+            <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'模板名称 搜索'"></searchForm>
+
+        </div>
+        <el-button type="primary" @click="open()" class="create">批量删除</el-button>
+        <el-button type="primary" @click="create" class="create">创建模板</el-button>
+        <div class="index">
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}"
+                ref="multipleTable" @selection-change="handleSelectionChange" :selectable="checkSelectable">
+                <el-table-column type="selection" width="55">
+                </el-table-column>
+                <el-table-column prop="name" label="任务模板名称" align="center">
+                </el-table-column>
+                <el-table-column prop="algorithmName" label="算法名称" align="center">
+                </el-table-column>
+                <el-table-column prop="dataSetName" label="数据集名称" align="center">
+                </el-table-column>
+                <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true">
+                </el-table-column>
+                <el-table-column label="是否为分布式">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.isDistributed?'是':'否' }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="创建时间" align="center">
+                    <template slot-scope="scope">
+                        <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="250">
+                    <template slot-scope="scope">
+                        <el-button type="text" @click="handleEdit(scope.row,'editeTemplate')">编辑</el-button>
+                        <el-button type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button type="text" @click="handleEdit(scope.row,'createTask')">创建训练任务
+                        </el-button>
+
+                    </template>
+                </el-table-column>
+            </el-table>
+
+        </div>
+        <!-- 创建任务模板 -->
+        <createDialog v-if="createDialog" @cancel="cancel" @confirm="confirm" @close="close" :flag="flag" :row="row">
+        </createDialog>
+        <!-- 编辑对话框 -->
+        <editeDialog v-if="editeDialog" @cancel="cancel" @confirm="confirm" @close="close" :flag="flag" :row="row"
+            @createTraning="createTraning">
+        </editeDialog>
+        <div class="block">
+            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize"
+                layout="total, sizes, prev, pager, next, jumper" :total="total">
+            </el-pagination>
+        </div>
+    </div>
+</template>
+<script>
+    import { getTemplate, getTempalteDetail, deleteTemplate, getResourceList } from '@/api/trainingManager'
+    import createDialog from "./components/createDialog/index.vue";
+    import editeDialog from "./components/editeDialog/index.vue";
+    import searchForm from '@/components/search/index.vue'
+    import { parseTime } from '@/utils/index'
+    import { getErrorMsg } from '@/error/index'
+    export default {
+        name: "preImage",
+        props:{
+          trainingTemplate:{
+            type: Boolean,
+            default: false
+          }
+        },
+        data() {
+            return {
+                tableData: [],
+                createDialog: false,
+                editeDialog: false,
+                row: {},
+                flag: undefined,
+                pageIndex: 1,
+                pageSize: 10,
+                total: undefined,
+                multipleSelection: [],
+                resourceOptions: [],
+                searchForm: [
+                    { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' }
+
+                ],
+                timer: null,
+                searchData: {
+                    pageSize: 10,
+                    pageIndex: 1,
+                }
+            }
+        },
+        components: {
+            createDialog,
+            editeDialog,
+            searchForm
+
+        },
+        created() {
+            this.getTemplate(this.searchData)
+            if (this.trainingTemplate) {
+                this.createDialog = true;
+                this.flag = 2
+            }
+        },
+        methods: {
+            // 错误码
+            getErrorMsg(code) {
+                return getErrorMsg(code)
+            },
+            getTemplate(data) {
+                if (data.time && data.time.length !== 0) {
+                    data.createAtGte = data.time[0]/1000
+                    data.createAtLt = data.time[1]/1000
+                    delete data.time
+                }
+                getTemplate(data).then(response => {
+                    if (response.success) {
+                        this.tableData = response.data.jobTemplates
+                        this.total = response.data.totalSize
+                        getResourceList().then(response => {
+                            if (response.success) {
+                                this.resourceOptions = response.data.mapResourceSpecIdList.train.resourceSpecs
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+
+                    }
+                    else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
+            handleEdit(val, name) {
+                getResourceList().then(response => {
+                    if (response.success && response.data.mapResourceSpecIdList.train.resourceSpecs.length !== 0) {
+                        getTempalteDetail(val.id).then(response => {
+                            if (response.success) {
+                                this.editeDialog = true
+                                this.row = response.data.jobTemplate
+                                if (name === 'editeTemplate') { this.flag = 1 }
+                                else { this.flag = 2 }
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+
+                    }
+                    else {
+                        this.$message({
+                            message: '资源规格为空',
+                            type: 'warning'
+                        });
+                    }
+                })
+
+            },
+            handleDelete(val) {
+                let templateIds = []
+                if (!val) {
+                    if (this.multipleSelection.length !== 0) {
+                        this.multipleSelection.forEach(
+                            item => { templateIds.push(item.id) }
+                        )
+                        deleteTemplate({ templateIds }).then(response => {
+                            if (response.success) {
+                                this.$message({
+                                    message: '删除成功',
+                                    type: 'success'
+                                });
+                                this.getTemplate(this.searchData)
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+
+                        })
+                    }
+                    else {
+                        this.$message({
+                            message: '请勾选需要删除的任务模板',
+                            type: 'warning'
+                        });
+
+                    }
+                }
+                else {
+                    templateIds = [val.id]
+                    deleteTemplate({ templateIds }).then(response => {
+                        if (response.success) {
+                            this.$message({
+                                message: '删除成功',
+                                type: 'success'
+                            });
+                            this.getTemplate(this.searchData)
+                        }
+                        else {
+                            this.$message({
+                                message: this.getErrorMsg(response.error.subcode),
+                                type: 'warning'
+                            });
+                        }
+
+                    })
+                }
+            },
+            cancel(val) {
+                this.getTemplate(this.searchData)
+                this.createDialog = val
+                this.editeDialog = val
+
+
+
+            },
+            confirm(val) {
+                this.getTemplate(this.searchData)
+                this.createDialog = val
+                this.editeDialog = val
+
+
+            },
+            close(val) {
+                this.getTemplate(this.searchData)
+                this.createDialog = val
+                this.editeDialog = val
+
+
+            },
+            // 新增创建任务模板
+            create() {
+                this.row = {}
+                this.createDialog = true
+                this.flag = 2
+            },
+            handleSizeChange(val) {
+                this.searchData.pageSize = val,
+                    this.getTemplate(this.searchData)
+            },
+            handleCurrentChange(val) {
+                this.searchData.pageIndex = val,
+                    this.getTemplate(this.searchData)
+            },
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+            },
+            checkSelectable(row) {
+                return row.status === 'failed' || row.status === 'succeeded' || row.status == 'stopped'
+            },
+            getSearchData(val) {
+                this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
+                this.searchData = Object.assign(val, this.searchData)
+                this.getTemplate(this.searchData)
+
+            },
+            //时间戳转换日期
+            parseTime(val) {
+                return parseTime(val)
+            },
+            // 删除确认
+            open(val) {
+                let message = ''
+                if (val) { message = '此操作将永久删除该任务模板' }
+                else { message = '此操作将永久批量删除该任务模板' }
+                this.$confirm(message, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.handleDelete(val)
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            // 创建任务跳转
+            createTraning() {
+                // 这里写你要跳转的标签页的name
+                this.$emit('createTraning')
+                //this.resetZuJian()
+            },
+
+        }
+    }
+</script>
+
+<style lang="scss" scoped>
+    .searchForm {
+        display: inline-block;
+    }
+
+    .create {
+        float: right;
+        margin-bottom: 15px;
+        margin-left: 10px;
+    }
+
+    .block {
+        float: right;
+        margin: 20px;
+    }
+</style>

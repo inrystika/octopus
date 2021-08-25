@@ -1,0 +1,215 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service ImageService {
+  // 查询预置镜像列表
+  rpc ListPreImage (ListPreImageRequest) returns (ListPreImageReply) {
+    option (google.api.http) = {
+      get: "/v1/imagemanage/preimage"
+    };
+  };
+  // 查询用户镜像列表
+  rpc ListUserImage (ListUserImageRequest) returns (ListUserImageReply){
+    option (google.api.http) = {
+      get: "/v1/imagemanage/userimage"
+    };
+  };
+  // 查询公共镜像列表
+  rpc ListCommImage (ListCommImageRequest) returns (ListCommImageReply){
+    option (google.api.http) = {
+      get: "/v1/imagemanage/commimage"
+    };
+  };
+  // 新增镜像
+  rpc AddImage (AddImageRequest) returns (AddImageReply) {
+    option (google.api.http) = {
+      post: "/v1/imagemanage/image"
+      body: "*"
+    };
+  };
+  // 上传镜像
+  rpc UploadImage (UploadImageRequest) returns (UploadImageReply) {
+    option (google.api.http) = {
+      post: "/v1/imagemanage/image/{imageId}/upload"
+      body: "*"
+    };
+  };
+  // 删除镜像
+  rpc DeleteImage (DeleteImageRequest) returns (DeleteImageReply) {
+    option (google.api.http) = {
+      delete: "/v1/imagemanage/image/{imageId}"
+    };
+  };
+  // 更新镜像
+  rpc UpdateImage (UpdateImageRequest) returns (UpdateImageReply) {
+    option (google.api.http) = {
+      put: "/v1/imagemanage/image/{imageId}"
+      body: "*"
+    };
+  };
+  // 分享镜像
+  rpc ShareImage (ShareImageRequest) returns (ShareImageReply) {
+    option (google.api.http) = {
+      post: "/v1/imagemanage/image/{imageId}/share"
+      body: "*"
+    };
+  };
+  // 完成镜像上传
+  rpc ConfirmUploadImage (ConfirmUploadImageRequest) returns (ConfirmUploadImageReply) {
+    option (google.api.http) = {
+      put: "/v1/imagemanage/image/{imageId}/uploadconfirm"
+    };
+  };
+}
+
+message ImageDetail {
+  string id = 1;
+  string imageName = 2;
+  int32 imageType = 3;
+  string imageDesc = 4;
+  string imageAddr = 5;
+  int32 sourceType = 6;
+  string spaceId = 7;
+  string userId = 8;
+  int64 createdAt = 10;
+  int64 updatedAt = 11;
+  int32 imageStatus = 12;
+  string username = 13;
+  string imageVersion = 14;
+}
+
+message UserImage {
+  bool isShared = 1;
+  ImageDetail image = 2;
+}
+
+message ListPreImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lt:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  int32 imageType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 sourceType = 8[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
+  string imageVersion = 10[(validate.rules).string = {max_len: 50}];
+  string searchKey = 11[(validate.rules).string = {max_len: 50}];
+}
+
+message ListPreImageReply {
+  int64 totalSize = 1;
+  repeated ImageDetail images = 2;
+}
+
+message ListUserImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  int32 imageType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 sourceType = 8[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
+  string imageVersion = 10[(validate.rules).string = {max_len: 50}];
+  string searchKey = 11[(validate.rules).string = {max_len: 50}];
+}
+
+message ListUserImageReply {
+  int64 totalSize = 1;
+  repeated UserImage images = 2;
+}
+
+message ListCommImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  string spaceId = 7[(validate.rules).string = {max_len: 36}];
+  int32 imageType = 8[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
+  int32 sourceType = 9[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
+  int32 imageStatus = 10[(validate.rules).int32 = {in: [1,2,3,4], ignore_empty: true}];
+  string imageVersion = 11[(validate.rules).string = {max_len: 50}];
+  string searchKey = 12[(validate.rules).string = {max_len: 50}];
+}
+
+message ListCommImageReply {
+  int64 totalSize = 1;
+  repeated ImageDetail images = 2;
+}
+
+message AddImageRequest {
+  string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1, max_len:50}];
+  string imageVersion = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$",min_len: 1, max_len: 50}];
+  int32 imageType = 3[(validate.rules).int32 = {in: [1,2]}];
+  string imageDesc = 4;
+  string imageAddr = 5[(validate.rules).string = {max_len: 254}];
+  int32 sourceType = 6[(validate.rules).int32 = {in: [1,2]}];
+}
+
+message AddImageReply {
+  string imageId = 1;
+  int64  createdAt = 2;
+}
+
+message UploadImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string fileName = 2[(validate.rules).string = {min_len: 1, max_len: 50}];
+  string domain = 3[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+
+message UploadImageReply {
+  string uploadUrl = 1;
+  map<string, string> headers = 2;
+}
+
+message DeleteImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+message DeleteImageReply {
+  int64 deletedAt = 1;
+}
+
+message UpdateImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string imageName = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len:50}];
+  string imageVersion = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", max_len: 50}];
+  int32 imageType = 4[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  string imageDesc = 5;
+  string imageAddr = 6[(validate.rules).string = {max_len: 254}];
+  // ImageSourceType sourceType = 6;
+  // string spaceId = 7;
+  // string userId = 8;
+  // ImageIsPrefab isPrefab = 9;
+}
+
+message UpdateImageReply {
+  int64 updatedAt = 1;
+}
+
+message ShareImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message ShareImageReply {
+  int64 sharedAt = 1;
+}
+
+message ConfirmUploadImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message ConfirmUploadImageReply {
+  int64 updatedAt = 1;
+}

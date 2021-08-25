@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+package adminserver.api.v1;
+
+option go_package = "server/admin-server/api/v1;v1";
+
+
+service ResourceService {
+  rpc ListResource(google.protobuf.Empty) returns (ResourceList){
+    option (google.api.http) = {
+      get: "/v1/resourcemanage/resource",
+    };
+  };
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceReply){
+    option (google.api.http) = {
+      put: "/v1/resourcemanage/resource/{id}",
+      body: "*"
+    };
+  };
+  rpc CreateCustomizedResource(CreateCustomizedResourceRequest) returns (CreateCustomizedResourceReply){
+    option (google.api.http) = {
+      post: "/v1/resourcemanage/resource",
+      body: "*"
+    };
+  };
+  rpc DeleteCustomizedResource(DeleteCustomizedResourceRequest) returns (DeleteCustomizedResourceReply){
+    option (google.api.http) = {
+      delete: "/v1/resourcemanage/resource/{id}",
+    };
+  };
+}
+
+message Resource {
+  string id = 1;
+  string name = 2;
+  string desc = 3;
+  string resourceRef = 4;
+  repeated string bindingNodes = 5;
+  string bindingNodeLabelKey = 6;
+  string bindingNodeLabelValue = 7;
+}
+
+message ResourceList {
+  repeated Resource resources = 1;
+}
+
+message CreateCustomizedResourceRequest {
+  string name = 1;
+  string desc = 2;
+  string resourceRef = 3;
+  repeated string bindingNodes = 4;
+}
+
+message CreateCustomizedResourceReply {
+  string id = 1;
+}
+
+message UpdateResourceRequest{
+  string id = 1;
+  string desc = 2;
+  string resourceRef = 3;
+  repeated string bindingNodes = 4;
+}
+
+message UpdateResourceReply {
+  string id = 1;
+}
+
+message DeleteCustomizedResourceRequest {
+  string id = 1;
+}
+
+message DeleteCustomizedResourceReply {
+  string id = 1;
+}

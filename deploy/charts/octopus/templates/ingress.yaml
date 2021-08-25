@@ -1,0 +1,148 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "octopus.fullname" . -}}
+{{- $adminserverName := include "adminserver.fullname" . -}}
+{{- $openaiserverName := include "openaiserver.fullname" . -}}
+{{- $adminportalName := include "adminportal.fullname" . -}}
+{{- $openaiportalName := include "openaiportal.fullname" . -}}
+{{- $adminserverPath := .Values.ingress.adminserverPath -}}
+{{- $openaiserverPath := .Values.ingress.openaiserverPath -}}
+{{- $adminportalPath := trimSuffix "/" .Values.ingress.adminportalPath -}}
+{{- $openaiportalPath := trimSuffix "/" .Values.ingress.openaiportalPath -}}
+{{- $minioName := include "minio.fullname" . -}}
+{{- $minioWebPath := .Values.ingress.minioPath.web -}}
+{{- $minioApiPath := .Values.ingress.minioPath.api -}}
+{{- $loggerHttpdPath := .Values.ingress.loggerHttpdPath -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+{{ include "octopus.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ $adminserverName }}
+          servicePort: {{ template "adminserver.port" . }}
+        path: {{ $adminserverPath }}(/|$)(.*)
+      - backend:
+          serviceName: {{ $openaiserverName }}
+          servicePort: {{ template "openaiserver.port" . }}
+        path: {{ $openaiserverPath }}(/|$)(.*)
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-portal
+  labels:
+{{ include "octopus.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - http:
+        paths:
+        - backend:
+            serviceName: {{ $adminportalName }}
+            servicePort: {{ template "adminportal.port" . }}
+          path: {{ $adminportalPath }}/(.*)
+        - backend:
+            serviceName: {{ $openaiportalName }}
+            servicePort: {{ template "openaiportal.port" . }}
+          path: {{ $openaiportalPath }}/(.*)
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-logger
+  labels:
+{{ include "octopus.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ template "logger.fullname" . }}-httpd
+          servicePort: http
+        path: {{ $loggerHttpdPath }}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-minio-web
+  labels:
+{{ include "octopus.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/upstream-vhost: {{ include "minio.serviceAddr" . }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ $minioName }}
+          servicePort: {{ .Values.minio.service.port }}
+        path: {{ $minioWebPath }}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-minio-api
+  labels:
+{{ include "octopus.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/upstream-vhost: {{ include "minio.serviceAddr" . }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ $minioName }}
+          servicePort: {{ .Values.minio.service.port }}
+        path: {{ $minioApiPath }}(/|$)(.*)
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-ingress-controller
+data:
+  ignore-invalid-headers: "false"
+
+{{- end }}
+
+

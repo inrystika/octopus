@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-minio-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.minio.requests }}
+  selector:
+    matchLabels:
+      pv: minio-pv
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-mysql-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.mysql.requests }}
+  selector:
+    matchLabels:
+      pv: mysql-pv
+
+
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: octopus-mysql-pvc
+#spec:
+#  accessModes: ["ReadWriteMany"]
+#  storageClassName: nfs-mysql
+#  resources:
+#    requests:
+#      storage: {{ .Values.pvc.mysql.requests }}
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-redis-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.redis.requests }}
+  selector:
+    matchLabels:
+      pv: redis-pv
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-logger-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.logger.requests }}
+  selector:
+    matchLabels:
+      pv: logger-pv

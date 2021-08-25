@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+package adminserver.api.v1;
+
+option go_package = "server/admin-server/api/v1;v1";
+
+service NodeService {
+  rpc ListNode(google.protobuf.Empty) returns (NodeList){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/resourcemanage/node",
+    };
+  };
+}
+
+message Node {
+  string name = 1;
+  string ip = 2;
+  string status = 3;
+  repeated string resourcePools = 4;
+  map<string,string> capacity = 5;
+  map<string,string> allocated = 6;
+}
+
+message NodeList {
+  repeated Node nodes = 1;
+}

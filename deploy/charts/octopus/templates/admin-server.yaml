@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+  labels:
+{{ include "adminserver.labels" . | indent 4 }}
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ template "adminserver.port" . }}
+    targetPort: {{ template "adminserver.port" . }}
+  selector:
+{{ include "adminserver.select-labels" . | indent 8 }}
+
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "adminserver.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+      - create
+      - update
+      - patch
+      - delete
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+  labels:
+{{ include "adminserver.labels" . | indent 4 }}
+data:
+  adminserver-config.yml: |
+    app:
+        name: adminserver
+        version: v1.0
+        isDev: false
+        logLevel: {{ .Values.adminserver.app.logLevel }}
+    server:
+        http:
+          addr: 0.0.0.0:8002
+          timeout: 60s
+          jwtSecrect: asdf
+    data:
+        baseServerAddr: {{ include "baseserver.grpcServiceAddr" . }}
+        baseServerRequestTimeout: 30s
+        redis:
+          addr: {{ include "redis.serviceAddr" . }} 
+          username: {{ .Values.adminserver.data.redis.username }}
+          password: {{ .Values.adminserver.data.redis.password }}
+    service:
+        port:  {{ include "adminserver.port" . }}
+        targetPort: {{ include "adminserver.port" . }}
+        tokenExpirationSec: 86400
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "adminserver.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+{{ include "adminserver.select-labels" . | indent 8 }}
+  replicas: {{ .Values.adminserver.replicas }}
+  template:
+    metadata:
+      labels:
+{{ include "adminserver.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "adminserver.fullname" . }}
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: adminserver-config
+        configMap:
+          name: {{ template "adminserver.fullname" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.adminserver.image.name }}:{{ default .Chart.AppVersion .Values.adminserver.image.tag }}"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        args: [ "-conf", "/etc/adminserver/adminserver-config.yml" ]
+        volumeMounts:
+          - name: localtime
+            mountPath: /etc/localtime
+          - name: adminserver-config
+            mountPath: /etc/adminserver
+        ports:
+        - name: {{ template "adminserver.name" . }}
+          containerPort: {{ template "adminserver.port" . }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.global.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

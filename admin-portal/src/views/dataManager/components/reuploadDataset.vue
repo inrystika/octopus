@@ -1,0 +1,98 @@
+<template>
+  <div>
+    <el-dialog
+      title="创建新版本"
+      width="35%"
+      :visible.sync="CreateFormVisible"
+      :before-close="handleDialogClose"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+        <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
+            <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
+            <el-input v-model="ruleForm.type" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
+          <el-input
+            :disabled="true"
+            v-model="ruleForm.desc"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            placeholder="请输入数据集描述"
+            maxlength="300"
+            show-word-limit
+          ></el-input>
+        </el-form-item>
+        <el-form-item label='数据集上传' :label-width="formLabelWidth" prop="path">
+          <upload        
+            :uploadData="uploadData" 
+            @confirm="confirm" 
+            @cancel="cancel"   
+            v-model="ruleForm.path"
+          >
+          </upload>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import upload from '@/components/upload/index.vue'
+export default {
+  name: "reuploadDataset",
+  components: {
+    upload,
+  },
+  props: {
+    versionData: {
+      type: Object,
+      default: () => { }
+    },
+    data: {
+      type: Object,
+      default: () => { }
+    },
+  },
+  data() {
+    return {
+      showUpload: false,
+      uploadData: { data: {}, type: undefined },
+      ruleForm: {
+        desc: "",
+      },
+      rules: {
+        path: [
+          {
+            required: true,
+            message: "请上传数据集",
+            trigger: "change"
+          }
+        ]
+      },
+      CreateFormVisible: true,
+      formLabelWidth: "120px"
+    }
+  },
+  created(){
+    let {desc} = this.versionData
+    let {name,type} = this.data
+    this.ruleForm = {name,type,desc}
+    this.uploadData.id = this.versionData.datasetId
+    this.uploadData.type = "preDatasetCreation"
+    this.uploadData.version = this.versionData.version
+  },
+  methods: {
+    handleDialogClose() {
+      this.$emit("close", false);
+    },
+    cancel() {
+      this.$emit("cancel", false);
+    },
+    confirm(val) {
+      this.$emit("confirm", val);
+    }
+  }
+}
+</script>

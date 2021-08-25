@@ -1,0 +1,54 @@
+// 初始中
+.status-ready{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#909399;
+  border-radius:50%;
+  margin-right: 5px;
+}
+// 待办中
+.status-agent{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#409eff;
+  border-radius:50%;
+  margin-right: 5px;
+}
+// 运行中
+.status-running{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#8000FF;
+  border-radius:50%;
+  margin-right: 5px;
+}
+// 成功
+.status-success{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#67c23a;
+  border-radius:50%; 
+  margin-right: 5px;
+}
+// 停止
+.status-stopping{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#e6a23c;
+  border-radius:50%;
+  margin-right: 5px;  
+}
+// 失败
+.status-danger{
+  display:inline-block;
+  width: 7px;
+  height:7px;
+  background:#f56c6c;
+  border-radius:50%; 
+  margin-right: 5px; 
+}

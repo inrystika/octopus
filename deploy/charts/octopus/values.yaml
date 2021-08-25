@@ -1,0 +1,303 @@
+# Default values for octopus.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+tolerations: []
+affinity: {}
+resources: {}
+
+global:
+  image:
+    repository:
+      address: "192.168.202.110:5000"
+      pathname: "/octopus"
+    pullPolicy: IfNotPresent
+  nodeSelector:
+    octopus.openi.pcl.cn/node: "server"
+
+common:
+  resourceTagKey: octopus.pcl.ac.cn/type
+  resourceTagValuePrefix: service
+
+ingress:
+  enabled: true
+  adminserverPath: /adminserver
+  openaiserverPath: /openaiserver
+  adminportalPath: /admin
+  openaiportalPath: /openai
+  loggerHttpdPath: /log
+  minioPath:
+    web: /minio
+    api: /oss
+  tls: []
+
+pvc:
+  minio:
+    requests: 100Gi
+  mysql:
+    requests: 100Gi
+  redis:
+    requests: 100Gi
+  logger:
+    requests: 100Gi
+
+pv:
+  minio:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server:  192.168.203.72
+        path:  /data/datasets/data/minio
+  mysql:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server:  192.168.203.72
+        path:  /data/datasets/data/mysql
+  redis:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server:  192.168.203.72
+        path:  /data/datasets/data/redis
+  logger:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server:  192.168.203.72
+        path:  /data/datasets/data/logger
+
+# taskset
+taskset:
+  replicaCount: 1
+  adminToken: "KLtmMug9BDvvRjlg"
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "pipeline"
+
+# base-server
+baseserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "base-server"
+  app:
+    logLevel: info
+  data:
+    minio:
+      base:
+        accessKeyID: minioadmin
+        secretAccessKey: minioadmin
+        useSSL: false
+        mountPath: /data
+    harbor:
+      host: 192.168.202.74:5000
+      username: openi
+      password: OpenI2018
+      apiVersion: v1.0
+      useSSL: false
+    redis:
+      username: ""
+      password: "abcde"
+  service:
+    billingPeriodSec: 1800
+    develop:
+      autoStopIntervalSec: 7200
+  administrator:
+    username: "admin"
+    password: "123456"
+    email: ""
+    phone: ""
+
+# openai-server
+openaiserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "openai-server"
+  app:
+    logLevel: info
+  data:
+    redis:
+      username: ""
+      password: "abcde"
+        
+
+# admin-server
+adminserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "admin-server"
+  app:
+    logLevel: info
+  data:
+    redis:
+      username: ""
+      password: "abcde"
+
+# openaiportal
+openaiportal:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "openai-portal"
+
+
+# adminportal
+adminportal:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "admin-portal"
+
+
+# scheduler
+scheduler:
+  replicaCount: 1
+  image:
+    name: "scheduler"
+    
+
+# controller
+controller:
+  replicaCount: 1
+  image:
+    name: "vc-controller"
+
+# logger
+logger:
+  filebeat:
+    resources: {}
+  logstash:
+    nodeSelector: {}
+  httpd:
+    replicaCount: 1
+    image:
+      pullPolicy: Always
+    nodeSelector: {}
+
+
+# minio
+minio:
+  podSecurityContext:
+    fsGroup: 0
+  containerSecurityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+  gateway:
+    enabled: true
+    type: nas
+    replicaCount: 1
+    auth:
+      nas:
+        accessKey: "minioadmin"
+        secretKey: "minioadmin"
+  persistence:
+    size: "100Gi"
+    existingClaim: "octopus-minio-pvc"
+  service:
+    type: NodePort
+    nodePort: "31311"
+    port: "9000"
+
+# mysql
+mysql:
+  auth:
+    rootPassword: "root"
+  volumePermissions:
+    enabled: true
+  primary:
+    service:
+      type: NodePort
+      port: "3306"
+      nodePort: "30336"
+    persistence:
+      enabled: true
+      size: "100Gi"
+      existingClaim: "octopus-mysql-pvc"
+    extraVolumeMounts:
+      - name: mysql-initdb
+        mountPath: /docker-entrypoint-initdb.d
+    extraVolumes:
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
+
+
+# redis
+redis:
+  master:
+    service:
+      type: NodePort
+      port: "6379"
+    persistence:
+      size: "50Gi"
+      existingClaim: "octopus-redis-pvc"
+  replica:
+    replicaCount: 1
+  auth:
+    enabled: true
+    password: "abcde"
+  volumePermissions:
+    enabled: true
+
+# nginx-ingress-controller
+nginx-ingress-controller:
+  hostNetwork: true
+  replicaCount: 1
+  nodeSelector:
+    nginx-ingress: "yes"
+
+# grafana
+grafana:
+  nameOverride: "grafana"
+  replicaCount: 1
+  image:
+    tag: "6.2.0"
+  env:
+    GF_AUTH_BASIC_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    GF_SECURITY_ADMIN_USER: "admin"
+    GF_SECURITY_ADMIN_PASSWORD: "Pa22word"
+    GF_SECURITY_ALLOW_EMBEDDING: "true"
+    GF_SERVER_ROOT_URL: "/grafana"
+  prometheus:
+    port: "9090"
+  service:
+    type: ClusterIP
+    port: "3000"
+    targetPort: "3000"
+  ingress:
+    enabled: true
+    annotations: {}
+    path: /grafana
+  resources: {}
+  affinity: {}
+  nodeSelector: {}
+
+#prometheus
+prometheus:
+  nameOverride: "prometheus"
+  replicaCount: 1
+  retentionDuration: 365d
+  volumes:
+    dataPath: /applications/prometheus
+  image:
+    tag: "2.28.1"
+  service:
+    type: NodePort
+    hostPort: "30003"
+    port: "9090"
+    targetPort: "9090"
+  resources: {}
+  affinity: {}
+  nodeSelector: {}

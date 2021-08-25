@@ -1,0 +1,227 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service TrainJobService {
+  //创建训练任务
+  rpc TrainJob (TrainJobRequest) returns (TrainJobReply);
+  //停止训练任务
+  rpc StopJob (StopJobRequest) returns (StopJobReply);
+  //删除训练任务
+  rpc DeleteJob (DeleteJobRequest) returns (DeleteJobReply);
+  //获取训练任务详情
+  rpc GetTrainJobInfo(TrainJobInfoRequest) returns (TrainJobInfoReply);
+  //获取训练任务列表
+  rpc TrainJobList(TrainJobListRequest) returns (TrainJobListReply);
+  //创建训练任务模板
+  rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply);
+  //获取训练任务模板
+  rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply);
+  //编辑训练任务模板
+  rpc UpdateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply);
+  //删除训练任务模板
+  rpc DeleteJobTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply);
+  //获取任务模板列表
+  rpc ListJobTemplate (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply);
+
+}
+
+
+message TrainJobRequest {
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string desc = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
+  string imageId = 5[(validate.rules).string = {min_len: 1}];
+  string dataSetId = 6[(validate.rules).string = {min_len: 1}];
+  string dataSetVersion = 7[(validate.rules).string = {min_len: 1}];
+  bool isDistributed = 8;
+  repeated Config config = 9[(validate.rules).repeated.min_items = 1];
+  string userId = 10[(validate.rules).string = {min_len: 1}];
+  string workspaceId =11[(validate.rules).string = {min_len: 1}];
+}
+
+message TrainJobTemplateRequest {
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string desc = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
+  string imageId = 5[(validate.rules).string = {min_len: 1}];
+  string dataSetId = 6[(validate.rules).string = {min_len: 1}];
+  string dataSetVersion = 7[(validate.rules).string = {min_len: 1}];
+  bool isDistributed = 8;
+  repeated Config config = 9[(validate.rules).repeated.min_items = 1];
+  string userId = 10[(validate.rules).string = {min_len: 1}];
+  string workspaceId =11[(validate.rules).string = {min_len: 1}];
+  string id = 12;
+}
+
+message GetJobTemplateRequest{
+  string  id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message GetJobTemplateReply{
+  TrainJobTemplate  jobTemplate = 1;
+}
+
+message Config {
+  string name = 1[(validate.rules).string = {min_len: 0, max_len: 30}];
+  string command = 2[(validate.rules).string = {min_len: 1}];
+  repeated Parameter parameters = 3;
+  string resourceSpecId = 4;
+  int64 taskNumber = 5[(validate.rules).int64 = {gte:1}];
+  int64  minFailedTaskCount = 6[(validate.rules).int64 = {gte:1}];
+  int64  minSucceededTaskCount = 7[(validate.rules).int64 = {gte:1}];
+  bool isMainRole = 8;
+  string resourceSpecName = 9;
+  int32  resourceSpecPrice = 10;
+  repeated ReplicaState replicaStates = 11;
+  string  subTaskState = 12;
+}
+
+message ReplicaState {
+  string  key = 1;
+  string  state = 2;
+}
+
+
+message Parameter {
+  string key = 1;
+  string value = 2;
+}
+
+message TrainJobReply {
+  string jobId = 1;
+}
+
+
+message TrainJobTemplateReply {
+  string templateId = 1;
+}
+
+message TrainJobTemplateListRequest{
+  int64 pageIndex = 1;
+  int64 pageSize = 2;
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string status = 7;
+  string searchKey = 8; //name等模糊查找
+  string userId = 9;
+  string WorkspaceId =10;
+}
+
+message TrainJobTemplateListReply{
+  int64 totalSize = 1 ;
+  repeated TrainJobTemplate jobTemplates = 2;
+}
+
+message DeleteJobTemplateRequest{
+  string  userId = 1[(validate.rules).string = {min_len: 1}];
+  repeated string templateIds = 2[(validate.rules).repeated.min_items = 1];
+}
+
+message DeleteJobTemplateReply{
+int64 deletedAt = 1;
+}
+
+message  StopJobRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string operation = 2;
+}
+
+message StopJobReply {
+int64 stoppedAt = 1;
+}
+
+
+message DeleteJobRequest {
+  repeated string jobIds = 1[(validate.rules).repeated.min_items = 1];
+  string userId = 2[(validate.rules).string = {min_len: 1}];
+}
+
+message DeleteJobReply{
+int64 deletedAt = 1;
+}
+
+
+message TrainJobListRequest{
+  int64 pageIndex = 1;
+  int64 pageSize = 2;
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string status = 7;
+  string searchKey = 8; //name等模糊查找
+  string userId = 9;
+  string workspaceId =10;
+}
+
+message TrainJobListReply {
+  int64  totalSize = 1;
+  repeated TrainJob trainJobs = 2;
+}
+
+
+message TrainJobTemplate{
+  string  id = 1;
+  string userId = 2;
+  string workspaceId = 3;
+  string name = 4;
+  string desc = 5;
+  string algorithmId = 6;
+  string algorithmVersion = 7;
+  string imageId = 8;
+  string imageVersion = 9;
+  string dataSetId = 10;
+  string dataSetVersion = 11;
+  bool isDistributed = 12;
+  repeated Config config = 13;
+  int64 createdAt = 14;
+  int64 updatedAt = 15;
+  string algorithmName = 16;
+  string imageName = 17;
+  string dataSetName = 18;
+}
+
+message TrainJob{
+  string  id = 1;
+  string userId = 2;
+  string workspaceId = 3;
+  string name = 4;
+  string desc = 5;
+  string algorithmId = 6;
+  string algorithmVersion = 7;
+  string imageId = 8;
+  string imageVersion = 9;
+  string dataSetId = 10;
+  string dataSetVersion = 11;
+  bool isDistributed = 12;
+  repeated Config config = 13;
+  int64 createdAt = 14;
+  int64 updatedAt = 15;
+  string status   = 16;
+  int64  completedAt = 17;
+  int64 runSec = 18;
+  string algorithmName = 19;
+  string imageName = 20;
+  string dataSetName = 21;
+  int64  startedAt = 22;
+}
+
+
+message TrainJobInfoRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message TrainJobInfoReply{
+  TrainJob trainJob = 1;
+}

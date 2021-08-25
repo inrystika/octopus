@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+service ResourceService {
+  rpc ListResource(google.protobuf.Empty) returns (ResourceList);
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceReply);
+  rpc CreateCustomizedResource(CreateCustomizedResourceRequest) returns (CreateCustomizedResourceReply);
+  rpc DeleteCustomizedResource(DeleteCustomizedResourceRequest) returns (DeleteCustomizedResourceReply);
+}
+
+message Resource {
+  string id = 1;
+  string name = 2;
+  string desc = 3;
+  string resourceRef = 4;
+  repeated string bindingNodes = 5;
+  string bindingNodeLabelKey = 6;
+  string bindingNodeLabelValue = 7;
+}
+
+message ResourceList {
+  repeated Resource resources = 1;
+}
+
+message CreateCustomizedResourceRequest {
+  string name = 1 [(validate.rules).string = {
+                    pattern:   "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$",
+                    max_len: 30,
+                  }];
+  string desc = 2 [(validate.rules).string = {max_len: 300}];
+  string resourceRef = 3 [(validate.rules).string = {min_len: 1, max_len: 30}];
+  repeated string bindingNodes = 4;
+}
+
+message CreateCustomizedResourceReply {
+  string id = 1;
+}
+
+message UpdateResourceRequest{
+  string id = 1;
+  string desc = 2 [(validate.rules).string = {max_len: 300}];
+  string resourceRef = 3 [(validate.rules).string = {min_len: 0, max_len: 30}];
+  repeated string bindingNodes = 4;
+}
+
+message UpdateResourceReply {
+  string id = 1;
+}
+
+message DeleteCustomizedResourceRequest {
+  string id = 1;
+}
+
+message DeleteCustomizedResourceReply {
+  string id = 1;
+}

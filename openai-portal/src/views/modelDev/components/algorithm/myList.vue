@@ -1,0 +1,267 @@
+<template>
+  <div>
+    <div class="searchForm">
+      <searchForm 
+        :searchForm=searchForm 
+        @searchData="getSearchData"
+        :blurName="'算法名称/描述 搜索'">
+      </searchForm>
+    </div>
+    <el-button  
+      type="primary" 
+      size="medium" 
+      @click="create" 
+      class="create" 
+      v-if="Type === 1 ? true : false"
+    >
+      创建
+    </el-button>
+    <el-table :data="algorithmList" style="width: 100%;font-size: 15px;" :header-cell-style="{'text-align':'left','color':'black'}"
+    :cell-style="{'text-align':'left'}">
+      <el-table-column label="算法名称">
+        <template slot-scope="scope">
+          <span>{{ scope.row.algorithmName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="当前版本号" >
+        <template slot-scope="scope">
+          <span>{{ scope.row.algorithmVersion}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="算法描述" :show-overflow-tooltip="true">
+        <template slot-scope="scope">
+          <span>{{ scope.row.algorithmDescript}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createdAt) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
+          <el-button type="text" @click="copyAlgorithm(scope.row)">复制算法</el-button>
+          <el-button type="text" @click="createNewVersion(scope.row)" style="padding-right:10px">创建新版本</el-button>
+          <el-button slot="reference" @click="confirmDelete(scope.row)" type="text">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="pagination">
+      <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange"
+        :current-page="searchData.pageIndex" 
+        :page-sizes="[10, 20, 50, 80]" 
+        :page-size="searchData.pageSize"
+        layout="total, sizes, prev, pager, next, jumper" 
+        :total="total">
+      </el-pagination>
+    </div>
+
+    <myAlgorithmCreation
+      v-if="creationVisible" 
+      @cancel="cancel" 
+      @close="close"
+      @confirm="confirm"
+    >
+    </myAlgorithmCreation>
+    <newVersionCreation
+      v-if="newVersionVisible"
+      :newVersionName="newVersionName"
+      :row="row"
+      @close="close" 
+      @cancel="cancel"
+      @confirm="confirm"
+    >
+    </newVersionCreation>
+    <algorithmCopy
+      v-if="algorithmCopyVisible"
+      @close="close" 
+      @cancel="cancel"
+      @confirm="confirm"
+      :row="row"
+      :Type="this.typeChange"
+    >
+    </algorithmCopy>
+    <versionList
+      v-if="versionListVisible"
+      :Type="this.typeChange"
+      :data="row"
+      @close="close" 
+    >
+    </versionList>
+  </div>
+</template>
+
+<script>
+import newVersionCreation from "./newVersionCreation.vue";
+import algorithmCopy from "./algorithmCopy.vue";
+import versionList from "./versionList.vue";
+import myAlgorithmCreation from "./myAlgorithmCreation.vue"
+import searchForm from '@/components/search/index.vue'
+import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
+import { parseTime } from '@/utils/index'
+import { getErrorMsg } from '@/error/index'
+export default {
+  name: "myList",
+  components: {
+    newVersionCreation,
+    algorithmCopy,
+    versionList,
+    myAlgorithmCreation,
+    searchForm,
+  },
+  props: {
+    Type: { type: Number },
+    algorithm: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      row: {},
+      newVersionVisible:false,
+      algorithmCopyVisible:false,
+      versionListVisible: false,
+      creationVisible: false,
+      newVersionName: "",
+      total: undefined,
+      typeChange: undefined,
+      algorithmList: [],
+      searchForm: [
+        { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+      ],
+      searchData: {
+        pageIndex: 1,
+        pageSize: 10,
+      }
+    }
+  },
+  created() {
+    this.getAlgorithmList(this.searchData);
+    if (this.algorithm) {
+      this.creationVisible = true
+    }
+  },
+  methods: {
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
+    getSearchData(val) {
+      this.searchData={pageIndex:1,pageSize:this.searchData.pageSize}
+      this.searchData = Object.assign(val, this.searchData)
+      if (this.searchData.time) {
+        this.searchData.createdAtGte = this.searchData.time[0]/1000
+        this.searchData.createdAtLt = this.searchData.time[1]/1000
+        delete this.searchData.time
+      }
+      this.getAlgorithmList(this.searchData)
+    },
+    handleSizeChange(val){
+      this.searchData.pageSize = val
+      this.getAlgorithmList(this.searchData)
+    },
+    handleCurrentChange(val) {
+      this.searchData.pageIndex = val
+      this.getAlgorithmList(this.searchData)
+    },
+    getAlgorithmList(param){
+      this.typeChange = this.Type
+        getMyAlgorithmList(param).then(response => {
+          if(response.success){
+            this.algorithmList = response.data.algorithms;
+            this.total = response.data.totalSize
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }    
+        })
+    },
+    getAlgorithmVersionList(row){
+      this.versionListVisible = true;
+      this.typeChange = this.Type
+      this.row = row
+    },
+    createNewVersion(row){
+      this.newVersionName = row.algorithmName
+      this.newVersionVisible = true;
+      this.row = row
+    },
+    create() {
+      this.creationVisible = true;
+    },
+    close(val){
+      this.newVersionVisible = val;
+      this.algorithmCopyVisible = val;
+      this.versionListVisible = val;
+      this.creationVisible = val
+      this.getAlgorithmList(this.searchData)
+    },
+    cancel(val){
+      this.newVersionVisible = val;
+      this.algorithmCopyVisible = val;
+      this.creationVisible = val;  
+      this.getAlgorithmList(this.searchData)
+    },
+    copyAlgorithm(row){
+      this.algorithmCopyVisible = true;
+      this.row = row
+    },
+    confirm(val){
+      this.algorithmCopyVisible = val
+      this.newVersionVisible = val
+      this.creationVisible = val
+      this.getAlgorithmList(this.searchData)
+    },
+    confirmDelete(row){
+      this.$confirm('是否删除此算法？','提示',{
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(() =>{
+        this.handleDelete(row)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+    handleDelete(row){
+      deleteMyAlgorithm(row.algorithmId).then(response => {
+        if(response.success) {
+          this.$message.success("删除成功");
+          this.getAlgorithmList(this.searchData)
+        } else {
+          this.$message({
+            message: this.getErrorMsg(response.error.subcode),
+            type: 'warning'
+          });
+        }
+      })
+    },
+    //时间戳转换日期
+    parseTime(val) {
+      return parseTime(val)
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+  .pagination {
+    float: right;
+    margin: 20px;
+  }
+  .create {
+    float: right;
+  }
+  .searchForm {
+    display: inline-block;
+  }
+</style>

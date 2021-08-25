@@ -1,0 +1,383 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "logger.fullname" . }}-filebeat
+  labels:
+{{ include "logger-filebeat.labels" . | indent 4 }}
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            matchers:
+            - logs_path:
+                logs_path: "/var/log/containers/"
+
+    # To enable hints based autodiscover, remove `filebeat.inputs` configuration and uncomment this:
+    #filebeat.autodiscover:
+    #  providers:
+    #    - type: kubernetes
+    #      node: ${NODE_NAME}
+    #      hints.enabled: true
+    #      hints.default_config:
+    #        type: container
+    #        paths:
+    #          - /var/log/containers/*${data.kubernetes.container.id}.log
+
+    processors:
+      - add_cloud_metadata:
+      - add_host_metadata:
+
+    output.logstash:
+      hosts: ["{{ template "logger.fullname" . }}-logstash.{{ .Release.Namespace }}"]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "logger.fullname" . }}-filebeat
+  labels:
+{{ include "logger-filebeat.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+{{ include "logger-filebeat.select-labels" . | indent 8 }}
+  template:
+    metadata:
+      labels:
+{{ include "logger-filebeat.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "logger.fullname" . }}-filebeat
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: filebeat
+          image: docker.elastic.co/beats/filebeat:7.13.0
+          args: [
+            "-c", "/etc/filebeat.yml",
+            "-e",
+          ]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          securityContext:
+            runAsUser: 0
+            # If using Red Hat OpenShift uncomment this:
+            #privileged: true
+          resources:
+{{ toYaml .Values.logger.filebeat.resources | indent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/filebeat.yml
+              readOnly: true
+              subPath: filebeat.yml
+            - name: data
+              mountPath: /usr/share/filebeat/data
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            defaultMode: 0640
+            name: {{ template "logger.fullname" . }}-filebeat
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: varlog
+          hostPath:
+            path: /var/log
+        # data folder stores a registry of read status for all files, so we don't send everything again on a Filebeat pod restart
+        - name: data
+          hostPath:
+            # When filebeat runs as non-root user, this directory needs to be writable by group (g+w).
+            path: /var/lib/filebeat-data
+            type: DirectoryOrCreate
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "logger.fullname" . }}-filebeat
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "logger.fullname" . }}-filebeat
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ template "logger.fullname" . }}-filebeat
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "logger.fullname" . }}-filebeat
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources:
+      - namespaces
+      - pods
+      - nodes
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups: ["apps"]
+    resources:
+      - replicasets
+    verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "logger.fullname" . }}-filebeat
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "logger.fullname" . }}-logstash
+  labels:
+{{ include "logger-logstash.labels" . | indent 4 }}
+data:
+  logstash.yml: |-
+    http:
+      host: 0.0.0.0
+  logstash.conf: |-
+    input {
+      beats {
+        port => 5044
+      }
+    }
+
+    filter {
+      if (![kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}]) or ([kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] != "train_job") {
+        drop { }
+      }
+
+      if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "train_job" {
+        mutate {
+          copy => { "[kubernetes][pod][name]" => "_extend_octopus_log" }
+       }
+      }
+    }
+
+    filter {
+      if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "train_job" {
+        mutate {
+          replace => {"_extend_octopus_log" => "user/trainjob/%{_extend_octopus_log}" }
+          gsub => [
+            "_extend_octopus_log","-","/"
+          ]
+        }
+      }
+    }
+
+    output {
+      file {
+        path => "/var/log/logdata/%{_extend_octopus_log}/index.log"
+        codec => line { format => "%{message}"}
+      }
+    }
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "logger.fullname" . }}-httpd
+  labels:
+{{ include "logger-logstash.labels" . | indent 4 }}
+data:
+  nginx.conf: |-
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log  /var/log/nginx/access.log  main;
+
+      sendfile        on;
+      #tcp_nopush     on;
+      keepalive_timeout  65;
+      #gzip  on;
+
+      server {
+        listen       80;
+
+        location /log/ {
+          autoindex on;
+          alias /var/www/;
+          default_type text/plain;
+        }
+
+        location /log/download/ {
+          alias /var/www/;
+        }
+      }
+    }
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "logger.fullname" . }}-logstash
+  labels:
+{{ include "logger-logstash.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: ls
+      protocol: TCP
+      port: 5044
+      targetPort: 5044
+  selector:
+{{ include "logger-logstash.select-labels" . | indent 4 }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "logger.fullname" . }}-logstash
+  labels:
+{{ include "logger-logstash.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+{{ include "logger-logstash.select-labels" . | indent 8 }}
+  template:
+    metadata:
+      labels:
+{{ include "logger-logstash.labels" . | indent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+      {{- with .Values.global.nodeSelector }}
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.logger.logstash.nodeSelector }}
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:7.13.0
+          args: [
+            "bin/logstash","-f", "/usr/share/logstash/pipeline/logstash.conf",
+          ]
+          securityContext:
+            runAsUser: 0
+          resources:
+          volumeMounts:
+            - name: config
+              readOnly: true
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: config
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              readOnly: true
+              subPath: logstash.conf
+            - name: logdata
+              mountPath: /var/log/logdata
+      volumes:
+        - name: config
+          configMap:
+            defaultMode: 0640
+            name: {{ template "logger.fullname" . }}-logstash
+        - name: logdata
+          persistentVolumeClaim:
+            claimName: octopus-logger-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "logger.fullname" . }}-httpd
+  labels:
+{{ include "logger-httpd.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.logger.httpd.replicaCount }}
+  selector:
+    matchLabels:
+{{ include "logger-httpd.select-labels" . | indent 8 }}
+  template:
+    metadata:
+      labels:
+{{ include "logger-httpd.labels" . | indent 8 }}
+    spec:
+      volumes:
+        - name: logger
+          persistentVolumeClaim:
+            claimName: octopus-logger-pvc
+        - name: config
+          configMap:
+            defaultMode: 0640
+            name: {{ template "logger.fullname" . }}-httpd
+      nodeSelector:
+      {{- with .Values.global.nodeSelector }}
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      {{- with .Values.logger.httpd.nodeSelector }}
+      {{ toYaml . | indent 2 }}
+      {{- end }}
+      containers:
+        - name: nginx
+          image: "nginx:1.21.0-alpine"
+          imagePullPolicy: {{ .Values.logger.httpd.image.pullPolicy }}
+          volumeMounts:
+            - name: logger
+              mountPath: /var/www/
+            - name: config
+              mountPath: /etc/nginx/nginx.conf
+              readOnly: true
+              subPath: nginx.conf
+          ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "logger.fullname" . }}-httpd
+  labels:
+{{ include "logger-httpd.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+{{ include "logger-httpd.select-labels" . | indent 8 }}

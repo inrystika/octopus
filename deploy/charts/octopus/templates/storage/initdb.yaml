@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE DATABASE IF NOT EXISTS octopus DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+    CREATE DATABASE IF NOT EXISTS core DEFAULT CHARSET utf8 COLLATE utf8_general_ci;

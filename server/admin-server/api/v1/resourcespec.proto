@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package adminserver.api.v1;
+
+option go_package = "server/admin-server/api/v1;v1";
+
+service ResourceSpecService {
+  rpc ListResourceSpec(ListResourceSpecRequest) returns (ResourceSpecList){
+    option (google.api.http) = {
+      get: "/v1/resourcemanage/resourcespec",
+    };
+  };
+  rpc CreateResourceSpec(CreateResourceSpecRequest) returns (CreateResourceSpecReply){
+    option (google.api.http) = {
+      post: "/v1/resourcemanage/resourcespec",
+      body: "*"
+    };
+  };
+  rpc DeleteResourceSpec(DeleteResourceSpecRequest) returns (DeleteResourceSpecReply){
+    option (google.api.http) = {
+      delete: "/v1/resourcemanage/resourcespec/{id}",
+    };
+  };
+}
+
+message ResourceSpec {
+  string id = 1;
+  string name = 2;
+  uint32 price = 3;
+  map<string,string> resourceQuantity = 4;
+}
+
+message ListResourceSpecRequest {
+  int32 pageIndex = 1;
+  int32 pageSize = 2;
+}
+
+message ResourceSpecList {
+  repeated ResourceSpec resourceSpecs = 1;
+}
+
+message CreateResourceSpecRequest {
+  string name = 1;
+  uint32 price = 2;
+  map<string,string> resourceQuantity = 3;
+}
+
+message CreateResourceSpecReply {
+  string id = 1;
+}
+
+message DeleteResourceSpecRequest {
+  string id = 1;
+}
+
+message DeleteResourceSpecReply {
+  string id = 1;
+}

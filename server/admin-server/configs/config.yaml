@@ -1,0 +1,19 @@
+app:
+  name: adminserver
+  version: v1.0
+  isDev: true #是否本地调试
+  logLevel: info
+server:
+  http:
+    addr: 127.0.0.1:8002
+    timeout: 30s
+    jwtSecrect: asdf
+data:
+  baseServerAddr: dns:///127.0.0.1:9001
+  baseServerRequestTimeout: 30s
+  redis:
+    addr: 192.168.202.73:31570
+    username:
+    password: abcde
+service:
+  tokenExpirationSec: 86400

@@ -1,0 +1,234 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "baseserver.grpcServiceName" . }}
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "baseserver.httpServiceName" . }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "baseserver.grpcServiceName" . }}
+  labels:
+{{ include "baseserver.labels" . | indent 4 }}
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ template "baseserver.grpcPort" . }}
+    targetPort: {{ template "baseserver.grpcPort" . }}
+  selector:
+{{ include "baseserver.select-labels" . | indent 8 }}
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "baseserver.httpServiceName" . }}
+  labels:
+{{ include "baseserver.labels" . | indent 4 }}
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ template "baseserver.httpPort" . }}
+    targetPort: {{ template "baseserver.httpPort" . }}
+  selector:
+{{ include "baseserver.select-labels" . | indent 8 }}
+
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "baseserver.grpcServiceName" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "baseserver.grpcServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "baseserver.httpServiceName" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "baseserver.httpServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "baseserver.fullname" . }}
+  labels:
+{{ include "baseserver.labels" . | indent 4 }}
+data:
+  baseserver-config.yml: |
+    app:
+      name: baseserver
+      version: v1.0
+      isDev: false
+      logLevel: {{ .Values.baseserver.app.logLevel }}
+    server:
+      http:
+        addr: 0.0.0.0:9001
+        timeout: 60s
+      grpc:
+        addr: 0.0.0.0:9002
+        timeout: 60s
+    data:
+      database:
+        driver: mysql
+        source: root:root@tcp({{ include "mysql.serviceAddr" . }})/octopus?charset=utf8&parseTime=True&loc=Local
+      kubernetes:
+        masterUrl: ""
+        configPath: ""
+      pipeline:
+        baseUrl: {{ include "taskset-core.serviceAddr" . }}
+        token: KLtmMug9BDvvRjlg
+      minio:
+        base:
+          endPoint: {{ include "minio.serviceAddr" . }}
+          accessKeyID: {{ .Values.baseserver.data.minio.base.accessKeyID }}
+          secretAccessKey: {{ .Values.baseserver.data.minio.base.secretAccessKey }}
+          useSSL: {{ .Values.baseserver.data.minio.base.useSSL }}
+          mountPath: {{ .Values.baseserver.data.minio.base.mountPath }}
+          pvcName: octopus-minio-pvc
+          proxyPath: /oss
+        business:
+          downloadExpiry: 86400
+          uploadExpiry: 86400
+      harbor:
+        host: {{ .Values.baseserver.data.harbor.host }}
+        username: {{ .Values.baseserver.data.harbor.username }}
+        password: {{ .Values.baseserver.data.harbor.password }}
+        apiVersion: {{ .Values.baseserver.data.harbor.apiVersion }}
+        useSSL: {{ .Values.baseserver.data.harbor.useSSL }}
+      redis:
+        addr: {{ include "redis.serviceAddr" . }}
+        username: {{ .Values.baseserver.data.redis.username }}
+        password: {{ .Values.baseserver.data.redis.password }}
+    service:
+      nfsRootPath: /octopus-storage
+      baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
+      dockerDatasetPath: /dataset
+      dockerCodePath:  /code
+      dockerModelPath: /model
+      resourceLabelKey: {{ .Values.common.resourceTagKey }}
+      billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
+      develop:
+        jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
+        autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
+      resource:
+        customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
+        customizedResourceBindingNodeLabelValue: bound
+        defaultPoolName: common-pool
+        poolInfoStoreKey: ResourcePoolInfo
+        poolBindingNodeLabelKeyFormat: openi.octopus.resourcepool.%s
+        poolBindingNodeLabelValue: bound
+        poolSelectLabelKey: platform
+        poolSelectLabelValue: openi.octopus
+        discoveryLeaderLeaseLockName: resourcediscovery
+        discoveryDuration: 15s
+        ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+    administrator:
+      username: {{ .Values.baseserver.administrator.username }}
+      password:  "{{ .Values.baseserver.administrator.password }}"
+      email: {{ .Values.baseserver.administrator.email }}
+      phone: {{ .Values.baseserver.administrator.phone }}
+    module:
+      storage:
+        source:
+          capacity: "{{ .Values.pvc.minio.requests }}"
+{{ toYaml .Values.pv.minio.storageType | indent 10 }}
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "baseserver.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+{{ include "baseserver.select-labels" . | indent 8 }}
+  replicas: {{ .Values.baseserver.replicas }}
+  template:
+    metadata:
+      labels:
+{{ include "baseserver.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "baseserver.fullname" . }}-grpc
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: baseserver-config
+        configMap:
+          name: {{ template "baseserver.fullname" . }}
+      - name: mino-pvc
+        persistentVolumeClaim:
+          claimName: octopus-minio-pvc
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.baseserver.image.name }}:{{ default .Chart.AppVersion .Values.baseserver.image.tag }}"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        args: [ "-conf", "/etc/baseserver/baseserver-config.yml" ]
+        volumeMounts:
+          - name: localtime
+            mountPath: /etc/localtime
+          - name: docker-socket
+            mountPath: /var/run/docker.sock
+          - name: baseserver-config
+            mountPath: /etc/baseserver
+          - name: mino-pvc
+            mountPath: {{ .Values.baseserver.data.minio.base.mountPath }}
+        env:
+          - name: K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        ports:
+        - name: "basehttpport"
+          containerPort: {{ template "baseserver.httpPort" . }}
+        - name: "basegrpcport"
+          containerPort: {{ template "baseserver.grpcPort" . }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.global.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

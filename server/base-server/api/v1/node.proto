@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+service NodeService {
+  rpc ListNode(google.protobuf.Empty) returns (NodeList);
+}
+
+message Node {
+  string name = 1;
+  string ip = 2;
+  string status = 3;
+  repeated string resourcePools = 4;
+  map<string,string> capacity = 5;
+  map<string,string> allocated = 6;
+}
+
+message NodeList {
+  repeated Node nodes = 1;
+}

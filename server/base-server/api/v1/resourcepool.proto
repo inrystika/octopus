@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+service ResourcePoolService {
+  rpc ListResourcePool(google.protobuf.Empty) returns (ResourcePoolList);
+  rpc CreateResourcePool(CreateResourcePoolRequest) returns (ResourcePoolReply);
+  rpc UpdateResourcePool(UpdateResourcePoolRequest) returns (ResourcePoolReply);
+  rpc DeleteResourcePool(DeleteResourcePoolRequest) returns (ResourcePoolReply);
+  rpc GetResourcePool(GetResourcePoolRequest) returns (GetResourcePoolReply);
+  rpc GetDefaultResourcePool(google.protobuf.Empty) returns (GetResourcePoolReply);
+}
+
+message ResourceSpecIdList {
+  repeated string resourceSpecIds = 1;
+}
+
+message ResourcePool {
+  string id = 1;
+  string name = 2;
+  string desc = 3;
+  bool default = 4;
+  repeated string bindingNodes = 5;
+  map<string,ResourceSpecIdList> mapResourceSpecIdList = 6;
+}
+
+message ResourcePoolList {
+  repeated ResourcePool resourcePools = 1;
+}
+
+message CreateResourcePoolRequest {
+  string name = 1 [(validate.rules).string = {
+                    pattern:   "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$",
+                    max_len: 30,
+                  }];
+  string desc = 2 [(validate.rules).string = {max_len: 300}];
+  repeated string bindingNodes = 3;
+  map<string,ResourceSpecIdList> mapResourceSpecIdList = 4;
+}
+
+message UpdateResourcePoolRequest {
+  string id = 1;
+  string desc = 2 [(validate.rules).string = {max_len: 300}];
+  repeated string bindingNodes = 3;
+  map<string,ResourceSpecIdList> mapResourceSpecIdList = 4;
+}
+
+message DeleteResourcePoolRequest {
+  string id = 1;
+}
+
+message ResourcePoolReply {
+  string id = 1;
+}
+
+message GetResourcePoolRequest {
+  string id = 1;
+}
+
+message GetResourcePoolReply {
+  ResourcePool resourcePool = 1;
+}

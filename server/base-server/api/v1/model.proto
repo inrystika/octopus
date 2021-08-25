@@ -1,0 +1,331 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service Model {
+  // 查询预置模型列表
+  rpc ListPreModel (ListPreModelRequest) returns (ListPreModelReply);
+  // 查询我的模型列表
+  rpc ListMyModel (ListMyModelRequest) returns (ListMyModelReply);
+  // 查询公共模型列表
+  rpc ListCommModel (ListCommModelRequest) returns (ListCommModelReply);
+  // 查询所有用户模型列表
+  rpc ListAllUserModel (ListAllUserModelRequest) returns (ListAllUserModelReply);
+
+  // 查询模型版本列表
+  rpc ListModelVersion (ListModelVersionRequest) returns (ListModelVersionReply);
+  // 查询公共模型版本列表
+  rpc ListCommModelVersion (ListCommModelVersionRequest) returns (ListCommModelVersionReply);
+
+  // 查询模型详情
+  rpc QueryModel (QueryModelRequest) returns (QueryModelReply);
+  // 查询模型版本详情
+  rpc QueryModelVersion (QueryModelVersionRequest) returns (QueryModelVersionReply);
+
+	// 分享模型版本到公共模型
+	rpc ShareModelVersion(ShareModelVersionRequest) returns (ShareModelVersionReply);
+	// 取消分享模型版本到公共模型
+	rpc CloseShareModelVersion(CloseShareModelVersionRequest) returns (CloseShareModelVersionReply);
+	// 取消分享模型到公共模型
+	rpc CloseShareModel(CloseShareModelRequest) returns (CloseShareModelReply);
+	// 取消分享模型版本到所有公共模型
+	rpc AllCloseShareModelVersion(AllCloseShareModelVersionRequest) returns (AllCloseShareModelVersionReply);
+	// 取消分享模型到所有公共模型
+	rpc AllCloseShareModel(AllCloseShareModelRequest) returns (AllCloseShareModelReply);
+
+  // 新增我的模型
+	rpc AddMyModel(AddMyModelRequest) returns (AddMyModelReply);
+  // 新增预置模型
+	rpc AddPreModel(AddPreModelRequest) returns (AddPreModelReply);
+  // 新增预置模型版本
+	rpc AddPreModelVersion(AddPreModelVersionRequest) returns (AddPreModelVersionReply);
+  // 上传预置模型版本
+	rpc UploadPreModelVersion(UploadPreModelVersionRequest) returns (UploadPreModelVersionReply);
+  // 上传预置模型版本确认
+	rpc ConfirmUploadPreModelVersion(ConfirmUploadPreModelVersionRequest) returns (ConfirmUploadPreModelVersionReply);
+
+  // 删除我的模型版本
+  rpc DeleteMyModelVersion (DeleteMyModelVersionRequest) returns (DeleteMyModelVersionReply);
+  // 删除我的模型
+  rpc DeleteMyModel (DeleteMyModelRequest) returns (DeleteMyModelReply);
+  // 删除预置模型版本
+  rpc DeletePreModelVersion (DeletePreModelVersionRequest) returns (DeletePreModelVersionReply);
+  // 删除预置模型
+  rpc DeletePreModel (DeletePreModelRequest) returns (DeletePreModelReply);
+
+  // 下载模型版本
+  rpc DownloadModelVersion (DownloadModelVersionRequest) returns (DownloadModelVersionReply);
+  // 模型版本预览
+  rpc ListModelVersionFile (ListModelVersionFileRequest) returns (ListModelVersionFileReply);
+}
+
+message ModelDetail {
+  string modelId = 1;
+  string spaceId = 2;
+  string userId = 3;
+  string algorithmId = 4;
+  string algorithmVersion = 5;
+  string modelName = 6;
+  string modelDescript = 7;
+  string latestVersion = 8;
+  bool isPrefab = 9;
+  int64 createdAt = 10;
+}
+
+message VersionDetail {
+  string modelId = 1;
+  string version = 2;
+  string descript = 3;
+  int32 fileStatus = 4; // 0:初始态,1:文件上传中,2:文件已上传,3:文件上传失败
+  int64 createdAt = 5;
+}
+
+message ListPreModelRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+  string searchKey = 3[(validate.rules).string = {max_len:512}];
+}
+message ListPreModelReply {
+  int64 totalSize = 1;
+  repeated ModelDetail models = 2;
+}
+
+message ListMyModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  int64 pageIndex = 3;
+  int64 pageSize = 4[(validate.rules).int64 = {lt:100}];
+  string searchKey = 5[(validate.rules).string = {max_len:512}];
+}
+message ListMyModelReply {
+  int64 totalSize = 1;
+  repeated ModelDetail models = 2;
+}
+
+message ListCommModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  int64 pageIndex = 2;
+  int64 pageSize = 3[(validate.rules).int64 = {lt:100}];
+  string searchKey = 4[(validate.rules).string = {max_len:512}];
+}
+message ListCommModelReply {
+  int64 totalSize = 1;
+  repeated ModelDetail models = 2;
+}
+
+message ListAllUserModelRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+  string searchKey = 3[(validate.rules).string = {max_len:512}];
+}
+message ListAllUserModelReply {
+  int64 totalSize = 1;
+  repeated ModelDetail models = 2;
+}
+
+message ListModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  int64 pageIndex = 2;
+  int64 pageSize = 3[(validate.rules).int64 = {lt:100}];
+}
+message ListModelVersionReply {
+  int64 totalSize = 1;
+  repeated VersionDetail modelVersions = 2;
+}
+
+message ListCommModelVersionRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string modelId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  int64 pageIndex = 3;
+  int64 pageSize = 4[(validate.rules).int64 = {lt:100}];
+}
+message ListCommModelVersionReply {
+  int64 totalSize = 1;
+  repeated VersionDetail modelVersions = 2;
+}
+
+message QueryModelRequest {
+  string modelId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message QueryModelReply {
+  ModelDetail model = 1;
+}
+
+message QueryModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message QueryModelVersionReply {
+  ModelDetail model = 1;
+  VersionDetail modelVersion = 2;
+}
+
+message ShareModelVersionRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  repeated string shareSpaceIdList = 5[(validate.rules).repeated = {min_items:1}];
+}
+message ShareModelVersionReply {
+  int64 sharedAt = 1;
+}
+
+message CloseShareModelVersionRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  repeated string shareSpaceIdList = 5[(validate.rules).repeated = {min_items:1}];
+}
+message CloseShareModelVersionReply {
+  int64 closeSharedAt = 1;
+}
+
+message CloseShareModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  repeated string shareSpaceIdList = 4[(validate.rules).repeated = {min_items:1}];
+}
+message CloseShareModelReply {
+  int64 closeSharedAt = 1;
+}
+
+message AllCloseShareModelVersionRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message AllCloseShareModelVersionReply {
+  int64 closeSharedAt = 1;
+}
+
+message AllCloseShareModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message AllCloseShareModelReply {
+  int64 closeSharedAt = 1;
+}
+
+message AddMyModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmVersion = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string filePath = 5[(validate.rules).string = {min_len:1}];
+}
+message AddMyModelReply {
+  string modelId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message AddPreModelRequest {
+  string modelDescript  = 1[(validate.rules).string = {max_len:128}];
+  string algorithmId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmVersion = 3[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message AddPreModelReply {
+  string modelId = 1;
+  string version = 2;
+  string uploadUrl = 3;
+  int64 createdAt = 4;
+}
+
+message AddPreModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string descript  = 2[(validate.rules).string = {max_len:128}];
+}
+message AddPreModelVersionReply {
+  string modelId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message UploadPreModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string fileName = 3[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+  string domain = 4[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+message UploadPreModelVersionReply {
+  string uploadUrl = 1;
+}
+
+message ConfirmUploadPreModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string fileName = 3[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+}
+message ConfirmUploadPreModelVersionReply {
+  int64 updatedAt = 1;
+}
+
+message DeleteMyModelVersionRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message DeleteMyModelVersionReply {
+  int64 deletedAt = 1;
+}
+
+message DeleteMyModelRequest {
+  string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
+  string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string modelId = 3[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message DeleteMyModelReply {
+  int64 deletedAt = 1;
+}
+
+message DeletePreModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2}]; 
+}
+message DeletePreModelVersionReply {
+  int64 deletedAt = 1;
+}
+
+message DeletePreModelRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message DeletePreModelReply {
+  int64 deletedAt = 1;
+}
+
+message DownloadModelVersionRequest {
+  string modelId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string domain = 3[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+message DownloadModelVersionReply {
+  string downloadUrl = 1; 
+}
+
+message ModelInfo {
+	string name = 1;
+	int64 lastModified = 2;
+	int64 size = 3;        
+	string contentType = 4;
+}
+
+message ListModelVersionFileRequest {
+  string modelId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string Prefix = 3;
+}
+message ListModelVersionFileReply {
+  repeated ModelInfo modelInfoList = 1; 
+}

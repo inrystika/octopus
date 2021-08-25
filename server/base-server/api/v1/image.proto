@@ -1,0 +1,255 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service Image {
+  // 查询预置镜像列表
+  rpc ListPreImage (ListPreImageRequest) returns (ListPreImageReply);
+  // 查询用户镜像列表
+  rpc ListUserImage (ListUserImageRequest) returns (ListUserImageReply);
+  // 查询公共镜像列表
+  rpc ListCommImage (ListCommImageRequest) returns (ListCommImageReply);
+  // 分享镜像到公共镜像
+  rpc ShareImage (ShareImageRequest) returns (ShareImageReply);
+  // 取消分享镜像到公共镜像
+  rpc CloseShareImage (CloseShareImageRequest) returns (CloseShareImageReply);
+  // 新增镜像
+  rpc AddImage (AddImageRequest) returns (AddImageReply);
+  // 删除镜像
+  rpc DeleteImage (DeleteImageRequest) returns (DeleteImageReply);
+  // 更新镜像
+  rpc UpdateImage (UpdateImageRequest) returns (UpdateImageReply);
+  // 镜像上传确认
+  rpc ConfirmUploadImage (ConfirmUploadImageRequest) returns (ConfirmUploadImageReply);
+  // 获取镜像上传地址
+  rpc GetImageUploadUrl (GetImageUploadUrlRequest) returns (GetImageUploadUrlReply);
+  // 获取镜像详情
+  rpc FindImage (FindImageRequest) returns (FindImageReply);
+  // 条件疲劳查询
+  rpc ListImageInCond (ListImageInCondRequest) returns (ListImageInCondReply);
+  // 条件镜像范围查询
+  rpc ListImageAccessInCond (ListImageAccessInCondRequest) returns (ListImageAccessInCondReply);
+}
+
+enum ImageType
+{
+    IMAGE_TYPE_PLACEHOLDER = 0;
+    IMAGE_TYPE_NOTEBOOK    = 1;
+    IMAGE_TYPE_TRAINING    = 2;
+}
+
+enum ImageSourceType
+{
+    IMAGE_SOURCE_TYPE_PLACEHOLDER = 0;
+    IMAGE_SOURCE_TYPE_UPLOADED    = 1;
+    IMAGE_SOURCE_TYPE_REMOTE      = 2;
+}
+
+enum ImageIsPrefab
+{
+    IMAGE_IS_PREFAB_PLACEHOLDER = 0;
+    IMAGE_IS_PREFAB_YES         = 1;
+    IMAGE_IS_PREFAB_NO          = 2;
+}
+
+enum ImageStatus
+{
+    IMAGE_STATUS_PLACEHOLDER     = 0;
+    IMAGE_STATUS_NO_MADE         = 1;
+    IMAGE_STATUS_MAKING          = 2;
+    IMAGE_STATUS_MADE            = 3;
+    IMAGE_STATUS_MADE_FAILED     = 4;
+}
+
+message ImageDetail {
+  string    id = 1;
+  string    imageName = 2;
+  ImageType imageType = 3;
+  string    imageDesc = 4;
+  string    imageVersion = 5;
+  ImageSourceType sourceType = 6;
+  string    spaceId = 7;
+  string    userId = 8;
+  ImageIsPrefab   isPrefab = 9;
+  int64     createdAt = 10;
+  int64     updatedAt = 11;
+  ImageStatus     imageStatus = 12;
+  string    imageAddr = 13;
+}
+
+message ImageAccess {
+  string    imageId = 1;
+  string    spaceId = 2;
+  string    userId = 3;
+}
+
+message FindImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message FindImageReply {
+  ImageDetail image = 1;
+  string      imageFullAddr = 2;
+  repeated    ImageAccess accesses = 3;
+}
+
+message ListImageInCondRequest {
+  repeated string ids = 1;
+}
+
+message ListImageInCondReply {
+  repeated ImageDetail images = 1;
+}
+
+message ListPreImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageVersion = 5[(validate.rules).string = {max_len: 50}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  ImageType imageType = 7 [(validate.rules).enum = {defined_only: true}];
+  ImageSourceType sourceType = 8 [(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 9 [(validate.rules).enum = {defined_only: true}];
+  string searchKey = 10 [(validate.rules).string = {max_len: 50}];
+}
+
+message ListPreImageReply {
+  int64 totalSize = 1;
+  repeated ImageDetail images = 2;
+}
+
+message ListUserImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageVersion = 5[(validate.rules).string = {max_len: 50}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  string userId = 7[(validate.rules).string = {max_len: 36}];
+  string spaceId = 8[(validate.rules).string = {max_len: 36}];
+  ImageType imageType = 9[(validate.rules).enum = {defined_only: true}];
+  ImageSourceType sourceType = 10[(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 11[(validate.rules).enum = {defined_only: true}];
+  string searchKey = 12[(validate.rules).string = {max_len: 50}];
+}
+
+message ListUserImageReply {
+  int64 totalSize = 1;
+  repeated ImageDetail images = 2;
+}
+
+message ListCommImageRequest {
+  uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string imageVersion = 5[(validate.rules).string = {max_len: 50}];
+  string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
+  string spaceId = 7[(validate.rules).string = {max_len: 36}];
+  ImageType imageType = 8[(validate.rules).enum = {defined_only: true}];
+  ImageSourceType sourceType = 9[(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 10[(validate.rules).enum = {defined_only: true}];
+  string searchKey = 11[(validate.rules).string = {max_len: 50}];
+}
+
+message ListCommImageReply {
+  int64 totalSize = 1;
+  repeated ImageDetail images = 2;
+}
+
+message ShareImageRequest {
+  string spaceId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string imageId = 2[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string userId = 3[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message ShareImageReply {
+  int64 sharedAt = 1;
+}
+
+message CloseShareImageRequest {
+  string spaceId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string ImageId = 2[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string userId = 3[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message CloseShareImageReply {
+  int64 closeSharedAt = 1;
+}
+
+message AddImageRequest {
+  string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1,max_len: 50}];
+  ImageType imageType = 2[(validate.rules).enum = {in: [1,2]}];
+  string imageDesc = 3;
+  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", min_len: 1, max_len: 50}];
+  ImageSourceType sourceType = 5[(validate.rules).enum = {in: [1,2]}];
+  string spaceId = 6[(validate.rules).string = {max_len: 36}];
+  string userId = 7[(validate.rules).string = {max_len: 36}];
+  ImageIsPrefab isPrefab = 8[(validate.rules).enum = {in: [1,2]}];
+  string imageAddr = 9[(validate.rules).string = {max_len: 254}];
+}
+
+message AddImageReply {
+  string imageId = 1;
+  int64  createdAt = 2;
+}
+
+message DeleteImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message DeleteImageReply {
+  int64 deletedAt = 1;
+}
+
+message UpdateImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string imageName = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len: 50}];
+  ImageType imageType = 3[(validate.rules).enum = {defined_only: true}];
+  string imageDesc = 4;
+  string imageVersion = 5[(validate.rules).string = {pattern: "^[a-zA-Z0-9][\\w|\\-|\\.]*$", max_len: 50}];
+  string imageAddr = 6[(validate.rules).string = {max_len: 254}];
+  // ImageSourceType sourceType = 6;
+  // string spaceId = 7;
+  // string userId = 8;
+  // ImageIsPrefab isPrefab = 9;
+
+}
+message UpdateImageReply {
+  int64 updatedAt = 1;
+}
+
+message GetImageUploadUrlRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string fileName = 2[(validate.rules).string = {min_len: 1, max_len: 50}];
+  string domain = 3[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+
+message GetImageUploadUrlReply {
+  string uploadUrl = 1;
+}
+
+message ConfirmUploadImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message ConfirmUploadImageReply {
+  int64 updatedAt = 1;
+}
+
+message ListImageAccessInCondRequest {
+  repeated string imageIds = 1;
+  string spaceId = 2;
+  string userId = 3;
+}
+
+message ListImageAccessInCondReply {
+  repeated    ImageAccess accesses = 1;
+}

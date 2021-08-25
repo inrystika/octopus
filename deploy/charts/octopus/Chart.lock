@@ -1,0 +1,15 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.5.9
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 14.3.2
+- name: minio
+  repository: https://charts.bitnami.com/bitnami
+  version: 6.7.16
+- name: nginx-ingress-controller
+  repository: https://charts.bitnami.com/bitnami
+  version: 7.6.9
+digest: sha256:2ed3b97bc0f2f470508372a0d68181c79a7d5533cbbf23f8a72b43426a8bd316
+generated: "2021-06-07T16:49:20.238863502+08:00"

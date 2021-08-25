@@ -1,0 +1,270 @@
+<template>
+    <div>
+        <el-dialog 
+          :title="flag==='user'?'添加用户':'添加群组'" 
+          width="35%" 
+          :visible.sync="CreateFormVisible"
+          :before-close="handleDialogClose" :close-on-click-modal="false"
+        >
+            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                <el-form-item v-if="user" label="用户邮箱" :label-width="formLabelWidth" prop="email">
+                    <el-input v-model="ruleForm.email"></el-input>
+                </el-form-item>
+                <el-form-item v-if="user" label="用户密码" :label-width="formLabelWidth" prop="password">
+                    <el-input v-model="ruleForm.password" type="password"></el-input>
+                </el-form-item>
+                <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
+                    <el-input v-model="ruleForm.confirm" type="password"></el-input>
+                </el-form-item>
+                <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
+                    <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
+                    <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
+                </el-form-item> -->
+                <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
+                    <el-input v-model="ruleForm.name"></el-input>
+                </el-form-item>
+                <el-form-item v-if="group" label="用户列表" :label-width="formLabelWidth" prop="userIds">
+                    <el-select v-model="ruleForm.userIds" placeholder="请选择用户列表" multiple v-loadmore='loadUser'>
+                        <el-option v-for="item in userOptions" :key="item.id" :label="item.fullName + ' ' + item.email"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item v-if="group" label="资源池" :label-width="formLabelWidth" prop="resourcePoolId">
+                    <el-select v-model="ruleForm.resourcePoolId" placeholder="请选择资源池">
+                        <el-option v-for="item in resourceOptions" :key="item.id" :label="item.name" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item v-if="user" label="姓名" :label-width="formLabelWidth" prop="fullname">
+                    <el-input v-model="ruleForm.fullname"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="confirm">确 定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    import { createUser, createGroup, getUserList } from '@/api/userManager.js'
+    import { getResourcePool } from '@/api/resourceManager.js'
+    import { getErrorMsg } from '@/error/index'
+    export default {
+        name: "createDialog",
+        props: {
+            flag: {
+                type: String
+            }
+        },
+        data() {
+            // 邮箱类型验证
+            var checkEmail = (rule, value, callback) => {
+                const regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if (regEmail.test(value)) {
+                    return callback();
+                }
+                callback(new Error("请输入合法的邮箱地址"));
+            }
+
+            return {
+                fileList: [],
+                ruleForm: {
+                    fullname: '',
+                    password: '',
+                    confirm: '',
+        
+                    resourcePoolId: '',
+                    name: '',
+                    userIds: [],
+                    email: undefined
+                },
+                CreateFormVisible: true,
+                user: false,
+                group: false,
+                rules: {
+                    fullname: [
+                        { required: true, message: '请输入用户名称', trigger: 'blur' },
+
+                    ],
+                    email: [
+                        { required: true, message: "请输入邮箱", trigger: "blur" },
+                        { validator: checkEmail, trigger: "blur" },
+
+                    ],
+                    password: [
+                        { required: true, message: '请输入密码', trigger: 'blur' },
+                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' }
+
+                    ],
+                    confirm: [
+                        { required: true, message: '请再次输入密码', trigger: 'blur' },
+
+                    ],
+                    name: [
+                        { required: true, message: '请输入用户名', trigger: 'blur' },
+
+                    ],
+                    userIds: [
+                        { required: true, message: '请选择用户列表', trigger: 'change' }
+                    ],
+                    resourcePoolId: [
+                        { required: true, message: '请选择资源池', trigger: 'change' }
+                    ]
+                },
+                formLabelWidth: '120px',
+                userOptions: [],
+                resourceOptions: [],
+                pageSize: 10,
+                userCount: 1,
+                total: undefined
+            }
+        },
+        directives: {
+            loadmore: {
+                inserted: function (el, binding) {
+                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
+                    SELECTWRAP_DOM.addEventListener('scroll', function () {
+                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
+                        if (CONDITION) {
+                            binding.value();
+                        }
+                    })
+                }
+            }
+        },
+        mounted() {
+            if (this.flag === 'user') {
+                this.user = true,
+                    this.group = false
+            }
+            else {
+                this.group = true,
+                    this.user = false,
+                    this.getResourcePool()
+                this.getUserList()
+            }
+
+        },
+        beforeDestroy() {
+            this.ruleForm = {}
+        },
+        methods: {
+            // 错误码
+            getErrorMsg(code) {
+                return getErrorMsg(code)
+            },
+            getUserList() {
+                getUserList({ pageSize: this.pageSize, pageIndex: this.userCount }).then(response => {
+                    if (response.success) {
+                        if (response.data != null && response.data.users != null) {
+                            this.userOptions = this.userOptions.concat(response.data.users)
+                            this.total = response.data.totalSize
+                        }
+                    }
+                    else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
+            getResourcePool() {
+                getResourcePool().then(response => {
+                    if (response.success) {
+                        if (response.data != null && response.data.resourcePools != null) {
+                            this.resourceOptions = response.data.resourcePools
+
+                        }
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+
+                })
+            },
+            cancel() {
+                this.$emit('cancel', false)
+
+            },
+            confirm() {
+
+                this.$refs['ruleForm'].validate((valid) => {
+                    if (valid) {
+                        if (this.ruleForm.confirm === this.ruleForm.password) {
+                            if (this.user) {
+                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1 }
+                                createUser(data).then(response => {
+                                    if (response.success === true) {
+                                        this.$message({
+                                            message: '新增用户成功',
+                                            type: 'success'
+                                        });
+                                        this.$emit('confirm', false)
+                                    }
+                                    else {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                    }
+
+                                })
+                            }
+                            else if (this.group) {
+                                const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
+                                createGroup(data).then(response => {
+                                    if (response.success === true) {
+                                        this.$message({
+                                            message: '新增群组成功',
+                                            type: 'success'
+                                        });
+                                        this.$emit('confirm', false)
+                                    }
+                                    else {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                            }
+
+                        }
+                        else {
+                            this.$message({
+                                message: '输入密码不一致!',
+                                type: 'warning'
+                            });
+                        }
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+
+
+
+
+            },
+            handleDialogClose() {
+                this.$emit('close', false)
+
+            },
+            loadUser() {
+                this.userCount = this.userCount + 1
+                if (this.userOptions.length < this.total) {
+                    this.getUserList()
+                }
+            }
+
+        }
+    }
+</script>
+<style lang="scss" scoped>
+</style>

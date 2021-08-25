@@ -1,0 +1,393 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service Algorithm {
+    // 查询预置算法列表
+    rpc ListPreAlgorithm (ListPreAlgorithmRequest) returns (ListPreAlgorithmReply);
+    // 查询我的算法列表
+    rpc ListMyAlgorithm (ListMyAlgorithmRequest) returns (ListMyAlgorithmReply);
+    // 查询公共算法列表
+    rpc ListCommAlgorithm (ListCommAlgorithmRequest) returns (ListCommAlgorithmReply);
+    // 查询所有用户算法列表
+    rpc ListAllUserAlgorithm (ListAllUserAlgorithmRequest) returns (ListAllUserAlgorithmReply);
+
+    // 批量查询算法
+    rpc BatchQueryAlgorithm(BatchQueryAlgorithmRequest) returns(BatchQueryAlgorithmReply);
+
+    // 查询算法版本列表
+    rpc ListAlgorithmVersion (ListAlgorithmVersionRequest) returns (ListAlgorithmVersionReply);
+    // 查询公共算法版本列表
+    rpc ListCommAlgorithmVersion (ListCommAlgorithmVersionRequest) returns (ListCommAlgorithmVersionReply);
+    
+    // 查询算法版本详情
+    rpc QueryAlgorithmVersion (QueryAlgorithmVersionRequest) returns (QueryAlgorithmVersionReply);
+
+    // 分享算法版本到公共算法
+    rpc ShareAlgorithmVersion(ShareAlgorithmVersionRequest) returns (ShareAlgorithmVersionReply);
+    // 取消分享算法版本到公共算法
+    rpc CloseShareAlgorithmVersion(CloseShareAlgorithmVersionRequest) returns (CloseShareAlgorithmVersionReply);
+    // 取消分享算法到公共算法
+    rpc CloseShareAlgorithm(CloseShareAlgorithmRequest) returns (CloseShareAlgorithmReply);
+    // 取消分享算法版本到所有公共算法
+    rpc AllCloseShareAlgorithmVersion(AllCloseShareAlgorithmVersionRequest) returns (AllCloseShareAlgorithmVersionReply);
+    // 取消分享算法到所有公共算法
+    rpc AllCloseShareAlgorithm(AllCloseShareAlgorithmRequest) returns (AllCloseShareAlgorithmReply);
+
+    // 新增算法
+    rpc AddAlgorithm(AddAlgorithmRequest) returns (AddAlgorithmReply);
+    // 上传算法
+    rpc UploadAlgorithm(UploadAlgorithmRequest) returns (UploadAlgorithmReply);
+    // 上传算法确认
+    rpc ConfirmUploadAlgorithm(ConfirmUploadAlgorithmRequest) returns (ConfirmUploadAlgorithmReply);
+
+    // 新增我的算法版本
+    rpc AddMyAlgorithmVersion(AddMyAlgorithmVersionRequest) returns (AddMyAlgorithmVersionReply);
+
+    // 复制算法版本
+    rpc CopyAlgorithmVersion(CopyAlgorithmVersionRequest) returns (CopyAlgorithmVersionReply);
+
+    // 删除我的算法版本
+    rpc DeleteMyAlgorithmVersion (DeleteMyAlgorithmVersionRequest) returns (DeleteMyAlgorithmVersionReply);
+    // 删除我的算法
+    rpc DeleteMyAlgorithm (DeleteMyAlgorithmRequest) returns (DeleteMyAlgorithmReply);
+    // 新增预置算法版本
+    rpc AddPreAlgorithmVersion(AddPreAlgorithmVersionRequest) returns (AddPreAlgorithmVersionReply);
+    // 删除预置算法版本
+    rpc DeletePreAlgorithmVersion (DeletePreAlgorithmVersionRequest) returns (DeletePreAlgorithmVersionReply);
+    // 删除预置算法
+    rpc DeletePreAlgorithm (DeletePreAlgorithmRequest) returns (DeletePreAlgorithmReply);
+
+    // 压缩算法包
+    rpc DownloadAlgorithmVersionCompress(DownloadAlgorithmVersionCompressRequest) returns (DownloadAlgorithmVersionCompressReply);
+    // 下载算法版本
+    rpc DownloadAlgorithmVersion (DownloadAlgorithmVersionRequest) returns (DownloadAlgorithmVersionReply);
+}
+
+message AlgorithmInfo {
+  string algorithmId = 1;
+  string algorithmName = 2;
+  int64 createdAt = 4;
+}
+
+message AlgorithmDetail {
+  string algorithmId = 1;
+  string algorithmVersion = 2;
+  string spaceId = 3;
+  string userId = 4;
+  string algorithmName = 5;
+  string modelName = 6;
+  int64 fileStatus = 7;
+  int64 latestCompressed = 8;
+  string algorithmDescript = 9;
+  string path = 10;
+  bool isPrefab = 11;
+  int64 createdAt = 12;
+}
+
+message ListPreAlgorithmRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2;
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
+  int64 fileStatus = 6;
+  string searchKey = 7[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 8;
+  int64 createdAtLt = 9;
+}
+message ListPreAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListMyAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  int64 pageIndex = 3;
+  int64 pageSize = 4;
+  string sortBy = 5[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 6[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 7[(validate.rules).string = {max_len: 50}];
+  int64 fileStatus = 8 ;
+  string searchKey = 9[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 10;
+  int64 createdAtLt = 11;
+}
+
+message ListMyAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListCommAlgorithmRequest {
+  string spaceId = 1;
+  int64 pageIndex = 2;
+  int64 pageSize = 3;
+  string sortBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 5[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 6[(validate.rules).string = {max_len: 50}];
+  int64 fileStatus = 7 ;
+  string searchKey = 8[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 9;
+  int64 createdAtLt = 10;
+}
+message ListCommAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListAllUserAlgorithmRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  string orderBy = 4[(validate.rules).string = {max_len: 20}];
+  string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
+  int64 fileStatus = 6 ;
+  string searchKey = 7[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 8;
+  int64 createdAtLt = 9;
+}
+message ListAllUserAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message BatchQueryAlgorithmRequest {
+  repeated string algorithmId = 1;
+}
+
+message BatchQueryAlgorithmReply {
+  int64 totalSize = 1;
+  repeated AlgorithmInfo algorithms = 2;
+}
+
+message ListAlgorithmVersionRequest {
+  string algorithmId = 1;
+  int64 pageIndex = 2;
+  int64 pageSize = 3;
+  int64 fileStatus = 4;
+}
+message ListAlgorithmVersionReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message ListCommAlgorithmVersionRequest {
+  string spaceId = 1;
+  string algorithmId = 2;
+  int64 pageIndex = 3;
+  int64 pageSize = 4;
+  int64 fileStatus = 5;
+}
+message ListCommAlgorithmVersionReply {
+  int64 totalSize = 1;
+  repeated AlgorithmDetail algorithms = 2;
+}
+
+message QueryAlgorithmVersionRequest {
+  string algorithmId = 1;
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message QueryAlgorithmVersionReply {
+  AlgorithmDetail algorithm = 1;
+  repeated AlgorithmVersionAccess versionAccesses = 2; 
+}
+message AlgorithmVersionAccess {
+  string algorithmId = 1;
+  string version = 2;
+  string spaceId = 3;
+}
+
+message ShareAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 13;
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  repeated string shareSpaceIdList = 5;
+}
+message ShareAlgorithmVersionReply {
+  int64 sharedAt = 1;
+}
+
+message CloseShareAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3;
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  repeated string shareSpaceIdList = 5;
+}
+message CloseShareAlgorithmVersionReply {
+  int64 closeSharedAt = 1;
+}
+
+message CloseShareAlgorithmRequest {
+  repeated string spaceIdList = 1;
+  string algorithmId = 2;
+}
+message CloseShareAlgorithmReply {
+  int64 closeSharedAt = 1;
+}
+
+message AllCloseShareAlgorithmVersionRequest {
+  string algorithmId = 1;
+  string version = 2;
+}
+message AllCloseShareAlgorithmVersionReply {
+  int64 closeSharedAt = 1;
+}
+
+message AllCloseShareAlgorithmRequest {
+  string algorithmId = 2;
+}
+message AllCloseShareAlgorithmReply {
+  int64 closeSharedAt = 1;
+}
+
+message AddAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  bool isPrefab = 3;
+  bool isEmpty = 4;
+  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 7;
+}
+message AddAlgorithmReply {
+  string algorithmId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message UploadAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string fileName = 5[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+  string domain = 6[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+
+message UploadAlgorithmReply {
+  string uploadUrl = 1;
+}
+
+message CopyAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3;
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string newAlgorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 7;
+}
+message CopyAlgorithmVersionReply {
+  string newAlgorithmId = 1;
+  string newVersion = 2;
+  int64 createdAt = 3;
+}
+
+message ConfirmUploadAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string fileName = 5[(validate.rules).string = {min_len:3,pattern:".*\\.zip+$"}];
+}
+message ConfirmUploadAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
+message AddMyAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string oriVersion = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 5;
+}
+message AddMyAlgorithmVersionReply {
+  string algorithmId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message AddPreAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmDescript = 4;
+}
+message AddPreAlgorithmVersionReply {
+  string algorithmId = 1;
+  string version = 2;
+  int64 createdAt = 3;
+}
+
+message AddPreAlgorithmRequest {
+  string algorithmId = 1;
+  string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript  = 3;
+}
+
+message AddPreAlgorithmReply {
+  string algorithmId = 1;
+  int64 createdAt = 2;
+}
+
+message DeleteMyAlgorithmVersionRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3; 
+  string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message DeleteMyAlgorithmVersionReply {
+  int64 deletedAt = 1;
+}
+
+message DeleteMyAlgorithmRequest {
+  string spaceId = 1;
+  string userId = 2;
+  string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message DeleteMyAlgorithmReply {
+  int64 deletedAt = 1;
+}
+
+message DeletePreAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message DeletePreAlgorithmVersionReply {
+  int64 deletedAt = 1;
+}
+
+message DeletePreAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+}
+message DeletePreAlgorithmReply {
+  int64 deletedAt = 1;
+}
+
+message DownloadAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  int64 compressAt = 3[(validate.rules).int64 = {gte:1}];
+  string domain = 4[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+}
+message DownloadAlgorithmVersionReply {
+  string downloadUrl = 1; 
+}
+
+message DownloadAlgorithmVersionCompressRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+}
+message DownloadAlgorithmVersionCompressReply {
+  int64 compressAt = 1; 
+}
