@@ -44,7 +44,7 @@ steps:
   #     - make base-server_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -52,7 +52,7 @@ steps:
       - make base-server_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -98,7 +98,7 @@ steps:
   #     - make admin-server_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -106,7 +106,7 @@ steps:
       - make admin-server_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -152,7 +152,7 @@ steps:
   #     - make openai-server_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -160,7 +160,7 @@ steps:
       - make openai-server_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -206,7 +206,7 @@ steps:
   #     - make taskset_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -214,7 +214,7 @@ steps:
       - make pipeline_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -260,7 +260,7 @@ steps:
   #     - make taskset_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -268,7 +268,7 @@ steps:
       - make vc-controller_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -314,7 +314,7 @@ steps:
   #     - make taskset_lint
 
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -322,7 +322,7 @@ steps:
       - make scheduler_image tag=${DRONE_TAG}
 
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -358,17 +358,12 @@ volumes:
   - name: dockeretc
     host:
       path: /etc/docker
-  - name: ssh
-    host:
-      path: /root/.ssh
 steps:
   - name: Chart构建
-    image: 192.168.202.110:5000/common_mirror/helm:3.5.4-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/helm:3.5.4-make
     volumes:
       - name: dockeretc
         path: /etc/docker
-      - name: ssh
-        path: /root/.ssh
     environment:
       HARBOR_HUB_HOST:
         from_secret: harbor_hub_host
@@ -407,14 +402,14 @@ volumes:
       path: /var/run/
 steps:
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
     commands:
       - make admin-portal_image tag=${DRONE_TAG}
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
@@ -452,14 +447,14 @@ volumes:
       path: /var/run/
 steps:
   - name: 构建镜像
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/
     commands:
       - make openai-portal_image tag=${DRONE_TAG}
   - name: 镜像推送
-    image: 192.168.202.110:5000/common_mirror/docker:20.10.6-make
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
     volumes:
       - name: docker
         path: /var/run/

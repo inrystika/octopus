@@ -1,4 +1,4 @@
-from 192.168.202.74:5000/common_mirror/kratos:v2 as builder
+from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
 WORKDIR /app
 COPY ./ ./
 
