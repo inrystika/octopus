@@ -42,6 +42,10 @@ LD_FLAGS=" \
     -X 'main.Built=${Date}'   \
     -X 'main.Version=${RELEASE_VER}'"
 
+define public_image_push_init
+	(echo ${PUBLIC_DOCKER_HUB_PASSWD} | docker login ${PUBLIC_DOCKER_HUB_HOST} -u ${PUBLIC_DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
+endef
+
 # 编译
 all_build: server_build
 
@@ -202,13 +206,11 @@ images_push: base-server_image_push admin-server_image_push openai-server_image_
 image_push_init:
 	(echo ${DOCKER_HUB_PASSWD} | docker login ${DOCKER_HUB_HOST} -u ${DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
 
-public_image_push_init:
-	(echo ${PUBLIC_DOCKER_HUB_PASSWD} | docker login ${PUBLIC_DOCKER_HUB_HOST} -u ${PUBLIC_DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
-
-base-server_image_push: image_push_init public_image_push_init
+base-server_image_push: image_push_init
 	docker tag base-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag base-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
 endif
@@ -220,10 +222,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-admin-server_image_push: image_push_init public_image_push_init
+admin-server_image_push: image_push_init
 	docker tag admin-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag admin-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
 endif
@@ -235,10 +238,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-openai-server_image_push: image_push_init public_image_push_init
+openai-server_image_push: image_push_init
 	docker tag openai-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag openai-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
 endif
@@ -252,10 +256,11 @@ endif
 
 taskset_image_push: pipeline_image_push vc-controller_image_push scheduler_image_push
 
-pipeline_image_push: image_push_init public_image_push_init
+pipeline_image_push: image_push_init
 	docker tag pipeline:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag pipeline:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
 endif
@@ -268,10 +273,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-vc-controller_image_push: image_push_init public_image_push_init
+vc-controller_image_push: image_push_init
 	docker tag vc-controller:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag vc-controller:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
 endif
@@ -283,10 +289,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-scheduler_image_push: image_push_init public_image_push_init
+scheduler_image_push: image_push_init
 	docker tag scheduler:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag scheduler:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
 endif
@@ -298,10 +305,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-admin-portal_image_push: image_push_init public_image_push_init
+admin-portal_image_push: image_push_init
 	docker tag admin-portal:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag admin-portal:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
 endif
@@ -313,10 +321,11 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-openai-portal_image_push: image_push_init public_image_push_init
+openai-portal_image_push: image_push_init
 	docker tag openai-portal:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
 ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+	$(public_image_push_init)
 	docker tag openai-portal:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
 	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
 endif
