@@ -214,10 +214,10 @@
             getResourceList() {
                 getResourceList().then(response => {
                     if (response.success) {
-                        if (this.system && response.data != null && response.data.resources !== null) {
+                        if (this.system && response.data !== null && response.data.resources !== null) {
                             this.tableData = response.data.resources.filter(item => item.resourceRef.length === 0)
                         }
-                        if (this.customize && response.data != null && response.data.resources !== null) {
+                        if (this.customize && response.data !== null && response.data.resources !== null) {
                             this.tableData = response.data.resources.filter(item => item.resourceRef.length !== 0)
                             this.resourceOption = response.data.resources.filter(item => item.resourceRef.length === 0)
 
@@ -239,7 +239,7 @@
             getNodeList() {
                 getNodeList().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.nodes != null) {
+                        if (response.data !== null && response.data.nodes !== null) {
                             this.nodeOption = response.data.nodes
                         }
                     }

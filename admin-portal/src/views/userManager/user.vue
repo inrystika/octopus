@@ -269,7 +269,7 @@
                     this.groupName = row.name
                     groupDetail(this.id).then(response => {
                         if (response.success) {
-                            if (response.data != null && response.data.users.length != 0) {
+                            if (response.data !== null && response.data.users.length !== 0) {
                                 this.detailData = response.data.users
                                 this.detailVisible = true
                             }

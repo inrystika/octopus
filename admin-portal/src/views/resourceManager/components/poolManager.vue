@@ -341,7 +341,7 @@
             getResourcePool() {
                 getResourcePool().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.resourcePools != null) {
+                        if (response.data !== null && response.data.resourcePools !== null) {
                             this.tableData = response.data.resourcePools
                             this.isLoading = false
                         }
@@ -359,7 +359,7 @@
             getNodeList() {
                 getNodeList().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.nodes != null) {
+                        if (response.data !== null && response.data.nodes !== null) {
                             this.nodeOption = response.data.nodes
                         }
                         else { this.nodeOption = [] }
@@ -376,7 +376,7 @@
             getResource() {
                 getResource().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.resourceSpecs != null) { this.resourceOption = response.data.resourceSpecs }
+                        if (response.data !== null && response.data.resourceSpecs !== null) { this.resourceOption = response.data.resourceSpecs }
                         else { this.resourceOption = [] }
                     }
                     else {

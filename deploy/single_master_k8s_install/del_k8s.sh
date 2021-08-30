@@ -6,7 +6,7 @@ fi
 
 echo -e "---------------------\033[31m del k8s components and docker \033[0m---------------------"
 
-del_k8s() {
+del_kube() {
   echo -e "---------------------\033[31m del k8s components \033[0m---------------------"
   kubeadm reset -f
   modprobe -r ipip
@@ -21,6 +21,9 @@ del_k8s() {
   rm -rf /var/etcd
   apt-get remove -y kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00
   rm -rf /etc/yum.repos.d/kubernetes.repo
+  rm -rf /opt/kube/bin/kubectl
+  rm -rf /opt/kube/bin/kubelet
+  rm -rf /opt/kube/bin/kube-proxy
   echo -e "---------------------\033[31m k8s components del success \033[0m---------------------"
 }
 
@@ -32,6 +35,8 @@ del_docker() {
   rm -rf /etc/systemd/system/docker.service.d
   rm -rf /var/lib/docker
   rm -rf /etc/docker
+  rm -rf /usr/bin/docker
+  rm -rf /opt/kube/bin/docker
   echo -e "---------------------\033[31m docker del success \033[0m---------------------"
 }
 

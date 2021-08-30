@@ -75,14 +75,7 @@ install_docker() {
     if [[ $? -eq 0 ]];then
         echo -e "---------------------\033[31m docker installed \033[0m---------------------"
     else
-        tee -a /etc/apt/sources.list <<EOF
-            # kubeadm及kubernetes组件安装源
-            deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
-EOF
         set -e
-        cd $bash_path
-        cat apt-key.gpg | sudo apt-key add -
-        sudo apt-get update
         sudo apt-get install -y \
             apt-transport-https \
             ca-certificates \
@@ -92,8 +85,9 @@ EOF
             software-properties-common
 
         curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+        arch=`dpkg --print-architecture`
         sudo add-apt-repository \
-            "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu \
+            "deb [arch=$arch] http://mirrors.aliyun.com/docker-ce/linux/ubuntu \
             $(lsb_release -cs) \
             stable"
 
@@ -105,6 +99,7 @@ EOF
             * ) exit ;;
             esac
 
+        sudo systemctl restart docker
         echo -e "---------------------\033[31m docker install success \033[0m---------------------"
     fi
 }
@@ -139,6 +134,12 @@ EOF
 # 安装k8s工具
 set_repo() {
     set -e
+    tee -a /etc/apt/sources.list <<EOF
+        # kubeadm及kubernetes组件安装源
+        deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
+EOF
+    cd $bash_path
+    cat apt-key.gpg | sudo apt-key add -
     echo -e "---------------------\033[31m install kubelet、kubeadm、kubectl \033[0m---------------------"
     sudo apt-get update -y && apt-get install -y --allow-unauthenticated kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00 
     cat <<EOF | sudo tee /etc/sysconfig/kubelet
