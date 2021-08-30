@@ -67,3 +67,7 @@ run:
   skip-files:                     
     - go.mod
     - go.sum
+    - resource.go
+    - resourcepool.go
+    - resourcespec.go
+    - node.go
