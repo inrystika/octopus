@@ -6,8 +6,7 @@
 
 ---
 
-**Octopus** is a one-stop computing fusion platform for multiple computing scenarios.
-The platform is mainly designed for the needs of computing and resource management in AI, HPC and other scenarios. It provides users with computing power management and use functions for data, algorithms, mirroring, models, and computing power, which is convenient for users to build a one-stop shop Computing environment, realizing calculation.
+**Octopus** is a one-stop computing fusion platform for multiple computing scenarios. the platform is mainly designed for the needs of computing and resource management in AI, HPC and other scenarios. It provides users with computing power management and use functions for data, algorithms, mirroring, models, and computing power, which is convenient for users to build a one-stop shop Computing environment, realizing calculation.
 At the same time, cluster management personnel are provided with functions such as cluster resource management and monitoring, computing task management and monitoring, etc., to facilitate cluster management personnel to operate and analyze the overall system.
 
 **Octopus** is based on the container orchestration platform [Kubernetes](https://kubernetes.io/zh/docs/concepts/overview/what-is-kubernetes) , octopus makes full use of the agility, light weight, and isolation of containers to meet the needs of diverse computing scenarios.
