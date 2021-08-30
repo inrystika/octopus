@@ -96,7 +96,7 @@ module.exports = {
       })
       .end()
     config
-      .when(process.env.NODE_ENV != 'development',
+      .when(process.env.NODE_ENV !== 'development',
         config => {
           config
             .plugin('ScriptExtHtmlWebpackPlugin')

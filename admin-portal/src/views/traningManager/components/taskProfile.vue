@@ -122,7 +122,7 @@
                         }
                         if (item.replicaStates.length > 1) {
 
-                            item.replicaStates = item.replicaStates.map((item, index) => { return { name: item.key, status: item.state, isChildren: true, id: index } })
+                            item.replicaStates = item.replicaStates.map((item, index) => { return { name: item.key, status: item.state, isChildren: true, id: index+item.key } })
                         }
                         else {
                             item.replicaStates = []

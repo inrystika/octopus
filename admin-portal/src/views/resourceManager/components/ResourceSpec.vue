@@ -211,7 +211,7 @@
             getResource() {
                 getResource({ pageSize: this.pageSize, pageIndex: this.pageIndex }).then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.resourceSpecs != null) {
+                        if (response.data !== null && response.data.resourceSpecs !== null) {
                             response.data.resourceSpecs.forEach(
                                 item => {
                                     item.resourceQuantity = JSON.stringify(item.resourceQuantity).replace(/\"/g, '').replace(/\{|}/g, '')
@@ -242,7 +242,7 @@
             getResourceList() {
                 getResourceList().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.resources != null) {
+                        if (response.data !== null && response.data.resources !== null) {
                             this.options = response.data.resources
                         }
                     }

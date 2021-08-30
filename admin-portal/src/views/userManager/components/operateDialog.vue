@@ -146,7 +146,7 @@
                 )
                 getResourcePool().then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.resourcePools != null) {
+                        if (response.data !== null && response.data.resourcePools !== null) {
                             this.resourceOptions = response.data.resourcePools
 
                         }
@@ -236,7 +236,7 @@
             },
             getUserList() {
                 getUserList({ pageSize: this.pageSize, pageIndex: this.userCount }).then(response => {
-                    if (response.data != null && response.data.users != null && response.data.users.length) {
+                    if (response.data !== null && response.data.users !== null && response.data.users.length) {
                         this.userOptions = this.userOptions.concat(response.data.users)
                         this.userCount = this.userCount + 1
                         this.getUserList()

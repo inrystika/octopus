@@ -9,8 +9,8 @@ resources: {}
 global:
   image:
     repository:
-      address: "192.168.202.110:5000"
-      pathname: "/octopus"
+      address: "swr.cn-south-1.myhuaweicloud.com"
+      pathname: "/openioctopus"
     pullPolicy: IfNotPresent
   nodeSelector:
     octopus.openi.pcl.cn/node: "server"

@@ -108,7 +108,7 @@
                     for (let key2 in val.capacity) {
                         if (key1 === key2) {
                             let percentage
-                            if (val.allocated[key1] === 0) { percentage: 0 }
+                            if (parseInt(val.allocated[key1]) === 0) { percentage: 0 }
                             else if ((/^\d+$/.test(val.allocated[key1])) && (/^\d+$/.test(val.capacity[key1]))) {
                                 percentage = val.allocated[key1] / val.capacity[key1] * 100
                                 percentage = parseFloat(percentage.toFixed(2))
@@ -128,7 +128,7 @@
             getNodeList(val) {
                 getNodeList(val).then(response => {
                     if (response.success) {
-                        if (response.data != null && response.data.nodes != null) {
+                        if (response.data !== null && response.data.nodes !== null) {
                             response.data.nodes.forEach(
                                 item => {
                                     if (item.resourcePools !== null) {
