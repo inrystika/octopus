@@ -64,7 +64,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make base-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make base-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -110,7 +110,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make admin-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make admin-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -156,7 +156,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make openai-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make openai-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -202,7 +202,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make pipeline_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make pipeline_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -248,7 +248,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make vc-controller_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make vc-controller_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -294,7 +294,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make scheduler_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make scheduler_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -336,7 +336,7 @@ steps:
       CHARTS_GIT_USER_EMAIL:
         from_secret: charts_git_user_email
     commands:
-      - make charts drone_repo=${DRONE_REPO} tag=${DRONE_TAG} harbor_hub_project=${DOCKER_HUB_PROJECT} harbor_hub_host=$HARBOR_HUB_HOST harbor_hub_userame=$HARBOR_HUB_USERNAME harbor_hub_passwd=$HARBOR_HUB_PASSWD harbor_hub_ca_file=$HARBOR_HUB_CA_FILE HARBOR_HUB_CERT_FILE=$HARBOR_HUB_CERT_FILE charts_git_clone=$CHARTS_GIT_CLONE charts_git_raw=$CHARTS_GIT_RAW charts_git_user_name=$CHARTS_GIT_USER_NAME charts_git_user_email=$CHARTS_GIT_USER_EMAIL
+      - make charts drone_repo=${DRONE_REPO} tag=${DRONE_TAG} harbor_hub_project=$DOCKER_HUB_PROJECT harbor_hub_host=$HARBOR_HUB_HOST harbor_hub_userame=$HARBOR_HUB_USERNAME harbor_hub_passwd=$HARBOR_HUB_PASSWD harbor_hub_ca_file=$HARBOR_HUB_CA_FILE HARBOR_HUB_CERT_FILE=$HARBOR_HUB_CERT_FILE charts_git_clone=$CHARTS_GIT_CLONE charts_git_raw=$CHARTS_GIT_RAW charts_git_user_name=$CHARTS_GIT_USER_NAME charts_git_user_email=$CHARTS_GIT_USER_EMAIL
 
 ---
 kind: pipeline
@@ -373,7 +373,7 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make admin-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make admin-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
 
 ---
 kind: pipeline
@@ -410,4 +410,4 @@ steps:
       DOCKER_HUB_PASSWD:
         from_secret: docker_hub_passwd
     commands:
-      - make openai-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=${DOCKER_HUB_PROJECT} docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+      - make openai-portal_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
