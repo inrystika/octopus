@@ -24,27 +24,20 @@ HARBOR_HUB_CERT_FILE=$(harbor_hub_cert_file)
 NEED_LATEST=$(need_latest)
 
 
-RELEASE_REGULAR="^v[0-9]\+.[0-9]\+.[0-9]\+$$"
 CHARTS_GIT_DIR=./tmp/gitcharts
 CHARTS_GIT_CLONE=$(charts_git_clone)
 CHARTS_GIT_RAW=$(charts_git_raw)
 CHARTS_GIT_USER_NAME=$(charts_git_user_name)
 CHARTS_GIT_USER_EMAIL=$(charts_git_user_email)
 
-PUBLIC_DOCKER_HUB_HOST=$(public_docker_hub_host)
-PUBLIC_DOCKER_HUB_PROJECT=$(public_docker_hub_project)
-PUBLIC_DOCKER_HUB_USERNAME=$(public_docker_hub_userame)
-PUBLIC_DOCKER_HUB_PASSWD=$(public_docker_hub_passwd)
+DRONE_REPO=$(drone_repo)
+
 
 # 静态变量
 Date=`date "+%Y-%m-%d %H:%M:%S"`
 LD_FLAGS=" \
     -X 'main.Built=${Date}'   \
     -X 'main.Version=${RELEASE_VER}'"
-
-define public_image_push_init
-	(echo ${PUBLIC_DOCKER_HUB_PASSWD} | docker login ${PUBLIC_DOCKER_HUB_HOST} -u ${PUBLIC_DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
-endef
 
 # 编译
 all_build: server_build
@@ -209,11 +202,6 @@ image_push_init:
 base-server_image_push: image_push_init
 	docker tag base-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag base-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/base-server:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -225,11 +213,6 @@ endif
 admin-server_image_push: image_push_init
 	docker tag admin-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag admin-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-server:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -241,11 +224,6 @@ endif
 openai-server_image_push: image_push_init
 	docker tag openai-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag openai-server:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-server:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -259,11 +237,6 @@ taskset_image_push: pipeline_image_push vc-controller_image_push scheduler_image
 pipeline_image_push: image_push_init
 	docker tag pipeline:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag pipeline:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
-endif
 
 
 ifneq (${RELEASE_VER}, latest)
@@ -276,11 +249,6 @@ endif
 vc-controller_image_push: image_push_init
 	docker tag vc-controller:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag vc-controller:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -292,11 +260,6 @@ endif
 scheduler_image_push: image_push_init
 	docker tag scheduler:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag scheduler:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/scheduler:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -308,11 +271,6 @@ endif
 admin-portal_image_push: image_push_init
 	docker tag admin-portal:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag admin-portal:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/admin-portal:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -324,11 +282,6 @@ endif
 openai-portal_image_push: image_push_init
 	docker tag openai-portal:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
-	$(public_image_push_init)
-	docker tag openai-portal:${RELEASE_VER} ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
-	docker push ${PUBLIC_DOCKER_HUB_HOST}/${PUBLIC_DOCKER_HUB_PROJECT}/openai-portal:${RELEASE_VER}
-endif
 
 ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
@@ -346,9 +299,11 @@ charts_build:
 	helm package ./deploy/charts/octopus --dependency-update --version ${RELEASE_VER} --app-version ${RELEASE_VER} -d ./tmp/charts
 
 charts_push:
+ifneq (${DRONE_REPO}, OpenI/octopus)
 	-helm repo add --ca-file=${HARBOR_HUB_CA_FILE} --cert-file=${HARBOR_HUB_CERT_FILE} --username=${HARBOR_HUB_USERNAME} --password=${HARBOR_HUB_PASSWD} chartrepo ${HARBOR_HUB_HOST}/chartrepo/${HARBOR_HUB_PROJECT}
 	helm push --ca-file=${HARBOR_HUB_CA_FILE} --cert-file=${HARBOR_HUB_CERT_FILE} --username=${HARBOR_HUB_USERNAME} --password=${HARBOR_HUB_PASSWD} ./tmp/charts/octopus-${RELEASE_VER}.tgz chartrepo
-ifneq ($(shell echo ${RELEASE_VER} | grep ${RELEASE_REGULAR}),)
+endif
+ifeq (${DRONE_REPO}, OpenI/octopus)
 	git clone ${CHARTS_GIT_CLONE} ${CHARTS_GIT_DIR}
 	cp ./tmp/charts/octopus-${RELEASE_VER}.tgz ${CHARTS_GIT_DIR}
 	helm repo index ${CHARTS_GIT_DIR} --url ${CHARTS_GIT_RAW}
