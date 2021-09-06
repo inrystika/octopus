@@ -67,7 +67,7 @@
         <!-- 数据集三级框 -->
         <div>
           <el-form-item label="数据集类型" prop="dataSetSource" :class="{inline:dataSetName}">
-            <el-select v-model="ruleForm.dataSetSource" @change="changedataSetSource" placeholder="请选择">
+            <el-select v-model="ruleForm.dataSetSource" @change="changedataSetSource" clearable placeholder="请选择">
               <el-option label="我的数据集" value="my"></el-option>
               <el-option label="预置数据集" value="pre"></el-option>
               <el-option label="公共数据集" value="common"></el-option>
