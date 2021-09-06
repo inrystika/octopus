@@ -7,13 +7,12 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  // timeout: 5000 // request timeout
-  headers: {
-    onUploadProgress: function(progressEvent) {
-      // 处理上传进度事件
-      console.log('progressEvent====>', progressEvent)
-    }
+  // timeout: 5000 // request timeout   
+  onUploadProgress: function(progress) {
+    // 处理上传进度事件
+    console.log(Math.round(progress.loaded / progress.total * 100) + '%')
   }
+
 })
 
 // request interceptor
@@ -21,12 +20,12 @@ service.interceptors.request.use(
   config => {
     // do something before request is sent
     // if (store.getters.token) {
-      // let each request carry token
-      // ['X-Token'] is a custom headers key
-      // please modify it according to the actual situation
-      // if(!config.MinIO){
-        // config.headers['Authorization'] = 'Bearer ' + getToken()
-      // }
+    // let each request carry token
+    // ['X-Token'] is a custom headers key
+    // please modify it according to the actual situation
+    // if(!config.MinIO){
+    // config.headers['Authorization'] = 'Bearer ' + getToken()
+    // }
     // }
     return config
   },
@@ -52,8 +51,8 @@ service.interceptors.response.use(
 
   response => {
 
-      // res = response.data
-      // res.data = response.data.payload
+    // res = response.data
+    // res.data = response.data.payload
 
     return response
     // if the custom code is not 20000, it is judged as an error.
