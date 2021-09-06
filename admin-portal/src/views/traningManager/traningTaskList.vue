@@ -201,8 +201,8 @@
             },
             getTraining(data) {
                 if (data.time && data.time.length !== 0) {
-                    data.createdAtGte = data.time[0] / 1000
-                    data.createdAtLt = data.time[1] / 1000
+                    data.createAtGte = data.time[0] / 1000
+                    data.createAtLt = data.time[1] / 1000
                     delete data.time
                 }
                 getTraining(data).then(response => {

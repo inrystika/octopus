@@ -340,7 +340,8 @@ export default {
       this.imageName = true
       this.imageCount = 1
       this.imageNameOption = [],
-      this.ruleForm.imageItem = ''
+      this.ruleForm.imageId = ''
+      this.imageChange = true
       this.getImageNameList()
     },
     getImageNameList() {
@@ -377,9 +378,7 @@ export default {
     },
     loadImageName() {
       this.imageCount = this.imageCount + 1
-      if (this.imageNameOption.length < this.imageNameTotal) {
-        this.getImageNameList()
-      }
+      this.getImageNameList()
     },
     // 数据集三级对话框
     changedataSetSource() {
