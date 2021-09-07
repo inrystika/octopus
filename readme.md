@@ -10,6 +10,10 @@
 
 **Octopus**平台底层基于容器编排平台[Kubernetes](https://kubernetes.io/zh/docs/concepts/overview/what-is-kubernetes) ，充分利用容器敏捷、轻量、隔离等特点来实现计算场景多样性的需求。
 
+## 文档
+
+详细文档请参考[这里](https://octopus.openi.org.cn/docs/introduction/intro)。
+
 ## 特点与场景
 
 Octopus具有如下特点：
@@ -42,24 +46,20 @@ Octopus 为集群用户和管理员提供端到端的手册。
 
 与集群管理员相关的文档包括如下：
 
-- ***集群部署指南***: 此部分主要提供的内容包括：集群依赖环境与组件的准备与安装、Octopus系统部署指南以及后续系统的升级说明等，以方便安装维护。详细内容请参考[这里](https://octopus.pcl.ac.cn/docs/deployment/environment) 。
+- ***集群部署指南***: 此部分主要提供的内容包括：集群依赖环境与组件的准备与安装、Octopus系统部署指南以及后续系统的升级说明等，以方便安装维护。详细内容请参考[这里](https://octopus.openi.org.cn/docs/deployment/environment) 。
 
-- ***集群管理手册***: 此部分主要介绍集群管理员通过管理系统页面入口进入Octopus管理系统后可进行的操作，主要功能说明包括：平台监控、资源管理、用户管理、机时管理、数据管理、算法管理以及开发与训练管理等功能。详细内容请参考[这里](https://octopus.pcl.ac.cn/docs/management/intro) 。
+- ***集群管理手册***: 此部分主要介绍集群管理员通过管理系统页面入口进入Octopus管理系统后可进行的操作，主要功能说明包括：平台监控、资源管理、用户管理、机时管理、数据管理、算法管理以及开发与训练管理等功能。详细内容请参考[这里](https://octopus.openi.org.cn/docs/management/intro) 。
 
 ### 对于集群用户
 
 与集群用户相关的文档主要如下：
 
-- ***用户使用手册***： 此部分主要介绍集群用户通过Octopus系统页面入口进入Octopus系统后可进行的操作，主要功能说明包括：数据管理、算法管理、镜像管理以及开发与训练管理等功能。详细内容请参考[这里](https://octopus.pcl.ac.cn/docs/manual/intro) 。
-
-## 文档
-
-详细文档请参考[这里](https:///octopus.pcl.ac.cn/docs/introduction/intro)。
+- ***用户使用手册***： 此部分主要介绍集群用户通过Octopus系统页面入口进入Octopus系统后可进行的操作，主要功能说明包括：数据管理、算法管理、镜像管理以及开发与训练管理等功能。详细内容请参考[这里](https://octopus.openi.org.cn/docs/manual/intro) 。
 
 ## 如何贡献
 
-详细贡献指南请参考[这里](https://octopus.pcl.ac.cn/docs/community/contribution) 。
+详细贡献指南请参考[这里](https://octopus.openi.org.cn/docs/community/contribution) 。
 
 ## License
 
-[Apache License](https://octopus.pcl.ac.cn/docs/community/LICENSE)
+[Apache License](https://octopus.openi.org.cn/docs/community/LICENSE)
