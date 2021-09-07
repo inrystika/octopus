@@ -311,6 +311,6 @@
   }
 
   .progress {
-    margin: 5px 0px;
+    margin: 2px 0px;
   }
 </style>
