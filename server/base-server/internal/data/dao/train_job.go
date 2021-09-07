@@ -129,7 +129,14 @@ func (d *trainJobDao) GetTrainJobList(ctx context.Context, query *model.TrainJob
 		params = append(params, query.Ids)
 	}
 
-	db = db.Where(querySql, params...)
+	if query.UserNameLike != "" {
+		joinSql := "INNER JOIN user ON train_job.user_id = user.id"
+		querySql += " and user.full_name like ?"
+		params = append(params, query.UserNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	} else {
+		db = db.Where(querySql, params...)
+	}
 
 	var totalSize int64
 	res := db.Model(&model.TrainJob{}).Count(&totalSize)
@@ -141,7 +148,7 @@ func (d *trainJobDao) GetTrainJobList(ctx context.Context, query *model.TrainJob
 		db = db.Limit(query.PageSize).Offset((query.PageIndex - 1) * query.PageSize)
 	}
 
-	sortBy := "created_at"
+	sortBy := "train_job.created_at"
 	orderBy := "desc"
 	if query.SortBy != "" {
 		sortBy = utils.CamelToSnake(query.SortBy)
