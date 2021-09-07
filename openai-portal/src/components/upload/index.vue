@@ -67,7 +67,6 @@
           this.loadingShow = true
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
-            this.$store.commit('user/CLEAR_PROGRESS')
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               const param = {
                 uploadUrl: response.data.uploadUrl,
@@ -99,7 +98,6 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
-            this.$store.commit('user/CLEAR_PROGRESS')
             uploadMyDataset(param).then(response => {
               if (response.success) {
                 const param = {
@@ -141,7 +139,6 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
-            this.$store.commit('user/CLEAR_PROGRESS')
             uploadMyAlgorithm(param).then(response => {
               if (response.success) {
                 const param = {
@@ -183,7 +180,6 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
-            this.$store.commit('user/CLEAR_PROGRESS')
             uploadNewVersion(param).then(response => {
               if (response.success) {
                 const param = {

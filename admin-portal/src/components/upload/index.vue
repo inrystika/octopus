@@ -14,6 +14,7 @@
       <div class="tipText">{{ this.tipText }}</div>
     </el-upload>
     <el-button :loading="loadingShow" size="small" v-if="!showUpload" type="primary">上传中</el-button>
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress"  status="success" class="progress" v-if="progress!='0'&&progress!='100'"></el-progress>
     <div slot="footer" v-if="show" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -27,6 +28,7 @@
   import { uploadModel, modelFinishUpload } from '@/api/modelManager.js'
   import { minIO } from '@/utils/minIO'
   import { getErrorMsg } from '@/error/index'
+  import { mapGetters } from 'vuex'
   export default {
     props: {
       uploadData: {
@@ -45,6 +47,11 @@
         accept:"application/zip",
         tipText: '上传文件格式为 zip'
       }
+    },
+    computed: {
+      ...mapGetters([
+        'progress'
+      ])
     },
     created(){
       if (this.uploadData.type === "imageManager") {
@@ -411,4 +418,5 @@
     margin-left:10px;
     font-size:12px
   }
+  .progress{margin: 5px 0px;}
 </style>

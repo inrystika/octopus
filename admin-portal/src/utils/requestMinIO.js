@@ -1,11 +1,15 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
-
+import store from '@/store'
 // create an axios instance
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
   // timeout: 5000 // request timeout
+  onUploadProgress: function(progress) {
+    // 处理上传进度事件
+    store.commit('user/SET_PROGRESS', (progress.loaded / progress.total).toFixed(1) * 100)
+  }
 })
 
 // request interceptor
