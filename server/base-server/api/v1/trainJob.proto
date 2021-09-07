@@ -216,6 +216,7 @@ message TrainJob{
   string imageName = 20;
   string dataSetName = 21;
   int64  startedAt = 22;
+  string initInfo = 23;
 }
 
 

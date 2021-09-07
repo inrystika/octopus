@@ -795,5 +795,12 @@ func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRe
 	notebook.CreatedAt = notebookTbl.CreatedAt.Unix()
 	notebook.UpdatedAt = notebookTbl.UpdatedAt.Unix()
 
+	//pipeline获取job最新任务信息
+	info, err := s.data.Pipeline.GetJobDetail(ctx, notebookTbl.NotebookJobId)
+	if err != nil {
+		return nil, err
+	}
+	notebook.InitInfo = info.Job.ExitDiagnostics
+
 	return &api.GetNotebookReply{Notebook: notebook}, nil
 }
