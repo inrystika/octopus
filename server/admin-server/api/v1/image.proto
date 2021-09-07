@@ -110,6 +110,8 @@ message ListUserImageRequest {
   int32 imageStatus = 11[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
   string imageVersion = 12[(validate.rules).string = {max_len: 50}];
   string searchKey = 13[(validate.rules).string = {max_len: 50}];
+  string userNameLike = 14[(validate.rules).string = {max_len: 50}];
+  string spaceNameLike = 15[(validate.rules).string = {max_len: 50}];
 }
 
 message ListUserImageReply {

@@ -163,6 +163,7 @@ message TrainJobListRequest{
   string searchKey = 8; //name等模糊查找
   string userId = 9;
   string workspaceId =10;
+  string userNameLike = 11;
 }
 
 message TrainJobListReply {
@@ -215,6 +216,7 @@ message TrainJob{
   string imageName = 20;
   string dataSetName = 21;
   int64  startedAt = 22;
+  string initInfo = 23;
 }
 
 

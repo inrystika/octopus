@@ -109,6 +109,7 @@ type TrainJobListQuery struct {
 	CreatedAtLt  int64
 	Status       string
 	SearchKey    string
+	UserNameLike string
 	UserId       string
 	WorkspaceId  string
 	Ids          []string

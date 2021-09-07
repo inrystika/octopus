@@ -306,6 +306,8 @@ message TrainJob{
   string imageVersion = 21;
   //启动时间
   int64  startedAt = 22;
+  //启动信息
+  string initInfo = 23;
 }
 
 message TrainJobTemplate{

@@ -146,3 +146,29 @@ func (s *DevelopService) ListNotebook(ctx context.Context, req *api.ListNotebook
 
 	return reply, nil
 }
+
+func (s *DevelopService) QueryNotebook(ctx context.Context, req *api.QueryNotebookRequest) (*api.QueryNotebookReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+	innerReq := &innerapi.GetNotebookRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DevelopClient.GetNotebook(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.QueryNotebookReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
