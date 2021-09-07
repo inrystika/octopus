@@ -154,6 +154,8 @@ message TrainJobListRequest {
   string userId = 9;
   //工作空间ID，非必填
   string workspaceId = 10;
+  //用户名，非必填
+  string userNameLike = 11;
 }
 
 message TrainJobListReply {
