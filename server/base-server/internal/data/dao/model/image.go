@@ -58,6 +58,8 @@ type ImageList struct {
 	Status        int32
 	UserId        string
 	SpaceId       string
+	UserNameLike  string
+	SpaceNameLike string
 	ImageType     int32
 	SourceType    int32
 	SearchKey     string
@@ -153,6 +155,36 @@ func (i ImageList) Pagination(db *gorm.DB) *gorm.DB {
 		pageSize = int(i.PageSize)
 	}
 	db = db.Limit(pageSize).Offset((pageIndex - 1) * pageSize)
+	return db
+}
+
+func (i ImageList) JoinUser(db *gorm.DB) *gorm.DB {
+
+	joinSql := "INNER JOIN user ON image.user_id = user.id"
+	querySql := "image.deleted_at = 0"
+	params := make([]interface{}, 0)
+
+	if i.UserNameLike != "" {
+		querySql += " and user.full_name like ?"
+		params = append(params, i.UserNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	}
+
+	return db
+}
+
+func (i ImageList) JoinWorkspace(db *gorm.DB) *gorm.DB {
+
+	joinSql := "INNER JOIN workspace ON image.space_id = workspace.id"
+	querySql := "image.deleted_at = 0"
+	params := make([]interface{}, 0)
+
+	if i.SpaceNameLike != "" {
+		querySql += " and workspace.name like ?"
+		params = append(params, i.SpaceNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	}
+
 	return db
 }
 
