@@ -7,12 +7,11 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  // timeout: 5000 // request timeout   
+  // timeout: 5000 // request timeout
   onUploadProgress: function(progress) {
     // 处理上传进度事件
-    console.log(Math.round(progress.loaded / progress.total * 100) + '%')
+    store.commit('user/SET_PROGRESS', (progress.loaded / progress.total).toFixed(1) * 100)
   }
-
 })
 
 // request interceptor
