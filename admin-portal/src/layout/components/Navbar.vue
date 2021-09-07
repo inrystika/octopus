@@ -6,7 +6,7 @@
       <el-row class="demo-avatar demo-basic">
         <el-dropdown>
           <i class="el-icon-document" style="color:#666699;"></i>
-          <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual">管理手册</a>
+          <a href="https://octopus.openi.org.cn/docs/management/intro" target="_blank" class="manual">管理手册</a>
           <i class="el-icon-service" style="color:#666699 ;"></i>
           <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual">问题意见</a>
           <el-dropdown-menu slot="dropdown">
