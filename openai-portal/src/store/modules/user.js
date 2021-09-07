@@ -41,6 +41,9 @@ const mutations = {
   },
   SET_PROGRESS: (state, progress) => {
     state.progress = progress
+  },
+  CLEAR_PROGRESS: (state) => {
+    state.progress = 0
   }
 }
 
