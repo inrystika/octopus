@@ -546,7 +546,7 @@
             },
             getAlgorithmNameList(searchKey) {
                 if (this.ruleForm.algorithmSource === 'my') {
-                    getMyAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getMyAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             this.algorithmNameOption = response.data.algorithms
                         }
@@ -561,7 +561,7 @@
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'pre') {
-                    getPresetAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getPresetAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             this.algorithmNameOption = response.data.algorithms
                         }
@@ -574,7 +574,7 @@
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'common') {
-                    getPublicAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getPublicAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             this.algorithmNameOption = response.data.algorithms
                         }
@@ -622,7 +622,7 @@
             },
             getImageNameList(searchKey) {
                 if (this.ruleForm.imageSource === 'my') {
-                    getMyImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, searchKey: searchKey }).then(response => {
+                    getMyImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             let data = response.data.images;
                             let tableData = [];
@@ -646,7 +646,7 @@
                     })
                 }
                 if (this.ruleForm.imageSource === 'pre') {
-                    getPreImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, searchKey: searchKey }).then(response => {
+                    getPreImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             this.imageNameOption = response.data.images
                         }
@@ -657,7 +657,7 @@
                     })
                 }
                 if (this.ruleForm.imageSource === 'common') {
-                    getPublicImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, searchKey: searchKey }).then(response => {
+                    getPublicImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
                         if (searchKey && searchKey.length != 0) {
                             this.imageNameOption = response.data.images
                         }
@@ -694,7 +694,7 @@
             },
             getDataSetNameList(searchKey) {
                 if (this.ruleForm.dataSetSource === 'my') {
-                    getMyDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getMyDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }
@@ -710,7 +710,7 @@
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'pre') {
-                    getPresetDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getPresetDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }
@@ -723,7 +723,7 @@
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'common') {
-                    getPublicDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, searchKey: searchKey }).then(response => {
+                    getPublicDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }

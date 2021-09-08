@@ -132,6 +132,7 @@ export default {
       algorithmList: [],
       searchForm: [
         { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+        { type: 'Input', label: '算法名称', prop: 'nameLike', placeholder: '请输入算法名称' },
       ],
       searchData: {
         pageIndex: 1,
@@ -218,7 +219,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     confirmDelete(row){
-      this.$confirm('是否删除此算法？','提示',{
+      this.$confirm('此操作将永久删除此算法(如该算法已分享，则分享算法也将被删除)，是否继续','提示',{
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',

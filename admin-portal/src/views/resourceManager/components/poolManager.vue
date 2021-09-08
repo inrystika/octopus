@@ -12,17 +12,17 @@
         >
             <el-table-column label="资源池名称" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                    <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="默认资源池" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.default?'是':'否' }}</span>
+                    <span>{{ scope.row.default?'是':'否' }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="描述" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.desc }}</span>
+                    <span>{{ scope.row.desc }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="节点列表" align="center" show-overflow-tooltip>
@@ -236,6 +236,9 @@
                 this.ruleForm.mapResourceSpecIdList.debug = []
                 this.ruleForm.mapResourceSpecIdList.deploy = []
                 this.ruleForm.mapResourceSpecIdList.train = []
+                if(val.mapResourceSpecIdList.debug.resourceSpecIds===null){val.mapResourceSpecIdList.debug.resourceSpecIds=[]}
+                if(val.mapResourceSpecIdList.deploy.resourceSpecIds===null){val.mapResourceSpecIdList.deploy.resourceSpecIds=[]}
+                if(val.mapResourceSpecIdList.train.resourceSpecIds===null){val.mapResourceSpecIdList.train.resourceSpecIds=[]}
                 val.mapResourceSpecIdList.debug.resourceSpecIds.forEach(item => {
                     this.resourceOption.forEach(Item => {
                         if (item === Item.id) {

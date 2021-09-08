@@ -90,6 +90,7 @@
         typeChange: undefined,
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'Input', label: '数据集名称', prop: 'nameLike', placeholder: '请输入数据集名称' }
         ],
         searchData: {
           pageIndex: 1,

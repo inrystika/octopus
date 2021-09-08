@@ -12,6 +12,7 @@ export function judgeParam(params) {
   params.status ? conditions.push(`status=` + params.status) : null;
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
+  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   return conditions
 }
 

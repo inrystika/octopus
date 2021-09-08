@@ -310,7 +310,6 @@
     font-size: 12px
   }
 
-  .progress {
-    margin: 2px 0px;
-  }
+  .progress{margin: 5px 0px 10px 0px;}
+  .dialog-footer{margin-top: 10px;}
 </style>
