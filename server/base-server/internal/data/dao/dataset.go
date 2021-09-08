@@ -91,6 +91,11 @@ func (d *datasetDao) ListDataset(ctx context.Context, query *model.DatasetQuery)
 		params = append(params, "%"+query.SearchKey+"%")
 	}
 
+	if query.NameLike != "" {
+		querySql += " and name like ?"
+		params = append(params, "%"+query.NameLike+"%")
+	}
+
 	if query.UserId != "" {
 		querySql += " and user_id = ? "
 		params = append(params, query.UserId)
@@ -167,6 +172,11 @@ func (d *datasetDao) ListCommDataset(ctx context.Context, query *model.CommDatas
 	if query.SearchKey != "" {
 		querySql += " and dataset.name like ?"
 		params = append(params, "%"+query.SearchKey+"%")
+	}
+
+	if query.NameLike != "" {
+		querySql += " and dataset.name like ?"
+		params = append(params, "%"+query.NameLike+"%")
 	}
 
 	if query.UserId != "" {

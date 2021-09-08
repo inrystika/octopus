@@ -126,6 +126,7 @@ message ListPreDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListPreDatasetReply {
@@ -141,6 +142,7 @@ message ListMyDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListMyDatasetReply {
@@ -156,6 +158,7 @@ message ListCommDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListCommDatasetReply {

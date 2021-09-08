@@ -75,6 +75,7 @@ type DatasetQuery struct {
 	SourceType   int
 	Ids          []string
 	Name         string
+	NameLike     string
 }
 
 type CommDatasetQuery struct {
@@ -85,6 +86,7 @@ type CommDatasetQuery struct {
 	CreatedAtGte int64
 	CreatedAtLt  int64
 	SearchKey    string
+	NameLike     string
 	UserId       string
 	SpaceId      string
 	ShareSpaceId string

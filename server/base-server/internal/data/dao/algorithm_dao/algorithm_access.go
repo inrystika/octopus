@@ -44,6 +44,11 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		params = append(params, "%"+req.SearchKey+"%")
 	}
 
+	if req.NameLike != "" {
+		querySql += " and algorithm_name like ? "
+		params = append(params, "%"+req.NameLike+"%")
+	}
+
 	db = db.Where(querySql, params...)
 
 	var totalSize int64

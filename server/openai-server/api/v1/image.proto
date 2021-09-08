@@ -103,6 +103,7 @@ message ListPreImageRequest {
   int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
   string imageVersion = 10[(validate.rules).string = {max_len: 50}];
   string searchKey = 11[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 12[(validate.rules).string = {max_len: 50}];
 }
 
 message ListPreImageReply {
@@ -122,6 +123,7 @@ message ListUserImageRequest {
   int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
   string imageVersion = 10[(validate.rules).string = {max_len: 50}];
   string searchKey = 11[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 12[(validate.rules).string = {max_len: 50}];
 }
 
 message ListUserImageReply {
@@ -142,6 +144,7 @@ message ListCommImageRequest {
   int32 imageStatus = 10[(validate.rules).int32 = {in: [1,2,3,4], ignore_empty: true}];
   string imageVersion = 11[(validate.rules).string = {max_len: 50}];
   string searchKey = 12[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 13[(validate.rules).string = {max_len: 50}];
 }
 
 message ListCommImageReply {
