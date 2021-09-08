@@ -60,6 +60,7 @@ type ImageList struct {
 	SpaceId       string
 	UserNameLike  string
 	SpaceNameLike string
+	NameVerLike   string
 	ImageType     int32
 	SourceType    int32
 	SearchKey     string
@@ -121,6 +122,10 @@ func (i ImageList) Or(db *gorm.DB) *gorm.DB {
 	if i.SearchKey != "" {
 		searchKeyLike := "%" + i.SearchKey + "%"
 		db = db.Where("image_name like ? or image_version like ? or image_desc like ?", searchKeyLike, searchKeyLike, searchKeyLike)
+	}
+	if i.NameVerLike != "" {
+		nameVerLike := "%" + i.NameVerLike + "%"
+		db = db.Where("image_name like ? or image_version like ?", nameVerLike, nameVerLike)
 	}
 	return db
 }
@@ -253,6 +258,7 @@ type ImageAccessList struct {
 	ImageNameLike string
 	ImageName     string
 	ImageVersion  string
+	NameVerLike   string
 	IsPrefab      int32
 	Status        int32
 	UserId        string
@@ -320,6 +326,12 @@ func (i ImageAccessList) JoinImageAccess(db *gorm.DB) *gorm.DB {
 		params = append(params, searchKeyLike, searchKeyLike, searchKeyLike)
 	}
 
+	if i.NameVerLike != "" {
+		querySql += " and (image.image_name like ? or image.image_version like ?)"
+		nameVerLike := "%" + i.NameVerLike + "%"
+		params = append(params, nameVerLike, nameVerLike)
+	}
+
 	return db.Joins(joinSql).Where(querySql, params...)
 }
 
@@ -379,6 +391,12 @@ func (i ImageAccessList) JoinImage(db *gorm.DB) *gorm.DB {
 		querySql += " and image.image_name like ? or image.image_version like ? or image.image_desc like ?"
 		searchKeyLike := "%" + i.SearchKey + "%"
 		params = append(params, searchKeyLike, searchKeyLike, searchKeyLike)
+	}
+
+	if i.NameVerLike != "" {
+		querySql += " and (image.image_name like ? or image.image_version like ?)"
+		nameVerLike := "%" + i.NameVerLike + "%"
+		params = append(params, nameVerLike, nameVerLike)
 	}
 
 	return db.Joins(joinSql).Where(querySql, params...)
