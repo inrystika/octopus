@@ -255,8 +255,7 @@ func (s *ImageService) ShareImage(ctx context.Context, req *pb.ShareImageRequest
 }
 
 func (s *ImageService) CloseShareImage(ctx context.Context, req *pb.CloseShareImageRequest) (*pb.CloseShareImageReply, error) {
-	_, err := s.data.ImageDao.DeleteImageAccess(ctx, &model.ImageAccessDel{
-		Id:      utils.GetUUIDWithoutSeparator(),
+	err := s.data.ImageDao.DeleteImageAccess(ctx, &model.ImageAccessDel{
 		SpaceId: req.SpaceId,
 		ImageId: req.ImageId,
 		UserId:  req.UserId,
@@ -330,6 +329,12 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 func (s *ImageService) DeleteImage(ctx context.Context, req *pb.DeleteImageRequest) (*pb.DeleteImageReply, error) {
 	_, err := s.data.ImageDao.Delete(ctx, &model.ImageDel{
 		Id: req.ImageId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.ImageDao.DeleteImageAccess(ctx, &model.ImageAccessDel{
+		ImageId: req.ImageId,
 	})
 	if err != nil {
 		return nil, err

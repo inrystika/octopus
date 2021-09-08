@@ -21,7 +21,7 @@ type ImageDao interface {
 	ListImageAccess(ctx context.Context, condition *model.ImageAccessList) ([]*model.ImageAccess, error)
 	CountImageByAccess(ctx context.Context, condition *model.ImageAccessList) (int64, error)
 	ListImageByAccess(ctx context.Context, condition *model.ImageAccessList) ([]*model.Image, error)
-	DeleteImageAccess(ctx context.Context, image *model.ImageAccessDel) (*model.ImageAccess, error)
+	DeleteImageAccess(ctx context.Context, image *model.ImageAccessDel) error
 	CountImageAccess(ctx context.Context, condition *model.ImageAccessList) (int64, error)
 	ListIn(ctx context.Context, condition *model.ImageListIn) ([]*model.Image, error)
 	ListImageAccessIn(ctx context.Context, condition *model.ImageAccessListIn) ([]*model.ImageAccess, error)
@@ -192,24 +192,14 @@ func (d *imageDao) FindImageAccess(ctx context.Context, iaq *model.ImageAccessQu
 	return &ia, nil
 }
 
-func (d *imageDao) DeleteImageAccess(ctx context.Context, iad *model.ImageAccessDel) (*model.ImageAccess, error) {
-	if ia, err := d.FindImageAccess(ctx, &model.ImageAccessQuery{
-		Id:      iad.Id,
-		ImageId: iad.ImageId,
-		UserId:  iad.UserId,
-		SpaceId: iad.SpaceId,
-	}); err != nil {
-		return nil, err
-	} else {
-		if ia == nil {
-			return nil, nil
-		}
-		result := d.db.Delete(&model.ImageAccess{Id: ia.Id})
-		if result.Error != nil {
-			return nil, result.Error
-		}
-		return ia, nil
+func (d *imageDao) DeleteImageAccess(ctx context.Context, iad *model.ImageAccessDel) error {
+	db := iad.Where(d.db)
+	// delete permanently
+	result := db.Unscoped().Delete(&model.ImageAccess{})
+	if result.Error != nil {
+		return result.Error
 	}
+	return nil
 }
 
 func (d *imageDao) ListImageAccess(ctx context.Context, condition *model.ImageAccessList) ([]*model.ImageAccess, error) {
