@@ -30,8 +30,8 @@
             </el-table-column>
             <el-table-column label="状态">
                 <template slot-scope="scope">
-                    <span :class="statusText[scope.row.status][0]"></span>
-                    <span>{{ statusText[scope.row.status][1]}}</span>
+                    <span :class="scope.row.status?statusText[scope.row.status][0]:''"></span>
+                    <span>{{ scope.row.status?statusText[scope.row.status][1]:''}}</span>
                 </template>
             </el-table-column>
             <el-table-column label="创建时间">
