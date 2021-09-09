@@ -62,6 +62,9 @@
             slot="reference" type="text" @click="confirmStop(scope.row)">
             停止
           </el-button>
+          <el-button slot="reference" type="text" @click="getNotebookInfo(scope.row)">
+            信息
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -72,6 +75,8 @@
       </el-pagination>
     </div>
 
+    <notebookInfo v-if="notebookInfoVisible">
+    </notebookInfo>
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
     </notebookCreation>
   </div>
@@ -79,8 +84,9 @@
 
 <script>
   import notebookCreation from "./notebookCreation.vue"
+  import notebookInfo from "./notebookInfo.vue"
   import searchForm from '@/components/search/index.vue'
-  import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
+  import { getNotebookInfo, getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
@@ -94,12 +100,14 @@
     },
     components: {
       notebookCreation,
+      notebookInfo,
       searchForm
     },
     data() {
       return {
         row: {},
         notebookVisible: false,
+        notebookInfoVisible: false,
         total: undefined,
         notebookList: [],
         searchForm: [
@@ -250,6 +258,19 @@
             message: '已取消'
           });
         });
+      },
+      getNotebookInfo(row) {
+        this.notebookInfoVisible = true
+        console.log("notebookInfoVisible:",this.notebookInfoVisible)
+        // getNotebookInfo(row.id).then( response => {
+        //   if (response.success) {
+        //   } else {
+        //     this.$message({
+        //       message: this.getErrorMsg(response.error.subcode),
+        //       type: 'warning'
+        //     })
+        //   }
+        // })
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {

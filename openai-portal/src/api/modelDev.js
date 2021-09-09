@@ -25,6 +25,14 @@ export async function getNotebookList(payload) {
   return res
 }
 
+export async function getNotebookInfo(id) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${id}`,
+    method: 'get',
+  })
+  return res
+}
+
 export async function createNotebook(payload) {
   const res = await request({
     url: `/v1/developmanage/notebook`,
