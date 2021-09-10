@@ -207,6 +207,8 @@ storageType:
 
 #### 服务minio参数
 
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/minio).
+
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `minio.gateway.enabled`      | 开启网关                                | `true`                           |
@@ -226,6 +228,8 @@ storageType:
 
 #### 服务mysql参数
 
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/mysql).
+
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `mysql.auth.rootPassword`      | root账号密码                                | `root`                           |
@@ -244,6 +248,8 @@ storageType:
 
 #### 服务redis参数
 
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/redis).
+
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `redis.master.service.type`      | master servie类型                                | `NodePort`                           |
@@ -256,6 +262,8 @@ storageType:
 
 
 #### 服务nginx-ingress-controller参数
+
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller).
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
