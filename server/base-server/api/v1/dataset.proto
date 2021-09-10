@@ -78,8 +78,9 @@ message ListDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
-  string userId = 8;
-  string spaceId = 9;
+  string nameLike = 8;
+  string userId = 9;
+  string spaceId = 10;
   DatasetSourceType sourceType = 11;
   repeated string ids = 12;
 }
@@ -110,11 +111,12 @@ message ListCommDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
-  string userId = 8;
-  string spaceId = 9;
-  string shareSpaceId = 10;
-  DatasetSourceType sourceType = 11;
-  repeated string ids = 12;
+  string nameLike = 8;
+  string userId = 9;
+  string spaceId = 10;
+  string shareSpaceId = 11;
+  DatasetSourceType sourceType = 12;
+  repeated string ids = 13;
 }
 
 message ListCommDatasetReply {

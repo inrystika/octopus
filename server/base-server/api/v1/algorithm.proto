@@ -99,8 +99,9 @@ message ListPreAlgorithmRequest {
   string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
   int64 fileStatus = 6;
   string searchKey = 7[(validate.rules).string = {max_len:512}];
-  int64 createdAtGte = 8;
-  int64 createdAtLt = 9;
+  string nameLike = 8[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 9;
+  int64 createdAtLt = 10;
 }
 message ListPreAlgorithmReply {
   int64 totalSize = 1;
@@ -117,8 +118,9 @@ message ListMyAlgorithmRequest {
   string algorithmVersion = 7[(validate.rules).string = {max_len: 50}];
   int64 fileStatus = 8 ;
   string searchKey = 9[(validate.rules).string = {max_len:512}];
-  int64 createdAtGte = 10;
-  int64 createdAtLt = 11;
+  string nameLike = 10[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 11;
+  int64 createdAtLt = 12;
 }
 
 message ListMyAlgorithmReply {
@@ -135,8 +137,9 @@ message ListCommAlgorithmRequest {
   string algorithmVersion = 6[(validate.rules).string = {max_len: 50}];
   int64 fileStatus = 7 ;
   string searchKey = 8[(validate.rules).string = {max_len:512}];
-  int64 createdAtGte = 9;
-  int64 createdAtLt = 10;
+  string nameLike = 9[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 10;
+  int64 createdAtLt = 11;
 }
 message ListCommAlgorithmReply {
   int64 totalSize = 1;
@@ -151,8 +154,9 @@ message ListAllUserAlgorithmRequest {
   string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
   int64 fileStatus = 6 ;
   string searchKey = 7[(validate.rules).string = {max_len:512}];
-  int64 createdAtGte = 8;
-  int64 createdAtLt = 9;
+  string nameLike = 8[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 9;
+  int64 createdAtLt = 10;
 }
 message ListAllUserAlgorithmReply {
   int64 totalSize = 1;

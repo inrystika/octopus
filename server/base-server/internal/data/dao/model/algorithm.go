@@ -101,6 +101,7 @@ type AlgorithmList struct {
 	PageIndex             int
 	PageSize              int
 	SearchKey             string
+	NameLike              string
 	SortBy                string
 	OrderBy               string
 	FileStatus            int
@@ -181,6 +182,7 @@ type AlgorithmAccessList struct {
 	PageSize         int
 	AlgorithmVersion string
 	SearchKey        string
+	NameLike         string
 	SortBy           string
 	OrderBy          string
 	FileStatus       int

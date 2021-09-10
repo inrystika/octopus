@@ -701,7 +701,7 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	if err != nil {
 		return nil, err
 	}
-
+	trainJobDetail.InitInfo = info.Job.ExitDiagnostics
 	for index, config := range trainJobDetail.Config {
 		replyStates := make([]*api.ReplicaState, 0)
 		for ri := 0; ri < int(config.TaskNumber); ri++ {

@@ -36,6 +36,7 @@ func (s *AlgorithmService) ListPreAlgorithm(ctx context.Context, req *api.ListPr
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
@@ -71,6 +72,7 @@ func (s *AlgorithmService) ListMyAlgorithm(ctx context.Context, req *api.ListMyA
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
@@ -104,6 +106,7 @@ func (s *AlgorithmService) ListCommAlgorithm(ctx context.Context, req *api.ListC
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
