@@ -106,6 +106,14 @@ main() {
     token_shar_value
     # 节点互信
     rootssh_trust
+
+    # 节点打标签
+    if [[ $node_type == "nvidia_gpu" ]];then
+        nvidia_gpu_label
+    elif [[ $node_type == "huawei_a910" ]];then
+        huawei_a910_label
+    fi
+    
     # 验证
     check_cluster
 }
