@@ -160,7 +160,7 @@ func (d *trainJobDao) GetTrainJobList(ctx context.Context, query *model.TrainJob
 
 	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
 
-	res = db.Find(&trainJobs)
+	res = db.Select("train_job.*").Find(&trainJobs)
 	if res.Error != nil {
 		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
 	}
