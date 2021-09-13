@@ -6,7 +6,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    progress: 0
   }
 }
 
@@ -18,6 +19,12 @@ const mutations = {
   // },
   SET_TOKEN: (state, token) => {
     state.token = token
+  },
+  SET_PROGRESS: (state, progress) => {
+    state.progress = progress
+  },
+  CLEAR_PROGRESS: (state, progress) => {
+    state.progress = 0
   }
   // SET_NAME: (state, name) => {
   //   state.name = name

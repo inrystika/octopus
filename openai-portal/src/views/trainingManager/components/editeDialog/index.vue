@@ -21,7 +21,7 @@
                     </el-form-item>
                     <el-form-item label="算法名称" prop="algorithmId" v-if="algorithmName" style="display:inline-block;">
                         <el-select v-model="ruleForm.algorithmId" placeholder="请选择算法名称" v-loadmore='loadAlgorithmName'
-                            @change="changeAlgorithmName">
+                            @change="changeAlgorithmName" filterable remote :remote-method="remoteAlgorithm">
                             <el-option v-for="item in algorithmNameOption" :key="item.algorithmId"
                                 :label="item.algorithmName" :value='item.algorithmId'>
                             </el-option>
@@ -50,10 +50,10 @@
                     </el-form-item>
                     <el-form-item label="镜像名称" prop="imageId" v-if="imageName" style="display: inline-block;">
                         <el-select v-model="ruleForm.imageId" placeholder="请选择镜像名称" v-loadmore='loadImageName'
-                            @change="changeimageName">
+                            @change="changeimageName" filterable remote :remote-method="remoteImage">
                             <el-option v-for="item in imageNameOption" :key="item.id"
-                            :label="item.imageName+':'+item.imageVersion" :value="item.id">
-                        </el-option>
+                                :label="item.imageName+':'+item.imageVersion" :value="item.id">
+                            </el-option>
                         </el-select>
                     </el-form-item>
                 </div>
@@ -68,7 +68,7 @@
                     </el-form-item>
                     <el-form-item label="数据集名称" prop="dataSetId" v-if="dataSetName" style="display: inline-block;">
                         <el-select v-model="ruleForm.dataSetId" placeholder="请选择数据集名称" v-loadmore='loadDataSetName'
-                            @change="changeDataSetName">
+                            @change="changeDataSetName" filterable remote :remote-method="remoteDataSet">
                             <el-option v-for="item in dataSetNameOption" :key="item.id+item.name" :label="item.name"
                                 :value='item.id'>
                             </el-option>
@@ -170,7 +170,7 @@
             },
             showArg: function () {
                 let flag = true
-                if (this.ruleForm.config[0].parameters===null) {
+                if (this.ruleForm.config[0].parameters === null) {
                     return flag
                 }
                 else {
@@ -234,8 +234,7 @@
                     resourceSpecId: "",
                     command: ''
                 },
-                showUpload: false,
-                remoteImage: false,
+              
                 CreateFormVisible: true,
                 rules: {
                     name: [
@@ -442,9 +441,9 @@
                             this.ruleForm.config[0].command = this.ruleForm.command
                             this.ruleForm.config[0].resourceSpecId = this.ruleForm.resourceSpecId
                             this.ruleForm.config[0].name = this.ruleForm.name
-                            this.ruleForm.config[0].taskNumber=1
-                            this.ruleForm.config[0].minFailedTaskCount=1
-                            this.ruleForm.config[0].minSucceededTaskCount=1
+                            this.ruleForm.config[0].taskNumber = 1
+                            this.ruleForm.config[0].minFailedTaskCount = 1
+                            this.ruleForm.config[0].minSucceededTaskCount = 1
                             delete this.ruleForm.config[0].isMainRole
                             delete this.ruleForm.config[0].name
                         }
@@ -558,30 +557,45 @@
                     this.ruleForm.algorithmVersion = ''
                 this.getAlgorithmVersionList()
             },
-            getAlgorithmNameList() {
+            getAlgorithmNameList(searchKey) {
                 if (this.ruleForm.algorithmSource === 'my') {
-                    getMyAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10 }).then(response => {
-                        if (response.data.algorithms.length !== 0) {
-                            this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms)
-                            this.algorithmNameTotal = response.data.totalSize
+                    getMyAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
+                            this.algorithmNameOption = response.data.algorithms
+                        }
+                        else {
+                            if (response.data.algorithms.length !== 0) {
+                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
+                                this.algorithmNameTotal = response.data.totalSize
+
+                            }
                         }
 
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'pre') {
-                    getPresetAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10 }).then(response => {
-
-                        if (response.data.algorithms.length !== 0) {
-                            this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms)
-                            this.algorithmNameTotal = response.data.totalSize
+                    getPresetAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
+                            this.algorithmNameOption = response.data.algorithms
+                        }
+                        else {
+                            if (response.data.algorithms.length !== 0) {
+                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms)
+                                this.algorithmNameTotal = response.data.totalSize
+                            }
                         }
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'common') {
-                    getPublicAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10 }).then(response => {
-                        if (response.data.algorithms.length !== 0) {
-                            this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
-                            this.algorithmNameTotal = response.data.totalSize
+                    getPublicAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
+                            this.algorithmNameOption = response.data.algorithms
+                        }
+                        else {
+                            if (response.data.algorithms.length !== 0) {
+                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
+                                this.algorithmNameTotal = response.data.totalSize
+                            }
                         }
 
                     })
@@ -631,28 +645,50 @@
                     }
                 })
             },
-            getImageNameList() {
+            getImageNameList(searchKey) {
                 if (this.ruleForm.imageSource === 'my') {
-                    getMyImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2 }).then(response => {
-                        if (response.data.images.length !== 0) {
+                    getMyImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
                             let data = response.data.images;
                             let tableData = [];
                             data.forEach(item => {
                                 tableData.push({ ...item.image, isShared: item.isShared })
                             })
-                            this.imageNameOption = this.imageNameOption.concat(tableData)
-                            this.imageNameTotal = response.data.totalSize
+                            this.imageNameOption = tableData
                         }
+                        else {
+                            if (response.data.images.length !== 0) {
+                                let data = response.data.images;
+                                let tableData = [];
+                                this.imageNameTotal = response.data.totalSize
+                                data.forEach(item => {
+                                    tableData.push({ ...item.image, isShared: item.isShared })
+                                })
+                                this.imageNameOption = this.imageNameOption.concat(tableData)
+                            }
+                        }
+
                     })
                 }
                 if (this.ruleForm.imageSource === 'pre') {
-                    getPreImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2 }).then(response => {
-                        if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
+                    getPreImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
+                            this.imageNameOption = response.data.images
+                        }
+                        else {
+                            if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
+                        }
+
                     })
                 }
                 if (this.ruleForm.imageSource === 'common') {
-                    getPublicImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2 }).then(response => {
-                        if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
+                    getPublicImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
+                        if (searchKey && searchKey.length != 0) {
+                            this.imageNameOption = response.data.images
+                        }
+                        else {
+                            if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
+                        }
 
                     })
                 }
@@ -682,29 +718,47 @@
                     this.ruleForm.dataSetVersion = '',
                     this.getDataSetVersionList()
             },
-            getDataSetNameList() {
+            getDataSetNameList(searchKey) {
                 if (this.ruleForm.dataSetSource === 'my') {
-                    getMyDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10 }).then(response => {
-                        if (response.data.datasets !== null) {
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets);
+                    getMyDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (response.data.datasets === null) {
+                            response.data.datasets = []
+                        }
+                        if (searchKey && searchKey.length != 0) {
+                            this.dataSetNameOption = response.data.datasets
+                        }
+                        else {
+                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets)
                             this.dataSetNameTotal = response.data.totalSize
                         }
+
 
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'pre') {
-                    getPresetDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10 }).then(response => {
-                        if (response.data.datasets !== null) {
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets);
-                            this.dataSetNameTotal = response.data.totalSize
+                    getPresetDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (response.data.datasets === null) {
+                            response.data.datasets = []
+                        }
+                        if (searchKey && searchKey.length != 0) {
+                            this.dataSetNameOption = response.data.datasets
+                        }
+                        else {
+                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
                         }
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'common') {
-                    getPublicDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10 }).then(response => {
-                        if (response.data.datasets !== null) {
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets);
-                            this.dataSetNameTotal = response.data.totalSize
+                    getPublicDatasetList({ pageIndex: this.dataSetNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                        if (response.data.datasets === null) {
+                            response.data.datasets = []
+                        }
+                        if (searchKey && searchKey.length != 0) {
+                            this.dataSetNameOption = response.data.datasets
+                        }
+                        else {           
+                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
+
                         }
 
                     })
@@ -756,6 +810,18 @@
                     }
                 });
 
+            },
+             //远程请求算法名称
+             remoteAlgorithm(a) {
+                this.getAlgorithmNameList(a)
+            },
+            // 远程请求镜像名称
+            remoteImage(a) {
+                this.getImageNameList(a)
+            },
+            //远程请求数据集名称
+            remoteDataSet(a) {
+                this.getDataSetNameList(a)
             }
 
 

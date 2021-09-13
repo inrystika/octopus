@@ -62,6 +62,9 @@
             slot="reference" type="text" @click="confirmStop(scope.row)">
             停止
           </el-button>
+          <el-button slot="reference" type="text" @click="getNotebookInfo(scope.row)">
+            信息
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -72,6 +75,13 @@
       </el-pagination>
     </div>
 
+    <notebookInfo 
+      v-if="notebookInfoVisible" 
+      :initInfo="initInfo" 
+      @confirm="confirm" 
+      @cancel="cancel" 
+      @close="close"
+    />
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
     </notebookCreation>
   </div>
@@ -79,8 +89,9 @@
 
 <script>
   import notebookCreation from "./notebookCreation.vue"
+  import notebookInfo from "./notebookInfo.vue"
   import searchForm from '@/components/search/index.vue'
-  import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
+  import { getNotebookInfo, getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
@@ -94,12 +105,15 @@
     },
     components: {
       notebookCreation,
+      notebookInfo,
       searchForm
     },
     data() {
       return {
         row: {},
+        initInfo: "",
         notebookVisible: false,
+        notebookInfoVisible: false,
         total: undefined,
         notebookList: [],
         searchForm: [
@@ -251,6 +265,46 @@
           });
         });
       },
+      getNotebookInfo(row) {
+        getNotebookInfo(row.id).then( response => {
+          if (response.success) {
+            this.notebookInfoVisible = true
+            let notebookDialogString = response.payload.notebook.initInfo ? response.payload.notebook.initInfo.replace(/\n/g, "<br>") : ''
+            let notebookDialogData = JSON.parse(notebookDialogString)
+            for(let pid in notebookDialogData['podEvents']){       
+              const eventList = notebookDialogData['podEvents'][pid]
+              const roleName = notebookDialogData['podRoleName'][pid]
+              if (roleName == "") {
+                continue
+              }
+              let message = ""
+              for (let key in eventList) {
+                let event = eventList[key]
+                if (event['reason'] == "" && event['message'] == "") {
+                  continue
+                }
+                message += "[" + event['reason'] + "]" + "<br>"
+                message += event['message'] + "<br><br>"
+              }
+              for (let key in notebookDialogData['extras']) {               
+                let event = notebookDialogData['extras'][key]               
+                if (event['reason'] == "" && event['message'] == "") {
+                  continue
+                }
+                message +=  "[" + event['reason'] + "]" + "<br>"
+                message += event['message'] + "<br><br>"
+              }
+              message += "<br>"
+              this.initInfo = message
+            }
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            })
+          }
+        })
+      },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
           if (response.success) {
@@ -301,14 +355,17 @@
       },
       close(val) {
         this.notebookVisible = val;
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       }
     }

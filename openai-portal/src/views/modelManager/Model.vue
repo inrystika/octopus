@@ -198,7 +198,7 @@
             },
             // 删除确认
             open(val) {
-                this.$confirm('此操作将永久删除该模型, 是否继续?', '提示', {
+                this.$confirm('此操作将永久删除该模型(如该模型已分享，则分享模型也会被删除)，是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
