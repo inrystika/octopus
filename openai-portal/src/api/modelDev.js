@@ -12,6 +12,7 @@ export function judgeParam(params) {
   params.status ? conditions.push(`status=` + params.status) : null;
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
+  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   return conditions
 }
 
@@ -19,6 +20,14 @@ export async function getNotebookList(payload) {
   let conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/developmanage/notebook?" + conditions.join("&"),
+    method: 'get',
+  })
+  return res
+}
+
+export async function getNotebookInfo(id) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${id}`,
     method: 'get',
   })
   return res
