@@ -8,7 +8,7 @@ const service = axios.create({
   // timeout: 5000 // request timeout
   onUploadProgress: function(progress) {
     // 处理上传进度事件
-    store.commit('user/SET_PROGRESS', Math.floor(progress.loaded / progress.total) * 100)
+    store.commit('user/SET_PROGRESS', parseInt(((progress.loaded / progress.total) * 100).toFixed(0)))
   }
 })
 
