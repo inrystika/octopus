@@ -1,95 +1,44 @@
 # Octopus
 
-[Octopus](http://192.168.202.74:6869/) 是一个一站式 AI 模型开发平台，面向 AI 模型生产的生命周期，提供了数据集管理、镜像管理、算法管理、训练、部署等功能，方便用户一站式构建AI算法，另外平台还提出了“工作空间”概念，满足不同用户群体的资源使用与管理述求，方便平台管理者更好的管理资源集群。平台是由【鹏城实验室】独立设计开发，并进行维护，结合了一些在大规模生产环境中表现良好的成熟设计，主要为提升学术研究效率，复现学术研究成果而量身打造。
+**Octopus**是一款面向多计算场景的一站式融合计算平台。平台主要针对AI、HPC等场景的计算与资源管理的需求来设计，向算力使用用户提供了对数据、算法、镜像、模型与算力等资源的管理与使用功能，方便用户一站式构建计算环境，实现计算。同时，向集群管理人员提供了集群资源管理与监控，计算任务管理与监控等功能，方便集群管理人员对整体系统进行操作与分析。
 
-## 简介
+**Octopus**平台底层基于容器编排平台[Kubernetes](https://kubernetes.io/zh/docs/concepts/overview/what-is-kubernetes) ，充分利用容器敏捷、轻量、隔离等特点来实现计算场景多样性的需求。
 
-这个chart文件能够通过使用[Helm](https://helm.sh)包管理工具，将Octopus服务部署在[Kubernetes](http://kubernetes.io) 集群上。
+## 文档
 
+详细文档请参考[这里](https://octopus.openi.org.cn/docs/introduction/intro)。
 
-## 依赖
+## 特点与场景
 
+Octopus具有如下特点：
 
-- Kubernetes v1.16.3+
-- Docker v18.09.7+
-- Helm v3.5.4+
-- Harbor v2.3.0+
+- **一站式开发**，为用户提供一站式AI、HPC计算场景的开发功能，通过数据管理、模型开发和模型训练，打通计算全链路；
+- **方便管理**，为平台管理者提供一站式的资源管理平台，通过资源配置、监控、权限管控等可视化工具，大大降低平台管理者的管理成本；
+- **易于部署**，Octopus 支持[Helm](https://helm.sh)方式的快速部署，简化复杂的部署流程；
+- **性能优越**，提供高性能的分布式计算体验，通过多方面优化来保证各个环境的流畅运行，同时通过资源调度优化与分布式计算优化，进一步提高模型训练效率；
+- **兼容性好**，平台支持异构硬件，如 GPU、NPU、FPGA 等，满足各种不同的硬件集群部署需求，通过支持多种深度学习框架，如 TensorFlow、Pytorch、PaddlePaddle 等，并可以通过自定义镜像方式支持新增框架。
 
+Octopus适合在如下场景中使用：
 
-## 命令行部署Chart安装包
+- 构建大规模 AI 计算平台；
+- 希望共享计算资源；
+- 希望在统一的环境下完成模型训练；
+- 希望使用集成的插件辅助模型训练，提升效率。
 
-用octopus作为安装参数release-name进行安装说明：
+## 使用说明
 
-### 证书设置
+Octopus详细使用说明请参考[这里](https://octopus.openi.org.cn/docs/deployment/deploy/quick_deploy).
 
-为了保证所有节点均能从Harbor仓库获取镜像，需要在所有的节点做证书的配置，这里有两种方式，选择其中一种就行，如下：
+## 配置说明
 
-#### 校验证书方式
+章鱼服务通过`Helm Charts`包格式进行版本包管理，同样基于该格式的操作方式进行相关安装更新等操作，有关`Helm Charts`具体资料可参考[这里](https://helm.sh/docs/topics/charts/).
 
-先获取证书，而后将证书存放到docker配置目录下，如下
-```console
-sudo su -
-mkdir -p /etc/docker/certs.d/192.168.202.110:5000
-cp ./credentials/harbor/192.168.202.110:5000/* /etc/docker/certs.d/192.168.202.110:5000/
-```
-然后重启docker:
-```console
-systemctl restart docker
-```
-#### 不校验证书方式
+### 参数
 
-直接修改docker配置,跳过对harbor的证书验证
-```console
-sudo su -
-vim /etc/docker/daemon.json
-
-#添加属性
-# {
-#	"insecure-registries": [...,"192.168.202.110:5000",...]
-# }
-
-systemctl restart docker
-```
-
-### 添加Chart仓库
-
-这里主要使用Harbor作为Chart仓库,启动https的仓库需要添加证书文件，可通过这里获取[证书] (http://192.168.202.74/octopus/credentials)，如下：
-
-```console
-helm repo add --ca-file /path/to/ca.crt --cert-file /path/to/192.168.202.110.cert --username={username} --password={password} harbor https://192.168.202.110:5000/chartrepo/octopus
-```
-添加成功后同步仓库信息，如下：
-```console
-helm repo update
-```
-
-### 安装Octopus Chart
-
-通过Helm命令安装，｀--debug --dry-run｀为调试模式，只会输出yaml不传给k8s,真正安装需要去掉．如下：
-```console
-helm install --ca-file /path/to/ca.crt --cert-file /path/to/192.168.202.110.cert --username={username} --password={password} octopus harbor/octopus --version {chart version} --debug --dry-run --values /path/to/custom/values.yaml
-```
-
-### 更新Octopus
-
-通过Helm命令更新．如下：
-```console
-helm upgrade --ca-file /path/to/ca.crt --cert-file /path/to/192.168.202.110.cert --username={username} --password={password} octopus harbor/octopus --version {chart version} --values /path/to/custom/values.yaml
-```
-
-## 卸载chart安装包
-
-命令行下执行以下命令：
-```console
-$ helm delete octopus
-```
-
-## 参数
-
-以下表格列出Octopus在chart安装包中所有的可配置参数以及它们的默认值：
+以下表格列出Octopus在chart安装包中`values.yaml`文件的所有可配置参数以及它们的默认值：
 
 
-### Global 参数
+#### 全局参数
 
 | Parameter                      | Description                                                                                              | Default                                                 |
 |--------------------------------|----------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
@@ -98,7 +47,7 @@ $ helm delete octopus
 | `global.image.pullPolicy`          | 镜像拉取策略                                                            | `IfNotPresent`                                                   |
 | `global.nodeSelector`  | 部署节点标签 | `octopus.openi.pcl.cn/node: "server"`                                                    |
 
-### Common 参数
+#### 通用参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -106,7 +55,7 @@ $ helm delete octopus
 | `Common.resourceTagValuePrefix`  | 资源标签键值前缀                       | `service`                          |
 
 
-### ingress 参数
+#### 入口参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -119,7 +68,7 @@ $ helm delete octopus
 | `ingress.minioPath.web`       | minio服务网页端入口路径 | `/minio`                          |
 | `ingress.minioPath.api`       | minio服务接口路径 | `/oss`                          |
 
-### PersistentVolumn 参数
+#### 数据持久化存储参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -127,12 +76,10 @@ $ helm delete octopus
 | `pv.mysql.requests`  | mysql服务请求存储空间                       | `100Gi`                          |
 | `pv.redis.requests`      | redis服务请求存储空间                                | `100Gi`                           |
 | `pv.logger.requests` | logger服务请求存储空间                           | `100Gi`                           |
-| `pv.logstash.requests`     | logstash服务请求存储空间                                     | `100Gi`                |
 | `pv.minio.storageType`      | minio服务存储类型                   | `nil`                          |
 | `pv.mysql.storageType`  | mysql服务存储类型                       | `nil`                          |
 | `pv.redis.storageType`      | redis服务存储类型                                | `nil`                           |
 | `pv.logger.storageType` | logger服务存储类型                           | `nil`                           |
-| `pv.logstash.storageType`     | logstash服务存储类型                                     | `nil`                |
 
 ```
 注意：storageType属性取值可参见PersistentVolumeSource结构体中Spec属性的取值。
@@ -147,7 +94,7 @@ storageType:
         path:  /test
 ```
 
-### PersistentVolumnClaim 参数
+#### 数据持久化声明参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -158,7 +105,7 @@ storageType:
 | `pvc.logstash.requests`     | logstash服务请求存储空间                                     | `100Gi`                |
 
 
-### taskset 参数
+#### 服务taskset参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -169,7 +116,7 @@ storageType:
 | `taskset.image.pathname`     | taskset服务镜像目录名                                     | `nil`                |
 | `taskset.image.name`     | taskset服务镜像名称                                     | `pipeline`                |
 
-### base-server 参数
+#### 服务base-server参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -191,7 +138,7 @@ storageType:
 | `baseserver.administrator.password`     | 管理员密码                                     | `123456`                |
 
 
-### openai-server 参数
+#### 服务openai-server参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -202,7 +149,7 @@ storageType:
 | `openaiserver.data.redis.password`     | redis密码                                     | `abcde`                |
 
 
-### admin-server 参数
+#### 服务admin-server参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -213,7 +160,7 @@ storageType:
 | `adminserver.data.redis.password`     | redis密码                                     | `abcde`                |
 
 
-### openai-portal 参数
+#### 服务openai-portal参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -223,7 +170,7 @@ storageType:
 | `openaiportal.image.name`     | openaiportal服务镜像名称                                     | `openai-portal`                |
 
 
-### admin-portal 参数
+#### 服务admin-portal参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -233,21 +180,21 @@ storageType:
 | `adminportal.image.name`     | adminportal服务镜像名称                                     | `admin-portal`                |
 
 
-### scheduler 参数
+#### 服务scheduler参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `scheduler.image.name`     | scheduler服务镜像名称                                     | `scheduler`                |
 
 
-### controller 参数
+#### 服务controller参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `controller.image.name`     |controller服务镜像名称                                     | `controller`                |
 
 
-### logger 参数
+#### 服务logger参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -258,7 +205,9 @@ storageType:
 | `logger.httpd.image.pullPolicy`     | 日志服务nginx镜像拉取策略                                     | `Always`                |
 
 
-### minio 参数
+#### 服务minio参数
+
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/minio).
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -277,7 +226,9 @@ storageType:
 | `minio.volumePermissions.enabled`     | 是否对存储卷有管理员权限                                     | `true`                |
 
 
-### mysql 参数
+#### 服务mysql参数
+
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/mysql).
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -295,7 +246,9 @@ storageType:
 
 
 
-### redis 参数
+#### 服务redis参数
+
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/redis).
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -305,17 +258,19 @@ storageType:
 | `redis.master.persistence.existingClaim`     | master请求使用的PVC名                                     | `octopus-redis-pvc`                |
 | `redis.auth.enabled`     | 是否需要登入认证                                    | `true`                |
 | `redis.auth.password`     | 登入密码                                     | `abcde`                |
-| `mysql.volumePermissions.enabled`     | 是否对存储卷有管理员权限                                     | `true`                |
+| `redis.volumePermissions.enabled`     | 是否对存储卷有管理员权限                                     | `true`                |
 
 
-### nginx-ingress-controller 参数
+#### 服务nginx-ingress-controller参数
+
+此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller).
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
 | `nginx-ingress-controller.nodeSelector`      | nginx服务节点选择器                                | `nginx-ingress: "yes"`                           |
 
 
-### grafana 参数
+#### 服务grafana参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -339,7 +294,7 @@ storageType:
 | `grafana.resources.requests.memory`      | 内存资源请求                                | `/100Mi`                           |
 
 
-### prometheus 参数
+#### 服务prometheus参数
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -350,6 +305,3 @@ storageType:
 | `prometheus.service.hostPort`      | service hostPort                                | `30003`                           |
 | `prometheus.service.port`      | service port | `9090`                           |
 | `prometheus.service.targetPort`      | service targetPort | `9090`                           |
-
-
-
