@@ -194,6 +194,17 @@ func (s *TrainJobService) CreateJobTemplate(ctx context.Context, req *api.TrainJ
 	}, nil
 }
 
+// 复制训练任务模板
+func (s *TrainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobTemplateRequest) (*api.CopyJobTemplateReply, error) {
+	reply, err := s.data.TrainJobClient.CopyJobTemplate(ctx, &innerapi.CopyJobTemplateRequest{Id: req.Id})
+	if err != nil {
+		return nil, err
+	}
+	return &api.CopyJobTemplateReply{
+		TemplateId: reply.TemplateId,
+	},nil
+}
+
 //获取任务模板信息
 func (s *TrainJobService) GetJobTemplate(ctx context.Context, req *api.GetJobTemplateRequest) (*api.GetJobTemplateReply, error) {
 	session := session.SessionFromContext(ctx)

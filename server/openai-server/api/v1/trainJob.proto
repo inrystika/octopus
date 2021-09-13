@@ -74,7 +74,12 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjobtemplate"
       };
     };
-
+    // 复制训练任务模板
+    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
+      option (google.api.http) = {
+        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
+      };
+    };
 }
 
 message TrainJobRequest {
@@ -213,6 +218,16 @@ message GetJobTemplateRequest{
 message GetJobTemplateReply{
   //模板详情
   TrainJobTemplate  jobTemplate = 1;
+}
+
+message CopyJobTemplateRequest {
+  //模板ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message CopyJobTemplateReply{
+  //模板ID
+  string templateId = 1;
 }
 
 message  StopJobRequest {

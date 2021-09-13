@@ -856,6 +856,38 @@ func (s *trainJobService) CreateJobTemplate(ctx context.Context, req *api.TrainJ
 	}, nil
 }
 
+func (s *trainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobTemplateRequest) (*api.CopyJobTemplateReply, error) {
+	tpl, err := s.data.TrainJobDao.GetTrainJobTemplate(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	newJobTemplateId := utils.GetUUIDStartWithAlphabetic()
+	newTrainJobTemplate := &model.TrainJobTemplate{}
+	err = copier.Copy(newTrainJobTemplate, tpl)
+	if err != nil {
+		return nil, err
+	}
+	newTrainJobTemplate.Id = newJobTemplateId
+	newTrainJobTemplate.Name = fmt.Sprintf("%s-%v", tpl.Name, time.Now().Unix())
+	newTrainJobTemplate.DeletedAt = 0
+	newTrainJobTemplate.CreatedAt = time.Time{}
+	newTrainJobTemplate.UpdatedAt = time.Time{}
+
+	//err = s.checkParamForTemplate(ctx, newTrainJobTemplate)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	err = s.data.TrainJobDao.CreateTrainJobTemplate(ctx, newTrainJobTemplate)
+	if err != nil {
+		return nil, err
+	}
+	return &api.CopyJobTemplateReply{
+		TemplateId: newJobTemplateId,
+	},nil
+}
+
 func (s *trainJobService) convertTemplateFromDb(jobDb *model.TrainJobTemplate) (*api.TrainJobTemplate, error) {
 	r := &api.TrainJobTemplate{}
 	err := copier.CopyWithOption(r, jobDb, copier.Option{DeepCopy: true})

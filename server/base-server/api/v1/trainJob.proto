@@ -29,7 +29,8 @@ service TrainJobService {
   rpc DeleteJobTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply);
   //获取任务模板列表
   rpc ListJobTemplate (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply);
-
+  //复制任务模板
+  rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply);
 }
 
 
@@ -102,6 +103,14 @@ message TrainJobReply {
 
 
 message TrainJobTemplateReply {
+  string templateId = 1;
+}
+
+message CopyJobTemplateRequest {
+  string  id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message CopyJobTemplateReply {
   string templateId = 1;
 }
 
