@@ -75,8 +75,13 @@
       </el-pagination>
     </div>
 
-    <notebookInfo v-if="notebookInfoVisible">
-    </notebookInfo>
+    <notebookInfo 
+      v-if="notebookInfoVisible" 
+      :initInfo="initInfo" 
+      @confirm="confirm" 
+      @cancel="cancel" 
+      @close="close"
+    />
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
     </notebookCreation>
   </div>
@@ -106,6 +111,7 @@
     data() {
       return {
         row: {},
+        initInfo: "",
         notebookVisible: false,
         notebookInfoVisible: false,
         total: undefined,
@@ -260,17 +266,44 @@
         });
       },
       getNotebookInfo(row) {
-        this.notebookInfoVisible = true
-        console.log("notebookInfoVisible:",this.notebookInfoVisible)
-        // getNotebookInfo(row.id).then( response => {
-        //   if (response.success) {
-        //   } else {
-        //     this.$message({
-        //       message: this.getErrorMsg(response.error.subcode),
-        //       type: 'warning'
-        //     })
-        //   }
-        // })
+        getNotebookInfo(row.id).then( response => {
+          if (response.success) {
+            this.notebookInfoVisible = true
+            let notebookDialogString = response.payload.notebook.initInfo ? response.payload.notebook.initInfo.replace(/\n/g, "<br>") : ''
+            let notebookDialogData = JSON.parse(notebookDialogString)
+            for(let pid in notebookDialogData['podEvents']){       
+              const eventList = notebookDialogData['podEvents'][pid]
+              const roleName = notebookDialogData['podRoleName'][pid]
+              if (roleName == "") {
+                continue
+              }
+              let message = ""
+              for (let key in eventList) {
+                let event = eventList[key]
+                if (event['reason'] == "" && event['message'] == "") {
+                  continue
+                }
+                message += "[" + event['reason'] + "]" + "<br>"
+                message += event['message'] + "<br><br>"
+              }
+              for (let key in notebookDialogData['extras']) {               
+                let event = notebookDialogData['extras'][key]               
+                if (event['reason'] == "" && event['message'] == "") {
+                  continue
+                }
+                message +=  "[" + event['reason'] + "]" + "<br>"
+                message += event['message'] + "<br><br>"
+              }
+              message += "<br>"
+              this.initInfo = message
+            }
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            })
+          }
+        })
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
@@ -322,14 +355,17 @@
       },
       close(val) {
         this.notebookVisible = val;
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
+        this.notebookInfoVisible = val;
         this.getNotebookList(this.searchData);
       }
     }
