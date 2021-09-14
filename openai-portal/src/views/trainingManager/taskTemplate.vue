@@ -34,9 +34,8 @@
                     <template slot-scope="scope">
                         <el-button type="text" @click="handleEdit(scope.row,'editeTemplate')">编辑</el-button>
                         <el-button type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button type="text" @click="handleEdit(scope.row,'createTask')">创建训练任务
-                        </el-button>
-
+                        <el-button type="text" @click="handleEdit(scope.row,'createTask')">创建训练任务</el-button>
+                        <el-button type="text" @click="handleCopy(scope.row)">复制</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -58,7 +57,7 @@
     </div>
 </template>
 <script>
-    import { getTemplate, getTempalteDetail, deleteTemplate, getResourceList } from '@/api/trainingManager'
+    import { getTemplate, getTempalteDetail, deleteTemplate, getResourceList, copyTemplate } from '@/api/trainingManager'
     import createDialog from "./components/createDialog/index.vue";
     import editeDialog from "./components/editeDialog/index.vue";
     import searchForm from '@/components/search/index.vue'
@@ -66,11 +65,11 @@
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "preImage",
-        props:{
-          trainingTemplate:{
-            type: Boolean,
-            default: false
-          }
+        props: {
+            trainingTemplate: {
+                type: Boolean,
+                default: false
+            }
         },
         data() {
             return {
@@ -115,8 +114,8 @@
             },
             getTemplate(data) {
                 if (data.time && data.time.length !== 0) {
-                    data.createAtGte = data.time[0]/1000
-                    data.createAtLt = data.time[1]/1000
+                    data.createAtGte = data.time[0] / 1000
+                    data.createAtLt = data.time[1] / 1000
                     delete data.time
                 }
                 getTemplate(data).then(response => {
@@ -223,6 +222,24 @@
 
                     })
                 }
+            },
+            handleCopy(row) {
+                copyTemplate(row).then(response => {
+                    if (response.success) {
+                        this.$message({
+                            message: '复制成功',
+                            type: 'success'
+                        });
+                        this.getTemplate(this.searchData)
+                    }
+                    else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+
+                })
             },
             cancel(val) {
                 this.getTemplate(this.searchData)
