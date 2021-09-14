@@ -11,16 +11,6 @@
                     <span>{{ scope.row.imageName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageType(scope.row.imageType) }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="上传类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ sourceType(scope.row.sourceType) }}</span>
-                </template>
-            </el-table-column>
             <el-table-column label="镜像标签" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageVersion }}</span>
@@ -36,6 +26,11 @@
                     <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="镜像类型" align="center">
+                <template slot-scope="scope">
+                    <span>{{ imageType(scope.row.imageType) }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="镜像状态" align="center">
                 <template slot-scope="scope">
                     <span>{{ imageStatus(scope.row.imageStatus) }}</span>
@@ -49,6 +44,11 @@
             <el-table-column label="提供者" align="center" v-if="Type==3">
                 <template slot-scope="scope">
                     <span>{{ scope.row.username }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="上传类型" align="center">
+                <template slot-scope="scope">
+                    <span>{{ sourceType(scope.row.sourceType) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center" v-if="flag" :width="250">
@@ -348,7 +348,7 @@
             },
             // 删除确认
             open2(val) {
-                this.$confirm('此操作将永久删除该镜像, 是否继续?', '提示', {
+                this.$confirm('此操作将永久删除该镜像（如该镜像已分享，则分享的镜像也会被删除)，是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'

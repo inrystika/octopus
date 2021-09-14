@@ -12,17 +12,17 @@
         >
             <el-table-column label="规格名称" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                    <span >{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="机时价格(1~10)" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.price }}</span>
+                    <span >{{ scope.row.price }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="资源数量" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.resourceQuantity }}</span>
+                    <span >{{ scope.row.resourceQuantity }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">

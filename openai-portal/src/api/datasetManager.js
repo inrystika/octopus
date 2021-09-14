@@ -12,6 +12,7 @@ export function judgeParam(params) {
   params.shared?conditions.push(`shared=`+params.shared):null;
   params.path?conditions.push(`path=`+params.path):null;
   params.status?conditions.push(`status=`+params.status):null;
+  params.nameLike?conditions.push(`nameLike=`+params.nameLike):null;
   return conditions
 }
 
