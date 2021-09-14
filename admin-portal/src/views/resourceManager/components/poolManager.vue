@@ -45,7 +45,7 @@
         <!-- 节点详情对话框 -->
         <el-dialog title="详情信息" :visible.sync="detailDialog" width="30%" center :close-on-click-modal="false">
             <div class="wrapper">
-                <div>notebook资源规格</div>
+                <div>Notebook资源规格</div>
                 <div>
                     <el-tag v-for="item in mapResourceSpecIdList.debug" :key="item.index" class="item">{{ item }}</el-tag>
                 </div>
@@ -82,7 +82,7 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="noteBook资源规格" :label-width="formLabelWidth">
+                <el-form-item label="NoteBook资源规格" :label-width="formLabelWidth">
                     <el-select v-model="ruleForm.mapResourceSpecIdList.debug" multiple>
                         <el-option v-for="item in resourceOption" :key="item.id" :label="item.name" :value="item.id">
                         </el-option>
