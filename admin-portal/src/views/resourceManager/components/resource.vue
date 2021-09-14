@@ -12,38 +12,22 @@
             >
                 <el-table-column label="资源名称" align="center">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>{{ scope.row.name }}</span>
-=======
                         <span >{{ scope.row.name }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="引用" align="center">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>{{ scope.row.resourceRef }}</span>
-=======
                         <span >{{ scope.row.resourceRef }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="绑定节点" align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>{{ scope.row.bindingNodes }}</span>
-=======
                         <span >{{ scope.row.bindingNodes }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                     </template>
                 </el-table-column>
                 <el-table-column label="备注" align="center">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>{{ scope.row.desc }}</span>
-=======
                         <span >{{ scope.row.desc }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
