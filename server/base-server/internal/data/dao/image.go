@@ -50,7 +50,7 @@ func (d *imageDao) List(ctx context.Context, condition *model.ImageList) ([]*mod
 	db = condition.JoinUser(db)
 	db = condition.JoinWorkspace(db)
 
-	result := db.Find(&images)
+	result := db.Select("image.*").Find(&images)
 	if result.Error != nil {
 		return nil, result.Error
 	}

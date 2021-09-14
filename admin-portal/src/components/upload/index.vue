@@ -14,7 +14,7 @@
       <div class="tipText">{{ this.tipText }}</div>
     </el-upload>
     <el-button :loading="loadingShow" size="small" v-if="!showUpload" type="primary">上传中</el-button>
-    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress"  class="progress" v-if="progress!='0'&&progress!='100'"></el-progress>
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress"  class="progress" v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"></el-progress>
     <div slot="footer" v-if="show" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>

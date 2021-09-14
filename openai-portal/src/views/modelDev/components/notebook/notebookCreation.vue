@@ -371,7 +371,7 @@ export default {
         })
       }
       if (this.ruleForm.imageSource === 'pre') {
-        getPreImage({ pageIndex: this.imageCount, pageSize: 10, imageStatus: 3, imageType: 1, searchKey: searchKey }).then(response => {
+                getPreImage({ pageIndex: this.imageCount, pageSize: 10, imageStatus: 3, imageType: 1, searchKey: searchKey }).then(response => {
           if (searchKey && searchKey.length != 0) {
             this.imageNameOption = response.data.images
           } else {
@@ -391,7 +391,7 @@ export default {
               this.imageNameOption = this.imageNameOption.concat(response.data.images) 
               this.imageNameTotal = response.data.totalSize
            }
-          }
+          }        
         })
       }
 
@@ -485,7 +485,7 @@ export default {
       if (this.dataSetVersionOption.length < this.dataSetVersionTotal) {
         this.getDataSetVersionList()
       }
-    },
+      },
     //远程请求算法名称
     remoteAlgorithm(searchKey) {
       this.getAlgorithmNameList(searchKey)
@@ -496,7 +496,7 @@ export default {
     },
     //远程请求数据集名称
     remoteDataSet(searchKey) {
-        this.getDataSetNameList(searchKey)
+      this.getDataSetNameList(searchKey)
     }
   }
 }

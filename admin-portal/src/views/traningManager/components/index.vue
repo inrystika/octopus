@@ -33,7 +33,7 @@
             }
 
         },
-        components: { taskLoad, taskLog, taskProfile, taskInfo },
+        components: { taskLoad, taskLog, taskProfile, taskInfo  },
         data() {
             return {
                 CreateFormVisible: true,

@@ -157,10 +157,10 @@
             },
             command: function (data) {
                 let command = data.command
-                if (data.parameters !== null && data.parameters.length !== 0) {
+                if (data.parameters != null && data.parameters.length != 0) {
                     data.parameters.forEach(
                         item => {
-                            if (item.key !== '' || item.value !== '') {
+                            if (item.key != '' || item.value != '') {
                                 command += " " + '--' + item.key + '=' + item.value
                             }
                         }
