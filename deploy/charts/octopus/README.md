@@ -206,11 +206,8 @@ storageType:
 
 
 #### 服务minio参数
-<<<<<<< HEAD
-=======
 
 此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/minio).
->>>>>>> upstream/master
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -230,11 +227,8 @@ storageType:
 
 
 #### 服务mysql参数
-<<<<<<< HEAD
-=======
 
 此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/mysql).
->>>>>>> upstream/master
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -253,11 +247,8 @@ storageType:
 
 
 #### 服务redis参数
-<<<<<<< HEAD
-=======
 
 此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/redis).
->>>>>>> upstream/master
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
@@ -268,18 +259,10 @@ storageType:
 | `redis.auth.enabled`     | 是否需要登入认证                                    | `true`                |
 | `redis.auth.password`     | 登入密码                                     | `abcde`                |
 | `redis.volumePermissions.enabled`     | 是否对存储卷有管理员权限                                     | `true`                |
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/master
 
 #### 服务nginx-ingress-controller参数
 
-<<<<<<< HEAD
-#### 服务nginx-ingress-controller参数
-=======
 此部分主要基于第三方依赖包的配置，更多详细配置参考[这里](https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller).
->>>>>>> upstream/master
 
 | Parameter           | Description                                                          | Default                        |
 |---------------------|----------------------------------------------------------------------|--------------------------------|
