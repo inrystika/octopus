@@ -12,22 +12,22 @@
             >
                 <el-table-column label="资源名称" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                        <span>{{ scope.row.name }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="引用" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.resourceRef }}</span>
+                        <span>{{ scope.row.resourceRef }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="绑定节点" align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.bindingNodes }}</span>
+                        <span>{{ scope.row.bindingNodes }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="备注" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.desc }}</span>
+                        <span>{{ scope.row.desc }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">

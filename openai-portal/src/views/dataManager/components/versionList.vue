@@ -267,7 +267,7 @@ export default {
       this.myDatasetVisible = val
     },
     confirmDelete(row){
-      this.$confirm('是否删除此版本？','提示',{
+      this.$confirm('此操作将永久删除此版本(如该版本已分享，则分享的版本也会被删除)，是否继续?','提示',{
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',

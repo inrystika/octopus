@@ -11,16 +11,9 @@
                         <el-option v-for="op in item.options" :label="op.label" :value="op.value" :key="op.value">
                         </el-option>
                     </el-select>
-                    <el-date-picker 
-                        v-if="item.type==='Time'" 
-                        v-model="searchData[item.prop]" 
-                        type="datetimerange"
-                        range-separator="至" 
-                        start-placeholder="开始日期" 
-                        end-placeholder="结束日期" 
-                        value-format="timestamp" 
-                        class="data"
-                    >
+                    <el-date-picker v-if="item.type==='Time'" v-model="searchData[item.prop]" type="datetimerange"
+                        range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="timestamp"
+                        class="data">
                     </el-date-picker>
                 </el-form-item>
             </el-form>
@@ -58,14 +51,14 @@
         methods: {
             onSubmit() {
                 if (this.dialogFormVisible) { this.searchData.searchKey = "" }
-                if (!this.dialogFormVisible) {this.searchData = {searchKey:this.searchData.searchKey} }
+                if (!this.dialogFormVisible) { this.searchData = { searchKey: this.searchData.searchKey } }
                 if (this.dialogFormVisible) { this.dialogFormVisible = !this.dialogFormVisible }
                 this.$emit('searchData', this.searchData)
             },
             changeSearchType() {
                 this.dialogFormVisible = !this.dialogFormVisible
             },
-            reset() { this.searchData = {searchKey:''} }
+            reset() { this.searchData = { searchKey: '' } }
         }
     }
 </script>
@@ -74,8 +67,15 @@
         text-align: center;
     }
 
+    .el-select {
+        width: 188px;
+    }
+
     .el-select>.el-input {
         max-width: 185px !important;
     }
-    .data{margin-right:40px;}
+
+    .data {
+        margin-right: 40px;
+    }
 </style>

@@ -167,7 +167,7 @@ const error = {
 export function getErrorMsg(errorCode) {
   let message = ''
   for (var p in error) {
-    if (String(errorCode) === p) {
+    if (errorCode === p) {
       message = error[p]
       return message
     }
