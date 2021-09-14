@@ -33,11 +33,7 @@
             }
 
         },
-<<<<<<< HEAD
-        components: { taskLoad, taskLog, taskProfile, taskInfo },
-=======
         components: { taskLoad, taskLog, taskProfile, taskInfo  },
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
         data() {
             return {
                 CreateFormVisible: true,

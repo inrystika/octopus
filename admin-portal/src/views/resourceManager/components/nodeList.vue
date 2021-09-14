@@ -8,38 +8,22 @@
           >
             <el-table-column label="节点名字" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.name }}</span>
-=======
                     <span >{{ scope.row.name }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="IP" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.ip }}</span>
-=======
                     <span >{{ scope.row.ip }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="节点状态" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.status }}</span>
-=======
                     <span >{{ scope.row.status }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="所属资源池" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.resourcePools }}</span>
-=======
                     <span >{{ scope.row.resourcePools }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="节点详情" align="center">
@@ -53,33 +37,21 @@
             <el-table :data="data">
                 <el-table-column label="名称">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>
-=======
                         <span >
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                             {{ scope.row.name }}
                         </span>
                     </template>
                 </el-table-column>
                 <el-table-column label="平台使用量">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>
-=======
                         <span >
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                             {{ scope.row.use }}
                         </span>
                     </template>
                 </el-table-column>
                 <el-table-column label="总量">
                     <template slot-scope="scope">
-<<<<<<< HEAD
-                        <span>
-=======
                         <span >
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                             {{ scope.row.total }}
                         </span>
                     </template>
@@ -136,7 +108,7 @@
                     for (let key2 in val.capacity) {
                         if (key1 === key2) {
                             let percentage
-                            if (val.allocated[key1] === 0) { percentage: 0 }
+                            if (parseInt(val.allocated[key1]) === 0) { percentage: 0 }
                             else if ((/^\d+$/.test(val.allocated[key1])) && (/^\d+$/.test(val.capacity[key1]))) {
                                 percentage = val.allocated[key1] / val.capacity[key1] * 100
                                 percentage = parseFloat(percentage.toFixed(2))

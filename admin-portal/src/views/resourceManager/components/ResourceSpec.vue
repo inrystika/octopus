@@ -12,29 +12,17 @@
         >
             <el-table-column label="规格名称" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.name }}</span>
-=======
                     <span >{{ scope.row.name }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="机时价格(1~10)" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.price }}</span>
-=======
                     <span >{{ scope.row.price }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="资源数量" align="center">
                 <template slot-scope="scope">
-<<<<<<< HEAD
-                    <span>{{ scope.row.resourceQuantity }}</span>
-=======
                     <span >{{ scope.row.resourceQuantity }}</span>
->>>>>>> 1cc371d52e40272c728853b54fb6e132110a588a
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
