@@ -12,6 +12,9 @@
                 <el-tab-pane label="任务负载" name="menu3">
                     <taskLoad :row="data" v-if="tabRefresh.menu3"></taskLoad>
                 </el-tab-pane>
+                <el-tab-pane label="运行信息" name="menu4">
+                    <taskInfo :row="data" v-if="tabRefresh.menu4"></taskInfo>
+                </el-tab-pane>
             </el-tabs>
         </el-dialog>
     </div>
@@ -20,6 +23,7 @@
     import taskLoad from './taskLoad.vue'
     import taskLog from './taskLog.vue'
     import taskProfile from './taskProfile.vue'
+    import taskInfo from './taskInfo.vue'
     export default {
         name: "detailDialog",
         props: {
@@ -29,7 +33,7 @@
             }
 
         },
-        components: { taskLoad, taskLog, taskProfile },
+        components: { taskLoad, taskLog, taskProfile, taskInfo  },
         data() {
             return {
                 CreateFormVisible: true,
@@ -38,7 +42,8 @@
                 tabRefresh: {
                     menu1: true,
                     menu2: false,
-                    menu3: false
+                    menu3: false,
+                    menu4: false
                 }
             }
         },
@@ -64,6 +69,9 @@
                         break
                     case 'menu3':
                         this.switchTab('menu3')
+                        break
+                    case 'menu4':
+                        this.switchTab('menu4')
                         break
                 }
             },

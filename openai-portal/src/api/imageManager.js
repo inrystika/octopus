@@ -16,6 +16,7 @@ export function judgeParam(params) {
   params.sourceType?conditions.push(`sourceType=`+params.sourceType):null;
   params.imageVersion?conditions.push(`imageVersion=`+params.imageVersion):null;
   params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
+  params.nameVerLike?conditions.push(`nameVerLike=`+params.nameVerLike):null;
   return conditions
 }
 // 我的镜像列表

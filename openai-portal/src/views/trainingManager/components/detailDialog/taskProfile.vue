@@ -75,7 +75,7 @@
                             </span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="运行命令" width="350px" align="center">
+                    <el-table-column label="运行命令" width="200px" align="center">
                         <template slot-scope="scope">
                             <span>{{ command(scope.row) }}</span>
                         </template>
@@ -103,7 +103,7 @@
         },
         computed: {
             show: function () {
-                if (this.data.isDistributed == true) {
+                if (this.data.isDistributed === true) {
                     return true
                 }
                 else { return false }
@@ -113,7 +113,7 @@
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
-            if (this.data.isDistributed == true) {
+            if (this.data.isDistributed === true) {
                 this.data.config.forEach(
                     (item, index) => {
                         item.status = item.subTaskState
