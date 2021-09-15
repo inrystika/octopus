@@ -171,7 +171,7 @@ func (i ImageList) JoinUser(db *gorm.DB) *gorm.DB {
 
 	if i.UserNameLike != "" {
 		querySql += " and user.full_name like ?"
-		params = append(params, i.UserNameLike+"%")
+		params = append(params, "%"+i.UserNameLike+"%")
 		db = db.Joins(joinSql).Where(querySql, params...)
 	}
 
@@ -186,7 +186,7 @@ func (i ImageList) JoinWorkspace(db *gorm.DB) *gorm.DB {
 
 	if i.SpaceNameLike != "" {
 		querySql += " and workspace.name like ?"
-		params = append(params, i.SpaceNameLike+"%")
+		params = append(params, "%"+i.SpaceNameLike+"%")
 		db = db.Joins(joinSql).Where(querySql, params...)
 	}
 
