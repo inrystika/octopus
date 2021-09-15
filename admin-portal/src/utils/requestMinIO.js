@@ -27,6 +27,7 @@ service.interceptors.request.use(
     return config
   },
   error => {
+    store.commit('user/CLEAR_PROGRESS')
     // do something with request error
     console.log(error) // for debug
     return Promise.reject(error)
@@ -86,6 +87,7 @@ service.interceptors.response.use(
     // }
   },
   error => {
+    store.commit('user/CLEAR_PROGRESS')
     console.log('err' + error) // for debug
     Message({
       message: error.message,

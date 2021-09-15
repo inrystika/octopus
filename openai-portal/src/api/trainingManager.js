@@ -3,14 +3,14 @@ import requestLog from '@/utils/requestLog'
 // 训练任务接口
 export function getList(params) {
   let conditions = []
-  params.pageSize?conditions.push(`pageSize=`+params.pageSize):null;
-  params.pageIndex?conditions.push(`pageIndex=`+params.pageIndex):null;
-  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
-  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
-  params.createAtGte?conditions.push(`createdAtGte=`+params.createAtGte):null;
-  params.createAtLt?conditions.push(`createdAtLt=`+params.createAtLt):null;
-  params.status?conditions.push(`status=`+params.status):null;
+  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
+  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
+  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
+  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.createAtGte ? conditions.push(`createdAtGte=` + params.createAtGte) : null;
+  params.createAtLt ? conditions.push(`createdAtLt=` + params.createAtLt) : null;
+  params.status ? conditions.push(`status=` + params.status) : null;
   return request({
     url: '/v1/trainmanage/trainjob?' + conditions.join("&"),
     method: 'get',
@@ -48,7 +48,7 @@ export function saveTemplate(data) {
   })
 }
 // 训练任务详情
-export function getTraningDetail(params){
+export function getTraningDetail(params) {
   return request({
     url: `/v1/trainmanage/trainjob/${params}`,
     method: 'get',
@@ -56,7 +56,7 @@ export function getTraningDetail(params){
   })
 }
 // 训任务模板详情
-export function getTempalteDetail(params){
+export function getTempalteDetail(params) {
   return request({
     url: `/v1/trainmanage/trainjobtemplate/${params}`,
     method: 'get',
@@ -65,14 +65,14 @@ export function getTempalteDetail(params){
 // 任务模板接口
 export function getTemplate(params) {
   let conditions = []
-  params.pageSize?conditions.push(`pageSize=`+params.pageSize):null;
-  params.pageIndex?conditions.push(`pageIndex=`+params.pageIndex):null;
-  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
-  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
-  params.createAtGte?conditions.push(`createdAtGte=`+params.createAtGte):null;
-  params.createAtLt?conditions.push(`createdAtLt=`+params.createAtLt):null;
-  params.status?conditions.push(`status=`+params.status):null;
+  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
+  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
+  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
+  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.createAtGte ? conditions.push(`createdAtGte=` + params.createAtGte) : null;
+  params.createAtLt ? conditions.push(`createdAtLt=` + params.createAtLt) : null;
+  params.status ? conditions.push(`status=` + params.status) : null;
   return request({
     url: '/v1/trainmanage/trainjobtemplate?' + conditions.join("&"),
     method: 'get',
@@ -102,6 +102,13 @@ export function editeTemplate(params) {
     method: 'put',
     data: params.data
 
+  })
+}
+// 模板复制
+export function copyTemplate(data) {
+  return request({
+    url: `/v1/trainmanage/trainjobtemplate/${data.id}/copy`,
+    method: 'post'
   })
 }
 // 任务日志访问

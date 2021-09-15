@@ -3,16 +3,6 @@
         <searchForm :searchForm=searchForm :blurName="'任务名称 搜索'" @searchData="getSearchData" />
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
-            <el-table-column label="群组">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.workspaceName="default-workspace"?'默认群组':scope.row.workspaceName }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="用户名">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.userName }}</span>
-                </template>
-            </el-table-column>
             <el-table-column label="任务名称">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
@@ -26,6 +16,16 @@
             <el-table-column label="数据集名称">
                 <template slot-scope="scope">
                     <span>{{ scope.row.dataSetName}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="群组">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.workspaceName==""?'默认群组':scope.row.workspaceName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="用户名">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.userName }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
