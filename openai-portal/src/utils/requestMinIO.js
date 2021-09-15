@@ -86,6 +86,7 @@ service.interceptors.response.use(
     // }
   },
   error => {
+    store.commit('user/CLEAR_PROGRESS')
     console.log('err' + error) // for debug
     Message({
       message: error.message,
