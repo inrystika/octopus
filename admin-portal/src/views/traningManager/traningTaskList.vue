@@ -20,7 +20,7 @@
             </el-table-column>
             <el-table-column label="群组">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.workspaceName="default-workspace"?'默认群组':scope.row.workspaceName }}</span>
+                    <span>{{ scope.row.workspaceName==""?'默认群组':scope.row.workspaceName }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="用户名">
