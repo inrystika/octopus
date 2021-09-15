@@ -208,6 +208,7 @@ minio:
     nodePort: "31311"
     port: "9000"
   affinity:
+    nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
@@ -242,16 +243,17 @@ mysql:
         configMap:
           name: mysql-initdb-config
     affinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - amd64
+              - x64
+              - x86-64
+              - x86_64
 
 
 # redis
@@ -264,16 +266,17 @@ redis:
       size: "50Gi"
       existingClaim: "octopus-redis-pvc"
     affinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - amd64
+              - x64
+              - x86-64
+              - x86_64
   replica:
     replicaCount: 1
   auth:
@@ -289,6 +292,7 @@ nginx-ingress-controller:
   nodeSelector:
     nginx-ingress: "yes"
   affinity:
+    nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
