@@ -18,6 +18,7 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import '../theme/index.css'
 import '@/styles/dot.scss'
 import globalVariable from '@/api/globalVariable.js'
+import directives from './directives'
 Vue.prototype.GLOBAL = globalVariable
 
 /**
@@ -38,7 +39,7 @@ Vue.use(ElementUI, { zhLocale })
 // Vue.use(ElementUI)
 Vue.use(VueAwesomeSwiper, /* { default global options } */)
 Vue.config.productionTip = false
-
+Vue.use(directives)
 new Vue({
   el: '#app',
   router,

@@ -1129,6 +1129,7 @@
   content: "\e7b3"; }
 
 .el-icon-circle-close:before {
+  color:#409EFF;
   content: "\e78d"; }
 
 .el-icon-circle-check:before {

@@ -315,19 +315,6 @@
             // 1编辑模块2创建训练任务
             this.getResourceList()
         },
-        directives: {
-            loadmore: {
-                inserted: function (el, binding) {
-                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
-                    SELECTWRAP_DOM.addEventListener('scroll', function () {
-                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
-                            binding.value();
-                        }
-                    })
-                }
-            }
-        },
         methods: {
             // 错误码
             getErrorMsg(code) {

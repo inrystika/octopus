@@ -317,19 +317,6 @@
             }
 
         },
-        directives: {
-            loadmore: {
-                inserted: function (el, binding) {              
-                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
-                    SELECTWRAP_DOM.addEventListener('scroll', function () {
-                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
-                            binding.value();
-                        }
-                    })
-                }
-            }
-        },
         methods: {
             // 错误码
             getErrorMsg(code) {
@@ -541,7 +528,7 @@
                 this.algorithmVersion = true
                 this.algorithmVersionCount = 1
                 this.algorithmVersionOption = [],
-                this.ruleForm.algorithmVersion = ''
+                    this.ruleForm.algorithmVersion = ''
                 this.getAlgorithmVersionList()
             },
             getAlgorithmNameList(searchKey) {
@@ -730,7 +717,7 @@
                         if (searchKey && searchKey.length != 0) {
                             this.dataSetNameOption = response.data.datasets
                         }
-                        else {           
+                        else {
                             this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
 
                         }
@@ -789,9 +776,6 @@
             remoteDataSet(a) {
                 this.getDataSetNameList(a)
             }
-
-
-
         }
     }
 </script>
