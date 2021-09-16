@@ -1,6 +1,9 @@
 <template>
     <div>
-      <div v-html="this.initInfo"></div>
+        <div v-for="(item,key) in initInfo" :key="key">
+            <h3>{{key}}</h3>
+            <div v-html="item"></div>
+        </div>
     </div>
 </template>
 
@@ -15,12 +18,13 @@
         },
         data() {
           return {
-            initInfo: "",
+            initInfo: {},         
           }
         },
         created() {
             let taskInfoString = this.row.initInfo ? this.row.initInfo.replace(/\n/g, "<br>") : ''
             let taskInfoData = JSON.parse(taskInfoString)
+            let tempTaskInfoData = {}
             for(let pid in taskInfoData['podEvents']){       
                 const eventList = taskInfoData['podEvents'][pid]
                 const roleName = taskInfoData['podRoleName'][pid]
@@ -45,8 +49,19 @@
                     message += event['message'] + "<br><br>"
                 }
                 message += "<br>"
-                this.initInfo = message
+                tempTaskInfoData[roleName] = message
             }
+            let obj = {}
+            Object.keys(tempTaskInfoData).sort().forEach(function(key) {
+                obj[key] = tempTaskInfoData[key];
+            });
+            this.initInfo = obj 
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    .select {
+        margin-left: 5px;
+    }
+</style>
