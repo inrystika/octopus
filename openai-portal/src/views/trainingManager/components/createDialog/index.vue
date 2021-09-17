@@ -627,7 +627,7 @@
             },
             loadImageName() {
                 this.imageNameCount = this.imageNameCount + 1
-                if (this.imageNameOption.length < thisimageNameTotal) {
+                if (this.imageNameOption.length < this.imageNameTotal) {
                     this.getImageNameList(this.imageTemp)
                 }
 
