@@ -695,6 +695,33 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- printf "%s:%s" (include "redis.serviceName" .) .Values.redis.master.service.port  -}}
 {{- end -}}
 
+{{/******************influxdb******************/}}
+
+{{- define "influxdb.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "influxdb.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-influxdb" .Release.Name  | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "influxdb.serviceName" -}}
+{{- printf "%s" (include "influxdb.fullname" .)  -}}
+{{- end -}}
+
+{{- define "influxdb.serviceAddr" -}}
+{{- printf "%s:%s" (include "influxdb.serviceName" .) .Values.influxdb.service.port  -}}
+{{- end -}}
+
 {{/****************** Prometheus ******************/}}
 
 {{- define "prometheus.name" -}}
