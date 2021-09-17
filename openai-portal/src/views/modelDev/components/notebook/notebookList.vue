@@ -356,16 +356,19 @@
       close(val) {
         this.notebookVisible = val;
         this.notebookInfoVisible = val;
+        this.initInfo = ""
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
         this.notebookInfoVisible = val;
+        this.initInfo = ""
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
         this.notebookInfoVisible = val;
+        this.initInfo = ""
         this.getNotebookList(this.searchData);
       }
     }
