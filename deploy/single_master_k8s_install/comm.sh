@@ -12,6 +12,7 @@ get_localip() {
 set_ufw_config() {
     echo -e "---------------------\033[31m close ufw \033[0m---------------------"
     ufw disable
+    swapoff -a
     echo -e "---------------------\033[31m close ufw success \033[0m---------------------"
 }
 
