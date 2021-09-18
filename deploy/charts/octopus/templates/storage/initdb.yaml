@@ -6,3 +6,12 @@ data:
   initdb.sql: |
     CREATE DATABASE IF NOT EXISTS octopus DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
     CREATE DATABASE IF NOT EXISTS core DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influxdb-initdb-config
+data:
+  custom-init-scripts.sh: |
+    influx -execute "CREATE DATABASE octopus" -username octopus -password octopus
+    influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username {{ .Values.influxdb.auth.user.username }} -password {{ .Values.influxdb.auth.user.password }}
