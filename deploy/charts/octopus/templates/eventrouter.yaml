@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
         - name: kube-eventrouter
-          image: gcr.io/heptio-images/eventrouter:latest
+          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/heptio-images/eventrouter:v0.3
           imagePullPolicy: IfNotPresent
           volumeMounts:
           - name: config-volume

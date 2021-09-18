@@ -14,4 +14,4 @@ metadata:
 data:
   custom-init-scripts.sh: |
     influx -execute "CREATE DATABASE octopus" -username octopus -password octopus
-    influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username octopus -password octopus
+    influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username {{ .Values.influxdb.auth.user.username }} -password {{ .Values.influxdb.auth.user.password }}
