@@ -11,6 +11,3 @@ dependencies:
   - name: nginx-ingress-controller
     version: 7.6.9
     repository: https://charts.bitnami.com/bitnami
-  - name: influxdb
-    version: 2.3.9
-    repository: https://charts.bitnami.com/bitnami

@@ -38,8 +38,6 @@ pvc:
     requests: 100Gi
   redis:
     requests: 100Gi
-  influxdb:
-    requests: 100Gi
   logger:
     requests: 100Gi
 
@@ -62,12 +60,6 @@ pv:
       nfs:
         server:  192.168.203.72
         path:  /data/datasets/data/redis
-  influxdb:
-    requests: 100Gi
-    storageType:
-      nfs:
-        server:  192.168.203.72
-        path:  /data/datasets/data/influxdb
   logger:
     requests: 100Gi
     storageType:
@@ -299,34 +291,6 @@ nginx-ingress-controller:
   replicaCount: 1
   nodeSelector:
     nginx-ingress: "yes"
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
-
-# influxdb
-influxdb:
-  replicaCount: 1
-  service:
-    type: NodePort
-    port: "8086"
-  auth:
-    user:
-      username: "octopus"
-      password: "octopus"
-  persistence:
-    enabled: true
-    size: "100Gi"
-    existingClaim: "octopus-influxdb-pvc"
-  initdbScriptsCM: "influxdb-initdb-config"
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

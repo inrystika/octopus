@@ -55,18 +55,3 @@ spec:
   accessModes:
     - ReadWriteMany
 {{ toYaml .Values.pv.logger.storageType | indent 2 }}
-
----
-
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: octopus-influxdb-pv
-  labels:
-    pv: influxdb-pv
-spec:
-  capacity:
-    storage: {{ .Values.pv.influxdb.requests }}
-  accessModes:
-    - ReadWriteMany
-{{ toYaml .Values.pv.influxdb.storageType | indent 2 }}
