@@ -325,6 +325,8 @@ influxdb:
     existingClaim: "octopus-influxdb-pvc"
   volumePermissions:
     enabled: true
+    securityContext:
+      runAsUser: 0
   influxdb:
     initdbScriptsCM: "influxdb-initdb-config"
     existingConfiguration: "influxdb-exist-config"
