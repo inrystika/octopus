@@ -634,7 +634,7 @@ export default {
         loadDataSetName() {
             this.dataSetNameCount = this.dataSetNameCount + 1;
             if (this.dataSetNameOption.length < this.dataSetNameTotal) {
-                this.getDataSetNameList();
+                this.getDataSetNameList(this.dataSetTemp);
             }
         },
         loadDataSetVersion() {
