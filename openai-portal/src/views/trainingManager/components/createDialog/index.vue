@@ -298,6 +298,9 @@
                 data: {},
                 temp: { algorithmId: '' },
                 argument: '',
+                algorithmNameTemp: '',
+                imageTemp: '',
+                dataSetTemp: ''
 
 
             }
@@ -316,19 +319,6 @@
                 this.algorithmVersion = true
             }
 
-        },
-        directives: {
-            loadmore: {
-                inserted: function (el, binding) {
-                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
-                    SELECTWRAP_DOM.addEventListener('scroll', function () {
-                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
-                            binding.value();
-                        }
-                    })
-                }
-            }
         },
         methods: {
             // 错误码
@@ -541,49 +531,32 @@
                 this.algorithmVersion = true
                 this.algorithmVersionCount = 1
                 this.algorithmVersionOption = [],
-                this.ruleForm.algorithmVersion = ''
+                    this.ruleForm.algorithmVersion = ''
                 this.getAlgorithmVersionList()
             },
             getAlgorithmNameList(searchKey) {
                 if (this.ruleForm.algorithmSource === 'my') {
                     getMyAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
-                            this.algorithmNameOption = response.data.algorithms
-                        }
-                        else {
-                            if (response.data.algorithms.length !== 0) {
-                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
-                                this.algorithmNameTotal = response.data.totalSize
-
-                            }
-                        }
-
+                        this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
+                        this.algorithmNameTotal = response.data.totalSize
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'pre') {
                     getPresetAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
-                            this.algorithmNameOption = response.data.algorithms
+                        if (response.data.algorithms.length !== 0) {
+                            this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms)
+                            this.algorithmNameTotal = response.data.totalSize
                         }
-                        else {
-                            if (response.data.algorithms.length !== 0) {
-                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms)
-                                this.algorithmNameTotal = response.data.totalSize
-                            }
-                        }
+
                     })
                 }
                 if (this.ruleForm.algorithmSource === 'common') {
                     getPublicAlgorithmList({ pageIndex: this.algorithmNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
-                            this.algorithmNameOption = response.data.algorithms
+                        if (response.data.algorithms.length !== 0) {
+                            this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
+                            this.algorithmNameTotal = response.data.totalSize
                         }
-                        else {
-                            if (response.data.algorithms.length !== 0) {
-                                this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
-                                this.algorithmNameTotal = response.data.totalSize
-                            }
-                        }
+
 
                     })
                 }
@@ -601,8 +574,9 @@
             },
             loadAlgorithmName() {
                 this.algorithmNameCount = this.algorithmNameCount + 1
+
                 if (this.algorithmNameOption.length < this.algorithmNameTotal) {
-                    this.getAlgorithmNameList()
+                    this.getAlgorithmNameList(this.algorithmNameTemp)
                 }
 
             },
@@ -623,47 +597,29 @@
             getImageNameList(searchKey) {
                 if (this.ruleForm.imageSource === 'my') {
                     getMyImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
+
+                        if (response.data.images.length !== 0) {
                             let data = response.data.images;
                             let tableData = [];
+                            this.imageNameTotal = response.data.totalSize
                             data.forEach(item => {
                                 tableData.push({ ...item.image, isShared: item.isShared })
                             })
-                            this.imageNameOption = tableData
+                            this.imageNameOption = this.imageNameOption.concat(tableData)
                         }
-                        else {
-                            if (response.data.images.length !== 0) {
-                                let data = response.data.images;
-                                let tableData = [];
-                                this.imageNameTotal = response.data.totalSize
-                                data.forEach(item => {
-                                    tableData.push({ ...item.image, isShared: item.isShared })
-                                })
-                                this.imageNameOption = this.imageNameOption.concat(tableData)
-                            }
-                        }
+
 
                     })
                 }
                 if (this.ruleForm.imageSource === 'pre') {
                     getPreImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
-                            this.imageNameOption = response.data.images
-                        }
-                        else {
-                            if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
-                        }
-
+                        if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
                     })
                 }
                 if (this.ruleForm.imageSource === 'common') {
                     getPublicImage({ pageIndex: this.imageNameCount, pageSize: 10, imageStatus: 3, imageType: 2, nameVerLike: searchKey }).then(response => {
-                        if (searchKey && searchKey.length != 0) {
-                            this.imageNameOption = response.data.images
-                        }
-                        else {
-                            if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
-                        }
+                        if (response.data.images.length !== 0) { this.imageNameOption = this.imageNameOption.concat(response.data.images); this.imageNameTotal = response.data.totalSize }
+
 
                     })
                 }
@@ -671,8 +627,8 @@
             },
             loadImageName() {
                 this.imageNameCount = this.imageNameCount + 1
-                if (this.imageNameOption.length < thisimageNameTotal) {
-                    this.getImageNameList()
+                if (this.imageNameOption.length < this.imageNameTotal) {
+                    this.getImageNameList(this.imageTemp)
                 }
 
             },
@@ -698,15 +654,8 @@
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }
-                        if (searchKey && searchKey.length != 0) {
-                            this.dataSetNameOption = response.data.datasets
-                        }
-                        else {
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets)
-                            this.dataSetNameTotal = response.data.totalSize
-                        }
-
-
+                        this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets)
+                        this.dataSetNameTotal = response.data.totalSize
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'pre') {
@@ -714,12 +663,7 @@
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }
-                        if (searchKey && searchKey.length != 0) {
-                            this.dataSetNameOption = response.data.datasets
-                        }
-                        else {
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
-                        }
+                        this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
                     })
                 }
                 if (this.ruleForm.dataSetSource === 'common') {
@@ -727,14 +671,7 @@
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         }
-                        if (searchKey && searchKey.length != 0) {
-                            this.dataSetNameOption = response.data.datasets
-                        }
-                        else {           
-                            this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
-
-                        }
-
+                        this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets); this.dataSetNameTotal = response.data.totalSize
                     })
                 }
             },
@@ -752,7 +689,7 @@
             loadDataSetName() {
                 this.dataSetNameCount = this.dataSetNameCount + 1
                 if (this.dataSetNameOption.length < this.dataSetNameTotal) {
-                    this.getDataSetNameList()
+                    this.getDataSetNameList(this.dataSetTemp)
                 }
 
             },
@@ -779,18 +716,28 @@
             },
             //远程请求算法名称
             remoteAlgorithm(a) {
-                this.getAlgorithmNameList(a)
+                if (a == '') { this.algorithmNameTemp = '' }
+                else { this.algorithmNameTemp = a }
+                this.algorithmNameOption = []
+                this.algorithmNameCount = 1
+                this.getAlgorithmNameList(this.algorithmNameTemp)
             },
             // 远程请求镜像名称
             remoteImage(a) {
-                this.getImageNameList(a)
+                if (a == '') { this.imageTemp = '' }
+                else { this.imageTemp = a }
+                this.imageNameOption = []
+                this.imageNameCount = 1
+                this.getImageNameList(this.imageTemp)
             },
             //远程请求数据集名称
             remoteDataSet(a) {
-                this.getDataSetNameList(a)
+                if (a == '') { this.dataSetTemp = '' }
+                else { this.dataSetTemp = a }
+                this.dataSetNameOption = []
+                this.dataSetNameCount = 1
+                this.getDataSetNameList(this.dataSetTemp)
             }
-
-
 
         }
     }

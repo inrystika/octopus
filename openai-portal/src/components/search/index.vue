@@ -1,12 +1,19 @@
 <template>
     <div>
         <el-dialog title="高级搜索" :visible.sync="dialogFormVisible" :close-on-click-modal="false">
-            <el-form :inline="true" class="demo-form-inline" ref="searchForm" :label-position="labelPosition"
-                label-width="100px">
-                <el-form-item :label=item.label v-for="item in searchForm" :key="item.props">
-                    <el-input v-model="searchData[item.prop]" :placeholder="item.placeholder"
-                        v-if="item.type==='Input'">
-                    </el-input>
+            <el-form
+                ref="searchForm"
+                :inline="true"
+                class="demo-form-inline"
+                :label-position="labelPosition"
+                label-width="100px"
+            >
+                <el-form-item v-for="item in searchForm" :key="item.props" :label=item.label>
+                    <el-input
+                        v-model="searchData[item.prop]"
+                        v-if="item.type==='Input'"
+                        :placeholder="item.placeholder"
+                    />
                     <el-select v-if="item.type==='Select'" v-model="searchData[item.prop]">
                         <el-option v-for="op in item.options" :label="op.label" :value="op.value" :key="op.value">
                         </el-option>
@@ -43,8 +50,7 @@
                 advanced: false,
                 searchData: { searchKey: '' },
                 dialogFormVisible: false,
-                labelPosition: 'left',
-
+                labelPosition: 'left'
             }
         },
         methods: {

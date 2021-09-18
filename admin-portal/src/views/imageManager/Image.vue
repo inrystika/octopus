@@ -4,16 +4,6 @@
         <el-button v-if="!flag" type="primary" @click="create" class="create">创建</el-button>
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
-            <el-table-column v-if="flag" label="群组名">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column v-if="flag" label="提供者" align="center">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.username }}</span>
-                </template>
-            </el-table-column>
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -22,6 +12,21 @@
             <el-table-column label="镜像标签" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageVersion }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="镜像描述" align="center" :show-overflow-tooltip="true">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.imageDesc }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="flag" label="群组名">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="flag" label="提供者" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.username }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="镜像地址" align="center" :show-overflow-tooltip="true">
@@ -37,11 +42,6 @@
             <el-table-column label="上传类型" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="镜像描述" align="center" :show-overflow-tooltip="true">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
