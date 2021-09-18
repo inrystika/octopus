@@ -315,6 +315,8 @@ nginx-ingress-controller:
 # influxdb
 influxdb:
   replicaCount: 1
+  image:
+    debug: true
   auth:
     user:
       username: "octopus"
@@ -325,6 +327,7 @@ influxdb:
     existingClaim: "octopus-influxdb-pvc"
   influxdb:
     initdbScriptsCM: "influxdb-initdb-config"
+    existingConfiguration: "influxdb-conf-config"
     service:
       type: NodePort
       port: "8086"
