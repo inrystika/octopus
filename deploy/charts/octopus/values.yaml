@@ -315,8 +315,6 @@ nginx-ingress-controller:
 # influxdb
 influxdb:
   replicaCount: 1
-  image:
-    debug: true
   auth:
     user:
       username: "octopus"
@@ -325,9 +323,11 @@ influxdb:
     enabled: true
     size: "100Gi"
     existingClaim: "octopus-influxdb-pvc"
+  volumePermissions:
+    enabled: true
   influxdb:
     initdbScriptsCM: "influxdb-initdb-config"
-    existingConfiguration: "influxdb-conf-config"
+    existingConfiguration: "influxdb-exist-config"
     service:
       type: NodePort
       port: "8086"
@@ -343,10 +343,6 @@ influxdb:
               - x64
               - x86-64
               - x86_64
-    livenessProbe:
-      timeoutSeconds: 60
-    readinessProbe:
-      timeoutSeconds: 60
   
 
 # grafana

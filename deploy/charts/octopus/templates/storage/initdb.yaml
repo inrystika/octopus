@@ -35,5 +35,4 @@ data:
       series-id-set-cache-size = 100
     [logging]
       format = "logfmt"
-      level = "debug"
       suppress-logo = true
