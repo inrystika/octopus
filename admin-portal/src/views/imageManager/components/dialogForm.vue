@@ -10,7 +10,7 @@
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
                     <el-select v-model="ruleForm.imageType" placeholder="请选择镜像类型" :disabled="!flag||showUpload">
-                        <el-option label="notebook镜像" :value="1"></el-option>
+                        <el-option label="NoteBook镜像" :value="1"></el-option>
                         <el-option label="训练镜像" :value="2"></el-option>
                     </el-select>
                 </el-form-item>

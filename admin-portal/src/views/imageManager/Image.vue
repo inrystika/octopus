@@ -36,7 +36,7 @@
             </el-table-column>
             <el-table-column label="镜像类型" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.imageType===1?'notebook类型':'训练类型' }}</span>
+                    <span>{{ scope.row.imageType===1?'NoteBook类型':'训练类型' }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="上传类型" align="center">
@@ -117,7 +117,7 @@
                     { type: 'Input', label: '镜像名', prop: 'imageNameLike', placeholder: '请输入镜像名' },
                     {
                         type: 'Select', label: '镜像类型', prop: 'imageType', placeholder: '请选择镜像类型',
-                        options: [{ label: 'notebook类型', value: 1 }, { label: '训练类型', value: 2 }]
+                        options: [{ label: 'NoteBook类型', value: 1 }, { label: '训练类型', value: 2 }]
                     },
                     {
                         type: 'Select', label: '来源类型', prop: 'sourceType', placeholder: '请选择来源类型',
