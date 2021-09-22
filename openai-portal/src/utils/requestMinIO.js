@@ -1,7 +1,6 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
+import { Message } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
@@ -49,7 +48,6 @@ service.interceptors.response.use(
    */
 
   response => {
-
     // res = response.data
     // res.data = response.data.payload
 
