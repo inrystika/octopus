@@ -89,7 +89,7 @@ export const constantRoutes = [
         path: 'notebook',
         name: 'notebook',
         component: () => import('@/views/modelDev/notebook'),
-        meta: { title: 'Notebook', icon: 'dot' }
+        meta: { title: 'NoteBook', icon: 'dot' }
       },
       {
         path: 'algorithmManager',

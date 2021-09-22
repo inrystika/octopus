@@ -209,7 +209,7 @@
             imageType(value) {
                 switch (value) {
                     case 1:
-                        return 'notebook类型'
+                        return 'noteBook类型'
                     default:
                         return '训练类型'
                 }

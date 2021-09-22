@@ -119,7 +119,7 @@ export default {
         case 1:
           return '训练'
         default:
-          return 'notebook' 
+          return 'noteBook' 
       }
     },
     handleSizeChange(val){

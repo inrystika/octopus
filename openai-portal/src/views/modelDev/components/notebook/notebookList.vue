@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'Notebook名称 搜索'">
+      <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'NoteBook名称 搜索'">
       </searchForm>
     </div>
     <el-button type="primary" size="medium" @click="create" class="create">
