@@ -15,12 +15,12 @@
                 class="demo-ruleForm"
             >
                 <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" placeholder="请输入notebook名称"></el-input>
+                    <el-input v-model="ruleForm.name" placeholder="请输入noteBook名称"></el-input>
                 </el-form-item>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input
                         :autosize="{ minRows: 2, maxRows: 4}"
-                        placeholder="请输入notebook描述"
+                        placeholder="请输入noteBook描述"
                         maxlength="300"
                         show-word-limit
                         v-model="ruleForm.desc"
