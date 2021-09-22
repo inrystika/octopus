@@ -627,7 +627,7 @@
             },
             loadImageName() {
                 this.imageNameCount = this.imageNameCount + 1
-                if (this.imageNameOption.length < thisimageNameTotal) {
+                if (this.imageNameOption.length < this.imageNameTotal) {
                     this.getImageNameList(this.imageTemp)
                 }
 
@@ -738,7 +738,6 @@
                 this.dataSetNameCount = 1
                 this.getDataSetNameList(this.dataSetTemp)
             }
-
         }
     }
 </script>
