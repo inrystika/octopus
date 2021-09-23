@@ -106,6 +106,7 @@ install_docker() {
                 "exec-opts": ["native.cgroupdriver=systemd"]
             }
 EOF
+        sudo systemctl daemon-reload
         sudo systemctl restart docker
         echo -e "---------------------\033[31m docker install success \033[0m---------------------"
     fi
@@ -132,7 +133,7 @@ install_nvidia_docker() {
             }
         }
 EOF
-
+    sudo systemctl daemon-reload
     sudo systemctl restart docker
     echo -e "---------------------\033[31m nvidia docker install success \033[0m---------------------"
 }
