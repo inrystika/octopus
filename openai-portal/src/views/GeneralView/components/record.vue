@@ -118,11 +118,7 @@ export default {
         case 1:
           return '训练'
         default:
-<<<<<<< HEAD
-          return 'notebook'
-=======
           return 'noteBook' 
->>>>>>> baa1ea4a0612a0302c0c1cac50b032d3d7944e93
       }
     },
     handleSizeChange(val) {
