@@ -10,11 +10,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: influxdb-initdb-config
+  name: {{ include "octopus.name" . }}-influxdb
 data:
   custom-init-scripts.sh: |
     influx -execute "CREATE DATABASE octopus" -username octopus -password octopus
-    influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username {{ .Values.influxdb.auth.user.username }} -password {{ .Values.influxdb.auth.user.password }}
+    influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username {{ .Values.influxdb.setDefaultUser.user.username }} -password {{ .Values.influxdb.setDefaultUser.user.password }}
 ---
 apiVersion: v1
 kind: ConfigMap

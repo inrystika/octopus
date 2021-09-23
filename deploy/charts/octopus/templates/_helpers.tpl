@@ -719,7 +719,7 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- end -}}
 
 {{- define "influxdb.serviceAddr" -}}
-{{- printf "%s:%s" (include "influxdb.serviceName" .) .Values.influxdb.influxdb.service.port  -}}
+{{- printf "%s:8086" (include "influxdb.serviceName" .) -}}
 {{- end -}}
 
 {{/******************eventrouter******************/}}

@@ -36,8 +36,8 @@ dependencies:
   version: 7.6.9
   repository: https://charts.bitnami.com/bitnami
 - name: influxdb
-  version: 2.1.0
-  repository: https://charts.bitnami.com/bitnami
+  version: 4.10.0
+  repository: https://helm.influxdata.com/
 
 home: https://octopus.openi.org.cn/
 icon: https://git.openi.org.cn/OpenI/octopus/media/branch/master/logo.png

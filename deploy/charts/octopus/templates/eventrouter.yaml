@@ -31,8 +31,8 @@ data:
     {
       "sink": "influxdb",
       "influxdbHost": "{{ include "influxdb.serviceAddr" . }}",
-      "influxdbUsername": "{{ .Values.influxdb.auth.user.username }}",
-      "influxdbPassword":"{{ .Values.influxdb.auth.user.password }}",
+      "influxdbUsername": "{{ .Values.influxdb.setDefaultUser.user.username }}",
+      "influxdbPassword":"{{ .Values.influxdb.setDefaultUser.user.password }}",
       "influxdbName": "octopus",
       "influxdbWithFields": true
     }
