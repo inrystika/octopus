@@ -1,14 +1,15 @@
 <template>
   <div>
     <el-dialog
-      title="提示" 
+      title="提示"
       :close-on-click-modal="false"
-      :visible.sync="centerDialogVisible" 
-      width="30%" center 
-      :before-close="handleDialogClose" 
+      :visible.sync="centerDialogVisible"
+      width="30%"
+      center
+      :before-close="handleDialogClose"
       :top="'40vh'"
-    > 
-      <span>是否删除？</span> 
+    >
+      <span>是否删除？</span>
       <span slot="footer" class="dialog-footer">
           <el-button @click="cancel">否</el-button>
           <el-button type="primary" @click="confirm">是</el-button>
@@ -22,7 +23,7 @@ export default {
   name: "deletionDialog",
   data() {
     return {
-      centerDialogVisible: true,
+      centerDialogVisible: true
     }
   },
   methods: {

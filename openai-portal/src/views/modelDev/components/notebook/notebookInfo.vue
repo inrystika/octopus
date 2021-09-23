@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      infoVisible: true,
+      infoVisible: true
     }
   },
   methods: {

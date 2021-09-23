@@ -12,7 +12,7 @@
 import notebookList from "./components/notebook/notebookList.vue";
 export default {
   components: {
-    notebookList,
+    notebookList
   },
   data() {
     return {

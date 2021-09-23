@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-dialog 
-      title="预览" 
-      :visible.sync="dialogTableVisible" 
+    <el-dialog
+      title="预览"
+      :visible.sync="dialogTableVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
@@ -20,9 +20,9 @@ import { getErrorMsg } from '@/error/index'
 export default {
   name: "preview",
   props: {
-    row: { type: Object, }
+    row: { type: Object }
   },
-  data(){
+  data() {
     return {
       dialogTableVisible: true,
       data: undefined,
@@ -30,14 +30,14 @@ export default {
     }
   },
   created() {
-    this.data = this.row,
+    this.data = this.row
     this.getPreList()
   },
   methods: {
     getErrorMsg(code) {
       return getErrorMsg(code)
     },
-    getPreList(){
+    getPreList() {
       const param = {
         datasetId: this.data.datasetId,
         version: this.data.version
@@ -55,7 +55,7 @@ export default {
     },
     handleDialogClose() {
       this.$emit('close', false)
-    },
+    }
   }
 }
 </script>

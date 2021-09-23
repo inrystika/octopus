@@ -25,9 +25,7 @@
             banner2,
             login,
             description,
-            description2,
-
-
+            description2
         },
         data() {
             return {
