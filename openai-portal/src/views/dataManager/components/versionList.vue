@@ -83,14 +83,12 @@
           :total="total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
->
-        </el-pagination>
+        />
     </div>
     <div slot="footer">
     </div>
     </el-dialog>
-    <preview v-if="preVisible" :row="versionData" @close="close">
-    </preview>
+    <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset
       v-if="myDatasetVisible"
       :data="this.data"
@@ -98,8 +96,7 @@
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
->
-    </reuploadDataset>
+    />
   </div>
 </template>
 
@@ -110,7 +107,7 @@ import preview from './preview.vue'
 import reuploadDataset from "./reuploadDataset.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "versionList",
+  name: "VersionList",
   components: {
     preview,
     reuploadDataset
@@ -120,7 +117,10 @@ export default {
       type: Object,
       default: () => {}
     },
-    typeChange: { type: Number }
+    typeChange: {
+      type: Number,
+      default: undefined
+    }
   },
   data() {
     return {
@@ -179,7 +179,7 @@ export default {
         param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }
       param.datasetId = this.data.id
-      param.shared = this.Type === 2 ? true :false
+      param.shared = this.Type === 2 ? true : false
       getVersionList(param).then(response => {
         if (response.success) {
           this.versionList = response.data.versions;

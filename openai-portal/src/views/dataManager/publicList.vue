@@ -5,8 +5,7 @@
         :searchForm="searchForm"
         :blurName="'数据集名称 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <div class="index">
       <el-table
@@ -59,8 +58,7 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <versionList
@@ -70,8 +68,7 @@
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -88,7 +85,10 @@
       searchForm
     },
     props: {
-      Type: { type: Number }
+      Type: {
+        type: Number,
+        default: undefined
+      }
     },
 
     data() {

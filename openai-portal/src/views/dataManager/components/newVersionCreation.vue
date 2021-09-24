@@ -9,10 +9,10 @@
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
-            <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-            <el-input v-model="ruleForm.type" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.type" :disabled="true" />
         </el-form-item>
         <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
           <el-input
@@ -21,7 +21,7 @@
             placeholder="请输入数据集描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
           <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
@@ -29,11 +29,10 @@
         <el-form-item v-if="showUpload" label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
-          >
-          </upload>
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -45,7 +44,7 @@ import upload from '@/components/upload/index.vue'
 import { createNewVersion } from "@/api/datasetManager.js";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "newVersionCreation",
+  name: "NewVersionCreation",
   components: {
     upload
   },

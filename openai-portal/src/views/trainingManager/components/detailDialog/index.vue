@@ -11,16 +11,16 @@
         >
             <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
                 <el-tab-pane label="任务简况" name="menu1">
-                    <taskProfile v-if="tabRefresh.menu1" :row="data"></taskProfile>
+                    <taskProfile v-if="tabRefresh.menu1" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="任务日志" name="menu2">
-                    <taskLog v-if="tabRefresh.menu2" :row="data"></taskLog>
+                    <taskLog v-if="tabRefresh.menu2" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="任务负载" name="menu3">
-                    <taskLoad v-if="tabRefresh.menu3" :row="data"></taskLoad>
+                    <taskLoad v-if="tabRefresh.menu3" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="运行信息" name="menu4">
-                    <taskInfo v-if="tabRefresh.menu4" :row="data"></taskInfo>
+                    <taskInfo v-if="tabRefresh.menu4" :row="data" />
                 </el-tab-pane>
             </el-tabs>
         </el-dialog>
@@ -33,7 +33,7 @@
     import taskInfo from './taskInfo.vue'
 
     export default {
-        name: "detailDialog",
+        name: "DetailDialog",
         components: { taskLoad, taskLog, taskProfile, taskInfo },
         props: {
             data: {

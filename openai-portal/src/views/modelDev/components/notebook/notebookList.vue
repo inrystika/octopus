@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm :searchForm="searchForm" :blurName="'NoteBook名称 搜索'" @searchData="getSearchData">
-      </searchForm>
+      <searchForm :searchForm="searchForm" :blurName="'NoteBook名称 搜索'" @searchData="getSearchData" />
     </div>
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
@@ -89,8 +88,7 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <notebookInfo
@@ -100,8 +98,7 @@
       @cancel="cancel"
       @close="close"
     />
-    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
-    </notebookCreation>
+    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -114,7 +111,7 @@
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "notebookList",
+    name: "NotebookList",
     components: {
       notebookCreation,
       notebookInfo,

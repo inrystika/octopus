@@ -16,8 +16,7 @@
                             :key="item.value+item.label"
                             :label="item.label"
                             :value="item.value"
-                        >
-                        </el-option>
+                        />
                     </el-select>
                 </div>
             </el-col>
@@ -42,12 +41,9 @@
         </div>
         <div>
             <el-row>
-                <el-input v-model="textarea" type="textarea" :rows="20">
-                </el-input>
+                <el-input v-model="textarea" type="textarea" :rows="20" />
             </el-row>
-
         </div>
-
     </div>
 </template>
 
@@ -55,7 +51,7 @@
     import { showLog, getTraningDetail } from '@/api/trainingManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "taskLog",
+        name: "TaskLog",
         props: {
             row: {
                 type: Object,

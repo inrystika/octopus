@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :searchForm="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table
@@ -77,12 +77,10 @@
                 :total="total"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-              >
-            </el-pagination>
+            />
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close">
-        </dialogForm>
+        <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close" />
 
     </div>
 </template>
@@ -100,7 +98,7 @@
             searchForm
         },
         props: {
-            Type: { type: Number },
+            Type: { type: Number, default: undefined },
             status: { type: Boolean },
             image: { type: Boolean, default: false }
         },
@@ -176,7 +174,6 @@
                         if (response.success) {
                             if (response.data.images != null) {
                                 this.total = response.data.totalSize
-                                let data = response.data.images
                                 this.tableData = response.data.images
                             }
                         } else {

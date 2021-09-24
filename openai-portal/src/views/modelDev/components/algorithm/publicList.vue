@@ -5,8 +5,7 @@
         :searchForm="searchForm"
         :blurName="'算法名称/描述 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-table
       :data="algorithmList"
@@ -55,8 +54,7 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <algorithmCopy
@@ -66,15 +64,13 @@
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </algorithmCopy>
+    />
     <versionList
       v-if="versionListVisible"
       :Type="this.typeChange"
       :data="row"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -86,14 +82,14 @@ import { getPublicAlgorithmList } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "publicList",
+  name: "PublicList",
   components: {
     algorithmCopy,
     versionList,
     searchForm
   },
   props: {
-    Type: { type: Number }
+    Type: { type: Number, default: undefined }
   },
   data() {
     return {

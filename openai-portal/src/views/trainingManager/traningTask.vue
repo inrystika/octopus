@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'任务名称 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :searchForm="searchForm" :blurName="'任务名称 搜索'" @searchData="getSearchData" />
         </div>
         <el-button type="primary" class="create" @click="open()">批量删除</el-button>
         <el-button type="primary" class="create" @click="create">创建任务</el-button>
@@ -84,15 +84,12 @@
                 :total="total"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-            >
-            </el-pagination>
+            />
         </div>
         <!-- 创建对话框 -->
-        <createDialog v-if="createDialog" :row="row" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close">
-        </createDialog>
+        <createDialog v-if="createDialog" :row="row" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 详情对话框 -->
-        <detailDialog v-if="detailDialog" :data="data" @cancel="cancel" @confirm="confirm" @close="close">
-        </detailDialog>
+        <detailDialog v-if="detailDialog" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
 
     </div>
 </template>
@@ -104,7 +101,7 @@
     import { parseTime, formatDuring } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "traningTask",
+        name: "TraningTask",
         components: {
             createDialog,
             detailDialog,

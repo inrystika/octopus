@@ -9,7 +9,7 @@
     >
       <el-form ref="ruleForm" v-loading.fullscreen.lock="loading" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称：" :label-width="formLabelWidth" prop="name">
-          <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
         <el-form-item label="算法描述：" :label-width="formLabelWidth" prop="desc">
           <el-input
@@ -18,7 +18,7 @@
             placeholder="请输入算法描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="基础版本：" :label-width="formLabelWidth" prop="version">
           <el-select v-model="ruleForm.version" value-key="algorithmVersion" @visible-change="getAlgorithmSource">
@@ -27,8 +27,7 @@
               :key="item.algorithmVersion"
               :label="item.algorithmVersion"
               :value="item"
-            >
-            </el-option>
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="说明：" :label-width="formLabelWidth">
@@ -49,13 +48,12 @@
 import { getAlgorithmVersionList, createNewAlgorithmVersion } from "@/api/modelDev.js";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "newVersionCreation",
+  name: "NewVersionCreation",
   props: {
     row: {
       type: Object,
       default: () => {}
     },
-    newVersionName: "",
     versionList: {
       type: Array,
       default: () => []

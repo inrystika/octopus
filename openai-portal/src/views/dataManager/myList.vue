@@ -5,8 +5,7 @@
         :searchForm="searchForm"
         :blurName="'数据集名称 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
@@ -65,19 +64,17 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
-    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close">
-    </myDatasetCreation>
+    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close" />
     <newVersionCreation
       v-if="newVersionCreationVisible"
       :row="this.data"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    ></newVersionCreation>
+    />
     <versionList
       v-if="versionListVisible"
       :data="this.data"
@@ -85,8 +82,7 @@
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    >
-    </versionList>
+    />
 
   </div>
 </template>
@@ -100,7 +96,7 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "myList",
+    name: "MyList",
     components: {
       newVersionCreation,
       versionList,
@@ -108,7 +104,10 @@
       searchForm
     },
     props: {
-      Type: { type: Number },
+      Type: {
+        type: Number,
+        default: undefined
+      },
       dataset: {
         type: Boolean,
         default: false

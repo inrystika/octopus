@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  name: "deletionDialog",
+  name: "DeletionDialog",
   data() {
     return {
       centerDialogVisible: true

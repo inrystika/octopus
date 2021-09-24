@@ -9,14 +9,14 @@
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
-          <el-input v-model="ruleForm.name" :disabled="disabled" placeholder="请输入数据集名称，长度在 4 到 30 个字符"></el-input>
+          <el-input v-model="ruleForm.name" :disabled="disabled" placeholder="请输入数据集名称，长度在 4 到 30 个字符" />
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
           <el-select v-model="ruleForm.type" :disabled="disabled" placeholder="请选择数据集类型">
-            <el-option label="图片" value="picture"></el-option>
-            <el-option label="视频" value="video"></el-option>
-            <el-option label="文字" value="text"></el-option>
-            <el-option label="语音" value="voice"></el-option>
+            <el-option label="图片" value="picture" />
+            <el-option label="视频" value="video" />
+            <el-option label="文字" value="text" />
+            <el-option label="语音" value="voice" />
           </el-select>
         </el-form-item>
         <el-form-item label="数据集描述" :label-width="formLabelWidth" prop="desc">
@@ -27,7 +27,7 @@
             placeholder="请输入数据集描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
           <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
@@ -35,11 +35,10 @@
         <el-form-item v-if="showUpload" label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
-          >
-          </upload>
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -51,7 +50,7 @@ import upload from '@/components/upload/index.vue'
 import { createMyDataset } from "@/api/datasetManager.js"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "myDatasetCreation",
+  name: "MyDatasetCreation",
   components: {
     upload
   },

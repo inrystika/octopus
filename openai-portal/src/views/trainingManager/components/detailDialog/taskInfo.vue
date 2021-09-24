@@ -6,7 +6,7 @@
 
 <script>
     export default {
-        name: "taskInfo",
+        name: "TaskInfo",
         props: {
             row: {
                 type: Object,

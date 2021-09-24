@@ -9,16 +9,16 @@
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
-            <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-            <el-input v-model="ruleForm.type" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.type" :disabled="true" />
         </el-form-item>
         <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
           <el-input
             v-model="ruleForm.desc"
             :disabled="true"
-          ></el-input>
+          />
         </el-form-item>
         <!-- <el-form-item :label-width="formLabelWidth">
           <el-button type="text" @click="nextStep('ruleForm')" v-show="!showUpload">下一步</el-button>
@@ -26,11 +26,10 @@
         <el-form-item label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
-          >
-          </upload>
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -40,7 +39,7 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadDataset",
+  name: "ReuploadDataset",
   components: {
     upload
   },
@@ -68,7 +67,6 @@ export default {
           }
         ]
       },
-      uploadData: {},
       CreateFormVisible: true,
       formLabelWidth: "120px"
     }
