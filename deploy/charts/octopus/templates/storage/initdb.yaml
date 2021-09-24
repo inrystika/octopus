@@ -15,24 +15,3 @@ data:
   custom-init-scripts.sh: |
     influx -execute "CREATE DATABASE octopus" -username octopus -password octopus
     influx -execute "CREATE RETENTION POLICY \"default\" ON octopus DURATION 0s REPLICATION 1 DEFAULT"  -username {{ .Values.influxdb.setDefaultUser.user.username }} -password {{ .Values.influxdb.setDefaultUser.user.password }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: influxdb-exist-config
-data:
-  influxdb.conf: |
-    [meta]
-      dir = "/bitnami/influxdb/meta"
-      logging-enabled = true
-    [data]
-      dir = "/bitnami/influxdb/data"
-      wal-dir = "/bitnami/influxdb/wal"
-      query-log-enabled = true
-      cache-max-memory-size = 0
-      max-series-per-database = 0
-      max-values-per-tag = 0
-      series-id-set-cache-size = 100
-    [logging]
-      format = "logfmt"
-      suppress-logo = true

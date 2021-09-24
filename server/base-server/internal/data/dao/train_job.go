@@ -5,6 +5,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"server/base-server/internal/data/dao/model"
+	"server/base-server/internal/data/influxdb"
 	"server/common/errors"
 	"server/common/utils"
 	"time"
@@ -45,14 +46,16 @@ type TrainJobDao interface {
 }
 
 type trainJobDao struct {
-	log *log.Helper
-	db  *gorm.DB
+	log 		*log.Helper
+	db  		*gorm.DB
+	influxdb 	*influxdb.Influxdb
 }
 
-func NewTrainJobDao(db *gorm.DB, logger log.Logger) TrainJobDao {
+func NewTrainJobDao(db *gorm.DB, influxdb *influxdb.Influxdb, logger log.Logger) TrainJobDao {
 	return &trainJobDao{
-		log: log.NewHelper("TrainJobDao", logger),
-		db:  db,
+		log: 		log.NewHelper("TrainJobDao", logger),
+		db:  		db,
+		influxdb: 	influxdb,
 	}
 }
 
@@ -342,6 +345,15 @@ func (d *trainJobDao) DeleteTrainJobTemplate(userId string, ids []string) error 
 	}
 
 	res := d.db.Where("user_id = ? and id in ? ", userId, ids).Delete(&model.TrainJobTemplate{})
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
+	}
+	return nil
+}
+
+func (d *trainJobDao) GetTrainJobEvents(jobId string) error {
+
+	res := d.influxbd.Query("user_id = ? and id in ? ", userId, ids)
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 	}

@@ -10,6 +10,7 @@ import (
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/data/redis"
+	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/registry"
 
 	"server/common/log"
@@ -36,12 +37,18 @@ type Data struct {
 	Minio           minio.Minio
 	Registry        registry.ArtifactRegistry
 	Redis           redis.Redis
+	Influxdb        influxdb.Influxdb
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d := &Data{}
 
 	db, err := dbInit(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	influxdb, err := influxbd.NewInfluxdb(confData)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,7 +63,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)
 	d.ImageDao = dao.NewImageDao(db, logger)
-	d.TrainJobDao = dao.NewTrainJobDao(db, logger)
+	d.TrainJobDao = dao.NewTrainJobDao(db, influxdb, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
 	d.Cluster = cluster.NewCluster(confData, logger)
