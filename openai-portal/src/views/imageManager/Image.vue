@@ -1,11 +1,15 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'镜像名称/标签/描述 搜索'"></searchForm>
+            <searchForm :searchForm="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData"></searchForm>
         </div>
-        <el-button type="primary" @click="create" v-if="flag" class="create">创建</el-button>
-        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+        <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
+        <el-table
+            :data="tableData"
+            style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}"
+            :cell-style="{'text-align':'left'}"
+        >
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -41,7 +45,7 @@
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="提供者" align="center" v-if="Type==3">
+            <el-table-column v-if="Type==3" label="提供者" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.username }}</span>
                 </template>
@@ -51,30 +55,34 @@
                     <span>{{ sourceType(scope.row.sourceType) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" align="center" v-if="flag" :width="250">
+            <el-table-column v-if="flag" label="操作" align="center" :width="250">
                 <template slot-scope="scope">
-                    <el-button @click="handleEdit(scope.row)" type="text" v-if="scope.row.imageStatus!==3">重新上传
+                    <el-button v-if="scope.row.imageStatus!==3" type="text" @click="handleEdit(scope.row)">重新上传
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
-                    <el-button type="text" @click="open3(scope.row)" v-if="!scope.row.isShared&&scope.row.imageStatus===3">分享
+                    <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text" @click="open3(scope.row)">分享
                     </el-button>
                     <!-- <el-button @click="handleShare(scope.row)" type="text">分享</el-button> -->
-                    <el-button type="text" @click="open(scope.row)" :close-on-click-modal="false">修改描述</el-button>
+                    <el-button type="text" :close-on-click-modal="false" @click="open(scope.row)">修改描述</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper" :total="total">
+            <el-pagination
+                :current-page="searchData.pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+              >
             </el-pagination>
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm v-if="FormVisible" @cancel="cancel" @confirm="confirm" @close="close" :row="row" :flag="Logo">
+        <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close">
         </dialogForm>
-
-
 
     </div>
 </template>
@@ -87,24 +95,14 @@
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "preImage",
-        props: {
-            Type: { type: Number, },
-            status: { type: Boolean },
-            image: {type: Boolean,default: false}
-        },
         components: {
             dialogForm,
             searchForm
         },
-        created() {
-            this.getImage(this.searchData)
-            if (this.Type !== 1) {
-                this.flag = false
-            }
-            if (this.image) {
-              this.FormVisible = true
-            }
-
+        props: {
+            Type: { type: Number },
+            status: { type: Boolean },
+            image: { type: Boolean, default: false }
         },
         data() {
             return {
@@ -134,8 +132,17 @@
                 ],
                 searchData: {
                     pageIndex: 1,
-                    pageSize: 10,
+                    pageSize: 10
                 }
+            }
+        },
+        created() {
+            this.getImage(this.searchData)
+            if (this.Type !== 1) {
+                this.flag = false
+            }
+            if (this.image) {
+              this.FormVisible = true
             }
         },
         methods: {
@@ -150,22 +157,18 @@
                         if (response.success) {
                             if (response.data.images !== null) {
                                 this.total = response.data.totalSize
-                                let data = response.data.images
-                                this.tableData = [],
-                                    data.forEach(item => {
-                                        this.tableData.push({ ...item.image, isShared: item.isShared })
-                                    })
+                                const data = response.data.images
+                                this.tableData = []
+                                data.forEach(item => {
+                                    this.tableData.push({ ...item.image, isShared: item.isShared })
+                                })
                             }
-
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
-
                     })
                 }
                 if (this.type === 2) {
@@ -176,14 +179,12 @@
                                 let data = response.data.images
                                 this.tableData = response.data.images
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
                 if (this.type === 3) {
@@ -192,19 +193,15 @@
                             if (response.data.images !== null) {
                                 this.total = response.data.totalSize
                                 this.tableData = response.data.images
-
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
-
             },
             imageType(value) {
                 switch (value) {
@@ -253,8 +250,6 @@
                             type: 'warning'
                         });
                     }
-
-
                 })
             },
             handleShare(row) {
@@ -265,16 +260,12 @@
                             type: 'success'
                         });
                         this.getImage(this.searchData)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
-
                 })
             },
             handleSizeChange(val) {
@@ -288,35 +279,31 @@
             cancel(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             confirm(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             close(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             create() {
                 this.FormVisible = true; this.row = {}
                 this.Logo = true
             },
             getSearchData(val) {
-                this.searchData={pageIndex:1,pageSize:this.searchData.pageSize}
+                this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getImage(this.searchData)
-
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },
             // 修改描述
             open(val) {
-                let data = val
+                const data = val
                 this.$prompt('请输入描述', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -336,8 +323,6 @@
                                 type: 'warning'
                             });
                         }
-
-
                     })
                 }).catch(() => {
                     this.$message({
@@ -361,7 +346,7 @@
                     });
                 });
             },
-            //分享取消分享
+            // 分享取消分享
             open3(val) {
                 this.$confirm('此操作将分享镜像, 是否继续?', '提示', {
                     confirmButtonText: '确定',

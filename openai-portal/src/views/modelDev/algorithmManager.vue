@@ -2,13 +2,13 @@
     <div>
       <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
         <el-tab-pane label="我的算法" name="myAlgorithm">
-          <myList :algorithm="algorithm" :Type=1 v-if="tabRefresh.myMenu"></myList>
+          <myList v-if="tabRefresh.myMenu" :algorithm="algorithm" :Type="1"></myList>
         </el-tab-pane>
         <el-tab-pane label="公共算法" name="publicAlgorithm">
-          <publicList :Type=2 v-if="tabRefresh.pubMenu"></publicList>
+          <publicList v-if="tabRefresh.pubMenu" :Type="2"></publicList>
         </el-tab-pane>
         <el-tab-pane label="预置算法" name="preAlgorithm">
-          <presetList :Type=3 v-if="tabRefresh.preMenu"></presetList>
+          <presetList v-if="tabRefresh.preMenu" :Type="3"></presetList>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -18,7 +18,7 @@
 import myList from "./components/algorithm/myList.vue";
 import publicList from "./components/algorithm/publicList.vue";
 import presetList from "./components/algorithm/presetList.vue";
-export default { 
+export default {
   components: {
     myList,
     publicList,
@@ -30,7 +30,7 @@ export default {
       tabRefresh: {
         myMenu: true,
         pubMenu: false,
-        preMenu: false,
+        preMenu: false
       },
       algorithm: false
     }
@@ -59,14 +59,14 @@ export default {
       }
     },
     switchTab(tab) {
-      for (let key in this.tabRefresh) {
+      for (const key in this.tabRefresh) {
         if (key === tab) {
           this.tabRefresh[key] = true
         } else {
           this.tabRefresh[key] = false
         }
       }
-    },
+    }
   }
 }
 </script>

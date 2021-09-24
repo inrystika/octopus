@@ -2,13 +2,13 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
       <el-tab-pane label="我的数据集" name="myDataset">
-        <myList :dataset="dataset" :Type=1 v-if="tabRefresh.myMenu"></myList>
+        <myList v-if="tabRefresh.myMenu" :dataset="dataset" :Type="1"></myList>
       </el-tab-pane>
       <el-tab-pane label="公共数据集" name="publicDataset">
-        <publicList :Type=2 v-if="tabRefresh.pubMenu"></publicList>
+        <publicList v-if="tabRefresh.pubMenu" :Type="2"></publicList>
       </el-tab-pane>
       <el-tab-pane label="预置数据集" name="preDataset">
-        <presetList :Type=3 v-if="tabRefresh.preMenu"></presetList>
+        <presetList v-if="tabRefresh.preMenu" :Type="3"></presetList>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -29,12 +29,12 @@ export default {
       tabRefresh: {
         myMenu: true,
         pubMenu: false,
-        preMenu: false,
+        preMenu: false
       },
       dataset: false
     };
   },
-  created(){
+  created() {
     if (this.$route.params.data === undefined) {
       this.dataset = false
     } else if (this.$route.params.data.dataset) {
@@ -58,15 +58,15 @@ export default {
       }
     },
     switchTab(tab) {
-      for (let key in this.tabRefresh) {
+      for (const key in this.tabRefresh) {
         if (key === tab) {
           this.tabRefresh[key] = true
         } else {
           this.tabRefresh[key] = false
         }
       }
-    },
-  },
+    }
+  }
 }
 ;
 </script>

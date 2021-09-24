@@ -8,13 +8,14 @@
       :close-on-click-modal="false"
     >
       <el-table
+        ref="ruleList"
+        v-loading.fullscreen.lock="loading"
         :data="versionList"
         :model="ruleList"
         props="name"
-        ref="ruleList"
-        style="width: 100%" height="350"
-        v-loading.fullscreen.lock="loading"
-      >       
+        style="width: 100%"
+        height="350"
+      >
         <el-table-column label="版本号" props="version">
           <template slot-scope="scope">
             <span>{{ scope.row.version }}</span>
@@ -37,50 +38,52 @@
         </el-table-column>
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
-            <el-button 
-              @click="reupload(scope.row)" 
-              type="text" 
+            <el-button
               v-show="typeChange === 1 ? true : false"
-              v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false">重新上传
+              v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false"
+              type="text"
+              @click="reupload(scope.row)"
+            >重新上传
             </el-button>
-            <el-button 
-              type="text" 
+            <el-button
+              type="text"
               style="padding-right:10px"
-              @click="handlePreview(scope.row)"
               :disabled="scope.row.status === 3 ? false : true"
+              @click="handlePreview(scope.row)"
             >
               预览
             </el-button>
-            <el-button 
-              style="padding-right:10px" 
-              slot="reference"  
-              @click="confirmShare(scope.row)"
-              type="text" 
+            <el-button
               v-show="typeChange === 1 ? true : false"
+              slot="reference"
+              style="padding-right:10px"
+              type="text"
               :disabled="scope.row.status === 3 ? false : true"
+              @click="confirmShare(scope.row)"
             >
-              {{scope.row.shared ? "取消分享":"分享"}}
+              {{ scope.row.shared ? "取消分享":"分享" }}
             </el-button>
-            <el-button 
-              @click="confirmDelete(scope.row)"
-              slot="reference" 
-              type="text" 
+            <el-button
               v-show="typeChange === 1 ? true : false"
+              slot="reference"
+              type="text"
+              @click="confirmDelete(scope.row)"
             >
               删除
-            </el-button>            
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
       <div class="block">
-        <el-pagination 
-          @size-change="handleSizeChange" 
-          @current-change="handleCurrentChange" 
+        <el-pagination
           :current-page="pageIndex"
-          :page-sizes="[10, 20, 50, 80]" 
-          :page-size="pageSize" 
+          :page-sizes="[10, 20, 50, 80]"
+          :page-size="pageSize"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="total">
+          :total="total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+>
         </el-pagination>
     </div>
     <div slot="footer">
@@ -88,13 +91,14 @@
     </el-dialog>
     <preview v-if="preVisible" :row="versionData" @close="close">
     </preview>
-    <reuploadDataset 
-      v-if="myDatasetVisible" 
+    <reuploadDataset
+      v-if="myDatasetVisible"
       :data="this.data"
       :versionData="this.versionData"
-      @close="close" 
-      @cancel="cancel" 
-      @confirm="confirm">
+      @close="close"
+      @cancel="cancel"
+      @confirm="confirm"
+>
     </reuploadDataset>
   </div>
 </template>
@@ -107,14 +111,14 @@ import reuploadDataset from "./reuploadDataset.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
   name: "versionList",
-  components: {      
+  components: {
     preview,
     reuploadDataset
   },
   props: {
     data: {
       type: Object,
-      default: {}
+      default: () => {}
     },
     typeChange: { type: Number }
   },
@@ -130,8 +134,8 @@ export default {
           provider: ""
         }
       ],
-      title:'版本列表/'+this.data.name,
-      myDatasetVisible:false,
+      title: '版本列表/' + this.data.name,
+      myDatasetVisible: false,
       createListVisible: true,
       preVisible: false,
       formLabelWidth: "120px",
@@ -169,10 +173,10 @@ export default {
       this.pageIndex = val
       this.getVersionList()
     },
-    getVersionList(param){
+    getVersionList(param) {
       this.Type = this.typeChange
-      if (!param) { 
-        param = { pageIndex: this.pageIndex, pageSize: this.pageSize } 
+      if (!param) {
+        param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }
       param.datasetId = this.data.id
       param.shared = this.Type === 2 ? true :false
@@ -188,18 +192,18 @@ export default {
         }
       });
     },
-    confirmShare(row){
-      if(row.shared){
+    confirmShare(row) {
+      if (row.shared) {
         this.shareTitle = "是否取消本群组分享？"
       } else {
         this.shareTitle = "是否分享至本群组，分享后群内所有人员可见"
       }
-      this.$confirm(this.shareTitle,'提示',{
+      this.$confirm(this.shareTitle, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
-      }).then(() =>{
+      }).then(() => {
         this.handleShare(row)
       }).catch(() => {
         this.$message({
@@ -211,9 +215,9 @@ export default {
     handleShare(row) {
       this.versionData = row
       this.loading = true
-      if(this.versionData.shared){
+      if (this.versionData.shared) {
         cancelShareDatasetVersion(this.versionData).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.$message.success("已取消本群组分享");
             this.loading = false
             this.getVersionList()
@@ -227,7 +231,7 @@ export default {
         })
       } else {
         shareDatasetVersion(this.versionData).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.$message.success("已分享至群组");
             this.loading = false
             this.getVersionList()
@@ -241,11 +245,11 @@ export default {
         })
       }
     },
-    getDatasetStatus(value){
+    getDatasetStatus(value) {
       switch (value) {
         case 1:
           return "等待上传中"
-        case 2: 
+        case 2:
           return "解压中"
         case 3:
           return "解压完成"
@@ -266,13 +270,13 @@ export default {
     confirm(val) {
       this.myDatasetVisible = val
     },
-    confirmDelete(row){
-      this.$confirm('此操作将永久删除此版本(如该版本已分享，则分享的版本也会被删除)，是否继续?','提示',{
+    confirmDelete(row) {
+      this.$confirm('此操作将永久删除此版本(如该版本已分享，则分享的版本也会被删除)，是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
-      }).then(() =>{
+      }).then(() => {
         this.handleDelete(row)
       }).catch(() => {
         this.$message({
@@ -288,7 +292,7 @@ export default {
         version: row.version
       }
       deleteDatasetVersion(param).then(response => {
-        if(response.success) {
+        if (response.success) {
           this.$message.success("已删除此版本");
           this.loading = false
           this.getVersionList()
@@ -301,7 +305,7 @@ export default {
         }
       })
     },
-    //时间戳转换日期
+    // 时间戳转换日期
     parseTime(val) {
       return parseTime(val)
     }

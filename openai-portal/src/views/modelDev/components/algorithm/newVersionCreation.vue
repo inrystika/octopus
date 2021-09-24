@@ -7,7 +7,7 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" v-loading.fullscreen.lock="loading">
+      <el-form ref="ruleForm" v-loading.fullscreen.lock="loading" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称：" :label-width="formLabelWidth" prop="name">
           <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
@@ -21,11 +21,11 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="基础版本：" :label-width="formLabelWidth" prop="version">
-          <el-select value-key="algorithmVersion" @visible-change="getAlgorithmSource" v-model="ruleForm.version">
-            <el-option 
-              v-for="item in algorithmList" 
-              :key="item.algorithmVersion" 
-              :label="item.algorithmVersion" 
+          <el-select v-model="ruleForm.version" value-key="algorithmVersion" @visible-change="getAlgorithmSource">
+            <el-option
+              v-for="item in algorithmList"
+              :key="item.algorithmVersion"
+              :label="item.algorithmVersion"
               :value="item"
             >
             </el-option>
@@ -51,26 +51,29 @@ import { getErrorMsg } from '@/error/index'
 export default {
   name: "newVersionCreation",
   props: {
-    row:{
+    row: {
       type: Object,
-      default: {}
+      default: () => {}
     },
-    newVersionName:"",
-    versionList: []
+    newVersionName: "",
+    versionList: {
+      type: Array,
+      default: () => []
+    }
   },
   data() {
     return {
       ruleForm: {
         version: "",
-        desc: "",
+        desc: ""
       },
       rules: {
-        version:[
+        version: [
           {
             required: true,
             message: "请选择基础版本",
             trigger: "blur"
-          },
+          }
         ]
       },
       pageIndex: 1,
@@ -81,7 +84,7 @@ export default {
       formLabelWidth: "120px"
     }
   },
-  created(){
+  created() {
     this.ruleForm.name = this.row.algorithmName
   },
   methods: {
@@ -91,16 +94,16 @@ export default {
     handleDialogClose() {
       this.$emit("close", false);
     },
-    getAlgorithmSource(){
+    getAlgorithmSource() {
       const param = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
         algorithmId: this.row.algorithmId
       }
       getAlgorithmVersionList(param).then(response => {
-        if(response.success) {
-          let newArr = []
-          response.data.algorithms.filter(function(item,index) {
+        if (response.success) {
+          const newArr = []
+          response.data.algorithms.filter(function(item, index) {
             newArr.push(item.algorithmDetail)
           })
           this.algorithmList = newArr
@@ -113,7 +116,7 @@ export default {
       })
     },
     cancel() {
-      this.$confirm('此操作将被取消，是否继续?','提示',{
+      this.$confirm('此操作将被取消，是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -138,7 +141,7 @@ export default {
             algorithmDescript: this.ruleForm.desc
           }
           createNewAlgorithmVersion(param).then(response => {
-            if(response.success) {            
+            if (response.success) {
               this.$message.success("创建成功");
               this.loading = false
               this.$emit('confirm', false)
@@ -155,7 +158,7 @@ export default {
           return false;
         }
       });
-    },
+    }
   }
 }
 </script>
