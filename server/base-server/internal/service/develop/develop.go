@@ -559,8 +559,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      nbJob.Id,
 		},
 		Spec: vcBatch.JobSpec{
-			MinAvailable: 1,
-			Queue:        startJobInfo.queue,
+			MinAvailable:  1,
+			Queue:         startJobInfo.queue,
+			SchedulerName: "volcano",
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},

@@ -3,7 +3,7 @@
     <div>
       <searchForm 
         :searchForm=searchForm 
-        :blurName="'Notebook名称 搜索'"
+        :blurName="'NoteBook名称 搜索'"
         @searchData="getSearchData"
       />
     </div>

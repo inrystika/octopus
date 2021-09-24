@@ -1,12 +1,27 @@
 <template>
   <div>
-    <el-upload class="upload-demo" action="#" :on-change="upload" :file-list="fileList" :http-request="httpRequest"
-      multiple :accept="accept" v-if="showUpload">
+    <el-upload
+      v-if="showUpload"
+      class="upload-demo"
+      action="#"
+      :on-change="upload"
+      :file-list="fileList"
+      :http-request="httpRequest"
+      multiple
+      :accept="accept"
+    >
       <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
-      <div class="tipText">{{this.tipText}}</div>
+      <div class="tipText">{{ tipText }}</div>
     </el-upload>
-    <el-button :loading="loadingShow" size="small" type="primary" v-if="!showUpload">上传中</el-button>
-    <div slot="footer" class="dialog-footer" v-if="show">
+    <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
+    <el-progress
+      v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"
+      :text-inside="true"
+      :stroke-width="18"
+      :percentage="progress"
+      class="progress"
+    />
+    <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
     </div>
@@ -14,11 +29,12 @@
 </template>
 <script>
   import { uploadImage, finishUpload, uploadMiniIO } from '@/api/imageManager.js'
-  import { uploadModel, modelFinishUpload } from '@/api/modelManager.js'
   import { uploadMyDataset, myDatasetFinishUpload, uploadNewVersion, newVersionFinishUpload } from "@/api/datasetManager.js"
   import { uploadMyAlgorithm, myAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { minIO } from '@/utils/minIO'
   import { getErrorMsg } from '@/error/index'
+  import { mapGetters } from 'vuex'
+  import store from '@/store'
   export default {
     props: {
       uploadData: {
@@ -34,11 +50,21 @@
         show: false,
         loadingShow: false,
         showUpload: true,
-        accept:"application/zip",
+        accept: "application/zip",
         tipText: '上传文件格式为 zip'
       }
     },
-    created(){
+    computed: {
+      ...mapGetters([
+        'progress'
+      ])
+    },
+    watch: {
+      showUpload() {
+        store.commit('user/CLEAR_PROGRESS')
+      }
+    },
+    created() {
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
@@ -54,11 +80,11 @@
         // }
       },
       httpRequest() {
-        let fileName = this.fileList[0].name
-        let fileForm = fileName.slice(fileName.lastIndexOf(".")+1).toLowerCase() //获取上传文件格式后缀
+        const fileName = this.fileList[0].name
+        const fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() // 获取上传文件格式后缀
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
-          this.showUpload=false
+          this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               const param = {
@@ -68,13 +94,12 @@
               uploadMiniIO(param).then(response => {
                 this.loadingShow = false
                 this.show = true
-                this.showUpload=true
+                this.showUpload = true
               })
-  
             })
           } else {
             this.loadingShow = false
-            this.showUpload=true
+            this.showUpload = true
             this.fileList = []
             this.$message({
               message: '上传文件格式不正确',
@@ -83,7 +108,7 @@
           }
         } else if (this.uploadData.type === "myDatasetCreation") {
           this.loadingShow = true
-          this.showUpload=false
+          this.showUpload = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -98,24 +123,24 @@
                   file: this.fileList[0].raw
                 }
                 minIO(param).then(response => {
-                  this.loadingShow=false
+                  this.loadingShow = false
                   this.show = true
-                  this.showUpload=true
+                  this.showUpload = true
                 })
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
-                this.loadingShow=false
+                this.loadingShow = false
                 this.show = true
-                this.showUpload=true
+                this.showUpload = true
                 this.fileList = []
               }
             })
           } else {
             this.loadingShow = false
-            this.showUpload=true
+            this.showUpload = true
             this.fileList = []
             this.$message({
               message: '上传文件格式不正确',
@@ -124,7 +149,7 @@
           }
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
           this.loadingShow = true
-          this.showUpload=false
+          this.showUpload = false
           const param = {
             algorithmId: this.uploadData.AlgorithmId,
             FileName: this.fileList[0].name,
@@ -139,24 +164,24 @@
                   file: this.fileList[0].raw
                 }
                 minIO(param).then(response => {
-                  this.loadingShow=false
+                  this.loadingShow = false
                   this.show = true
-                  this.showUpload=true
+                  this.showUpload = true
                 })
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
-                this.loadingShow=false
+                this.loadingShow = false
                 this.show = true
-                this.showUpload=true
+                this.showUpload = true
                 this.fileList = []
               }
             })
           } else {
             this.loadingShow = false
-            this.showUpload=true
+            this.showUpload = true
             this.fileList = []
             this.$message({
               message: '上传文件格式不正确',
@@ -165,7 +190,7 @@
           }
         } else if (this.uploadData.type === "newDatasetVersionCreation") {
           this.loadingShow = true
-          this.showUpload=false
+          this.showUpload = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -180,24 +205,24 @@
                   file: this.fileList[0].raw
                 }
                 minIO(param).then(response => {
-                  this.loadingShow=false
+                  this.loadingShow = false
                   this.show = true
-                  this.showUpload=true
+                  this.showUpload = true
                 })
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
-                this.loadingShow=false
+                this.loadingShow = false
                 this.show = true
-                this.showUpload=true
+                this.showUpload = true
                 this.fileList = []
               }
             })
           } else {
             this.loadingShow = false
-            this.showUpload=true
+            this.showUpload = true
             this.fileList = []
             this.$message({
               message: '上传文件格式不正确',
@@ -248,7 +273,7 @@
                 type: 'warning'
               });
             }
-          },this.$emit('confirm', false))
+          }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newDatasetVersionCreation') {
           const payload = {
             id: this.uploadData.id,
@@ -264,11 +289,11 @@
                 type: 'warning'
               });
             }
-          },this.$emit('confirm', false))
+          }, this.$emit('confirm', false))
         }
       },
       cancel() {
-        this.$confirm('此操作将被取消，是否继续?','提示',{
+        this.$confirm('此操作将被取消，是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -289,9 +314,13 @@
   .dialog-footer {
     text-align: right;
   }
+
   .tipText {
-    float:right;
-    margin-left:10px;
-    font-size:12px
+    float: right;
+    margin-left: 10px;
+    font-size: 12px
   }
+
+  .progress{margin: 5px 0px 10px 0px;}
+  .dialog-footer{margin-top: 10px;}
 </style>

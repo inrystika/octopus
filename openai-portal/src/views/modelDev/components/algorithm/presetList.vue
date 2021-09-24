@@ -1,27 +1,32 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm 
-        :searchForm=searchForm 
+      <searchForm
+        :searchForm="searchForm"
+        :blurName="'算法名称/描述 搜索'"
         @searchData="getSearchData"
-        :blurName="'算法名称/描述 搜索'">
+      >
       </searchForm>
     </div>
-    <el-table :data="algorithmList" style="width: 100%;font-size: 15px;" :header-cell-style="{'text-align':'left','color':'black'}"
-    :cell-style="{'text-align':'left'}">
+    <el-table
+        :data="algorithmList"
+        style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}"
+        :cell-style="{'text-align':'left'}"
+    >
       <el-table-column label="算法名称">
         <template slot-scope="scope">
           <span>{{ scope.row.algorithmName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="当前版本号" >
+      <el-table-column label="当前版本号">
         <template slot-scope="scope">
-          <span>{{ scope.row.algorithmVersion}}</span>
+          <span>{{ scope.row.algorithmVersion }}</span>
         </template>
       </el-table-column>
       <el-table-column label="算法描述" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <span>{{ scope.row.algorithmDescript}}</span>
+          <span>{{ scope.row.algorithmDescript }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创建时间">
@@ -31,7 +36,7 @@
       </el-table-column>
       <el-table-column label="提供者">
         <template slot-scope="scope">
-          <span>{{ scope.row.userName}}</span>
+          <span>{{ scope.row.userName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -42,31 +47,32 @@
       </el-table-column>
     </el-table>
     <div class="pagination">
-      <el-pagination 
-        @size-change="handleSizeChange" 
-        @current-change="handleCurrentChange"
-        :current-page="searchData.pageIndex" 
-        :page-sizes="[10, 20, 50, 80]" 
+      <el-pagination
+        :current-page="searchData.pageIndex"
+        :page-sizes="[10, 20, 50, 80]"
         :page-size="searchData.pageSize"
-        layout="total, sizes, prev, pager, next, jumper" 
-        :total="total">
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      >
       </el-pagination>
     </div>
 
     <algorithmCopy
       v-if="algorithmCopyVisible"
-      @close="close" 
-      @cancel="cancel"
-      @confirm="confirm"
       :row="row"
       :Type="this.typeChange"
+      @close="close"
+      @cancel="cancel"
+      @confirm="confirm"
     >
     </algorithmCopy>
     <versionList
       v-if="versionListVisible"
       :Type="this.typeChange"
       :data="row"
-      @close="close" 
+      @close="close"
     >
     </versionList>
   </div>
@@ -84,25 +90,26 @@ export default {
   components: {
     algorithmCopy,
     versionList,
-    searchForm,
+    searchForm
   },
   props: {
-    Type: { type: Number },
+    Type: { type: Number }
   },
   data() {
     return {
       row: {},
-      algorithmCopyVisible:false,
+      algorithmCopyVisible: false,
       versionListVisible: false,
       total: undefined,
       typeChange: undefined,
       algorithmList: [],
       searchForm: [
         { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+        { type: 'Input', label: '算法名称', prop: 'nameLike', placeholder: '请输入算法名称' }
       ],
       searchData: {
         pageIndex: 1,
-        pageSize: 10,
+        pageSize: 10
       }
     }
   },
@@ -114,16 +121,16 @@ export default {
       return getErrorMsg(code)
     },
     getSearchData(val) {
-      this.searchData={pageIndex:1,pageSize:this.searchData.pageSize}
+      this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
       this.searchData = Object.assign(val, this.searchData)
       if (this.searchData.time) {
-        this.searchData.createdAtGte = this.searchData.time[0]/1000
-        this.searchData.createdAtLt = this.searchData.time[1]/1000
+        this.searchData.createdAtGte = this.searchData.time[0] / 1000
+        this.searchData.createdAtLt = this.searchData.time[1] / 1000
         delete this.searchData.time
       }
       this.getAlgorithmList(this.searchData)
     },
-    handleSizeChange(val){
+    handleSizeChange(val) {
       this.searchData.pageSize = val
       this.getAlgorithmList(this.searchData)
     },
@@ -131,10 +138,10 @@ export default {
       this.searchData.pageIndex = val
       this.getAlgorithmList(this.searchData)
     },
-    getAlgorithmList(param){
+    getAlgorithmList(param) {
       this.typeChange = this.Type
       getPresetAlgorithmList(param).then(response => {
-        if(response.success){
+        if (response.success) {
           this.algorithmList = response.data.algorithms;
           this.total = response.data.totalSize
         } else {
@@ -142,32 +149,32 @@ export default {
             message: this.getErrorMsg(response.error.subcode),
             type: 'warning'
           });
-        }    
+        }
       })
     },
-    getAlgorithmVersionList(row){
+    getAlgorithmVersionList(row) {
       this.versionListVisible = true;
       this.typeChange = this.Type
       this.row = row
     },
-    close(val){
+    close(val) {
       this.algorithmCopyVisible = val;
       this.versionListVisible = val;
       this.getAlgorithmList(this.searchData)
     },
-    cancel(val){
+    cancel(val) {
       this.algorithmCopyVisible = val;
       this.getAlgorithmList(this.searchData)
     },
-    copyAlgorithm(row){
+    copyAlgorithm(row) {
       this.algorithmCopyVisible = true;
       this.row = row
     },
-    confirm(val){
+    confirm(val) {
       this.algorithmCopyVisible = val
       this.getAlgorithmList(this.searchData)
     },
-    //时间戳转换日期
+    // 时间戳转换日期
     parseTime(val) {
       return parseTime(val)
     }

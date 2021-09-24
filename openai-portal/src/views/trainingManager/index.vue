@@ -1,10 +1,10 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="训练任务" name="menu1">
-      <traningTask :trainingTask="trainingTask" v-if="tabRefresh.menu1"></traningTask>
+      <traningTask v-if="tabRefresh.menu1" :trainingTask="trainingTask"></traningTask>
     </el-tab-pane>
     <el-tab-pane label="任务模板" name="menu2">
-      <taskTemplate :trainingTemplate="trainingTemplate" v-if="tabRefresh.menu2" @createTraning="createTraning"></taskTemplate>
+      <taskTemplate v-if="tabRefresh.menu2" :trainingTemplate="trainingTemplate" @createTraning="createTraning"></taskTemplate>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -22,13 +22,13 @@
         activeName: undefined,
         tabRefresh: {
           menu1: true,
-          menu2: false,
+          menu2: false
         },
         trainingTemplate: false,
         trainingTask: false
       }
     },
-    created(){
+    created() {
       if (this.$route.params.data === undefined) {
         this.activeName = 'menu1'
         this.switchTab('menu1')
@@ -45,7 +45,7 @@
     methods: {
       handleTabClick(tab) {
         this.activeName = tab.name
-        this.$route.params.data=null
+        this.$route.params.data = null
         switch (this.activeName) {
           case 'menu1':
             this.switchTab('menu1')
@@ -58,7 +58,7 @@
         }
       },
       switchTab(tab) {
-        for (let key in this.tabRefresh) {
+        for (const key in this.tabRefresh) {
           if (key === tab) {
             this.tabRefresh[key] = true
           } else {
@@ -68,7 +68,7 @@
       },
       createTraning() {
         this.activeName = "menu1"
-        this.tabRefresh.menu1=true
+        this.tabRefresh.menu1 = true
       }
     }
   }

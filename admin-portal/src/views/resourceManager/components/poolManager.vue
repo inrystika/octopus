@@ -12,17 +12,17 @@
         >
             <el-table-column label="资源池名称" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                    <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="默认资源池" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.default?'是':'否' }}</span>
+                    <span>{{ scope.row.default?'是':'否' }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="描述" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.desc }}</span>
+                    <span>{{ scope.row.desc }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="节点列表" align="center" show-overflow-tooltip>
@@ -45,7 +45,7 @@
         <!-- 节点详情对话框 -->
         <el-dialog title="详情信息" :visible.sync="detailDialog" width="30%" center :close-on-click-modal="false">
             <div class="wrapper">
-                <div>notebook资源规格</div>
+                <div>NoteBook资源规格</div>
                 <div>
                     <el-tag v-for="item in mapResourceSpecIdList.debug" :key="item.index" class="item">{{ item }}</el-tag>
                 </div>
@@ -82,7 +82,7 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="noteBook资源规格" :label-width="formLabelWidth">
+                <el-form-item label="NoteBook资源规格" :label-width="formLabelWidth">
                     <el-select v-model="ruleForm.mapResourceSpecIdList.debug" multiple>
                         <el-option v-for="item in resourceOption" :key="item.id" :label="item.name" :value="item.id">
                         </el-option>
@@ -236,6 +236,9 @@
                 this.ruleForm.mapResourceSpecIdList.debug = []
                 this.ruleForm.mapResourceSpecIdList.deploy = []
                 this.ruleForm.mapResourceSpecIdList.train = []
+                if(val.mapResourceSpecIdList.debug.resourceSpecIds===null){val.mapResourceSpecIdList.debug.resourceSpecIds=[]}
+                if(val.mapResourceSpecIdList.deploy.resourceSpecIds===null){val.mapResourceSpecIdList.deploy.resourceSpecIds=[]}
+                if(val.mapResourceSpecIdList.train.resourceSpecIds===null){val.mapResourceSpecIdList.train.resourceSpecIds=[]}
                 val.mapResourceSpecIdList.debug.resourceSpecIds.forEach(item => {
                     this.resourceOption.forEach(Item => {
                         if (item === Item.id) {
