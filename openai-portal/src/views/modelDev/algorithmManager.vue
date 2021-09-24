@@ -76,6 +76,6 @@ export default {
     margin: 20px!important;
     background-color:#fff;
     padding: 20px;
-    min-height: 800px;
+    min-height: 900px;
   }
 </style>
