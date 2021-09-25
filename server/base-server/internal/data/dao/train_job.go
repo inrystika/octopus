@@ -43,19 +43,21 @@ type TrainJobDao interface {
 	UpdateTrainJobTemplate(ctx context.Context, trainJobTemplate *model.TrainJobTemplate) error
 	//网关层删除任务模板（软删除）
 	DeleteTrainJobTemplate(userId string, ids []string) error
+	//获取训练任务事件
+	GetTrainJobEvents(jobId string) error
 }
 
 type trainJobDao struct {
-	log 		*log.Helper
-	db  		*gorm.DB
-	influxdb 	*influxdb.Influxdb
+	log      *log.Helper
+	db       *gorm.DB
+	influxdb influxdb.Influxdb
 }
 
-func NewTrainJobDao(db *gorm.DB, influxdb *influxdb.Influxdb, logger log.Logger) TrainJobDao {
+func NewTrainJobDao(db *gorm.DB, influxdb influxdb.Influxdb, logger log.Logger) TrainJobDao {
 	return &trainJobDao{
-		log: 		log.NewHelper("TrainJobDao", logger),
-		db:  		db,
-		influxdb: 	influxdb,
+		log:      log.NewHelper("TrainJobDao", logger),
+		db:       db,
+		influxdb: influxdb,
 	}
 }
 
@@ -353,9 +355,14 @@ func (d *trainJobDao) DeleteTrainJobTemplate(userId string, ids []string) error 
 
 func (d *trainJobDao) GetTrainJobEvents(jobId string) error {
 
-	res := d.influxbd.Query("user_id = ? and id in ? ", userId, ids)
-	if res.Error != nil {
-		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
+	query := fmt.Sprintf("select object_name, reason, message from events where object_name =~ /^%s/ and kind = 'Pod'", jobId)
+
+	res, err := d.influxdb.Query(query)
+
+	if err != nil {
+		return errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
+
+	fmt.Println(res)
 	return nil
 }

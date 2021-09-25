@@ -74,6 +74,12 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjobtemplate"
       };
     };
+    // 获取训练任务事件列表
+    rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply) {
+      option (google.api.http) = {
+         get: "/v1/trainmanage/trainjobevent/{id}"
+      };
+    };
 
 }
 
@@ -357,4 +363,27 @@ message TrainJobInfoRequest {
 message TrainJobInfoReply{
   //训练任务
   TrainJob trainJob = 4;
+}
+
+message JobEventListRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message JobEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated JobEvent jobEvents = 2;
+}
+
+message JobEvent{
+  //发生时间
+  string timestamp = 1;
+  //副本名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
 }

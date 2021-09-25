@@ -79,6 +79,14 @@ message Redis {
   string password = 3;
 }
 
+message Influxdb {
+  string addr = 1;
+  string username = 2;
+  string password = 3;
+  string Database = 4;
+  string Precision = 5;
+}
+
 message Data {
   Database database = 1;
   Pipeline pipeline = 2;
@@ -86,6 +94,7 @@ message Data {
   Minio minio = 4;
   Harbor harbor = 5;
   Redis redis = 6;
+  Influxdb influxdb = 7;
 }
 
 message Develop {

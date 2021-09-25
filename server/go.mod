@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab // indirect
 	github.com/jinzhu/copier v0.2.5
 	github.com/json-iterator/go v1.1.10
 	github.com/kr/text v0.2.0 // indirect

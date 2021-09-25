@@ -131,6 +131,12 @@ data:
         addr: {{ include "redis.serviceAddr" . }}
         username: {{ .Values.baseserver.data.redis.username }}
         password: {{ .Values.baseserver.data.redis.password }}
+      influxdb:
+        addr: {{ include "influxdb.serviceAddr" . }}
+        username: {{ .Values.influxdb.setDefaultUser.user.username }}
+        password: {{ .Values.influxdb.setDefaultUser.user.password }}
+        database: octopus
+        precision: s
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}

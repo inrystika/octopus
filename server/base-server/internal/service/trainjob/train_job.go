@@ -992,3 +992,24 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 
 	return common.PipeLineCallbackOK
 }
+
+func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
+
+	//jobEvents, totalSize, err := s.data.TrainJobDao.GetTrainJobEvents(ctx, req.Id)
+	err := s.data.TrainJobDao.GetTrainJobEvents(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	//jobEvents, err = s.convertTemplateFromDb(jobEvents)
+	//if err != nil {
+	//	return nil, err
+	//}
+	jobEvents := make([]*api.JobEvent, 0)
+	return &api.JobEventListReply{
+		//TotalSize: totalSize,
+		//JobEvents: jobEvents,
+		TotalSize: 0,
+		JobEvents: jobEvents,
+	}, nil
+}

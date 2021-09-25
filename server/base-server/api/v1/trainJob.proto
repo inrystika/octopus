@@ -29,7 +29,8 @@ service TrainJobService {
   rpc DeleteJobTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply);
   //获取任务模板列表
   rpc ListJobTemplate (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply);
-
+  //获取任务事件列表
+  rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply);
 }
 
 
@@ -226,4 +227,27 @@ message TrainJobInfoRequest {
 
 message TrainJobInfoReply{
   TrainJob trainJob = 1;
+}
+
+message JobEventListRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message JobEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated JobEvent jobEvents = 2;
+}
+
+message JobEvent{
+  //发生时间
+  string timestamp = 1;
+  //副本名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
 }

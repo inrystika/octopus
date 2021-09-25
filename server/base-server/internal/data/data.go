@@ -7,10 +7,10 @@ import (
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/dao/model/resources"
+	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/data/redis"
-	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/registry"
 
 	"server/common/log"
@@ -48,7 +48,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
-	influxdb, err := influxbd.NewInfluxdb(confData)
+	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
 		return nil, nil, err
 	}
