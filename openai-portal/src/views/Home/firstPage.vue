@@ -7,21 +7,34 @@
             <div class="content">
                 <div class="login-container">
                     <div class="grid-content">
-                        <el-form :model="loginForm" :rules="rules" status-icon ref="loginForm" label-position="left"
-                            label-width="0px" class="demo-ruleForm login-page">
+                        <el-form
+                            ref="loginForm"
+                            :model="loginForm"
+                            :rules="rules"
+                            status-icon
+                            label-position="left"
+                            label-width="0px"
+                            class="demo-ruleForm login-page"
+                          >
                             <div class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
                             <el-form-item prop="email">
-                                <el-input type="text" v-model="loginForm.email" auto-complete="off"
-                                    placeholder="请输入用户账号">
-                                </el-input>
+                                <el-input
+                                    v-model="loginForm.email"
+                                    type="text"
+                                    auto-complete="off"
+                                    placeholder="请输入用户账号"
+                                />
                             </el-form-item>
                             <el-form-item prop="password">
-                                <el-input type="password" v-model="loginForm.password" auto-complete="off"
-                                    placeholder="密码">
-                                </el-input>
+                                <el-input
+                                    v-model="loginForm.password"
+                                    type="password"
+                                    auto-complete="off"
+                                    placeholder="密码"
+                                />
                             </el-form-item>
                             <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" @click="handleLogin" :loading="logining">
+                                <el-button type="primary" style="width:100%;" :loading="logining" @click="handleLogin">
                                     登录
                                 </el-button>
                             </el-form-item>
@@ -37,7 +50,7 @@
 <script>
     export default {
         data() {
-            // 邮箱类型验证 
+            // 邮箱类型验证
             var checkEmail = (rule, value, callback) => {
                 const regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                 if (regEmail.test(value)) {
@@ -49,11 +62,11 @@
                 logining: false,
                 loginForm: {
                     email: undefined,
-                    password: undefined,
+                    password: undefined
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
-                    { validator: checkEmail, trigger: "blur" },
+                    { validator: checkEmail, trigger: "blur" }
                     ],
                     password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
                 },
@@ -62,7 +75,7 @@
         },
         watch: {
             $route: {
-                handler: function (route) {
+                handler: function(route) {
                     this.redirect = route.query && route.query.redirect
                 },
                 immediate: true
@@ -81,14 +94,12 @@
                                     message: '登录成功',
                                     type: 'success'
                                 });
-                            }
-                            else {
+                            } else {
                                 this.$message({
                                     message: '账号密码错误',
                                     type: 'warning'
                                 });
                             }
-
                         }).catch(() => {
                             this.loading = false
                         })
@@ -170,7 +181,6 @@
         margin: 0 auto;
         border-radius: 10px;
 
-
     }
 
     label.el-checkbox.rememberme {
@@ -179,7 +189,7 @@
     }
 
     .grid-content {
-        position: relative;   
+        position: relative;
         top: 30%;
     }
 </style>

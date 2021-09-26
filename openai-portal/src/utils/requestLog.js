@@ -1,7 +1,5 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
-import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { Message } from 'element-ui'
 
 // create an axios instance
 const service = axios.create({
@@ -49,7 +47,6 @@ service.interceptors.response.use(
         //     duration: 5 * 1000
         //   })
 
-
         //   // if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         //   //   // to re-login
         //   //   MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
@@ -74,8 +71,7 @@ service.interceptors.response.use(
             duration: 5 * 1000
         })
         // return Promise.reject(error)
-
-
+        console.log("error:", error)
     }
 )
 
