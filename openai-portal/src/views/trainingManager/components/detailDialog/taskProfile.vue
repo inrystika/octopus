@@ -61,8 +61,7 @@
                             <span v-if="!scope.row.isChildren">{{ scope.row.isMainRole?'是':'否' }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="taskNumber" label="副本个数">
-                    </el-table-column>
+                    <el-table-column prop="taskNumber" label="副本个数" />
                     <el-table-column prop="minSucceededTaskCount" label="最小副本成功数" />
                     <el-table-column prop="minFailedTaskCount" label="最小副本失败数" />
                     <el-table-column label="资源规格">

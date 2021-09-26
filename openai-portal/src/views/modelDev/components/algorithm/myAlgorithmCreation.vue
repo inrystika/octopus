@@ -27,7 +27,7 @@
         <el-form-item :label-width="formLabelWidth">
           <div v-show="show">
             <span>是否上传代码？</span>
-            <br />
+            <br>
             <el-button type="primary" @click="nextStep('ruleForm')">是</el-button>
             <el-button @click="noUpload">否</el-button>
           </div>

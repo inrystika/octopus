@@ -1,13 +1,13 @@
 <template>
   <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="我的镜像" name="menu1">
-      <mirror v-if="tabRefresh.menu1" :image="image" :Type="1" />
+      <mirror v-if="tabRefresh.menu1" :image="image" :image-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="公共镜像" name="menu2">
-      <mirror v-if="tabRefresh.menu2" :Type="3" />
+      <mirror v-if="tabRefresh.menu2" :image-tab-type="3" />
     </el-tab-pane>
     <el-tab-pane label="预置镜像" name="menu3">
-      <mirror v-if="tabRefresh.menu3" :Type="2" />
+      <mirror v-if="tabRefresh.menu3" :image-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>

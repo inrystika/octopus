@@ -91,8 +91,8 @@
     <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset
       v-if="myDatasetVisible"
-      :data="this.data"
-      :versionData="this.versionData"
+      :data="data"
+      :version-data="versionData"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
@@ -179,7 +179,7 @@ export default {
         param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }
       param.datasetId = this.data.id
-      param.shared = this.Type === 2 ? true : false
+      param.shared = this.Type === 2
       getVersionList(param).then(response => {
         if (response.success) {
           this.versionList = response.data.versions;

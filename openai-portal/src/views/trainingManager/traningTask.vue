@@ -13,8 +13,7 @@
             :cell-style="{'text-align':'left'}"
             @selection-change="handleSelectionChange"
         >
-            <el-table-column type="selection" width="55" :selectable="checkSelectable">
-            </el-table-column>
+            <el-table-column type="selection" width="55" :selectable="checkSelectable" />
             <el-table-column label="任务名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>

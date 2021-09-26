@@ -2,8 +2,8 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'数据集名称 搜索'"
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -70,15 +70,15 @@
     <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close" />
     <newVersionCreation
       v-if="newVersionCreationVisible"
-      :row="this.data"
+      :row="data"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
     />
     <versionList
       v-if="versionListVisible"
-      :data="this.data"
-      :typeChange="this.typeChange"
+      :data="data"
+      :type-change="typeChange"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
@@ -104,7 +104,7 @@
       searchForm
     },
     props: {
-      Type: {
+        dataType: {
         type: Number,
         default: undefined
       },
@@ -155,7 +155,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataType
           getMyDatasetList(param).then(response => {
             if (response.success) {
               this.datasetList = response.data.datasets;

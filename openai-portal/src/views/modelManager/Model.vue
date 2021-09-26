@@ -12,8 +12,7 @@
             >
                 <el-table-column prop="modelName" label="模型名称" align="center" />
                 <el-table-column v-if="Type===2" prop="userName" label="提供者" align="center" />
-                <el-table-column prop="algorithmName" label="算法名称" align="center">
-                </el-table-column>
+                <el-table-column prop="algorithmName" label="算法名称" align="center" />
                 <el-table-column prop="algorithmVersion" label="算法版本" align="center" />
                 <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">

@@ -2,13 +2,13 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
       <el-tab-pane label="我的数据集" name="myDataset">
-        <myList v-if="tabRefresh.myMenu" :dataset="dataset" :Type="1" />
+        <myList v-if="tabRefresh.myMenu" :dataset="dataset" :data-type="1" />
       </el-tab-pane>
       <el-tab-pane label="公共数据集" name="publicDataset">
-        <publicList v-if="tabRefresh.pubMenu" :Type="2" />
+        <publicList v-if="tabRefresh.pubMenu" :data-type="2" />
       </el-tab-pane>
       <el-tab-pane label="预置数据集" name="preDataset">
-        <presetList v-if="tabRefresh.preMenu" :Type="3" />
+        <presetList v-if="tabRefresh.preMenu" :data-type="3" />
       </el-tab-pane>
     </el-tabs>
   </div>

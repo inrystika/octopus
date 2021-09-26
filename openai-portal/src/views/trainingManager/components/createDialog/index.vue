@@ -141,7 +141,7 @@
                         </el-select>
                     </el-form-item>
                 </div>
-                <el-divider></el-divider>
+                <el-divider />
                 <el-form-item label="分布式" prop="distributed ">
                     <el-select v-model="ruleForm.isDistributed">
                         <el-option label="是" :value="true" />
