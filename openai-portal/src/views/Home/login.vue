@@ -15,7 +15,7 @@
         </el-form-item>
         <el-form-item prop="password">
           <span class="svg-container">
-            <i class=" el-icon-lock"></i>
+            <i class=" el-icon-lock" />
           </span>
           <el-input
             :key="passwordType"
@@ -34,7 +34,7 @@
         </el-form-item>
         <el-form-item prop="email">
           <span class="svg-container">
-            <i class="el-icon-message"></i>
+            <i class="el-icon-message" />
           </span>
           <el-input
             ref="email"

@@ -44,7 +44,7 @@
             </el-row>
         </div>
         <div v-if="show">
-            <el-divider></el-divider>
+            <el-divider />
             <div class="taskList">分布式任务列表</div>
             <div>
                 <el-table
@@ -55,19 +55,15 @@
                     default-expand-all
                     height="700"
                 >
-                    <el-table-column prop="name" label="任务名称" width="200px" :show-overflow-tooltip="true">
-                    </el-table-column>
+                    <el-table-column prop="name" label="任务名称" width="200px" :show-overflow-tooltip="true" />
                     <el-table-column label="是否主任务">
                         <template slot-scope="scope">
                             <span v-if="!scope.row.isChildren">{{ scope.row.isMainRole?'是':'否' }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="taskNumber" label="副本个数">
-                    </el-table-column>
-                    <el-table-column prop="minSucceededTaskCount" label="最小副本成功数">
-                    </el-table-column>
-                    <el-table-column prop="minFailedTaskCount" label="最小副本失败数">
-                    </el-table-column>
+                    <el-table-column prop="taskNumber" label="副本个数" />
+                    <el-table-column prop="minSucceededTaskCount" label="最小副本成功数" />
+                    <el-table-column prop="minFailedTaskCount" label="最小副本失败数" />
                     <el-table-column label="资源规格">
                         <template slot-scope="scope">
                             <span v-if="!scope.row.isChildren">
@@ -94,7 +90,7 @@
 
 <script>
     export default {
-        name: "taskProfile",
+        name: "TaskProfile",
         props: {
             row: {
                 type: Object,

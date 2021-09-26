@@ -8,19 +8,15 @@
                 :header-cell-style="{'text-align':'left','color':'black'}"
                 :cell-style="{'text-align':'left'}"
             >
-                <el-table-column prop="name" label="任务名称" align="center">
-                </el-table-column>
+                <el-table-column prop="name" label="任务名称" align="center" />
                 <el-table-column label="是否是主任务" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ scope.row.isMainRole?'是':'否' }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="taskNumber" label="副本个数" align="center">
-                </el-table-column>
-                <el-table-column prop="minSucceededTaskCount" label="最小副本成功个数" align="center">
-                </el-table-column>
-                <el-table-column prop="minFailedTaskCount" label="最小副本失败数" align="center">
-                </el-table-column>
+                <el-table-column prop="taskNumber" label="副本个数" align="center" />
+                <el-table-column prop="minSucceededTaskCount" label="最小副本成功个数" align="center" />
+                <el-table-column prop="minFailedTaskCount" label="最小副本失败数" align="center" />
                 <el-table-column label="资源规格" align="center">
                     <template slot-scope="scope">
                         <span>{{ showResource(scope.row) }}</span>
@@ -49,8 +45,7 @@
             @confirm="confirm"
             @close="close"
             @subTasks="getsubTasksList"
-        >
-        </distributedTask>
+        />
     </div>
 </template>
 
@@ -59,7 +54,7 @@
     import { getResourceList } from "@/api/trainingManager"
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "traningList",
+        name: "TraningList",
         components: {
             distributedTask
         },

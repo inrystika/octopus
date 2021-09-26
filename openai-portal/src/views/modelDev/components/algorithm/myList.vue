@@ -5,8 +5,7 @@
         :searchForm="searchForm"
         :blurName="'算法名称/描述 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-button
       v-if="Type === 1 ? true : false"
@@ -61,8 +60,7 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <myAlgorithmCreation
@@ -70,8 +68,7 @@
       @cancel="cancel"
       @close="close"
       @confirm="confirm"
-    >
-    </myAlgorithmCreation>
+    />
     <newVersionCreation
       v-if="newVersionVisible"
       :newVersionName="newVersionName"
@@ -79,8 +76,7 @@
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </newVersionCreation>
+    />
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
@@ -88,15 +84,13 @@
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </algorithmCopy>
+    />
     <versionList
       v-if="versionListVisible"
       :Type="this.typeChange"
       :data="row"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -110,7 +104,7 @@ import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "myList",
+  name: "MyList",
   components: {
     newVersionCreation,
     algorithmCopy,
@@ -119,7 +113,10 @@ export default {
     searchForm
   },
   props: {
-    Type: { type: Number },
+    Type: {
+      type: Number,
+      default: undefined
+    },
     algorithm: {
       type: Boolean,
       default: false

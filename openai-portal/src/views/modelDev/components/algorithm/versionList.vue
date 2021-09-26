@@ -89,8 +89,7 @@
           :total="total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-        >
-        </el-pagination>
+        />
     </div>
     <div slot="footer">
     </div>
@@ -101,8 +100,7 @@
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </reuploadAlgorithm>
+    />
   </div>
 </template>
 
@@ -112,12 +110,12 @@
   import reuploadAlgorithm from './reuploadAlgorithm.vue'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "versionList",
+    name: "VersionList",
     components: {
       reuploadAlgorithm
     },
     props: {
-      Type: { type: Number },
+      Type: { type: Number, default: undefined },
       data: {
         type: Object,
         default: () => {}

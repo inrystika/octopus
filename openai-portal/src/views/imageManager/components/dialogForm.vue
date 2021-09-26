@@ -10,25 +10,25 @@
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
                     <el-select v-model="ruleForm.imageType" placeholder="请选择镜像类型" :disabled="!flag||showUpload">
-                        <el-option label="notebook镜像" :value="1"></el-option>
-                        <el-option label="训练镜像" :value="2"></el-option>
+                        <el-option label="notebook镜像" :value="1" />
+                        <el-option label="训练镜像" :value="2" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="镜像名称" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="imageName">
-                    <el-input v-model="ruleForm.imageName" :disabled="!flag||showUpload"></el-input>
+                    <el-input v-model="ruleForm.imageName" :disabled="!flag||showUpload" />
                 </el-form-item>
                 <el-form-item label="镜像标签" :label-width="formLabelWidth" placeholder="请输入镜像版本号" prop="imageVersion">
-                    <el-input v-model="ruleForm.imageVersion" :disabled="!flag||showUpload"></el-input>
+                    <el-input v-model="ruleForm.imageVersion" :disabled="!flag||showUpload" />
                 </el-form-item>
                 <el-form-item label="镜像描述" :label-width="formLabelWidth">
-                    <el-input v-model="ruleForm.imageDesc" type="textarea" :disabled="!flag||showUpload"></el-input>
+                    <el-input v-model="ruleForm.imageDesc" type="textarea" :disabled="!flag||showUpload" />
                 </el-form-item>
                 <el-form-item label="镜像来源" :label-width="formLabelWidth" prop="sourceType">
                     <el-select v-model="ruleForm.sourceType" placeholder="请选择上传类型" :disabled="!flag||showUpload">
-                        <el-option label="文件上传" :value="1"></el-option>
-                        <el-option label="远程镜像" :value="2"></el-option>
+                        <el-option label="文件上传" :value="1" />
+                        <el-option label="远程镜像" :value="2" />
                     </el-select>
-                    <upload v-if="showUpload" :uploadData="uploadData" @confirm="confirm" @cancel="cancel"></upload>
+                    <upload v-if="showUpload" :uploadData="uploadData" @confirm="confirm" @cancel="cancel" />
                 </el-form-item>
                 <el-form-item
                     v-if="ruleForm.sourceType===2"
@@ -37,7 +37,7 @@
                     placeholder="请输入镜像名称"
                     prop="imageAddr"
                 >
-                    <el-input v-model="ruleForm.imageAddr" placeholder="请输入远程镜像地址" :disabled="!flag"></el-input>
+                    <el-input v-model="ruleForm.imageAddr" placeholder="请输入远程镜像地址" :disabled="!flag" />
                 </el-form-item>
             </el-form>
             <div v-if="ruleForm.sourceType===2" slot="footer" class="dialog-footer">
@@ -56,7 +56,7 @@
     import upload from '@/components/upload/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "dialogCreateForm",
+        name: "DialogCreateForm",
         components: {
             upload
         },

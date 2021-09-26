@@ -9,7 +9,7 @@
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
-          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称"></el-input>
+          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
         <el-form-item label="算法描述" :label-width="formLabelWidth" prop="desc">
           <el-input
@@ -19,15 +19,15 @@
             placeholder="请输入算法描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
-          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称"></el-input>
+          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称" />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
           <div v-show="show">
             <span>是否上传代码？</span>
-            <br />
+            <br>
             <el-button type="primary" @click="nextStep('ruleForm')">是</el-button>
             <el-button @click="noUpload">否</el-button>
           </div>
@@ -38,8 +38,7 @@
             :uploadData="uploadData"
             @confirm="confirm"
             @cancel="cancel"
-          >
-          </upload>
+          />
         </el-form-item>
       </el-form>
       <span v-show="showConfirm" slot="footer" class="dialog-footer">
@@ -55,7 +54,7 @@ import upload from '@/components/upload/index.vue'
 import { addMyAlgorithm } from "@/api/modelDev";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "myAlgorithmCreation",
+  name: "MyAlgorithmCreation",
   components: {
     upload
   },

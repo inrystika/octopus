@@ -15,7 +15,7 @@
                 class="demo-ruleForm"
             >
                 <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" placeholder="请输入noteBook名称"></el-input>
+                    <el-input v-model="ruleForm.name" placeholder="请输入noteBook名称" />
                 </el-form-item>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input
@@ -24,7 +24,7 @@
                         placeholder="请输入noteBook描述"
                         maxlength="300"
                         show-word-limit
-                    ></el-input>
+                    />
                 </el-form-item>
                 <!-- 算法三级框 -->
                 <div>
@@ -48,7 +48,7 @@
                                 :key="item.algorithmId+item.algorithmName"
                                 :label="item.algorithmName"
                                 :value="item.algorithmId"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -67,7 +67,7 @@
                                 :key="item.algorithmDetail.algorithmId+item.algorithmDetail.algorithmVersion"
                                 :label="item.algorithmDetail.algorithmVersion"
                                 :value="item.algorithmDetail.algorithmVersion"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -79,9 +79,9 @@
                             placeholder="请选择"
                             @change="changeimageSource"
                         >
-                            <el-option label="我的镜像" value="my"></el-option>
-                            <el-option label="预置镜像" value="pre"></el-option>
-                            <el-option label="公共镜像" value="common"></el-option>
+                            <el-option label="我的镜像" value="my" />
+                            <el-option label="预置镜像" value="pre" />
+                            <el-option label="公共镜像" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -104,7 +104,7 @@
                                 :key="item.id"
                                 :label="item.imageName+':'+item.imageVersion"
                                 :value="item"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -117,9 +117,9 @@
                             placeholder="请选择"
                             @change="changedataSetSource"
                         >
-                            <el-option label="我的数据集" value="my"></el-option>
-                            <el-option label="预置数据集" value="pre"></el-option>
-                            <el-option label="公共数据集" value="common"></el-option>
+                            <el-option label="我的数据集" value="my" />
+                            <el-option label="预置数据集" value="pre" />
+                            <el-option label="公共数据集" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -142,7 +142,7 @@
                                 :key="item.id+item.name"
                                 :label="item.name"
                                 :value="item.id"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -161,7 +161,7 @@
                                 :key="item.datasetId+item.version"
                                 :label="item.version"
                                 :value="item.version"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -177,7 +177,7 @@
                             :key="index"
                             :label="item.label"
                             :value="item.value"
-                        ></el-option>
+                        />
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -196,7 +196,7 @@ import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
 import { getResourceList } from "@/api/trainingManager";
 import { getErrorMsg } from "@/error/index";
 export default {
-    name: "notebookCreation",
+    name: "NotebookCreation",
     directives: {
         loadmore: {
             inserted: function(el, binding) {

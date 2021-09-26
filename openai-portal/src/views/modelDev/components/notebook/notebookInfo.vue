@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  name: "notebookInfo",
+  name: "NotebookInfo",
   props: {
     initInfo: {
       type: String,

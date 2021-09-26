@@ -7,9 +7,9 @@
             :close-on-click-modal="false"
         >
             <el-table :data="tableData" height="300">
-                <el-table-column property="name" label="模型名称"></el-table-column>
-                <el-table-column property="contentType" label="模型类型"></el-table-column>
-                <el-table-column property="size" label="大小"></el-table-column>
+                <el-table-column property="name" label="模型名称" />
+                <el-table-column property="contentType" label="模型类型" />
+                <el-table-column property="size" label="大小" />
                 <el-table-column label="最后修改时间">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ parseTime(scope.row.lastModified) }}</span>
@@ -25,9 +25,9 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "previewDialog",
+        name: "PreviewDialog",
         props: {
-            row: { type: Object }
+            row: { type: Object, default: () => {} }
         },
         data() {
             return {

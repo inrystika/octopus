@@ -2,7 +2,7 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper">
       <el-tab-pane label="NoteBook" name="myNoteBook">
-        <notebookList :notebook="notebook"></notebookList>
+        <notebookList :notebook="notebook" />
       </el-tab-pane>
     </el-tabs>
   </div>

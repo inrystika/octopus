@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :search-form="searchForm" :blur-name="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table
@@ -45,7 +45,7 @@
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column v-if="Type==3" label="提供者" align="center">
+            <el-table-column v-if="imageTabType==3" label="提供者" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.username }}</span>
                 </template>
@@ -77,12 +77,10 @@
                 :total="total"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-              >
-            </el-pagination>
+            />
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close">
-        </dialogForm>
+        <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close" />
 
     </div>
 </template>
@@ -94,13 +92,13 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "preImage",
+        name: "PreImage",
         components: {
             dialogForm,
             searchForm
         },
         props: {
-            Type: { type: Number },
+            imageTabType: { type: Number, default: undefined },
             status: { type: Boolean },
             image: { type: Boolean, default: false }
         },
@@ -138,7 +136,7 @@
         },
         created() {
             this.getImage(this.searchData)
-            if (this.Type !== 1) {
+            if (this.imageTabType !== 1) {
                 this.flag = false
             }
             if (this.image) {
@@ -151,7 +149,7 @@
                 return getErrorMsg(code)
             },
             getImage(data) {
-                this.type = this.Type
+                this.type = this.imageTabType
                 if (this.type === 1) {
                     getMyImage(data).then(response => {
                         if (response.success) {
@@ -176,7 +174,6 @@
                         if (response.success) {
                             if (response.data.images != null) {
                                 this.total = response.data.totalSize
-                                let data = response.data.images
                                 this.tableData = response.data.images
                             }
                         } else {

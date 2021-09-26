@@ -9,10 +9,8 @@
             :close-on-click-modal="false"
         >
             <el-table :data="tableData" style="width: 100%" height="500">
-                <el-table-column prop="version" label="模型版本" align="center">
-                </el-table-column>
-                <el-table-column prop="descript" label="模型描述" align="center">
-                </el-table-column>
+                <el-table-column prop="version" label="模型版本" align="center" />
+                <el-table-column prop="descript" label="模型描述" align="center" />
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ fileStatus(scope.row.fileStatus) }}</span>
@@ -50,8 +48,7 @@
                     :total="total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                >
-                </el-pagination>
+                />
             </div>
             <div slot="footer">
                 <!-- <el-button @click="cancel">取 消</el-button>
@@ -59,7 +56,7 @@
             </div>
         </el-dialog>
         <!-- 预览对话框 -->
-        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog"></previewDialog>
+        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog" />
     </div>
 </template>
 
@@ -69,16 +66,17 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "versionList",
+        name: "VersionList",
         components: {
             previewDialog
         },
         props: {
             modelId: {
-                type: String
+                type: String,
+                default: ""
             },
-            Type: { type: Number },
-            modelName: { type: String }
+            Type: { type: Number, default: undefined },
+            modelName: { type: String, default: "" }
         },
         data() {
             return {
