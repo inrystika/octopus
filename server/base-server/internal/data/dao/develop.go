@@ -2,9 +2,11 @@ package dao
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
 	"server/base-server/internal/data/dao/model"
+	"server/base-server/internal/data/influxdb"
 	"server/common/errors"
 	"server/common/transaction"
 	"server/common/utils"
@@ -29,19 +31,23 @@ type DevelopDao interface {
 	UpdateNotebookJobSelective(ctx context.Context, notebookJob *model.NotebookJob) error
 	DeleteNotebookJobByNbId(ctx context.Context, notebookId string) error
 	ListNotebookJob(ctx context.Context, query *model.NotebookJobQuery) ([]*model.NotebookJob, error)
+	//获取Notebook事件
+	GetNotebookEvents(notebookEventQuery *model.NotebookEventQuery) ([]*model.NotebookEvent, int64, error)
 }
 
 type developDao struct {
-	log *log.Helper
-	db  transaction.GetDB
+	log      *log.Helper
+	db       transaction.GetDB
+	influxdb influxdb.Influxdb
 }
 
-func NewDevelopDao(db *gorm.DB, logger log.Logger) DevelopDao {
+func NewDevelopDao(db *gorm.DB, influxdb influxdb.Influxdb, logger log.Logger) DevelopDao {
 	return &developDao{
 		log: log.NewHelper("DevelopDao", logger),
 		db: func(ctx context.Context) *gorm.DB {
 			return transaction.GetDBFromCtx(ctx, db)
 		},
+		influxdb: influxdb,
 	}
 }
 
@@ -297,4 +303,50 @@ func (d *developDao) ListNotebookJob(ctx context.Context, query *model.NotebookJ
 	}
 
 	return notebookJobs, nil
+}
+
+func (d *developDao) GetNotebookEvents(notebookEventQuery *model.NotebookEventQuery) ([]*model.NotebookEvent, int64, error) {
+
+	keyName := "object_name"
+	keyReason := "reason"
+	keyMessage := "message"
+
+	PageIndex := notebookEventQuery.PageIndex
+	PageSize := notebookEventQuery.PageSize
+	TaskIndex := notebookEventQuery.TaskIndex
+	ReplicaIndex := notebookEventQuery.ReplicaIndex
+	events := make([]*model.NotebookEvent, 0)
+
+	objectName := fmt.Sprintf("%s-task%d-%d", notebookEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
+
+	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM events where object_name =~ /^%s/", keyMessage, objectName)
+	res, err := d.influxdb.Query(countQuery)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	query := fmt.Sprintf("select %s, %s, %s from events where object_name =~ /^%s/ and kind = 'Pod' LIMIT %d OFFSET %d", keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	res, err = d.influxdb.Query(query)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	for _, row := range res[0].Series[0].Values {
+
+		event := &model.NotebookEvent{}
+		event.Timestamp = row[0].(string)
+		event.Name = row[1].(string)
+		event.Reason = row[2].(string)
+		event.Message = row[3].(string)
+		events = append(events, event)
+	}
+
+	return events, totalSize, nil
 }

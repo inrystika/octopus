@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
 	"server/base-server/internal/data/dao/model"
@@ -44,7 +45,7 @@ type TrainJobDao interface {
 	//网关层删除任务模板（软删除）
 	DeleteTrainJobTemplate(userId string, ids []string) error
 	//获取训练任务事件
-	GetTrainJobEvents(jobId string) error
+	GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*model.TrainJobEvent, int64, error)
 }
 
 type trainJobDao struct {
@@ -353,16 +354,48 @@ func (d *trainJobDao) DeleteTrainJobTemplate(userId string, ids []string) error 
 	return nil
 }
 
-func (d *trainJobDao) GetTrainJobEvents(jobId string) error {
+func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*model.TrainJobEvent, int64, error) {
 
-	query := fmt.Sprintf("select object_name, reason, message from events where object_name =~ /^%s/ and kind = 'Pod'", jobId)
+	keyName := "object_name"
+	keyReason := "reason"
+	keyMessage := "message"
 
-	res, err := d.influxdb.Query(query)
+	PageIndex := jobEventQuery.PageIndex
+	PageSize := jobEventQuery.PageSize
+	TaskIndex := jobEventQuery.TaskIndex
+	ReplicaIndex := jobEventQuery.ReplicaIndex
+	events := make([]*model.TrainJobEvent, 0)
+
+	objectName := fmt.Sprintf("%s-task%d-%d", jobEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
+
+	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM events where object_name =~ /^%s/", keyMessage, objectName)
+	res, err := d.influxdb.Query(countQuery)
 
 	if err != nil {
-		return errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	fmt.Println(res)
-	return nil
+	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	query := fmt.Sprintf("select %s, %s, %s from events where object_name =~ /^%s/ and kind = 'Pod' LIMIT %d OFFSET %d", keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	res, err = d.influxdb.Query(query)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	for _, row := range res[0].Series[0].Values {
+
+		event := &model.TrainJobEvent{}
+		event.Timestamp = row[0].(string)
+		event.Name = row[1].(string)
+		event.Reason = row[2].(string)
+		event.Message = row[3].(string)
+		events = append(events, event)
+	}
+
+	return events, totalSize, nil
 }

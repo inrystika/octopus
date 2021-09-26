@@ -47,6 +47,12 @@ service Develop {
       get: "/v1/developmanage/notebook/{id}"
     };
   }
+  // 获取Notebook事件列表
+  rpc GetJobEventList (NotebookEventListRequest) returns (NotebookEventListReply) {
+    option (google.api.http) = {
+       get: "/v1/developmanage/notebookevent"
+    };
+  };
 }
 
 message CreateNotebookRequest {
@@ -127,10 +133,40 @@ message Notebook {
   string datasetVersion = 18;
   string datasetName = 19;
   uint32 resourceSpecPrice = 20;
-  string initInfo = 21;
 }
 
 message ListNotebookReply {
   int64 totalSize = 1;
   repeated Notebook notebooks = 2;
+}
+
+message NotebookEventListRequest {
+  // 页码，从1开始
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  //任务ID
+  string id = 3[(validate.rules).string = {min_len: 1}];
+  //子任务序号，从1开始
+  int64 taskIndex = 4[(validate.rules).int64 = {gte:1,lt:100}];
+  //副本序号，从1开始
+  int64 replicaIndex = 5[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message NotebookEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated NotebookEvent notebookEvents = 2;
+}
+
+message NotebookEvent{
+  //发生时间
+  string timestamp = 1;
+  //副本名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
 }

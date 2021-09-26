@@ -11,10 +11,11 @@ require (
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/influxdata/influxdb v1.9.4
 	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab // indirect
 	github.com/jinzhu/copier v0.2.5
 	github.com/json-iterator/go v1.1.10
@@ -22,15 +23,14 @@ require (
 	github.com/minio/minio-go/v7 v7.0.11
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/sony/sonyflake v1.0.0
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/text v0.3.6
-	gonum.org/v1/gonum v0.6.2
-	google.golang.org/appengine v1.6.5 // indirect
+	gonum.org/v1/gonum v0.8.2
 	google.golang.org/genproto v0.0.0-20210212180131-e7f2df4ecc2d
 	google.golang.org/grpc v1.36.0
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/errgo.v2 v2.1.0
 	gopkg.in/resty.v1 v1.12.0

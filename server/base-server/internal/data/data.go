@@ -58,7 +58,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d.AlgorithmDao = algorithm_dao.NewAlgorithmDao(db, logger)
 	d.ResourceDao = dao.NewResourceDao(db, logger)
 	d.ResourceSpecDao = dao.NewResourceSpecDao(db, logger)
-	d.DevelopDao = dao.NewDevelopDao(db, logger)
+	d.DevelopDao = dao.NewDevelopDao(db, influxdb, logger)
 	d.ModelDao = dao.NewModelDao(db, logger)
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)

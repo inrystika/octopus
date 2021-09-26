@@ -1,11 +1,14 @@
 package influxdb
 
 import (
+	"fmt"
 	"server/base-server/internal/conf"
 	"server/common/errors"
 	"time"
 
-	influxdbClient "github.com/influxdata/influxdb1-client/v2"
+	"net/url"
+
+	influxdbClient "github.com/influxdata/influxdb/client"
 )
 
 type Influxdb interface {
@@ -17,20 +20,35 @@ type Influxdb interface {
 
 type influxbd struct {
 	conf   *conf.Data
-	client influxdbClient.Client
+	client *influxdbClient.Client
 }
 
 func NewInfluxdb(conf *conf.Data) (db Influxdb, err error) {
 
-	client, err := influxdbClient.NewHTTPClient(influxdbClient.HTTPConfig{
-		Addr:     conf.Influxdb.Addr,
+	url := &url.URL{
+		Scheme: "http",
+		Host:   conf.Influxdb.Addr,
+	}
+
+	iConfig := &influxdbClient.Config{
+		URL:      *url,
 		Username: conf.Influxdb.Username,
 		Password: conf.Influxdb.Password,
-	})
+	}
 
+	client, err := influxdbClient.NewClient(*iConfig)
 	if err != nil {
 		err = errors.Errorf(err, errors.ErroInfluxdbInitFailed)
 		return nil, err
+	}
+
+	if _, _, err := client.Ping(); err != nil {
+		err = fmt.Errorf("failed to ping influxDB server at %q - %v", conf.Influxdb.Addr, err)
+		return nil, errors.Errorf(err, errors.ErroInfluxdbInitFailed)
+	}
+
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErroInfluxdbInitFailed)
 	}
 
 	influxdb := &influxbd{
@@ -60,22 +78,23 @@ func (i *influxbd) Query(cmd string) (res []influxdbClient.Result, err error) {
 
 func (i *influxbd) Write(measurement string, tags map[string]string, fields map[string]interface{}) (err error) {
 
-	batchPoints, err := influxdbClient.NewBatchPoints(influxdbClient.BatchPointsConfig{
-		Database:  i.conf.Influxdb.Database,
-		Precision: i.conf.Influxdb.Precision,
-	})
-	if err != nil {
-		return err
+	point := influxdbClient.Point{
+		Measurement: measurement,
+		Time:        time.Now().UTC(),
+		Fields:      fields,
+		Tags:        tags,
 	}
 
-	point, err := influxdbClient.NewPoint(measurement, tags, fields, time.Now())
-	if err != nil {
-		return err
+	dataPoints := make([]influxdbClient.Point, 0, 10)
+	dataPoints = append(dataPoints, point)
+
+	batchPoints := influxdbClient.BatchPoints{
+		Points:          dataPoints,
+		Database:        i.conf.Influxdb.Database,
+		RetentionPolicy: "default",
 	}
 
-	batchPoints.AddPoint(point)
-	err = i.client.Write(batchPoints)
-	if err != nil {
+	if _, err := i.client.Write(batchPoints); err != nil {
 		return err
 	}
 	return nil

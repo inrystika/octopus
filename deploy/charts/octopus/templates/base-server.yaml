@@ -136,7 +136,6 @@ data:
         username: {{ .Values.influxdb.setDefaultUser.user.username }}
         password: {{ .Values.influxdb.setDefaultUser.user.password }}
         database: octopus
-        precision: s
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
