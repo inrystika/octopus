@@ -38,14 +38,14 @@
             <span>{{ scope.row.latestVersion }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据集描述" :show-overflow-tooltip="true">
-          <template slot-scope="scope">
-            <span>{{ scope.row.desc }}</span>
-          </template>
-        </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createdAt) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据集描述" :show-overflow-tooltip="true">
+          <template slot-scope="scope">
+            <span>{{ scope.row.desc }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">

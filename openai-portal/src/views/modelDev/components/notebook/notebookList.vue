@@ -150,7 +150,7 @@
           pageSize: 10
         },
         resourceList: [],
-        title: "是否启动Notebook？",
+        title: "是否启动NoteBook？",
         statusText: {
           'preparing': ['status-ready', '初始中'],
           'pending': ['status-agent', '等待中'],
@@ -250,7 +250,7 @@
           } else {
             if (response.error.subcode === 11014) {
               this.$message({
-                message: '资源规格已被删除，请重新提交notebook',
+                message: '资源规格已被删除，请重新提交NoteBook',
                 type: 'warning'
               })
             } else {
@@ -263,7 +263,7 @@
         })
       },
       confirmStop(row) {
-        this.$confirm('是否停止Notebook？', '提示', {
+        this.$confirm('是否停止NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -331,7 +331,7 @@
         })
       },
       confirmDelete(row) {
-        this.$confirm('是否删除Notebook？', '提示', {
+        this.$confirm('是否删除NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',

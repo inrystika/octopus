@@ -1,25 +1,12 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm 
-              :searchForm=searchForm 
-              :blurName="'模型名称/描述 搜索'"
-              @searchData="getSearchData" 
-            />
+            <searchForm :searchForm=searchForm :blurName="'模型名称/描述 搜索'" @searchData="getSearchData" />
         </div>
         <el-button v-if="Type===3" type="primary" @click="createModel" class="create">创建</el-button>
         <div class="index">
-            <el-table 
-                :data="tableData" 
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}" 
-                :cell-style="{'text-align':'left'}"
-            >
-                <el-table-column label="群组名">
-                    <template slot-scope="scope">
-                        <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
-                    </template>
-                </el-table-column>
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
                 <el-table-column prop="modelName" label="模型名称">
                 </el-table-column>
                 <el-table-column prop="latestVersion" label="模型版本">
@@ -28,9 +15,14 @@
                 </el-table-column>
                 <el-table-column prop="algorithmVersion" label="算法版本">
                 </el-table-column>
-                <el-table-column prop="userName" v-if="Type===1" label="提供者">
-                </el-table-column>
                 <el-table-column prop="modelDescript" label="模型描述">
+                </el-table-column>
+                <el-table-column label="群组名">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="userName" v-if="Type===1" label="提供者">
                 </el-table-column>
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
@@ -47,26 +39,13 @@
             </el-table>
         </div>
         <div class="block">
-            <el-pagination 
-              :current-page="searchData.pageIndex" 
-              :page-sizes="[10, 20, 50,80]" 
-              :page-size="searchData.pageSize"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper" 
-              @size-change="handleSizeChange" 
-              @current-change="handleCurrentChange"       
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50,80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 版本列表对话框 -->
-        <versionList 
-          v-if="FormVisible" 
-          :modelId="modelId"
-          :modelName="modelName"
-          :Type="type" 
-          @close="close" 
-          @cancel="cancel" 
-          @confirm="confirm" 
-        >
+        <versionList v-if="FormVisible" :modelId="modelId" :modelName="modelName" :Type="type" @close="close"
+            @cancel="cancel" @confirm="confirm">
         </versionList>
         <!-- 创建对话框 -->
         <createDialog v-if="CreateVisible" @close="close" @cancel="cancel" @confirm="confirm" :row="row"
@@ -155,7 +134,7 @@
 
 
             },
-            getVersionList(val) { this.FormVisible = true; this.modelId = val.modelId,this.modelName = val.modelName },
+            getVersionList(val) { this.FormVisible = true; this.modelId = val.modelId, this.modelName = val.modelName },
             handledDelete(row) {
                 let data = JSON.parse(JSON.stringify(row));
                 data.version = row.modelVersion
