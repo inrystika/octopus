@@ -1,26 +1,13 @@
 <template>
   <div>
-    <el-upload
-      v-if="showUpload"
-      class="upload-demo"
-      action="#"
-      :on-change="upload"
-      :file-list="fileList"
-      :http-request="httpRequest"
-      multiple
-      :accept="accept"
-    >
+    <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
+      :http-request="httpRequest" multiple :accept="accept">
       <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress
-      v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"
-      :text-inside="true"
-      :stroke-width="18"
-      :percentage="progress"
-      class="progress"
-    />
+    <el-progress v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)" :text-inside="true"
+      :stroke-width="18" :percentage="progress" class="progress" />
     <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -56,12 +43,19 @@
     },
     computed: {
       ...mapGetters([
-        'progress'
-      ])
+        'progressId',
+      ]),
+      progress() {
+        if(this.$store.state.user.progressId){
+          console.log(this.$store.state.user)
+        }
+       
+        return this.$store.state.user[this.$store.state.user.progressId]
+      }
     },
     watch: {
       showUpload() {
-        store.commit('user/CLEAR_PROGRESS')
+        // store.commit('user/CLEAR_PROGRESS')
       }
     },
     created() {
@@ -87,6 +81,7 @@
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw
@@ -321,6 +316,11 @@
     font-size: 12px
   }
 
-  .progress{margin: 5px 0px 10px 0px;}
-  .dialog-footer{margin-top: 10px;}
+  .progress {
+    margin: 5px 0px 10px 0px;
+  }
+
+  .dialog-footer {
+    margin-top: 10px;
+  }
 </style>
