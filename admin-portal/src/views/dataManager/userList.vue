@@ -15,16 +15,6 @@
         :header-cell-style="{'text-align':'left','color':'black'}" 
         :cell-style="{'text-align':'left'}"
       >
-        <el-table-column label="所属群组">
-          <template slot-scope="scope">
-            <span >{{ scope.row.spaceId === 'default-workspace' ? '默认群组' : scope.row.spaceName }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="提供者">
-          <template slot-scope="scope">
-            <span>{{ scope.row.userName }}</span>
-          </template>
-        </el-table-column>
         <el-table-column label="数据集名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -43,6 +33,16 @@
         <el-table-column label="数据集描述" :show-overflow-tooltip="true">
           <template slot-scope="scope">
             <span>{{ scope.row.desc }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="所属群组">
+          <template slot-scope="scope">
+            <span >{{ scope.row.spaceId === 'default-workspace' ? '默认群组' : scope.row.spaceName }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="提供者">
+          <template slot-scope="scope">
+            <span>{{ scope.row.userName }}</span>
           </template>
         </el-table-column>
         <el-table-column label="创建时间">
