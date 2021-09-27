@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm :searchForm="searchForm" :blurName="'NoteBook名称 搜索'" @searchData="getSearchData" />
+      <searchForm :search-form="searchForm" :blur-name="'NoteBook名称 搜索'" @searchData="getSearchData" />
     </div>
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
@@ -93,7 +93,7 @@
 
     <notebookInfo
       v-if="notebookInfoVisible"
-      :initInfo="initInfo"
+      :init-info="initInfo"
       @confirm="confirm"
       @cancel="cancel"
       @close="close"

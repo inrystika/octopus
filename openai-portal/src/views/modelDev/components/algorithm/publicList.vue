@@ -60,14 +60,14 @@
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
-      :algorithm-tab-type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
     />
     <versionList
       v-if="versionListVisible"
-      :algorithm-tab-type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       :data="row"
       @close="close"
     />

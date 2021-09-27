@@ -176,7 +176,7 @@
                     </el-form-item>
                 </div>
                 <div v-if="!show">
-                    <traningList :Table="table" :resource="resourceOptions" @tableData="getTableData" />
+                    <traningList :training-table="table" :resource="resourceOptions" @tableData="getTableData" />
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">

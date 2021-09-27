@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'任务名称 搜索'" @searchData="getSearchData" />
+            <searchForm :search-form="searchForm" :blur-name="'任务名称 搜索'" @searchData="getSearchData" />
         </div>
         <el-button type="primary" class="create" @click="open()">批量删除</el-button>
         <el-button type="primary" class="create" @click="create">创建任务</el-button>

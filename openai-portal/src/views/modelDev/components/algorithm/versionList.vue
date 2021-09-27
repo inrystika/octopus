@@ -96,7 +96,7 @@
     </el-dialog>
     <reuploadAlgorithm
       v-if="myAlgorithmVisible"
-      :data="this.data"
+      :data="data"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
