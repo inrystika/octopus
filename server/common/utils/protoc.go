@@ -125,6 +125,10 @@ func Generate() error {
 		return err
 	}
 
+	err = GenSwagger()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

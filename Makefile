@@ -73,6 +73,8 @@ vc-controller_build: init
 scheduler_build: init
 	cd ./server/taskset && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./main/scheduler
 
+api-doc_build: init
+	cd ./server && go generate
 # 运行
 all_run: server_run
 
@@ -165,7 +167,7 @@ taskset_lint: lint_init
 	cd ./server/taskset && golangci-lint run ./...
 
 # 构建镜像
-images: base-server_image admin-server_image openai-server_image taskset_image admin-portal_image openai-portal_image
+images: base-server_image admin-server_image openai-server_image taskset_image admin-portal_image openai-portal_image api-doc_image
 
 base-server_image:
 	docker build --no-cache -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
@@ -193,8 +195,11 @@ admin-portal_image:
 openai-portal_image:
 	docker build --no-cache -t openai-portal:${RELEASE_VER} -f ./build/application/openai-portal/dockerfile .
 
+api-doc_image:
+	docker build --no-cache -t api-doc:${RELEASE_VER} -f ./build/application/api-doc/dockerfile .
+
 # 镜像推送
-images_push: base-server_image_push admin-server_image_push openai-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push
+images_push: base-server_image_push admin-server_image_push openai-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push
 
 image_push_init:
 	(echo ${DOCKER_HUB_PASSWD} | docker login ${DOCKER_HUB_HOST} -u ${DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
@@ -290,6 +295,16 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
+api-doc_image_push: image_push_init
+	docker tag api-doc:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:${RELEASE_VER}
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:${RELEASE_VER}
+
+ifneq (${RELEASE_VER}, latest)
+ifeq (${NEED_LATEST}, TRUE)
+	docker tag api-doc:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:latest
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:latest
+endif
+endif
 
 # helm chart
 charts: charts_build charts_push

@@ -1,0 +1,11 @@
+from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
+WORKDIR /app
+COPY ./ ./
+
+RUN make api-doc_build
+
+FROM swaggerapi/swagger-ui
+WORKDIR /app
+COPY --from=builder /app/server/admin-server/api/v1/swagger.json /usr/share/nginx/html/admin-server.swagger.json
+COPY --from=builder /app/server/openai-server/api/v1/swagger.json /usr/share/nginx/html/openai-server.swagger.json
+ENV URLS "[{url:\"/admin-server.swagger.json\",name:\"admin\"},{url:\"/openai-server.swagger.json\",name:\"openai\"}]"
