@@ -10,7 +10,7 @@ const service = axios.create({
   // eslint-disable-next-line no-undef
   onUploadProgress: function(progress) {
     // 处理上传进度事件
-    store.commit('user/SET_PROGRESS', { progress: parseInt(((progress.loaded / progress.total) * 100).toFixed(0)), id: store.state.user.progressId })
+    sessionStorage.setItem(JSON.stringify(store.state.user.progressId), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100).toFixed(0))));
   }
 })
 
@@ -85,7 +85,6 @@ service.interceptors.response.use(
     // }
   },
   error => {
-    store.commit('user/CLEAR_PROGRESS')
     console.log('err' + error) // for debug
     Message({
       message: error.message,

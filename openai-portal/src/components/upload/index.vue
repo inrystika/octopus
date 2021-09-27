@@ -38,27 +38,33 @@
         loadingShow: false,
         showUpload: true,
         accept: "application/zip",
-        tipText: '上传文件格式为 zip'
+        tipText: '上传文件格式为 zip',
+        progress: undefined
       }
     },
     computed: {
       ...mapGetters([
         'progressId',
-      ]),
-      progress() {
-        if(this.$store.state.user.progressId){
-          console.log(this.$store.state.user)
-        }
-       
-        return this.$store.state.user[this.$store.state.user.progressId]
-      }
+      ])
     },
     watch: {
-      showUpload() {
-        // store.commit('user/CLEAR_PROGRESS')
+
+      progress(newValue, oldValue) {
+        if (newValue == 100) {
+          this.clearInterval(progerss)
+        }
       }
     },
     created() {
+      store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
+      var progerss = setInterval(() => {
+        if (store.state.user.progressId) {
+          if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
+            this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
+          }
+        }
+      }, 1000)
+
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
@@ -81,7 +87,6 @@
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
-              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw
