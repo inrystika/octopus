@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  name: "notebookInfo",
+  name: "NotebookInfo",
   props: {
     initInfo: {
       type: String,
@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      infoVisible: true,
+      infoVisible: true
     }
   },
   methods: {

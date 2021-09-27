@@ -8,23 +8,23 @@
             :close-on-click-modal="false"
         >
             <el-form
+                ref="ruleForm"
                 :model="ruleForm"
                 :rules="rules"
-                ref="ruleForm"
                 :label-width="formLabelWidth"
                 class="demo-ruleForm"
             >
                 <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" placeholder="请输入notebook名称"></el-input>
+                    <el-input v-model="ruleForm.name" placeholder="请输入NoteBook名称" />
                 </el-form-item>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input
+                        v-model="ruleForm.desc"
                         :autosize="{ minRows: 2, maxRows: 4}"
-                        placeholder="请输入notebook描述"
+                        placeholder="请输入NoteBook描述"
                         maxlength="300"
                         show-word-limit
-                        v-model="ruleForm.desc"
-                    ></el-input>
+                    />
                 </el-form-item>
                 <!-- 算法三级框 -->
                 <div>
@@ -36,38 +36,38 @@
                     <el-form-item label="算法名称" prop="algorithmId" style="display:inline-block;">
                         <el-select
                             v-model="ruleForm.algorithmId"
-                            placeholder="请选择算法名称"
                             v-loadmore="loadAlgorithmName"
-                            @change="changeAlgorithmName"
+                            placeholder="请选择算法名称"
                             filterable
                             remote
                             :remote-method="remoteAlgorithm"
+                            @change="changeAlgorithmName"
                         >
                             <el-option
                                 v-for="item in algorithmNameOption"
                                 :key="item.algorithmId+item.algorithmName"
                                 :label="item.algorithmName"
                                 :value="item.algorithmId"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
+                        v-if="algorithmVersion"
                         label="算法版本"
                         prop="algorithmVersion"
-                        v-if="algorithmVersion"
                         style="display:inline-block;"
                     >
                         <el-select
                             v-model="ruleForm.algorithmVersion"
-                            placeholder="请选择算法版本"
                             v-loadmore="loadAlgorithmVersion"
+                            placeholder="请选择算法版本"
                         >
                             <el-option
                                 v-for="item in algorithmVersionOption"
                                 :key="item.algorithmDetail.algorithmId+item.algorithmDetail.algorithmVersion"
                                 :label="item.algorithmDetail.algorithmVersion"
                                 :value="item.algorithmDetail.algorithmVersion"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -76,25 +76,25 @@
                     <el-form-item label="镜像类型" prop="imageSource" :class="{inline:imageName}">
                         <el-select
                             v-model="ruleForm.imageSource"
-                            @change="changeimageSource"
                             placeholder="请选择"
+                            @change="changeimageSource"
                         >
-                            <el-option label="我的镜像" value="my"></el-option>
-                            <el-option label="预置镜像" value="pre"></el-option>
-                            <el-option label="公共镜像" value="common"></el-option>
+                            <el-option label="我的镜像" value="my" />
+                            <el-option label="预置镜像" value="pre" />
+                            <el-option label="公共镜像" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
+                        v-if="imageName"
                         label="镜像名称"
                         prop="imageItem"
-                        v-if="imageName"
                         style="display: inline-block;"
                     >
                         <el-select
-                            value-key="id"
                             v-model="ruleForm.imageItem"
-                            placeholder="请选择镜像"
                             v-loadmore="loadImageName"
+                            value-key="id"
+                            placeholder="请选择镜像"
                             filterable
                             remote
                             :remote-method="remoteImage"
@@ -104,7 +104,7 @@
                                 :key="item.id"
                                 :label="item.imageName+':'+item.imageVersion"
                                 :value="item"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -113,55 +113,55 @@
                     <el-form-item label="数据集类型" prop="dataSetSource" :class="{inline:dataSetName}">
                         <el-select
                             v-model="ruleForm.dataSetSource"
-                            @change="changedataSetSource"
                             clearable
                             placeholder="请选择"
+                            @change="changedataSetSource"
                         >
-                            <el-option label="我的数据集" value="my"></el-option>
-                            <el-option label="预置数据集" value="pre"></el-option>
-                            <el-option label="公共数据集" value="common"></el-option>
+                            <el-option label="我的数据集" value="my" />
+                            <el-option label="预置数据集" value="pre" />
+                            <el-option label="公共数据集" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
+                        v-if="dataSetName"
                         label="数据集名称"
                         prop="dataSetId"
-                        v-if="dataSetName"
                         style="display: inline-block;"
                     >
                         <el-select
                             v-model="ruleForm.dataSetId"
-                            placeholder="请选择数据集名称"
                             v-loadmore="loadDataSetName"
-                            @change="changeDataSetName"
+                            placeholder="请选择数据集名称"
                             filterable
                             remote
                             :remote-method="remoteDataSet"
+                            @change="changeDataSetName"
                         >
                             <el-option
                                 v-for="item in dataSetNameOption"
                                 :key="item.id+item.name"
                                 :label="item.name"
                                 :value="item.id"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
+                        v-if="dataSetVersion"
                         label="数据集版本"
                         prop="dataSetVersion"
-                        v-if="dataSetVersion"
                         style="display: inline-block;"
                     >
                         <el-select
                             v-model="ruleForm.dataSetVersion"
-                            placeholder="请选择数据集版本"
                             v-loadmore="loadDataSetVersion"
+                            placeholder="请选择数据集版本"
                         >
                             <el-option
                                 v-for="item in dataSetVersionOption"
                                 :key="item.datasetId+item.version"
                                 :label="item.version"
                                 :value="item.version"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -177,7 +177,7 @@
                             :key="index"
                             :label="item.label"
                             :value="item.value"
-                        ></el-option>
+                        />
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -190,24 +190,29 @@
 </template>
 
 <script>
-import {
-    createNotebook,
-    getMyAlgorithmList,
-    getAlgorithmVersionList,
-    getPublicAlgorithmList,
-    getPresetAlgorithmList
-} from "@/api/modelDev";
-import {
-    getMyDatasetList,
-    getPublicDatasetList,
-    getPresetDatasetList,
-    getVersionList
-} from "@/api/datasetManager";
+import { createNotebook, getMyAlgorithmList, getAlgorithmVersionList } from "@/api/modelDev";
+import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from "@/api/datasetManager";
 import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
 import { getResourceList } from "@/api/trainingManager";
 import { getErrorMsg } from "@/error/index";
 export default {
-    name: "notebookCreation",
+    name: "NotebookCreation",
+    directives: {
+        loadmore: {
+            inserted: function(el, binding) {
+                const SELECTWRAP_DOM = el.querySelector(
+                    ".el-select-dropdown .el-select-dropdown__wrap"
+                );
+                SELECTWRAP_DOM.addEventListener("scroll", function() {
+                    const CONDITION =
+                        this.scrollHeight - this.scrollTop <= this.clientHeight;
+                    if (CONDITION) {
+                        binding.value();
+                    }
+                });
+            }
+        }
+    },
     data() {
         return {
             ruleForm: {
@@ -321,22 +326,6 @@ export default {
         this.getResource();
         this.getAlgorithmNameList();
     },
-    directives: {
-        loadmore: {
-            inserted: function(el, binding) {
-                const SELECTWRAP_DOM = el.querySelector(
-                    ".el-select-dropdown .el-select-dropdown__wrap"
-                );
-                SELECTWRAP_DOM.addEventListener("scroll", function() {
-                    const CONDITION =
-                        this.scrollHeight - this.scrollTop <= this.clientHeight;
-                    if (CONDITION) {
-                        binding.value();
-                    }
-                });
-            }
-        }
-    },
     methods: {
         getErrorMsg(code) {
             return getErrorMsg(code);
@@ -417,8 +406,8 @@ export default {
         changealgorithmSource() {
             this.algorithmName = true;
             this.algorithmNameCount = 1;
-            this.algorithmNameOption = [],
-            this.ruleForm.algorithmId = "",
+            this.algorithmNameOption = []
+            this.ruleForm.algorithmId = ""
             this.ruleForm.algorithmVersion = "";
             this.algorithmChange = true;
             this.getAlgorithmNameList();
@@ -426,15 +415,15 @@ export default {
         changeAlgorithmName() {
             this.algorithmVersion = true;
             this.algorithmVersionCount = 1;
-            (this.algorithmVersionOption = []),
-                (this.ruleForm.algorithmVersion = "");
+            this.algorithmVersionOption = []
+            this.ruleForm.algorithmVersion = ""
             this.getAlgorithmVersionList();
         },
         getAlgorithmNameList(searchKey) {
-            getMyAlgorithmList({ 
-                pageIndex: this.algorithmNameCount, 
-                pageSize: 10, 
-                nameLike: searchKey 
+            getMyAlgorithmList({
+                pageIndex: this.algorithmNameCount,
+                pageSize: 10,
+                nameLike: searchKey
             }).then(response => {
                 this.algorithmNameOption = this.algorithmNameOption.concat(response.data.algorithms);
                 this.algorithmNameTotal = response.data.totalSize
@@ -473,7 +462,7 @@ export default {
         changeimageSource() {
             this.imageName = true;
             this.imageCount = 1;
-            this.imageNameOption = [], 
+            this.imageNameOption = []
             this.ruleForm.imageItem = "";
             this.getImageNameList();
         },
@@ -486,10 +475,9 @@ export default {
                     imageType: 1,
                     nameVerLike: searchKey
                 }).then(response => {
-                    
                     if (response.data.images.length !== 0) {
-                        let data = response.data.images;
-                        let tableData = [];
+                        const data = response.data.images;
+                        const tableData = [];
                         this.imageNameTotal = response.data.totalSize;
                         data.forEach(item => {
                             tableData.push({
@@ -501,7 +489,6 @@ export default {
                             tableData
                         );
                     }
-                    
                 });
             }
             if (this.ruleForm.imageSource === "pre") {
@@ -512,14 +499,12 @@ export default {
                     imageType: 1,
                     nameVerLike: searchKey
                 }).then(response => {
- 
                     if (response.data.images.length !== 0) {
                         this.imageNameOption = this.imageNameOption.concat(
                             response.data.images
                         );
                         this.imageNameTotal = response.data.totalSize;
                     }
-                    
                 });
             }
             if (this.ruleForm.imageSource === "common") {
@@ -530,20 +515,18 @@ export default {
                     imageType: 1,
                     nameVerLike: searchKey
                 }).then(response => {
-
                     if (response.data.images.length !== 0) {
                         this.imageNameOption = this.imageNameOption.concat(
                             response.data.images
                         );
                         this.imageNameTotal = response.data.totalSize;
                     }
-                    
                 });
             }
         },
         loadImageName() {
             this.imageCount = this.imageCount + 1;
-            if (this.imageNameOption.length < thisimageNameTotal) {
+            if (this.imageNameOption.length < this.imageNameTotal) {
                 this.getImageNameList(this.imageTemp)
             }
         },
@@ -551,18 +534,18 @@ export default {
         changedataSetSource() {
             this.dataSetName = true;
             this.dataSetNameCount = 1;
-            (this.dataSetNameOption = []),
-                (this.ruleForm.dataSetId = ""),
-                (this.ruleForm.dataSetVersion = "");
+            this.dataSetNameOption = []
+            this.ruleForm.dataSetId = ""
+            this.ruleForm.dataSetVersion = ""
             this.dataSetChange = true;
             this.getDataSetNameList();
         },
         changeDataSetName() {
             this.dataSetVersion = true;
             this.dataSetVersionCount = 1;
-            (this.dataSetVersionOption = []),
-                (this.ruleForm.dataSetVersion = ""),
-                this.getDataSetVersionList();
+            this.dataSetVersionOption = []
+            this.ruleForm.dataSetVersion = ""
+            this.getDataSetVersionList();
         },
         getDataSetNameList(searchKey) {
             if (this.ruleForm.dataSetSource === "my") {
@@ -571,14 +554,12 @@ export default {
                     pageSize: 10,
                     nameLike: searchKey
                 }).then(response => {
-                    
                         if (response.data.datasets === null) {
                             response.data.datasets = []
                         } else {
                             this.dataSetNameOption = this.dataSetNameOption.concat(response.data.datasets);
                             this.dataSetNameTotal = response.data.totalSize;
                         }
-                    
                 });
             }
             if (this.ruleForm.dataSetSource === "pre") {
@@ -595,7 +576,6 @@ export default {
                         } else {
                             response.data.datasets = [];
                         }
-                    
                 });
             }
             if (this.ruleForm.dataSetSource === "common") {
@@ -612,12 +592,11 @@ export default {
                         } else {
                             response.data.datasets = [];
                         }
-                    
                 });
             }
         },
         getDataSetVersionList() {
-            let data = {};
+            const data = {};
             data.datasetId = this.ruleForm.dataSetId;
             data.pageIndex = this.dataSetVersionCount;
             data.pageSize = 10;
@@ -643,10 +622,10 @@ export default {
                 this.getDataSetVersionList();
             }
         },
-        //远程请求算法名称
+        // 远程请求算法名称
         remoteAlgorithm(searchKey) {
             if (searchKey === '') {
-                this.algorithmNameTemp = '' 
+                this.algorithmNameTemp = ''
             } else {
                 this.algorithmNameTemp = searchKey
             }
@@ -657,7 +636,7 @@ export default {
         // 远程请求镜像名称
         remoteImage(searchKey) {
             if (searchKey === '') {
-                this.imageTemp = '' 
+                this.imageTemp = ''
             } else {
                 this.imageTemp = searchKey
             }
@@ -665,10 +644,10 @@ export default {
             this.imageNameCount = 1
             this.getImageNameList(this.imageTemp);
         },
-        //远程请求数据集名称
+        // 远程请求数据集名称
         remoteDataSet(searchKey) {
             if (searchKey === '') {
-                this.dataSetTemp = '' 
+                this.dataSetTemp = ''
             } else {
                 this.dataSetTemp = searchKey
             }
