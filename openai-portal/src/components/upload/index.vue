@@ -15,7 +15,7 @@
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
     <el-progress
-      v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"
+      v-if="!showUpload"
       :text-inside="true"
       :stroke-width="18"
       :percentage="progress"
@@ -52,7 +52,8 @@
         showUpload: true,
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
-        progress: undefined
+        progress: undefined,
+        timer:undefined
       }
     },
     computed: {
@@ -63,13 +64,12 @@
     watch: {
       progress(newValue, oldValue) {
         if (newValue == 100) {
-          this.clearInterval(progerss)
+          clearInterval(this.timer)
         }
       }
     },
-    created() {
-      store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
-      var progerss = setInterval(() => {
+    created() { 
+      this.timer = setInterval(() => {
         if (store.state.user.progressId) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
@@ -99,6 +99,7 @@
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw
