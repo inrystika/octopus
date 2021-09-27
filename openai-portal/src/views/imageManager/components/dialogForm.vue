@@ -28,7 +28,7 @@
                         <el-option label="文件上传" :value="1" />
                         <el-option label="远程镜像" :value="2" />
                     </el-select>
-                    <upload v-if="showUpload" :uploadData="uploadData" @confirm="confirm" @cancel="cancel" />
+                    <upload v-if="showUpload" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" />
                 </el-form-item>
                 <el-form-item
                     v-if="ruleForm.sourceType===2"
@@ -170,7 +170,7 @@
                 return getErrorMsg(code)
             },
             submitUpload() {
-                if (this.ruleForm.sourceType == 1) {
+                if (this.ruleForm.sourceType === 1) {
                     delete this.rules.imageAddr
                     this.$refs['ruleForm'].validate((valid) => {
                         if (valid) {

@@ -2,8 +2,8 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -60,14 +60,14 @@
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-tab-type="this.typeChange"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
     />
     <versionList
       v-if="versionListVisible"
-      :Type="this.typeChange"
+      :algorithm-tab-type="this.typeChange"
       :data="row"
       @close="close"
     />
@@ -89,7 +89,7 @@ export default {
     searchForm
   },
   props: {
-    Type: { type: Number, default: undefined }
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
@@ -135,7 +135,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       getPublicAlgorithmList(param).then(response => {
         if (response.success) {
           this.algorithmList = response.data.algorithms;
@@ -150,7 +150,7 @@ export default {
     },
     getAlgorithmVersionList(row) {
       this.versionListVisible = true;
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       this.row = row
     },
     close(val) {
