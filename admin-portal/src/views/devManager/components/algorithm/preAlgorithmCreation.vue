@@ -30,7 +30,7 @@
         <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />
@@ -45,7 +45,7 @@ import upload from '@/components/upload/index.vue'
 import { addPreAlgorithm } from "@/api/modelDev";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preAlgorithmCreation",
+  name: "PreAlgorithmCreation",
   components: {
     upload
   },

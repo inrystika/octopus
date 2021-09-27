@@ -2,8 +2,8 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'数据集名称 搜索'"
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -76,13 +76,13 @@
     />
     <versionList
       v-if="versionListVisible"
-      :data="this.data"
-      :versionListType="versionListType"
+      :data="data"
+      :version-list-type="versionListType"
       @close="close"
     />
     <newVersion
       v-if="newVersionVisible"
-      :row="this.data"
+      :row="data"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
@@ -99,7 +99,7 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "templateList",
+    name: "TemplateList",
     components: {
       versionList,
       newVersion,
@@ -107,8 +107,8 @@
       searchForm
     },
     props: {
-        payload: { datasets: [] },
-        Type: { type: Number, default: undefined }
+        payload: { type: Array, default: () => [] },
+        dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
@@ -147,7 +147,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataTabType
         getPresetDatasetList(param).then(response => {
           if (response.success) {
             this.datasetList = response.data.datasets;

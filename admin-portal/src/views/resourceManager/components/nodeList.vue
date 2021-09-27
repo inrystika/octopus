@@ -76,7 +76,7 @@
     import { formatSize } from '@/utils/index.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "nodeList",
+        name: "NodeList",
         components: {
 
         },

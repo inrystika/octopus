@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-dialog
-            :title="Type==='user'?'重置密码':'编辑群组信息'"
+            :title="userType==='user'?'重置密码':'编辑群组信息'"
             width="35%"
             :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose"
@@ -53,9 +53,9 @@
     import { getResourcePool } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "operateDialog",
+        name: "OperateDialog",
         props: {
-            Type: {
+            userType: {
                 type: String,
                 default: 'user'
             },
@@ -64,7 +64,8 @@
                 default: () => { }
             },
             flag: {
-                type: String
+                type: String,
+                default: ""
             }
         },
         data() {
@@ -111,15 +112,15 @@
             }
         },
         mounted() {
-            if (this.Type === 'user') {
-                this.user = true,
-                this.group = false,
+            if (this.userType === 'user') {
+                this.user = true
+                this.group = false
                 this.ruleForm.fullName = this.row.fullName
                 this.id = this.row.id
             } else {
-                this.group = true,
-                    this.user = false,
-                    this.id = this.row.id
+                this.group = true
+                this.user = false
+                this.id = this.row.id
                 groupDetail(this.id).then(
                     response => {
                         if (response.success) {
@@ -172,7 +173,7 @@
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        if (this.Type === 'user') {
+                        if (this.userType === 'user') {
                             if (this.ruleForm.confirm === this.ruleForm.password) {
                                 const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id }
                                 editeUser(data).then(response => {

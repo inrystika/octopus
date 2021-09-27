@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper"> 
+  <div class="wrapper">
     <iframe
       :src="grafanaUri"
       :height="iFrameHeight"
@@ -11,14 +11,13 @@
   </div>
 </template>
 <script>
-  import clusterMonitor from "./clusterMonitor.vue";
-  import groupMonitor from "./groupMonitor.vue";
+  // import clusterMonitor from "./clusterMonitor.vue";
+  // import groupMonitor from "./groupMonitor.vue";
   export default {
-    components: {
-      clusterMonitor,
-      groupMonitor
-
-    },
+    // components: {
+    //   clusterMonitor,
+    //   groupMonitor
+    // },
     data() {
       return {
         activeName: 'first',

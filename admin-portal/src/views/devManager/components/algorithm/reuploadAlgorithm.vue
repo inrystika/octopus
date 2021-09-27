@@ -20,7 +20,7 @@
         <el-form-item label="上传代码包" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />
@@ -33,14 +33,14 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadAlgorithm",
+  name: "ReuploadAlgorithm",
   components: {
     upload
   },
   props: {
   data: {
     type: Object,
-    default: {}
+    default: () => {}
   }
   },
   data() {

@@ -18,9 +18,9 @@
 import { previewDataset } from '@/api/dataManager.js'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preview",
+  name: "Preview",
   props: {
-    row: { type: Object }
+    row: { type: Object, default: () => {} }
   },
   data() {
     return {
@@ -30,7 +30,7 @@ export default {
     }
   },
   created() {
-    this.data = this.row,
+    this.data = this.row
     this.getPreList()
   },
   methods: {

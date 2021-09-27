@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :searchForm="searchForm" class="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         <el-button v-if="!flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table
             :data="tableData"
@@ -79,31 +79,31 @@
             />
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm 
-            v-if="FormVisible" 
-            :flag="Logo" 
-            :row="row" 
-            @cancel="cancel" 
-            @confirm="confirm" 
-            @close="close" 
+        <dialogForm
+            v-if="FormVisible"
+            :flag="Logo"
+            :row="row"
+            @cancel="cancel"
+            @confirm="confirm"
+            @close="close"
         />
     </div>
 </template>
 <script>
     import dialogForm from "./components/dialogForm.vue";
     import { getUserImage, getPreImage, deletePreImage, editePreImage } from '@/api/imageManager.js'
-    import { groupDetail } from '@/api/userManager.js'
+    // import { groupDetail } from '@/api/userManager.js'
     import searchForm from '@/components/search/index.vue'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "preImage",
+        name: "PreImage",
         components: {
             dialogForm,
             searchForm
         },
         props: {
-            Type: { type: Number, default: undefined }
+            imageTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -137,7 +137,7 @@
         },
         created() {
             this.getImage(this.searchData)
-            if (this.Type !== 1) {
+            if (this.imageTabType !== 1) {
                 this.flag = false
             } else {
                 this.searchForm.push(
@@ -152,7 +152,7 @@
                 return getErrorMsg(code)
             },
             getImage(data) {
-                this.type = this.Type
+                this.type = this.imageTabType
                 if (this.type === 1) {
                     getUserImage(data).then(response => {
                         if (response.success) {

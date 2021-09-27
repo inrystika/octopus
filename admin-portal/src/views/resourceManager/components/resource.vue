@@ -74,9 +74,9 @@
     import { getResourceList, deleteResource, updateResource, getNodeList, createCustomizeResource } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "resource",
+        name: "Resource",
         props: {
-            Type: { type: Number, default: undefined }
+            resourceTabType: { type: Number, default: undefined }
         },
         data() {
             var checkName = (rule, value, callback) => {
@@ -116,7 +116,12 @@
             }
         },
         created() {
-            if (this.Type === 1) { this.system = true; this.customize = false, this.disabled = true; this.rules = {} } else {
+            if (this.resourceTabType === 1) {
+                this.system = true
+                this.customize = false
+                this.disabled = true
+                this.rules = {}
+            } else {
                 this.customize = true
                 this.system = false
             }
@@ -194,8 +199,8 @@
                 })
             },
             add() {
-                this.ruleForm = {},
-                    this.flag = true
+                this.ruleForm = {}
+                this.flag = true
                 this.dialogVisible = true
             },
             getResourceList() {

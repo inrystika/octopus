@@ -29,7 +29,7 @@
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
                             预览
                         </el-button>
-                        <el-button v-if="Type===3" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)">删除</el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载
                         </el-button>
@@ -62,17 +62,15 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "versionList",
+        name: "VersionList",
         components: {
 
             previewDialog
         },
         props: {
-            modelId: {
-                type: String
-            },
-            Type: { type: Number, default: undefined },
-            modelName: { type: String }
+            modelId: { type: String, default: "" },
+            modelType: { type: Number, default: undefined },
+            modelName: { type: String, default: "" }
         },
         data() {
             return {

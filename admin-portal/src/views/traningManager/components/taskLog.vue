@@ -55,7 +55,7 @@
     import { showLog, trainingDetail } from '@/api/trainingManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "taskLog",
+        name: "TaskLog",
         props: {
             row: {
                 type: Object,
@@ -104,8 +104,8 @@
             }
         },
         destroyed() {
-            this.flag = false,
-                clearInterval(this.timer2);
+            this.flag = false
+            clearInterval(this.timer2);
             this.timer2 = null;
             clearTimeout(this.timer);
             this.timer = null;

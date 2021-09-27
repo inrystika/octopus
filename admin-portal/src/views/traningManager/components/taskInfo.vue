@@ -1,12 +1,12 @@
 <template>
     <div>
-      <div v-html="this.initInfo"></div>
+      <div v-html="initInfo"></div>
     </div>
 </template>
 
 <script>
     export default {
-        name: "taskInfo",
+        name: "TaskInfo",
         props: {
             row: {
                 type: Object,

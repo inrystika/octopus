@@ -56,7 +56,7 @@
     import { getResourcePool } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "createDialog",
+        name: "CreateDialog",
         directives: {
             loadmore: {
                 inserted: function(el, binding) {
@@ -72,7 +72,8 @@
         },
         props: {
             flag: {
-                type: String
+                type: String,
+                default: ""
             }
         },
         data() {
@@ -140,12 +141,12 @@
         },
         mounted() {
             if (this.flag === 'user') {
-                this.user = true,
-                    this.group = false
+                this.user = true
+                this.group = false
             } else {
-                this.group = true,
-                    this.user = false,
-                    this.getResourcePool()
+                this.group = true
+                this.user = false
+                this.getResourcePool()
                 this.getUserList()
             }
         },

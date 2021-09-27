@@ -2,8 +2,8 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -64,7 +64,7 @@
     <versionList
       v-if="versionListVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-type="typeChange"
       @close="close"
     />
   </div>
@@ -77,13 +77,13 @@ import searchForm from '@/components/search/index.vue'
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "userList",
+  name: "UserList",
   components: {
     versionList,
     searchForm
   },
   props: {
-    Type: { type: Number, default: undefined }
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
@@ -118,7 +118,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       getUserAlgorithmList(param).then(response => {
         if (response.success) {
           this.algorithmList = response.data.algorithms;

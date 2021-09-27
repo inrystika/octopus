@@ -25,9 +25,9 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "previewDialog",
+        name: "PreviewDialog",
         props: {
-            row: { type: Object }
+            row: { type: Object, default: () => {} }
         },
         data() {
             return {
@@ -38,8 +38,8 @@
             }
         },
         created() {
-            this.data = this.row,
-                this.getPreList()
+            this.data = this.row
+            this.getPreList()
         },
         beforeDestroy() {
 
@@ -48,9 +48,6 @@
             // 错误码
             getErrorMsg(code) {
                 return getErrorMsg(code)
-            },
-            handleDialogClose() {
-                this.$emit('close', false)
             },
             getPreList() {
                 preview(this.row).then(response => {

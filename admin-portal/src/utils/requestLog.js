@@ -70,6 +70,7 @@ service.interceptors.response.use(
             type: 'warning',
             duration: 5 * 1000
         })
+        console.log("error:", error)
         // return Promise.reject(error)
     }
 )

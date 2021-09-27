@@ -1,9 +1,9 @@
 <template>
     <div>
         <searchForm
-            :searchForm="searchForm"
+            :search-form="searchForm"
             class="searchForm"
-            :blurName="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
+            :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
             @searchData="getSearchData"
         />
         <div class="create">
@@ -81,7 +81,7 @@
         <operateDialog
             v-if="operateVisible"
             :row="row"
-            :Type="change"
+            :user-type="change"
             @cancel="cancel"
             @confirm="confirm"
             @close="close"
@@ -117,7 +117,7 @@
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "userList",
+        name: "UserList",
         components: {
             operateDialog,
             addDialog,
@@ -125,7 +125,7 @@
 
         },
         props: {
-            Type: { type: Number, default: undefined }
+            userTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -154,22 +154,22 @@
             }
         },
         created() {
-            if (this.Type === 1) {
-                this.user = true; this.group = false,
-                    this.change = 'user'
+            if (this.userTabType === 1) {
+                this.user = true; this.group = false
+                this.change = 'user'
                 this.searchForm = [
                     {
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '已冻结', value: 1 }, { label: '已激活', value: 2 }]
                     }
-                ],
-                    this.flag = 'user'
+                ]
+                this.flag = 'user'
             } else {
-                this.user = false;
-                this.group = true,
-                    this.change = 'group'
-                this.flag = 'group',
-                    this.searchForm = []
+                this.user = false
+                this.group = true
+                this.change = 'group'
+                this.flag = 'group'
+                this.searchForm = []
             }
             this.getList(this.searchData)
             // this.timer = setInterval(this.getList, 1000);
@@ -276,25 +276,25 @@
                 this.getList(this.searchData)
             },
             cancel(val) {
-                this.CreateVisible = val,
-                    this.operateVisible = val
+                this.CreateVisible = val
+                this.operateVisible = val
                 this.getList(this.searchData)
             },
             confirm(val) {
-                this.CreateVisible = val,
-                    this.operateVisible = val
+                this.CreateVisible = val
+                this.operateVisible = val
                 this.getList(this.searchData)
             },
             close(val) {
-                this.CreateVisible = val,
-                    this.operateVisible = val,
-                    this.getList(this.searchData)
+                this.CreateVisible = val
+                this.operateVisible = val
+                this.getList(this.searchData)
             },
             create() {
                 this.CreateVisible = true
             },
             getList(data) {
-                if (this.Type === 1) {
+                if (this.userTabType === 1) {
                     getUserList(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize

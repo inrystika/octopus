@@ -31,7 +31,7 @@
 </template>
 <script>
     export default {
-        name: "taskLoad",
+        name: "TaskLoad",
         components: {
         },
         props: {

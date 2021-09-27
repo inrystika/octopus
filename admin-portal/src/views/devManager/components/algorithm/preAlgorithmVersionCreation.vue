@@ -25,7 +25,7 @@
         <el-form-item v-if="showUpload" label="代码包上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />
@@ -40,16 +40,19 @@ import upload from '@/components/upload/index.vue'
 import { addPreAlgorithmVersion } from "@/api/modelDev.js";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preAlgorithmVersionCreation",
+  name: "PreAlgorithmVersionCreation",
   components: {
     upload
   },
   props: {
     row: {
       type: Object,
-      default: {}
+      default: () => {}
     },
-    dialogType: ""
+    dialogType: {
+      type: String,
+      default: ""
+    }
   },
   data() {
     return {

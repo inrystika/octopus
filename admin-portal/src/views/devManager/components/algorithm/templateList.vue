@@ -2,8 +2,8 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -45,7 +45,7 @@
         <template slot-scope="scope">
           <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
           <el-button type="text" style="padding-right:10px" @click="createNewVersion(scope.row)">创建新版本</el-button>
-          <!-- <el-button type="text" @click="editAlgorithm(scope.row)" v-if="Type === 1 ? false : true">编辑</el-button> -->
+          <!-- <el-button type="text" @click="editAlgorithm(scope.row)" v-if="algorithmTabType === 1 ? false : true">编辑</el-button> -->
           <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -65,13 +65,13 @@
     <versionList
       v-if="versionListVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-type="typeChange"
       @close="close"
     />
     <preAlgorithmVersionCreation
       v-if="standardDialogVisible"
-      :row="this.row"
-      :dialogType="dialogType"
+      :row="row"
+      :dialog-type="dialogType"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import { getPresetAlgorithmList, getAlgorithmVersionList, deletePreAlgorithm } from "@/api/modelDev"
+import { getPresetAlgorithmList, deletePreAlgorithm } from "@/api/modelDev"
 import versionList from "./versionList.vue"
 import preAlgorithmVersionCreation from "./preAlgorithmVersionCreation.vue"
 import preAlgorithmCreation from './preAlgorithmCreation.vue'
@@ -94,7 +94,7 @@ import searchForm from '@/components/search/index.vue'
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "templateList",
+  name: "TemplateList",
   components: {
     versionList,
     preAlgorithmVersionCreation,
@@ -102,7 +102,7 @@ export default {
     searchForm
   },
   props: {
-    Type: { type: Number, default: undefined }
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
@@ -140,7 +140,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       getPresetAlgorithmList(param).then(response => {
         if (response.success) {
           this.algorithmList = response.data.algorithms;

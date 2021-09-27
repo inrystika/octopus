@@ -30,7 +30,7 @@
                     </el-select>
                     <upload
                         v-if="showUpload && ruleForm.sourceType===1"
-                        :uploadData="uploadData"
+                        :upload-data="uploadData"
                         @confirm="confirm"
                         @cancel="cancel"
                     />
@@ -55,7 +55,7 @@
     import upload from '@/components/upload/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "dialogCreateForm",
+        name: "DialogCreateForm",
         components: {
             upload
         },
@@ -122,7 +122,8 @@
             // 新建镜像
             // 编辑镜像
             if (!this.flag) {
-                this.id = this.row.id, this.ruleForm = { imageType: this.row.imageType, imageDesc: this.row.imageDesc, imageName: this.row.imageName, imageVersion: this.row.imageVersion, imageAddr: this.row.imageAddr, sourceType: this.row.sourceType, imageStatus: this.row.imageStatus }
+                this.id = this.row.id
+                this.ruleForm = { imageType: this.row.imageType, imageDesc: this.row.imageDesc, imageName: this.row.imageName, imageVersion: this.row.imageVersion, imageAddr: this.row.imageAddr, sourceType: this.row.sourceType, imageStatus: this.row.imageStatus }
                 if (this.ruleForm.imageStatus === 1 || this.ruleForm.imageStatus === 4) {
                     this.uploadData.data.id = this.id
                     this.uploadData.type = "imageManager"

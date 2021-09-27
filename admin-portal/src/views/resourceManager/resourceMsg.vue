@@ -1,10 +1,10 @@
 <template>
     <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
         <el-tab-pane label="系统资源" name="first">
-            <resource :Type="1" />
+            <resource :resource-tab-type="1" />
         </el-tab-pane>
         <el-tab-pane label="自定义资源" name="second">
-            <resource :Type="2" />
+            <resource :resource-tab-type="2" />
         </el-tab-pane>
     </el-tabs>
 </template>

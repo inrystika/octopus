@@ -2,10 +2,10 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper" style="margin:20px 0px 0px 20px" @tab-click="handleClick">
       <el-tab-pane label="用户数据集" name="userDataset">
-        <userList v-if="tabRefresh.userMenu" :Type="1" />
+        <userList v-if="tabRefresh.userMenu" :data-tab-type="1" />
       </el-tab-pane>
       <el-tab-pane label="预置数据集" name="preDataset">
-        <templateList v-if="tabRefresh.templateMenu" :Type="2" />
+        <templateList v-if="tabRefresh.templateMenu" :data-tab-type="2" />
       </el-tab-pane>
     </el-tabs>
   </div>

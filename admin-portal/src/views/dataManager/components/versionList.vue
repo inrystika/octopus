@@ -80,8 +80,8 @@
     <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset
       v-if="myDatasetVisible"
-      :data="this.data"
-      :versionData="this.versionData"
+      :data="data"
+      :version-data="versionData"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
@@ -96,16 +96,16 @@ import preview from './preview.vue'
 import reuploadDataset from "./reuploadDataset.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "versionList",
+  name: "VersionList",
   components: {
     preview,
     reuploadDataset
   },
   props: {
-    versionListType: { type: Number },
+    versionListType: { type: Number, default: undefined },
     data: {
       type: Object,
-      default: {}
+      default: () => {}
     }
   },
   data() {

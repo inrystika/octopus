@@ -11,7 +11,7 @@
       :accept="accept"
     >
       <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
-      <div class="tipText">{{ this.tipText }}</div>
+      <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
     <el-progress v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)" :text-inside="true" :stroke-width="18" :percentage="progress" class="progress" />

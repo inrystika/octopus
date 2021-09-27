@@ -38,7 +38,7 @@
                     <el-input v-model="ruleForm.modelDescript" autocomplete="off" :disabled="showUpload" />
                 </el-form-item>
                 <el-form-item v-if="showUpload" label="模型上传" :label-width="formLabelWidth">
-                    <upload :uploadData="uploadData" @confirm="confirm" @cancel="cancel" />
+                    <upload :upload-data="uploadData" @confirm="confirm" @cancel="cancel" />
                 </el-form-item>
             </el-form>
             <div v-if="createSuccess" slot="footer" class="dialog-footer">
@@ -55,7 +55,7 @@
     import upload from '@/components/upload/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "createDialog",
+        name: "CreateDialog",
         components: {
             upload
         },
@@ -76,7 +76,7 @@
             isList: {
                 type: Boolean
             },
-            row: { type: Object }
+            row: { type: Object, default: () => {} }
         },
         data() {
             return {
@@ -115,9 +115,12 @@
         },
         created() {
             // 新增模型
-            if (!this.isList) { this.flag = true; this.getPresetAlgorithmList(); this.createSuccess = true }
-            // 新增模型版本
-            else { this.flag = false }
+            if (!this.isList) {
+                this.flag = true; this.getPresetAlgorithmList(); this.createSuccess = true
+            } else {
+                // 新增模型版本
+                this.flag = false
+            }
             this.ruleForm.algorithmName = this.row.algorithmName
             this.ruleForm.algorithmVersion = this.row.algorithmVersion
             this.ruleForm.modelName = this.row.modelName

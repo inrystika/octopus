@@ -48,7 +48,7 @@
 <script>
     export default {
         props: {
-            searchForm: { type: Array, default: [] },
+            searchForm: { type: Array, default: () => [] },
             blurName: { type: String, default: '' }
         },
         data() {

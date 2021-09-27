@@ -43,7 +43,7 @@
             <!-- <el-button type="text" style="padding-right:10px">预览</el-button> -->
             <el-button
               v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false"
-              v-show="Type === 2 ? true : false"
+              v-show="algorithmType === 2 ? true : false"
               type="text"
               @click="reupload(scope.row)"
             >
@@ -58,7 +58,7 @@
               下载
             </el-button>
             <el-button
-              v-if="Type === 2 ? true : false"
+              v-if="algorithmType === 2 ? true : false"
               slot="reference"
               type="text"
               @click="confirmDelete(scope.row)"
@@ -84,7 +84,7 @@
     </el-dialog>
     <reuploadAlgorithm
       v-if="myAlgorithmVisible"
-      :data="this.row"
+      :data="row"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
@@ -98,16 +98,16 @@ import { parseTime } from '@/utils/index'
 import reuploadAlgorithm from "./reuploadAlgorithm.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "versionList",
+  name: "VersionList",
   components: {
     reuploadAlgorithm
   },
   props: {
-    payload: {},
-    Type: { Type: Number, default: undefined },
+    payload: { type: Object, default: () => {} },
+    algorithmType: { type: Number, default: undefined },
     row: {
       type: Object,
-      default: {}
+      default: () => {}
     }
   },
   data() {
@@ -141,7 +141,7 @@ export default {
       this.getVersionList()
     },
     getVersionList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmType
       if (!param) {
         param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }

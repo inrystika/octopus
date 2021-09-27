@@ -32,7 +32,7 @@
     import taskProfile from './taskProfile.vue'
     import taskInfo from './taskInfo.vue'
     export default {
-        name: "detailDialog",
+        name: "DetailDialog",
         components: { taskLoad, taskLog, taskProfile, taskInfo },
         props: {
             data: {

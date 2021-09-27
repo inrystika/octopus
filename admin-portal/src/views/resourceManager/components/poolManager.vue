@@ -110,7 +110,7 @@
     import { getResourcePool, deleteResourcePool, createResourcePool, updateResourcePool, getNodeList, getResource } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "resourcePool",
+        name: "ResourcePool",
         data() {
             var checkName = (rule, value, callback) => {
                 const regName = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
@@ -210,8 +210,8 @@
             },
             add() {
                 this.ruleForm = { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] }}
-                this.flag = true,
-                    this.editeDialog = true
+                this.flag = true
+                this.editeDialog = true
                 this.disabled = false
             },
             handleEdit(val) {

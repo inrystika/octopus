@@ -2,8 +2,8 @@
   <div>
     <div>
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'NoteBook名称 搜索'"
+        :search-form="searchForm"
+        :blur-name="'NoteBook名称 搜索'"
         @searchData="getSearchData"
       />
     </div>
@@ -80,7 +80,7 @@ import { getNotebookList, stopNotebook } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "notebookList",
+  name: "NotebookList",
   components: {
     searchForm
   },

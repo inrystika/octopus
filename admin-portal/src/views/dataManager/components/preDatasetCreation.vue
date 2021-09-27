@@ -35,7 +35,7 @@
         <el-form-item v-if="showUpload" label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />
@@ -50,7 +50,7 @@ import upload from '@/components/upload/index.vue'
 import { createPreDataset } from "@/api/dataManager"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preDatasetCreation",
+  name: "PreDatasetCreation",
   components: {
     upload
   },

@@ -44,10 +44,10 @@
         <!-- 对话框 -->
         <el-dialog :title="title" :visible.sync="dialogFormVisible" width="25%" :close-on-click-modal="false">
             <el-form :model="form">
-                <el-form-item v-if="Type===1" label="用户名称" :label-width="formLabelWidth">
+                <el-form-item v-if="timeTabType===1" label="用户名称" :label-width="formLabelWidth">
                     <span>{{ form.userName }}</span>
                 </el-form-item>
-                <el-form-item v-if="Type===2" label="群组名称" :label-width="formLabelWidth">
+                <el-form-item v-if="timeTabType===2" label="群组名称" :label-width="formLabelWidth">
                     <span>{{ form.spaceName }}</span>
                 </el-form-item>
                 <el-form-item v-if="flag===0" label="增加机时" :label-width="formLabelWidth">
@@ -78,16 +78,15 @@
 </template>
 <script>
     import { groupList, userList, groupRecharge, userRecharge } from '@/api/machineManager.js'
-    import searchForm from '@/components/search/index.vue'
+    // import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "userMachineTime",
-        components: {
-
-            searchForm
-        },
+        name: "UserMachineTime",
+        // components: {
+        //     searchForm
+        // },
         props: {
-            Type: { type: Number, default: undefined }
+            timeTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -117,7 +116,7 @@
         },
         created() {
             this.getTime()
-            if (this.Type === 1) {
+            if (this.timeTabType === 1) {
                 this.type = 'user'
             } else {
               this.type = 'group'
@@ -143,7 +142,7 @@
             },
             getTime(data) {
                 if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     userList(data).then(response => {
                         if (response.success) {
                             this.total = parseInt(response.data.totalSize)
@@ -172,7 +171,7 @@
             getSearchData(val) {
                 let data = {}
                 data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     data.userId = data.id
                 } else {
                     data.spaceId = data.id
@@ -183,7 +182,7 @@
             addTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
                 } else {
                     this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
@@ -193,7 +192,7 @@
             deleteTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
                   } else {
                       this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
@@ -208,7 +207,7 @@
                 } else {
                   data.amount = +data.amount
                 }
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     delete data.userName
                     delete data.spaceName
                     delete data.spaceId

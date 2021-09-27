@@ -27,7 +27,7 @@
         <el-form-item label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />
@@ -40,7 +40,7 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadDataset",
+  name: "ReuploadDataset",
   components: {
     upload
   },

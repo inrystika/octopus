@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :searchForm="searchForm" :blurName="'任务名称 搜索'" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" :blur-name="'任务名称 搜索'" @searchData="getSearchData" />
         <el-table
             :data="tableData"
             style="width: 100%;font-size: 15px;"
@@ -80,12 +80,11 @@
 <script>
     import detailDialog from "./components/index.vue";
     import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
-    import { getResource } from '@/api/resourceManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "traningTask",
+        name: "TraningTask",
         components: {
             detailDialog,
             searchForm

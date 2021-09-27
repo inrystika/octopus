@@ -1,9 +1,9 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'模型名称/描述 搜索'" @searchData="getSearchData" />
+            <searchForm :search-form="searchForm" :blur-name="'模型名称/描述 搜索'" @searchData="getSearchData" />
         </div>
-        <el-button v-if="Type===3" type="primary" class="create" @click="createModel">创建</el-button>
+        <el-button v-if="modelTabType===3" type="primary" class="create" @click="createModel">创建</el-button>
         <div class="index">
             <el-table
                 :data="tableData"
@@ -21,7 +21,7 @@
                         <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column v-if="Type===1" prop="userName" label="提供者" />
+                <el-table-column v-if="modelTabType===1" prop="userName" label="提供者" />
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
                         <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -30,8 +30,8 @@
                 <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
-                        <el-button v-if="Type===3" type="text" @click="createList(scope.row)">创建新版本</el-button>
-                        <el-button v-if="Type===3" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="modelTabType===3" type="text" @click="createList(scope.row)">创建新版本</el-button>
+                        <el-button v-if="modelTabType===3" type="text" @click="open(scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -50,9 +50,9 @@
         <!-- 版本列表对话框 -->
         <versionList
             v-if="FormVisible"
-            :modelId="modelId"
-            :modelName="modelName"
-            :Type="type"
+            :model-id="modelId"
+            :model-name="modelName"
+            :model-type="type"
             @close="close"
             @cancel="cancel"
             @confirm="confirm"
@@ -61,7 +61,7 @@
         <createDialog
             v-if="CreateVisible"
             :row="row"
-            :isList="isList"
+            :is-list="isList"
             @close="close"
             @cancel="cancel"
             @confirm="confirm"
@@ -77,14 +77,14 @@
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "myModel",
+        name: "MyModel",
         components: {
             versionList,
             searchForm,
             createDialog
         },
         props: {
-            Type: { type: Number, default: undefined }
+            modelTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -145,7 +145,11 @@
                 this.CreateVisible = val;
                 this.getModel(this.searchData)
             },
-            getVersionList(val) { this.FormVisible = true; this.modelId = val.modelId, this.modelName = val.modelName },
+            getVersionList(val) {
+                this.FormVisible = true
+                this.modelId = val.modelId
+                this.modelName = val.modelName
+            },
             handledDelete(row) {
                 const data = JSON.parse(JSON.stringify(row));
                 data.version = row.modelVersion
@@ -166,7 +170,7 @@
             },
             getModel(data) {
                 if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
-                this.type = this.Type
+                this.type = this.modelTabType
                 if (this.type === 1) {
                     getMyModel(data).then(response => {
                         if (response.success) {

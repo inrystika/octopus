@@ -90,7 +90,7 @@
 
 <script>
     export default {
-        name: "taskProfile",
+        name: "TaskProfile",
         props: {
             row: {
                 type: Object,

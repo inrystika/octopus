@@ -2,10 +2,10 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
       <el-tab-pane label="用户算法" name="userAlgorithm">
-        <userList v-if="tabRefresh.userMenu" :Type="1" />
+        <userList v-if="tabRefresh.userMenu" :algorithm-tab-type="1" />
       </el-tab-pane>
       <el-tab-pane label="预置算法" name="preAlgorithm">
-        <templateList v-if="tabRefresh.templateMenu" :Type="2" />
+        <templateList v-if="tabRefresh.templateMenu" :algorithm-tab-type="2" />
       </el-tab-pane>
     </el-tabs>
   </div>

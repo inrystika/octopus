@@ -7,7 +7,7 @@
 <script>
 
     export default {
-        name: "groupMonitor",
+        name: "GroupMonitor",
         components: {
 
         },
