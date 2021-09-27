@@ -49,6 +49,9 @@ spec:
         volumeMounts:
           - name: localtime
             mountPath: /etc/localtime
+        env:
+          - name: BASE_URL
+            value: "{{ .Values.ingress.apidocPath }}"
         ports:
         - name: http
           containerPort: {{ template "apidoc.targetPort" . }}

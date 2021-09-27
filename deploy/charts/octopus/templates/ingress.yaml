@@ -156,10 +156,6 @@ spec:
           - backend:
               serviceName: {{ $apidocName }}
               servicePort: {{ template "apidoc.port" . }}
-            path: {{ $adminportalPath }}/(.*)
-          - backend:
-              serviceName: {{ $apidocName }}
-              servicePort: {{ template "apidoc.port" . }}
             path: {{ $apidocPath }}/(.*)
 
 ---
