@@ -7,17 +7,16 @@
     <div class="right-menu">
       <el-row class="demo-avatar demo-basic">
         <el-dropdown>
-          <i class="el-icon-document" style="color:#666699 ;"></i>
+          <i class="el-icon-document" style="color:#666699 ;" />
           <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual">使用手册</a>
-          <i class="el-icon-service" style="color:#666699 ;"></i>
+          <i class="el-icon-service" style="color:#666699 ;" />
           <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual">问题意见</a>
-          <el-dropdown-menu slot="dropdown">
-          </el-dropdown-menu>
+          <el-dropdown-menu slot="dropdown" />
         </el-dropdown>
-        <el-avatar :src="circleUrl" :size="size"></el-avatar>
+        <el-avatar :src="circleUrl" :size="size" />
         <el-dropdown>
           <span class="el-dropdown-link">
-            {{name}}<i class="el-icon-arrow-down el-icon--right"></i>
+            {{ name }}<i class="el-icon-arrow-down el-icon--right" />
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item divided @click.native="logout">
@@ -27,10 +26,10 @@
         </el-dropdown>
         <el-dropdown @command="handleCommand" @visible-change="change">
           <span class="el-dropdown-link">
-            {{current}}<i class="el-icon-arrow-down el-icon--right"></i>
+            {{ current }}<i class="el-icon-arrow-down el-icon--right" />
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-for="(item,index) in options" :key="item.index" :command="item">{{item.name}}
+            <el-dropdown-item v-for="(item) in options" :key="item.index" :command="item">{{ item.name }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -59,10 +58,6 @@
         userMsg: undefined
       }
     },
-    created() {
-      this.getSpace()
-
-    },
     computed: {
       ...mapGetters([
         'sidebar',
@@ -72,6 +67,9 @@
         'id',
         'workspaceId'
       ])
+    },
+    created() {
+      this.getSpace()
     },
     methods: {
       change(val) {
@@ -98,7 +96,6 @@
             }
           )
         })
-
       },
       toggleSideBar() {
         this.$store.dispatch('app/toggleSideBar')
@@ -110,7 +107,7 @@
       handleCommand(command) {
         // 切换群组页面刷新但是保留页面当前群组状态
         const data = { userId: this.id, workspaceId: command.id }
-        this.current = command.name,
+        this.current = command.name
           changeSpace(data).then(response => {
             this.$message({
               message: '切换成功',
@@ -118,7 +115,6 @@
             });
             location.reload()
           })
-
       }
     }
   }
@@ -158,8 +154,6 @@
 
       .avatar-container {
         margin-right: 30px;
-
-
       }
 
       .el-dropdown {
@@ -175,7 +169,6 @@
       .manual {
         color: #666699;
         margin: 0 50px 0 10px;
-
       }
     }
   }

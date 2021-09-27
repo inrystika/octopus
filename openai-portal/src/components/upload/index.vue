@@ -1,14 +1,14 @@
 <template>
   <div>
-    <el-upload class="upload-demo" action="#" :on-change="upload" :file-list="fileList" :http-request="httpRequest"
-      multiple :accept="accept" v-if="showUpload">
+    <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
+      :http-request="httpRequest" multiple :accept="accept">
       <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
-      <div class="tipText">{{this.tipText}}</div>
+      <div class="tipText">{{ tipText }}</div>
     </el-upload>
-    <el-button :loading="loadingShow" size="small" type="primary" v-if="!showUpload">上传中</el-button>
-    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
-      v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"></el-progress>
-    <div slot="footer" class="dialog-footer" v-if="show">
+    <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
+    <el-progress v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)" :text-inside="true"
+      :stroke-width="18" :percentage="progress" class="progress" />
+    <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
     </div>
@@ -16,7 +16,6 @@
 </template>
 <script>
   import { uploadImage, finishUpload, uploadMiniIO } from '@/api/imageManager.js'
-  import { uploadModel, modelFinishUpload } from '@/api/modelManager.js'
   import { uploadMyDataset, myDatasetFinishUpload, uploadNewVersion, newVersionFinishUpload } from "@/api/datasetManager.js"
   import { uploadMyAlgorithm, myAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { minIO } from '@/utils/minIO'
@@ -44,18 +43,25 @@
     },
     computed: {
       ...mapGetters([
-        'progress'
-      ])
+        'progressId',
+      ]),
+      progress() {
+        if(this.$store.state.user.progressId){
+          console.log(this.$store.state.user)
+        }
+       
+        return this.$store.state.user[this.$store.state.user.progressId]
+      }
+    },
+    watch: {
+      showUpload() {
+        // store.commit('user/CLEAR_PROGRESS')
+      }
     },
     created() {
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
-      }
-    },
-    watch: {
-      showUpload() {
-        store.commit('user/CLEAR_PROGRESS')
       }
     },
     methods: {
@@ -68,13 +74,14 @@
         // }
       },
       httpRequest() {
-        let fileName = this.fileList[0].name
-        let fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() //获取上传文件格式后缀
+        const fileName = this.fileList[0].name
+        const fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() // 获取上传文件格式后缀
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw
@@ -84,7 +91,6 @@
                 this.show = true
                 this.showUpload = true
               })
-
             })
           } else {
             this.loadingShow = false
@@ -310,6 +316,11 @@
     font-size: 12px
   }
 
-  .progress{margin: 5px 0px 10px 0px;}
-  .dialog-footer{margin-top: 10px;}
+  .progress {
+    margin: 5px 0px 10px 0px;
+  }
+
+  .dialog-footer {
+    margin-top: 10px;
+  }
 </style>

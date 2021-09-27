@@ -7,42 +7,41 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
-          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称"></el-input>
+          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
         <el-form-item label="算法描述" :label-width="formLabelWidth" prop="desc">
           <el-input
+            v-model="ruleForm.desc"
             :disabled="disabled"
             :autosize="{ minRows: 2, maxRows: 4}"
             placeholder="请输入算法描述"
             maxlength="300"
             show-word-limit
-            v-model="ruleForm.desc"
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
-          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称"></el-input>
+          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称" />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
           <div v-show="show">
             <span>是否上传代码？</span>
-            <br/>
+            <br>
             <el-button type="primary" @click="nextStep('ruleForm')">是</el-button>
             <el-button @click="noUpload">否</el-button>
           </div>
         </el-form-item>
-        <el-form-item label="上传代码包" :label-width="formLabelWidth" prop="path" v-if="showUpload">
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+        <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
+          <upload
             v-model="ruleForm.path"
-          >
-          </upload>
+            :uploadData="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
+          />
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer" v-show="showConfirm">
+      <span v-show="showConfirm" slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
         <el-button type="primary" @click="submit('ruleForm')">创 建</el-button>
       </span>
@@ -55,9 +54,9 @@ import upload from '@/components/upload/index.vue'
 import { addMyAlgorithm } from "@/api/modelDev";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "myAlgorithmCreation",
+  name: "MyAlgorithmCreation",
   components: {
-    upload,
+    upload
   },
   props: {
   // row: {
@@ -70,8 +69,8 @@ export default {
       isEmpty: false,
       disabled: false,
       showUpload: false,
-      show:true,
-      showConfirm:false,
+      show: true,
+      showConfirm: false,
       ruleForm: {
         algorithmName: "",
         modelName: '',
@@ -105,7 +104,7 @@ export default {
             message: "长度在 4 到 30 个字符",
             trigger: "blur"
           }
-        ],
+        ]
       },
       CreateFormVisible: true,
       formLabelWidth: "120px"
@@ -118,11 +117,10 @@ export default {
     handleDialogClose() {
       this.$emit("close", false);
     },
-    noUpload(){
+    noUpload() {
       this.show = false;
       this.showConfirm = true;
       this.isEmpty = true
-      
     },
     nextStep(formName) {
       this.$refs[formName].validate((valid) => {
@@ -137,7 +135,7 @@ export default {
             isEmpty: this.isEmpty
           }
           addMyAlgorithm(param).then(response => {
-            if(response.success){
+            if (response.success) {
               this.show = false
               this.showUpload = true;
               this.disabled = true
@@ -164,7 +162,7 @@ export default {
     },
     submit(formName) {
       this.$refs[formName].validate((valid) => {
-        if(valid){
+        if (valid) {
           const param = {
             spaceId: '',
             userId: null,
@@ -175,7 +173,7 @@ export default {
             isEmpty: this.isEmpty
           }
           addMyAlgorithm(param).then(response => {
-            if(response.success){
+            if (response.success) {
               this.disabled = true
               this.$message.success("创建成功");
               this.$emit('confirm', false)
