@@ -19,7 +19,7 @@
             { src: require('@/assets/model7.jpeg'), desc: 'model3' },
             { src: require('@/assets/model8.png'), desc: 'model3' },
             { src: require('@/assets/model9.jpeg'), desc: 'model3' }
-          
+
           ]
         }
       }
@@ -33,11 +33,11 @@
     line-height: 300px;
     margin: 0;
   }
-  
+
   .el-carousel__item:nth-child(2n) {
     background-color: #99a9bf;
   }
-  
+
   .el-carousel__item:nth-child(2n+1) {
     background-color: #d3dce6;
   }

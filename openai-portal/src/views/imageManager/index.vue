@@ -1,13 +1,13 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="我的镜像" name="menu1">
-      <mirror :image="image" :Type=1 v-if="tabRefresh.menu1"></mirror>
+      <mirror v-if="tabRefresh.menu1" :image="image" :image-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="公共镜像" name="menu2">
-      <mirror :Type=3 v-if="tabRefresh.menu2"></mirror>
+      <mirror v-if="tabRefresh.menu2" :image-tab-type="3" />
     </el-tab-pane>
     <el-tab-pane label="预置镜像" name="menu3">
-      <mirror :Type=2 v-if="tabRefresh.menu3"></mirror>
+      <mirror v-if="tabRefresh.menu3" :image-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -28,7 +28,7 @@
         image: false
       }
     },
-    created(){
+    created() {
       if (this.$route.params.data === undefined) {
         this.dataset = false
       } else if (this.$route.params.data.image) {
@@ -53,14 +53,14 @@
         }
       },
       switchTab(tab) {
-        for (let key in this.tabRefresh) {
+        for (const key in this.tabRefresh) {
           if (key === tab) {
             this.tabRefresh[key] = true
           } else {
             this.tabRefresh[key] = false
           }
         }
-      },
+      }
     }
   }
 </script>

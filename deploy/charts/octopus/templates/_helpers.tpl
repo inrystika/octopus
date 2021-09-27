@@ -825,3 +825,59 @@ app.kubernetes.io/part-of: {{ include "grafana.name" . }}
 {{- define "prometheus.address" -}}
 {{- printf "http://%s.%s:%s"  (include "prometheus.fullname" .) .Release.Namespace .Values.grafana.prometheus.port -}}
 {{- end -}}
+
+{{/******************api-doc******************/}}
+
+{{- define "apidoc.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "apidoc.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-apidoc" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "apidoc.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "apidoc.core-labels" -}}
+helm.sh/chart: {{ include "apidoc.chart" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{- define "apidoc.select-labels" -}}
+app.kubernetes.io/name: {{ include "apidoc.name" . }}
+app.kubernetes.io/instance: {{ include "apidoc.fullname" . }}
+app.kubernetes.io/part-of: {{ include "apidoc.name" . }}
+{{- end -}}
+
+{{- define "apidoc.resource-labels" -}}
+octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ include "apidoc.fullname" . }}_{{ default .Chart.AppVersion .Values.apidoc.image.tag }}
+{{- end -}}
+
+
+{{- define "apidoc.labels" -}}
+{{ include "apidoc.core-labels" . }}
+{{ include "apidoc.select-labels" . }}
+{{ include "apidoc.resource-labels" . }}
+{{- end -}}
+
+{{- define "apidoc.port" -}}
+{{- printf "8080" -}}
+{{- end -}}
+
+{{- define "apidoc.targetPort" -}}
+{{- printf "8080" -}}
+{{- end -}}

@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	jsonpatch "github.com/evanphx/json-patch"
 )
 
 // copy from source: kratos/cmd/kratos/internal/base/mod.go
@@ -123,52 +125,93 @@ func Generate() error {
 		return err
 	}
 
+	err = GenSwagger()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func GenSwagger() error {
-	dir, err := os.Getwd()
+	baseDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if ext := filepath.Ext(path); ext != ".proto" {
-			return nil
-		}
-		if strings.Contains(path, "vendor") {
-			return nil
-		}
-		if !strings.Contains(path, "admin-server") &&
-			!strings.Contains(path, "openai-server") {
-			return nil
-		}
 
-		execDir := filepath.Dir(dir)
-		name := strings.ReplaceAll(path, execDir+string(filepath.Separator), "")
-		input := []string{
-			"--proto_path=.",
-			"--proto_path=" + filepath.Join(os.Getenv("GOPATH"), "src"),
-			"--proto_path=" + filepath.Join(KratosMod(), "api"),
-			"--proto_path=" + filepath.Join(KratosMod(), "third_party"),
-			"--openapiv2_out",
-			"./",
-			"--openapiv2_opt",
-			"logtostderr=true",
-			name,
-		}
+	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"), filepath.Join(baseDir, "openai-server", "api", "v1")}
+	for _, dir := range dirs {
+		err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if ext := filepath.Ext(path); ext != ".proto" {
+				return nil
+			}
+			if strings.Contains(path, "vendor") {
+				return nil
+			}
 
-		fd := exec.Command("protoc", input...)
-		fd.Stdout = os.Stdout
-		fd.Stderr = os.Stderr
-		fd.Dir = execDir
-		if err := fd.Run(); err != nil {
+			execDir := filepath.Dir(baseDir)
+			name := strings.ReplaceAll(path, execDir+string(filepath.Separator), "")
+			input := []string{
+				"--proto_path=.",
+				"--proto_path=" + filepath.Join(os.Getenv("GOPATH"), "src"),
+				"--proto_path=" + filepath.Join(KratosMod(), "api"),
+				"--proto_path=" + filepath.Join(KratosMod(), "third_party"),
+				"--openapiv2_out",
+				"./",
+				"--openapiv2_opt",
+				"logtostderr=true",
+				name,
+			}
+
+			fd := exec.Command("protoc", input...)
+			fd.Stdout = os.Stdout
+			fd.Stderr = os.Stderr
+			fd.Dir = execDir
+			if err := fd.Run(); err != nil {
+				return err
+			}
+			fmt.Printf("proto: %s\n", name)
+			return nil
+		})
+		if err != nil {
 			return err
 		}
-		fmt.Printf("proto: %s\n", name)
-		return nil
-	})
-	if err != nil {
-		return err
+
+		swaggerFileName := "swagger.json"
+		swaggerBytes := []byte(`{}`)
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if !strings.Contains(path, ".swagger.json") {
+				return nil
+			}
+
+			fileBytes, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, fileBytes)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, []byte(`
+		{
+		  "info": {
+			"title": "octopus api",
+			"version": ""
+		  }
+		}`))
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), swaggerBytes, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

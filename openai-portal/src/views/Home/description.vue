@@ -6,9 +6,9 @@
       </div>
       <!-- <div class="copyRight">© 启智章鱼</div> -->
     </div>
-  
+
   </template>
-  
+
   <script>
     export default {
       data() {
@@ -26,9 +26,7 @@
       text-align: center;
       margin-top: 60px;
     }
-  
-    
-  
+
     .title {
       text-align: center;
       font-family: PingFangSC-Regular;
