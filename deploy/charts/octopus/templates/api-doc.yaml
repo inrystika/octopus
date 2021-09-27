@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "apidoc.fullname" . }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "apidoc.fullname" . }}
+  labels:
+  {{ include "apidoc.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ template "apidoc.port" . }}
+      targetPort: {{ template "apidoc.port" . }}
+  selector:
+  {{ include "apidoc.select-labels" . | indent 8 }}
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "apidoc.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+  {{ include "apidoc.select-labels" . | indent 8 }}
+  replicas: {{ .Values.apidoc.replicas }}
+  template:
+    metadata:
+      labels:
+    {{ include "apidoc.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "apidoc.fullname" . }}
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.apidoc.image.name }}:{{ default .Chart.AppVersion .Values.apidoc.image.tag }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+          ports:
+            - name: http
+              containerPort: {{ template "apidoc.targetPort" . }}
+              protocol: TCP
+          resources:
+      {{ toYaml .Values.resources | indent 10 }}
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
