@@ -11,7 +11,7 @@ const getDefaultState = () => {
     id: '',
     workspaces: [],
     workspaceId: '',
-    progress: 0
+    progressId: undefined
   }
 }
 
@@ -39,11 +39,14 @@ const mutations = {
   SET_WORKSPACEID: (state, workspaceId) => {
     state.workspaceId = workspaceId
   },
-  SET_PROGRESS: (state, progress) => {
-    state.progress = progress
+  SET_PROGRESSID: (state, progressId) => {
+    state.progressId = progressId
   },
-  CLEAR_PROGRESS: (state) => {
-    state.progress = 0
+  SET_PROGRESS: (state, data) => {
+    state[data.id] = data.progress
+  },
+  CLEAR_PROGRESS: (state, data) => {
+    state[data.id] = 0
   }
 }
 
