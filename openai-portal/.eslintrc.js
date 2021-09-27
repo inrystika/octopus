@@ -53,7 +53,8 @@ module.exports = {
       'after': true
     }],
     'handle-callback-err': [2, '^(err|error)$'],
-    'indent': ['off', 2],
+    // "indent": [1, 4],
+    "vue/html-indent":['off',4],
     'jsx-quotes': [2, 'prefer-single'],
     'key-spacing': [2, {
       'beforeColon': false,

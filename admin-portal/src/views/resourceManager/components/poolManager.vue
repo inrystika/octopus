@@ -45,7 +45,7 @@
         <!-- 节点详情对话框 -->
         <el-dialog title="详情信息" :visible.sync="detailDialog" width="30%" center :close-on-click-modal="false">
             <div class="wrapper">
-                <div>Notebook资源规格</div>
+                <div>NoteBook资源规格</div>
                 <div>
                     <el-tag v-for="item in mapResourceSpecIdList.debug" :key="item.index" class="item">{{ item }}</el-tag>
                 </div>

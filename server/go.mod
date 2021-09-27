@@ -7,6 +7,7 @@ require (
 	github.com/bsm/redislock v0.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
 	github.com/go-redis/redis/v8 v8.10.0
