@@ -1,21 +1,21 @@
 <template>
   <div>
-    <el-upload 
-      v-if="showUpload" 
-      class="upload-demo" 
-      action="#" 
-      :on-change="upload" 
-      :file-list="fileList" 
+    <el-upload
+      v-if="showUpload"
+      class="upload-demo"
+      action="#"
+      :on-change="upload"
+      :file-list="fileList"
       :http-request="httpRequest"
-      multiple 
+      multiple
       :accept="accept"
     >
       <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
       <div class="tipText">{{ this.tipText }}</div>
     </el-upload>
-    <el-button :loading="loadingShow" size="small" v-if="!showUpload" type="primary">上传中</el-button>
-    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress"  class="progress" v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)"></el-progress>
-    <div slot="footer" v-if="show" class="dialog-footer">
+    <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
+    <el-progress v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)" :text-inside="true" :stroke-width="18" :percentage="progress" class="progress" />
+    <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
     </div>
@@ -45,7 +45,7 @@
         show: false,
         loadingShow: false,
         showUpload: true,
-        accept:"application/zip",
+        accept: "application/zip",
         tipText: '上传文件格式为 zip'
       }
     },
@@ -54,15 +54,15 @@
         'progress'
       ])
     },
-    created(){
-      if (this.uploadData.type === "imageManager") {
-        this.accept = "application/zip,.tar"
-        this.tipText = '上传文件格式为 zip 或 tar'
-      }
-    },
     watch: {
       showUpload() {
         store.commit('user/CLEAR_PROGRESS')
+      }
+    },
+    created() {
+      if (this.uploadData.type === "imageManager") {
+        this.accept = "application/zip,.tar"
+        this.tipText = '上传文件格式为 zip 或 tar'
       }
     },
     methods: {
@@ -75,8 +75,8 @@
         // }
       },
       httpRequest() {
-        let fileName = this.fileList[0].name
-        let fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() //获取上传文件格式后缀
+        const fileName = this.fileList[0].name
+        const fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() // 获取上传文件格式后缀
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
@@ -181,7 +181,7 @@
             version: this.uploadData.version,
             domain: this.GLOBAL.DOMAIN
           }
-          if (fileForm === 'zip') { 
+          if (fileForm === 'zip') {
             uploadNewVersion(param).then(response => {
               if (response.success) {
                 const param = {
@@ -221,7 +221,7 @@
             version: this.uploadData.version,
             domain: this.GLOBAL.DOMAIN
           }
-          if (fileForm === 'zip') { 
+          if (fileForm === 'zip') {
             uploadPreAlgorithm(param).then(response => {
               if (response.success) {
                 const param = {
@@ -304,16 +304,14 @@
                 type: 'success'
               });
               this.$emit('confirm', false)
-            }
-            else { 
+            } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
-              }); 
+              });
             }
           })
-        }
-        else if (this.uploadData.type === "modelManager") {
+        } else if (this.uploadData.type === "modelManager") {
           modelFinishUpload({ fileName: this.fileList[0].name, modelId: this.uploadData.data.modelId, version: this.uploadData.data.version }).then(
             response => {
               if (response.success) {
@@ -322,14 +320,13 @@
                   type: 'success'
                 });
                 this.$emit('confirm', false)
-              }
-              else { 
+              } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
-                }); 
+                });
               }
-            },
+            }
 
           )
         } else if (this.uploadData.type === "preDatasetCreation") {
@@ -340,7 +337,8 @@
           }
           preDatasetFinishUpload(payload).then(response => {
             if (response.success) {
-              this.$message.success("上传预置数据集成功");            } else {
+              this.$message.success("上传预置数据集成功");
+            } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
@@ -398,7 +396,7 @@
         }
       },
       cancel() {
-        this.$confirm('此操作将被取消，是否继续?','提示',{
+        this.$confirm('此操作将被取消，是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'

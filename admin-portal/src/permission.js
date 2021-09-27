@@ -10,7 +10,7 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/'] // no redirect whitelist
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
 
@@ -24,10 +24,8 @@ router.beforeEach(async (to, from, next) => {
       // if is logged in, redirect to the home page
       next('/index')
       NProgress.done()
-    }
-    else { next() }
-  }
-  else {
+    } else { next() }
+  } else {
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly
       next()

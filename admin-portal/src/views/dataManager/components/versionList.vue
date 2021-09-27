@@ -8,24 +8,25 @@
       :close-on-click-modal="false"
     >
       <el-table
+        v-loading.fullscreen.lock="loading"
         label-width="100px"
         :data="versionList"
-        v-loading.fullscreen.lock="loading"
-        style="width: 100%" height="350"
+        style="width: 100%"
+        height="350"
       >
         <el-table-column label="版本号" props="version">
           <template slot-scope="scope">
-            <span >{{ scope.row.version }}</span>
+            <span>{{ scope.row.version }}</span>
           </template>
         </el-table-column>
         <el-table-column label="版本描述" props="desc" :show-overflow-tooltip="true">
           <template slot-scope="scope">
-            <span >{{ scope.row.desc }}</span>
+            <span>{{ scope.row.desc }}</span>
           </template>
         </el-table-column>
         <el-table-column label="创建时间" props="desc">
           <template slot-scope="scope">
-            <span >{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
                 <el-table-column label="数据集状态" props="status">
@@ -35,27 +36,27 @@
         </el-table-column>
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
-            <el-button 
+            <el-button
               v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false"
-              @click="reupload(scope.row)" 
-              type="text" 
               v-show="versionListType === 1 ? false : true"
+              type="text"
+              @click="reupload(scope.row)"
             >
               重新上传
             </el-button>
-            <el-button             
-              type="text" 
+            <el-button
+              type="text"
               style="padding-right:10px"
-              @click="handlePreview(scope.row)"
               :disabled="scope.row.status === 3 ? false : true"
+              @click="handlePreview(scope.row)"
             >
               预览
             </el-button>
-            <el-button 
+            <el-button
               v-if="versionListType === 1 ? false : true"
-              type="text" 
-              slot="reference" 
-              @click="confirmDelete(scope.row)" 
+              slot="reference"
+              type="text"
+              @click="confirmDelete(scope.row)"
             >
               删除
             </el-button>
@@ -63,29 +64,28 @@
         </el-table-column>
       </el-table>
       <div class="block">
-        <el-pagination 
+        <el-pagination
           :current-page="pageIndex"
-          :page-sizes="[10, 20, 50, 80]" 
-          :page-size="pageSize" 
+          :page-sizes="[10, 20, 50, 80]"
+          :page-size="pageSize"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange" 
-          @current-change="handleCurrentChange" 
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
     </div>
     <div slot="footer">
     </div>
     </el-dialog>
-    <preview v-if="preVisible" :row="versionData" @close="close">
-    </preview>
-    <reuploadDataset 
-      v-if="myDatasetVisible" 
+    <preview v-if="preVisible" :row="versionData" @close="close" />
+    <reuploadDataset
+      v-if="myDatasetVisible"
       :data="this.data"
       :versionData="this.versionData"
-      @close="close" 
-      @cancel="cancel" 
-      @confirm="confirm">
-    </reuploadDataset>
+      @close="close"
+      @cancel="cancel"
+      @confirm="confirm"
+    />
   </div>
 </template>
 
@@ -97,20 +97,20 @@ import reuploadDataset from "./reuploadDataset.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
   name: "versionList",
-  components: {      
+  components: {
     preview,
     reuploadDataset
   },
   props: {
-    versionListType:{ type: Number },
+    versionListType: { type: Number },
     data: {
       type: Object,
       default: {}
-    },
+    }
   },
   data() {
     return {
-      title:'版本列表/' + this.data.name,
+      title: '版本列表/' + this.data.name,
       versionListVisible: true,
       myDatasetVisible: false,
       preVisible: false,
@@ -145,9 +145,9 @@ export default {
       this.pageIndex = val
       this.getVersionList()
     },
-    getVersionList(param){
-      if (!param) { 
-        param = { pageIndex: this.pageIndex, pageSize: this.pageSize } 
+    getVersionList(param) {
+      if (!param) {
+        param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }
       param.id = this.data.id
       getVersionList(param).then(response => {
@@ -162,13 +162,13 @@ export default {
         }
       });
     },
-    confirmDelete(row){
-      this.$confirm('是否删除此版本数据集？','提示',{
+    confirmDelete(row) {
+      this.$confirm('是否删除此版本数据集？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
-      }).then(() =>{
+      }).then(() => {
         this.handleDelete(row)
       }).catch(() => {
         this.$message({
@@ -180,7 +180,7 @@ export default {
     handleDelete(row) {
       this.loading = true
       deleteDatasetVersion(row).then(response => {
-        if(response.success) {
+        if (response.success) {
           this.$message.success("删除成功");
           this.loading = false
           this.getVersionList()
@@ -193,11 +193,11 @@ export default {
           }
       })
     },
-    getDatasetStatus(value){
+    getDatasetStatus(value) {
       switch (value) {
         case 1:
           return "等待解压中"
-        case 2: 
+        case 2:
           return "解压中"
         case 3:
           return "解压完成"
@@ -218,7 +218,7 @@ export default {
     confirm(val) {
       this.myDatasetVisible = val
     },
-    //时间戳转换日期
+    // 时间戳转换日期
     parseTime(val) {
       return parseTime(val)
     }

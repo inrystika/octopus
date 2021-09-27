@@ -47,7 +47,6 @@ service.interceptors.response.use(
         //     duration: 5 * 1000
         //   })
 
-
         //   // if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         //   //   // to re-login
         //   //   MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
@@ -66,15 +65,12 @@ service.interceptors.response.use(
         // }
     },
     error => {
-
         Message({
             message: '没有找到日志',
             type: 'warning',
             duration: 5 * 1000
         })
         // return Promise.reject(error)
-
-
     }
 )
 

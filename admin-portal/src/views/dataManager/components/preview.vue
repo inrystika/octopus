@@ -1,14 +1,14 @@
 <template>
   <div>
-    <el-dialog 
-      title="预览" 
-      :visible.sync="dialogTableVisible" 
+    <el-dialog
+      title="预览"
+      :visible.sync="dialogTableVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
       <el-table :data="preList" height="300">
-        <el-table-column property="name" label="名称"></el-table-column>
-        <el-table-column property="type" label="类型"></el-table-column>
+        <el-table-column property="name" label="名称" />
+        <el-table-column property="type" label="类型" />
       </el-table>
     </el-dialog>
   </div>
@@ -20,9 +20,9 @@ import { getErrorMsg } from '@/error/index'
 export default {
   name: "preview",
   props: {
-    row: { type: Object, }
+    row: { type: Object }
   },
-  data(){
+  data() {
     return {
       dialogTableVisible: true,
       data: undefined,
@@ -37,7 +37,7 @@ export default {
     getErrorMsg(code) {
       return getErrorMsg(code)
     },
-    getPreList(){
+    getPreList() {
       const param = {
         datasetId: this.data.datasetId,
         version: this.data.version
@@ -55,7 +55,7 @@ export default {
     },
     handleDialogClose() {
       this.$emit('close', false)
-    },
+    }
   }
 }
 </script>

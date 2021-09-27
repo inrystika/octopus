@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-tabs class="Wrapper" v-model="activeName" style="margin:20px 0px 0px 20px" @tab-click="handleClick" >
+    <el-tabs v-model="activeName" class="Wrapper" style="margin:20px 0px 0px 20px" @tab-click="handleClick">
       <el-tab-pane label="用户数据集" name="userDataset">
-        <userList v-if="tabRefresh.userMenu" :Type=1></userList>
+        <userList v-if="tabRefresh.userMenu" :Type="1" />
       </el-tab-pane>
       <el-tab-pane label="预置数据集" name="preDataset">
-        <templateList v-if="tabRefresh.templateMenu" :Type=2></templateList>
+        <templateList v-if="tabRefresh.templateMenu" :Type="2" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -23,7 +23,7 @@ export default {
       activeName: 'userDataset',
       tabRefresh: {
         userMenu: true,
-        templateMenu: false,
+        templateMenu: false
       }
     };
   },
@@ -46,7 +46,7 @@ export default {
           this.tabRefresh[key] = false
         }
       }
-    },
+    }
   }
 };
 </script>

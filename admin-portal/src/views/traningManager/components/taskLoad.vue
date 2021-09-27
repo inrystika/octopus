@@ -9,10 +9,11 @@
             </el-col>
         </el-row>
         <el-row>
-            <el-col :span="12" v-if="show">
-                <div>子任务名:<el-select v-model="value" placeholder="请选择" @change="selectLoad" class="select">
-                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-                        </el-option>
+            <el-col v-if="show" :span="12">
+                <div>
+                    子任务名:
+                    <el-select v-model="value" placeholder="请选择" class="select" @change="selectLoad">
+                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
             </el-col>
@@ -31,22 +32,12 @@
 <script>
     export default {
         name: "taskLoad",
+        components: {
+        },
         props: {
             row: {
                 type: Object,
                 default: () => { }
-            },
-        },
-        components: {
-        },
-        computed: {
-            show: function () {
-                if (this.data.isDistributed === true) {
-                    return true
-                }
-                else {
-                    return false
-                }
             }
         },
         data() {
@@ -61,6 +52,15 @@
 
             }
         },
+        computed: {
+            show: function() {
+                if (this.data.isDistributed === true) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
             this.href = window.location.protocol + '//' + window.location.host
@@ -68,8 +68,7 @@
             if (!this.data.isDistributed) {
                 this.pod = this.data.id + '-task0-0'
                 this.loadHref = this.href + '/grafana/d/TK8iV8nWk/taskmetrics?orgId=1&refresh=10s&var-pod=' + this.pod + '&var-pod_name=' + this.pod
-            }
-            else {
+            } else {
                 this.options = []
                 for (let i = 0; i < this.data.config.length; i++) {
                     // this.data.config[i].subName = 'task' + i

@@ -1,10 +1,10 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="用户机时列表" name="menu1">
-      <Time v-if="tabRefresh.menu1" :Type="1"></Time>
+      <Time v-if="tabRefresh.menu1" :Type="1" />
     </el-tab-pane>
     <el-tab-pane label="群组机时列表" name="menu2">
-      <Time v-if="tabRefresh.menu2" :Type="2"></Time>
+      <Time v-if="tabRefresh.menu2" :Type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>

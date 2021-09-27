@@ -1,6 +1,14 @@
 <template>
-  <div class="wrapper"> <iframe :src="grafanaUri" :height="iFrameHeight" frameBorder="0" scrolling="no"
-      class="clusterDashboard"></iframe></div>
+  <div class="wrapper"> 
+    <iframe
+      :src="grafanaUri"
+      :height="iFrameHeight"
+      frameBorder="0"
+      scrolling="no"
+      class="clusterDashboard"
+    >
+    </iframe>
+  </div>
 </template>
 <script>
   import clusterMonitor from "./clusterMonitor.vue";

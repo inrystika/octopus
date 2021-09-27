@@ -1,21 +1,19 @@
 <template>
     <div>
-        <el-dialog 
-            :title="'版本列表/' + modelName" 
-            width="70%" 
+        <el-dialog
+            :title="'版本列表/' + modelName"
+            width="70%"
             :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose" 
+            :before-close="handleDialogClose"
             :close-on-click-modal="false"
         >
-            <el-table 
-              :data="tableData" 
-              style="width: 100%" 
+            <el-table
+              :data="tableData"
+              style="width: 100%"
               height="500"
             >
-                <el-table-column prop="version" label="算法版本" align="center">
-                </el-table-column>
-                <el-table-column prop="descript" label="模型描述" align="center">
-                </el-table-column>
+                <el-table-column prop="version" label="算法版本" align="center" />
+                <el-table-column prop="descript" label="模型描述" align="center" />
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ fileStatus(scope.row.fileStatus) }}</span>
@@ -28,22 +26,24 @@
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="350px">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handlePreview(scope.row)" :disabled="scope.row.fileStatus!==2">预览
+                        <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
+                            预览
                         </el-button>
                         <el-button v-if="Type===3" type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button type="text" @click="handledDownload(scope.row)" :disabled="scope.row.fileStatus!==2">
-                            下载</el-button>
+                        <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
+                            下载
+                        </el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="block">
-                <el-pagination 
-                  :current-page="pageIndex" 
-                  :page-sizes="[10, 20, 50, 80]" 
+                <el-pagination
+                  :current-page="pageIndex"
+                  :page-sizes="[10, 20, 50, 80]"
                   :page-size="pageSize"
                   :total="total"
-                  layout="total, sizes, prev, pager, next, jumper" 
-                  @size-change="handleSizeChange" 
+                  layout="total, sizes, prev, pager, next, jumper"
+                  @size-change="handleSizeChange"
                   @current-change="handleCurrentChange"
                 />
             </div>
@@ -51,7 +51,7 @@
             </div>
         </el-dialog>
         <!-- 预览对话框 -->
-        <previewDialog v-if="preVisible" @close="closeShareDialog" :row="data"></previewDialog>
+        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog" />
     </div>
 </template>
 
@@ -69,7 +69,7 @@
         },
         props: {
             modelId: {
-                type: String,
+                type: String
             },
             Type: { type: Number, default: undefined },
             modelName: { type: String }
@@ -115,7 +115,7 @@
                 this.dialogVisible = true;
             },
             handleDelete(row) {
-                let data = JSON.parse(JSON.stringify(row));
+                const data = JSON.parse(JSON.stringify(row));
                 data.version = row.version
                 data.modelId = row.modelId
                 deletePreModelVersion(data).then(response => {
@@ -125,31 +125,28 @@
                             type: 'success'
                         });
                         this.getList()
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             handledDownload(row) {
-                let data = {}
+                const data = {}
                 data.version = row.version
                 data.modelId = row.modelId
                 data.domain = this.GLOBAL.DOMAIN
                 downloadModel(data).then(response => {
-                    if (response.success) { this.URLdownload(data, response.data.downloadUrl) }
-                    else {
+                    if (response.success) {
+                        this.URLdownload(data, response.data.downloadUrl)
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
             },
             // 接受到url下载
@@ -169,7 +166,6 @@
             },
             handleDialogClose() {
                 this.$emit('close', false)
-
             },
             handleSizeChange(val) {
                 this.pageSize = val
@@ -185,11 +181,9 @@
             },
             cancelShareDialog(val) {
                 this.dialogVisible = val
-
             },
             confirmShareDialog(val) {
                 this.dialogVisible = val
-
             },
             getList() {
                 this.tableData = []
@@ -201,18 +195,13 @@
                             message: "获取列表成功",
                             type: 'success'
                         });
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
-
-
             },
             // 删除确认
             open(val) {
@@ -228,8 +217,7 @@
                         message: '已取消删除'
                     });
                 });
-            }
-            ,//时间戳转换日期
+            }, // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },
@@ -247,10 +235,9 @@
                         break;
                     default:
                         return '上传失败'
-
                 }
             }
-        },
+        }
 
     }
 </script>

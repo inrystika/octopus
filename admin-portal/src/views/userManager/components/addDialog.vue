@@ -1,43 +1,46 @@
 <template>
     <div>
-        <el-dialog 
-          :title="flag==='user'?'添加用户':'添加群组'" 
-          width="35%" 
-          :visible.sync="CreateFormVisible"
-          :before-close="handleDialogClose" :close-on-click-modal="false"
+        <el-dialog
+            :title="flag==='user'?'添加用户':'添加群组'"
+            width="35%"
+            :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose"
+            :close-on-click-modal="false"
         >
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item v-if="user" label="用户邮箱" :label-width="formLabelWidth" prop="email">
-                    <el-input v-model="ruleForm.email"></el-input>
+                    <el-input v-model="ruleForm.email" />
                 </el-form-item>
                 <el-form-item v-if="user" label="用户密码" :label-width="formLabelWidth" prop="password">
-                    <el-input v-model="ruleForm.password" type="password"></el-input>
+                    <el-input v-model="ruleForm.password" type="password" />
                 </el-form-item>
                 <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
-                    <el-input v-model="ruleForm.confirm" type="password"></el-input>
+                    <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
                 <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
                     <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
                     <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
                 </el-form-item> -->
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name"></el-input>
+                    <el-input v-model="ruleForm.name" />
                 </el-form-item>
                 <el-form-item v-if="group" label="用户列表" :label-width="formLabelWidth" prop="userIds">
-                    <el-select v-model="ruleForm.userIds" placeholder="请选择用户列表" multiple v-loadmore='loadUser'>
-                        <el-option v-for="item in userOptions" :key="item.id" :label="item.fullName + ' ' + item.email"
-                            :value="item.id">
-                        </el-option>
+                    <el-select v-model="ruleForm.userIds" v-loadmore="loadUser" placeholder="请选择用户列表" multiple>
+                        <el-option
+                            v-for="item in userOptions"
+                            :key="item.id"
+                            :label="item.fullName + ' ' + item.email"
+                            :value="item.id"
+                        />
                     </el-select>
                 </el-form-item>
                 <el-form-item v-if="group" label="资源池" :label-width="formLabelWidth" prop="resourcePoolId">
                     <el-select v-model="ruleForm.resourcePoolId" placeholder="请选择资源池">
-                        <el-option v-for="item in resourceOptions" :key="item.id" :label="item.name" :value="item.id">
-                        </el-option>
+                        <el-option v-for="item in resourceOptions" :key="item.id" :label="item.name" :value="item.id" />
                     </el-select>
                 </el-form-item>
                 <el-form-item v-if="user" label="姓名" :label-width="formLabelWidth" prop="fullname">
-                    <el-input v-model="ruleForm.fullname"></el-input>
+                    <el-input v-model="ruleForm.fullname" />
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -54,6 +57,19 @@
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "createDialog",
+        directives: {
+            loadmore: {
+                inserted: function(el, binding) {
+                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
+                    SELECTWRAP_DOM.addEventListener('scroll', function() {
+                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
+                        if (CONDITION) {
+                            binding.value();
+                        }
+                    })
+                }
+            }
+        },
         props: {
             flag: {
                 type: String
@@ -75,7 +91,7 @@
                     fullname: '',
                     password: '',
                     confirm: '',
-        
+
                     resourcePoolId: '',
                     name: '',
                     userIds: [],
@@ -86,12 +102,12 @@
                 group: false,
                 rules: {
                     fullname: [
-                        { required: true, message: '请输入用户名称', trigger: 'blur' },
+                        { required: true, message: '请输入用户名称', trigger: 'blur' }
 
                     ],
                     email: [
                         { required: true, message: "请输入邮箱", trigger: "blur" },
-                        { validator: checkEmail, trigger: "blur" },
+                        { validator: checkEmail, trigger: "blur" }
 
                     ],
                     password: [
@@ -100,11 +116,11 @@
 
                     ],
                     confirm: [
-                        { required: true, message: '请再次输入密码', trigger: 'blur' },
+                        { required: true, message: '请再次输入密码', trigger: 'blur' }
 
                     ],
                     name: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' },
+                        { required: true, message: '请输入用户名', trigger: 'blur' }
 
                     ],
                     userIds: [
@@ -122,31 +138,16 @@
                 total: undefined
             }
         },
-        directives: {
-            loadmore: {
-                inserted: function (el, binding) {
-                    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
-                    SELECTWRAP_DOM.addEventListener('scroll', function () {
-                        const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
-                            binding.value();
-                        }
-                    })
-                }
-            }
-        },
         mounted() {
             if (this.flag === 'user') {
                 this.user = true,
                     this.group = false
-            }
-            else {
+            } else {
                 this.group = true,
                     this.user = false,
                     this.getResourcePool()
                 this.getUserList()
             }
-
         },
         beforeDestroy() {
             this.ruleForm = {}
@@ -163,8 +164,7 @@
                             this.userOptions = this.userOptions.concat(response.data.users)
                             this.total = response.data.totalSize
                         }
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
@@ -177,7 +177,6 @@
                     if (response.success) {
                         if (response.data !== null && response.data.resourcePools !== null) {
                             this.resourceOptions = response.data.resourcePools
-
                         }
                     } else {
                         this.$message({
@@ -185,15 +184,12 @@
                             type: 'warning'
                         });
                     }
-
                 })
             },
             cancel() {
                 this.$emit('cancel', false)
-
             },
             confirm() {
-
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
                         if (this.ruleForm.confirm === this.ruleForm.password) {
@@ -206,17 +202,14 @@
                                             type: 'success'
                                         });
                                         this.$emit('confirm', false)
-                                    }
-                                    else {
+                                    } else {
                                         this.$message({
                                             message: this.getErrorMsg(response.error.subcode),
                                             type: 'warning'
                                         });
                                     }
-
                                 })
-                            }
-                            else if (this.group) {
+                            } else if (this.group) {
                                 const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
                                 createGroup(data).then(response => {
                                     if (response.success === true) {
@@ -225,8 +218,7 @@
                                             type: 'success'
                                         });
                                         this.$emit('confirm', false)
-                                    }
-                                    else {
+                                    } else {
                                         this.$message({
                                             message: this.getErrorMsg(response.error.subcode),
                                             type: 'warning'
@@ -234,9 +226,7 @@
                                     }
                                 })
                             }
-
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: '输入密码不一致!',
                                 type: 'warning'
@@ -247,14 +237,9 @@
                         return false;
                     }
                 });
-
-
-
-
             },
             handleDialogClose() {
                 this.$emit('close', false)
-
             },
             loadUser() {
                 this.userCount = this.userCount + 1

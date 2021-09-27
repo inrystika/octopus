@@ -1,9 +1,13 @@
 <template>
     <div>
-        <searchForm :searchForm=searchForm class="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
-        <el-button v-if="!flag" type="primary" @click="create" class="create">创建</el-button>
-        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+        <searchForm :searchForm="searchForm" class="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
+        <el-button v-if="!flag" type="primary" class="create" @click="create">创建</el-button>
+        <el-table
+            :data="tableData"
+            style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}"
+            :cell-style="{'text-align':'left'}"
+        >
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -64,13 +68,25 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            <el-pagination
+                :current-page="searchData.pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize"
+                :total="total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm v-if="FormVisible" :flag="Logo" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
-        </dialogForm>
+        <dialogForm 
+            v-if="FormVisible" 
+            :flag="Logo" 
+            :row="row" 
+            @cancel="cancel" 
+            @confirm="confirm" 
+            @close="close" 
+        />
     </div>
 </template>
 <script>
@@ -82,23 +98,12 @@
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "preImage",
-        props: {
-            Type: { type: Number, default: undefined }
-        },
         components: {
             dialogForm,
             searchForm
         },
-        created() {
-            this.getImage(this.searchData)
-            if (this.Type !== 1) {
-                this.flag = false
-            }
-            else {
-                this.searchForm.push({ type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
-                    { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' })
-            }
-
+        props: {
+            Type: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -125,9 +130,20 @@
                     }],
                 searchData: {
                     pageIndex: 1,
-                    pageSize: 10,
+                    pageSize: 10
                 }
 
+            }
+        },
+        created() {
+            this.getImage(this.searchData)
+            if (this.Type !== 1) {
+                this.flag = false
+            } else {
+                this.searchForm.push(
+                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
+                    { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
+                )
             }
         },
         methods: {
@@ -148,7 +164,6 @@
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
                 if (this.type === 2) {
@@ -158,17 +173,14 @@
                                 this.total = parseInt(response.data.totalSize)
                                 this.tableData = response.data.images
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
-
             },
             handleEdit(row) {
                 this.row = row
@@ -202,17 +214,14 @@
             cancel(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             confirm(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             close(val) {
                 this.FormVisible = val
                 this.getImage(this.searchData)
-
             },
             create() {
                 this.FormVisible = true; this.row = {}
@@ -222,13 +231,12 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getImage(this.searchData)
-
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },
-            //镜像状态
+            // 镜像状态
             imageStatus(value) {
                 switch (value) {
                     case 1:
@@ -243,10 +251,10 @@
             },
             // 修改描述
             open(val) {
-                let data = val
+                const data = val
                 this.$prompt('请输入描述', '提示', {
                     confirmButtonText: '确定',
-                    cancelButtonText: '取消',
+                    cancelButtonText: '取消'
                 }).then(({ value }) => {
                     editePreImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
                         if (response.success) {
@@ -256,14 +264,12 @@
                             });
                             this.getImage(this.searchData)
                             this.$emit('confirm', false)
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }).catch(() => {
                     this.$message({
@@ -286,9 +292,9 @@
                         message: '已取消删除'
                     });
                 });
-            },
-            //群组详情
-            // getGroupDetail(id) {         
+            }
+            // 群组详情
+            // getGroupDetail(id) {
             //     groupDetail(id).then(response => {
             //         if (response.success) {
             //             console.log(response.data.workspace.name)
@@ -296,10 +302,8 @@
             //         }
             //         else { return '' }
 
-
             //     })
             // }
-
 
         }
     }

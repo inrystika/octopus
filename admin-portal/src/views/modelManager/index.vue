@@ -1,10 +1,10 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
     <el-tab-pane label="用户模型" name="first">
-      <Model :Type=1></Model>
+      <Model :Type="1" />
     </el-tab-pane>
     <el-tab-pane label="预置模型" name="third">
-      <Model :Type=3></Model>
+      <Model :Type="3" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -21,7 +21,7 @@
     },
     methods: {
       handleClick(tab, event) {
-      
+
       }
     }
   }

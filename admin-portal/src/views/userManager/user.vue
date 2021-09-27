@@ -1,19 +1,19 @@
 <template>
     <div>
-        <searchForm 
-          :searchForm=searchForm 
-          class="searchForm"
-          :blurName="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
-          @searchData="getSearchData" 
+        <searchForm
+            :searchForm="searchForm"
+            class="searchForm"
+            :blurName="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
+            @searchData="getSearchData"
         />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
             <el-button v-if="group" type="primary" @click="create">创建群组</el-button>
         </div>
-        <el-table 
-            :data="tableData" 
+        <el-table
+            :data="tableData"
             style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" 
+            :header-cell-style="{'text-align':'left','color':'black'}"
             :cell-style="{'text-align':'left'}"
         >
             <el-table-column v-if="user" label="用户名称" align="center">
@@ -65,36 +65,34 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination 
-              :current-page="searchData.pageIndex" 
-              :page-sizes="[10, 20, 50, 80]" 
-              :page-size="searchData.pageSize"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper" 
-              @size-change="handleSizeChange" 
-              @current-change="handleCurrentChange"
+            <el-pagination
+                :current-page="searchData.pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize"
+                :total="total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
             />
         </div>
         <!-- 新增对话框 -->
-        <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close">
-        </addDialog>
+        <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog 
-          v-if="operateVisible" 
-          :row="row"
-          :Type="change"
-          @cancel="cancel" 
-          @confirm="confirm" 
-          @close="close" 
-        >
-        </operateDialog>
+        <operateDialog
+            v-if="operateVisible"
+            :row="row"
+            :Type="change"
+            @cancel="cancel"
+            @confirm="confirm"
+            @close="close"
+        />
         <!-- 详情对话框 -->
-        <el-dialog 
-            :title="user?'用户名' + userName:'群组名' + groupName" 
-            :visible.sync="detailVisible" 
-            width="30%" 
+        <el-dialog
+            :title="user?'用户名' + userName:'群组名' + groupName"
+            :visible.sync="detailVisible"
+            width="30%"
             center
-            class="title" 
+            class="title"
             :close-on-click-modal="false"
         >
             <div v-if="user">
@@ -107,8 +105,6 @@
                 <el-button type="primary" @click="detailVisible = false">确 定</el-button>
             </span>
         </el-dialog>
-
-
 
     </div>
 </template>
@@ -153,7 +149,7 @@
                 // timer: null,
                 searchData: {
                     pageIndex: 1,
-                    pageSize: 10,
+                    pageSize: 10
                 }
             }
         },
@@ -168,8 +164,7 @@
                     }
                 ],
                     this.flag = 'user'
-            }
-            else {
+            } else {
                 this.user = false;
                 this.group = true,
                     this.change = 'group'
@@ -196,17 +191,13 @@
                             type: 'success'
                         });
                         this.getList(this.searchData)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
-
             },
             handleThaw(row) {
                 activation(row.id).then(response => {
@@ -216,20 +207,17 @@
                             type: 'success'
                         });
                         this.getList(this.searchData)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             handleEdite(row) {
                 this.row = row
                 this.operateVisible = true
-
             },
             handleDelete(row) {
                 deleteGroup(row.id).then(response => {
@@ -245,8 +233,6 @@
                             type: 'warning'
                         });
                     }
-
-
                 })
             },
             handleReset(row) {
@@ -263,8 +249,7 @@
                         this.detailData.unshift({ name: '默认群组' })
                         this.detailVisible = true
                     })
-                }
-                else {
+                } else {
                     this.id = row.id
                     this.groupName = row.name
                     groupDetail(this.id).then(response => {
@@ -273,25 +258,18 @@
                                 this.detailData = response.data.users
                                 this.detailVisible = true
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
-
-
                     })
                 }
-
-
             },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getList(this.searchData)
-
             },
             handleCurrentChange(val) {
                 this.searchData.pageIndex = val
@@ -301,19 +279,16 @@
                 this.CreateVisible = val,
                     this.operateVisible = val
                 this.getList(this.searchData)
-
             },
             confirm(val) {
                 this.CreateVisible = val,
                     this.operateVisible = val
                 this.getList(this.searchData)
-
             },
             close(val) {
                 this.CreateVisible = val,
                     this.operateVisible = val,
                     this.getList(this.searchData)
-
             },
             create() {
                 this.CreateVisible = true
@@ -324,29 +299,24 @@
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.users
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
-                }
-                else {
+                } else {
                     groupList(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.workspaces
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
             },
@@ -354,9 +324,8 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
-
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             }

@@ -1,19 +1,26 @@
 <template>
     <div>
-        <el-dialog title="详情" width="80%" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
-            :append-to-body="true" custom-class='dialog' :close-on-click-modal="false">
-            <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+        <el-dialog
+            title="详情"
+            width="80%"
+            :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose"
+            :append-to-body="true"
+            custom-class="dialog"
+            :close-on-click-modal="false"
+        >
+            <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
                 <el-tab-pane label="任务简况" name="menu1">
-                    <taskProfile :row="data" v-if="tabRefresh.menu1"></taskProfile>
+                    <taskProfile v-if="tabRefresh.menu1" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="任务日志" name="menu2">
-                    <taskLog :row="data" v-if="tabRefresh.menu2"></taskLog>
+                    <taskLog v-if="tabRefresh.menu2" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="任务负载" name="menu3">
-                    <taskLoad :row="data" v-if="tabRefresh.menu3"></taskLoad>
+                    <taskLoad v-if="tabRefresh.menu3" :row="data" />
                 </el-tab-pane>
                 <el-tab-pane label="运行信息" name="menu4">
-                    <taskInfo :row="data" v-if="tabRefresh.menu4"></taskInfo>
+                    <taskInfo v-if="tabRefresh.menu4" :row="data" />
                 </el-tab-pane>
             </el-tabs>
         </el-dialog>
@@ -26,6 +33,7 @@
     import taskInfo from './taskInfo.vue'
     export default {
         name: "detailDialog",
+        components: { taskLoad, taskLog, taskProfile, taskInfo },
         props: {
             data: {
                 type: Object,
@@ -33,7 +41,6 @@
             }
 
         },
-        components: { taskLoad, taskLog, taskProfile, taskInfo  },
         data() {
             return {
                 CreateFormVisible: true,
@@ -56,7 +63,6 @@
         methods: {
             handleDialogClose() {
                 this.$emit('close', false)
-
             },
             handleTabClick(tab) {
                 this.activeName = tab.name
@@ -83,7 +89,7 @@
                         this.tabRefresh[key] = false
                     }
                 }
-            },
+            }
         }
     }
 </script>
