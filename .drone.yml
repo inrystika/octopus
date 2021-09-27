@@ -475,5 +475,3 @@ steps:
         from_secret: docker_hub_project
     commands:
       - make api-doc_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
-
----
