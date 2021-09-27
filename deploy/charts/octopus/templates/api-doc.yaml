@@ -50,8 +50,8 @@ spec:
           - name: localtime
             mountPath: /etc/localtime
         env:
-          - name: BASE_URL
-            value: "{{ .Values.ingress.apidocPath }}"
+          - name: URLS
+            value: "[{url:\"{{ .Values.ingress.apidocPath }}/admin-server.swagger.json\",name:\"admin\"},{url:\"{{ .Values.ingress.apidocPath }}/openai-server.swagger.json\",name:\"openai\"}]"
         ports:
         - name: http
           containerPort: {{ template "apidoc.targetPort" . }}
