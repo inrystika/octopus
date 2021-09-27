@@ -326,16 +326,19 @@ influxdb:
     existingClaim: "octopus-influxdb-pvc"
   affinity:
     nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
           - key: kubernetes.io/arch
             operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
   
 
 # grafana
