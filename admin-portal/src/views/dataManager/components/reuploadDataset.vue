@@ -7,31 +7,30 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
-            <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-            <el-input v-model="ruleForm.type" :disabled="true"></el-input>
+            <el-input v-model="ruleForm.type" :disabled="true" />
         </el-form-item>
         <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
           <el-input
-            :disabled="true"
             v-model="ruleForm.desc"
+            :disabled="true"
             :autosize="{ minRows: 2, maxRows: 4}"
             placeholder="请输入数据集描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
-        <el-form-item label='数据集上传' :label-width="formLabelWidth" prop="path">
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+        <el-form-item label="数据集上传" :label-width="formLabelWidth" prop="path">
+          <upload
             v-model="ruleForm.path"
-          >
-          </upload>
+            :upload-data="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -41,9 +40,9 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadDataset",
+  name: "ReuploadDataset",
   components: {
-    upload,
+    upload
   },
   props: {
     versionData: {
@@ -53,14 +52,14 @@ export default {
     data: {
       type: Object,
       default: () => { }
-    },
+    }
   },
   data() {
     return {
       showUpload: false,
       uploadData: { data: {}, type: undefined },
       ruleForm: {
-        desc: "",
+        desc: ""
       },
       rules: {
         path: [
@@ -75,10 +74,10 @@ export default {
       formLabelWidth: "120px"
     }
   },
-  created(){
-    let {desc} = this.versionData
-    let {name,type} = this.data
-    this.ruleForm = {name,type,desc}
+  created() {
+    const { desc } = this.versionData
+    const { name, type } = this.data
+    this.ruleForm = { name, type, desc }
     this.uploadData.id = this.versionData.datasetId
     this.uploadData.type = "preDatasetCreation"
     this.uploadData.version = this.versionData.version

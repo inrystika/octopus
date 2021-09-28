@@ -1,10 +1,10 @@
 <template>
   <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="用户列表" name="menu1">
-      <user v-if="tabRefresh.menu1" :Type=1 />
+      <user v-if="tabRefresh.menu1" :user-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="群组列表" name="menu2">
-      <user v-if="tabRefresh.menu2" :Type=2 />
+      <user v-if="tabRefresh.menu2" :user-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -12,7 +12,7 @@
   import user from "./user.vue";
   export default {
     components: {
-      user   
+      user
     },
     data() {
       return {

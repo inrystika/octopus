@@ -1,10 +1,10 @@
 <template>
   <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="训练任务" name="menu1">
-      <traningTask v-if="tabRefresh.menu1" :trainingTask="trainingTask" />
+      <traningTask v-if="tabRefresh.menu1" :training-task="trainingTask" />
     </el-tab-pane>
     <el-tab-pane label="任务模板" name="menu2">
-      <taskTemplate v-if="tabRefresh.menu2" :trainingTemplate="trainingTemplate" @createTraning="createTraning" />
+      <taskTemplate v-if="tabRefresh.menu2" :training-template="trainingTemplate" @createTraning="createTraning" />
     </el-tab-pane>
   </el-tabs>
 </template>

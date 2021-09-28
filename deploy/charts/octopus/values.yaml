@@ -219,16 +219,20 @@ minio:
     port: "9000"
   affinity:
     nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
           - key: kubernetes.io/arch
             operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+
 
 # mysql
 mysql:
@@ -254,16 +258,19 @@ mysql:
           name: mysql-initdb-config
     affinity:
       nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
             - key: kubernetes.io/arch
               operator: In
-              values:
-              - amd64
-              - x64
-              - x86-64
-              - x86_64
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
 
 
 # redis
@@ -277,16 +284,19 @@ redis:
       existingClaim: "octopus-redis-pvc"
     affinity:
       nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
             - key: kubernetes.io/arch
               operator: In
-              values:
-              - amd64
-              - x64
-              - x86-64
-              - x86_64
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
   replica:
     replicaCount: 1
   auth:
@@ -303,16 +313,19 @@ nginx-ingress-controller:
     nginx-ingress: "yes"
   affinity:
     nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
           - key: kubernetes.io/arch
             operator: In
-            values:
-            - amd64
-            - x64
-            - x86-64
-            - x86_64
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
 
 # influxdb
 influxdb:

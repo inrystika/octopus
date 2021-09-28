@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'模板名称 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :search-form="searchForm" :blur-name="'模板名称 搜索'" @searchData="getSearchData" />
 
         </div>
         <el-button type="primary" class="create" @click="open()">批量删除</el-button>
@@ -268,7 +268,7 @@
                 this.multipleSelection = val;
             },
             checkSelectable(row) {
-                return row.status === 'failed' || row.status === 'succeeded' || row.status == 'stopped'
+                return row.status === 'failed' || row.status === 'succeeded' || row.status === 'stopped'
             },
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }

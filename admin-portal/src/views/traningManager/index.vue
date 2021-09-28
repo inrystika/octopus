@@ -1,7 +1,7 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
     <el-tab-pane label="训练任务列表" name="first">
-      <traningTask></traningTask>
+      <traningTask />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -9,7 +9,7 @@
   import traningTask from "./traningTaskList.vue";
   export default {
     components: {
-      traningTask,
+      traningTask
 
     },
     data() {

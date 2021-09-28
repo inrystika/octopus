@@ -4,25 +4,25 @@
         <div class="function">
             <el-button type="primary" @click="addDialog = true">添加规格</el-button>
         </div>
-        <el-table 
-            :data="tableData" 
+        <el-table
+            :data="tableData"
             style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" 
+            :header-cell-style="{'text-align':'left','color':'black'}"
             :cell-style="{'text-align':'left'}"
         >
             <el-table-column label="规格名称" align="center">
                 <template slot-scope="scope">
-                    <span >{{ scope.row.name }}</span>
+                    <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="机时价格(1~10)" align="center">
                 <template slot-scope="scope">
-                    <span >{{ scope.row.price }}</span>
+                    <span>{{ scope.row.price }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="资源数量" align="center">
                 <template slot-scope="scope">
-                    <span >{{ scope.row.resourceQuantity }}</span>
+                    <span>{{ scope.row.resourceQuantity }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
@@ -32,38 +32,39 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination 
-              :current-page="pageIndex" 
-              :page-sizes="[10, 20, 50, 80]" 
-              :page-size="pageSize"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper" 
-              @size-change="handleSizeChange" 
-              @current-change="handleCurrentChange"
+            <el-pagination
+                :current-page="pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="pageSize"
+                :total="total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
             />
         </div>
         <!-- 操作对话框 -->
         <el-dialog title="添加规格" :visible.sync="addDialog" :close-on-click-modal="false">
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="规格名称" prop="name">
-                    <el-input v-model="ruleForm.name">
-                    </el-input>
+                    <el-input v-model="ruleForm.name" />
                 </el-form-item>
                 <el-form-item label="机时价格" prop="price">
-                    <el-input-number v-model="ruleForm.price" :min="0" :max="10" label="描述文字"></el-input-number>
+                    <el-input-number v-model="ruleForm.price" :min="0" :max="10" label="描述文字" />
                     <span>价格1~10,仅支持正整数</span>
                 </el-form-item>
                 <el-form-item label="资源信息" prop="resourceQuantity">
                     <div v-for="(item, index) in ruleForm.resourceQuantity" :key="index">
                         <el-form-item style="margin-bottom:10px">
                             <el-select v-model="item.key" style="width: 20%;">
-                                <el-option v-for="item in options" :key="item.name" :label="item.name"
-                                    :value="item.name">
-                                </el-option>
+                                <el-option
+                                    v-for="item in options"
+                                    :key="item.name"
+                                    :label="item.name"
+                                    :value="item.name"
+                                />
                             </el-select>
                             <span style="margin:0 10px 0 10px">=</span>
-                            <el-input v-model="item.value" style="width: 20%;">
-                            </el-input>
+                            <el-input v-model="item.value" style="width: 20%;" />
                             <i class="el-icon-delete" @click="deleteItem(item, index)"></i>
                         </el-form-item>
                     </div>
@@ -85,10 +86,6 @@
     export default {
         name: "Resource",
         components: {},
-        created() {
-            this.getResource()
-            this.getResourceList()
-        },
         data() {
             return {
                 addDialog: false,
@@ -97,25 +94,28 @@
                 ruleForm: {
                     name: '',
                     price: undefined,
-                    resourceQuantity: [],
+                    resourceQuantity: []
                 },
                 rules: {
                     name: [
-                        { required: true, message: '请输入规格名称', trigger: 'blur' },
+                        { required: true, message: '请输入规格名称', trigger: 'blur' }
 
                     ],
                     price: [
                         { required: true, message: '请输入机时价格', trigger: 'blur' }
                     ],
-                    resourceQuantity: { required: true, message: '请输入资源信息', trigger: ['change', 'blur'] },
+                    resourceQuantity: { required: true, message: '请输入资源信息', trigger: ['change', 'blur'] }
                 },
                 total: 0,
                 pageIndex: 1,
                 pageSize: 10,
-                options: [],
-
+                options: []
 
             }
+        },
+        created() {
+            this.getResource()
+            this.getResourceList()
         },
         methods: {
             // 错误码
@@ -130,23 +130,19 @@
                             type: 'success'
                         });
                         this.getResource()
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
                 })
-
-
             },
             addItem() {
                 this.ruleForm.resourceQuantity.push({
                     key: '',
                     value: ''
                 })
-
             },
             deleteItem(item, index) {
                 this.ruleForm.resourceQuantity.splice(index, 1)
@@ -154,8 +150,8 @@
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        let obj = {}
-                        let data = JSON.parse(JSON.stringify(this.ruleForm))
+                        const obj = {}
+                        const data = JSON.parse(JSON.stringify(this.ruleForm))
                         data.resourceQuantity.forEach(
                             item => {
                                 obj[item.key] = item.value
@@ -168,7 +164,6 @@
                             if (key === '' || data.resourceQuantity[key] === '') {
                                 flag = false
                             }
-
                         }
                         if (!flag) {
                             this.$message({
@@ -176,8 +171,7 @@
                                 type: 'warning'
                             });
                             return
-                        }
-                        else {
+                        } else {
                             createResource(data).then(response => {
                                 if (response.success) {
                                     this.$message({
@@ -191,8 +185,7 @@
                                     }
                                     this.getResource()
                                     this.addDialog = false
-                                }
-                                else {
+                                } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
                                         type: 'warning'
@@ -200,7 +193,6 @@
                                 }
                             });
                         }
-
                     } else {
                         console.log('error submit!!');
                         return false;
@@ -219,16 +211,15 @@
                             )
                             this.tableData = response.data.resourceSpecs
                             this.total = response.data.resourceSpecs.length
+                        } else {
+                          this.tableData = []
                         }
-                        else { this.tableData = [] }
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
             },
             handleSizeChange(val) {
@@ -245,15 +236,12 @@
                         if (response.data !== null && response.data.resources !== null) {
                             this.options = response.data.resources
                         }
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
             },
             // 删除确认
