@@ -5,5 +5,5 @@ COPY ./ ./
 RUN make api-doc_build
 
 FROM swaggerapi/swagger-ui:v3.52.3
-COPY --from=builder /app/server/admin-server/api/v1/swagger.json /usr/share/nginx/html/admin-server.swagger.json
-COPY --from=builder /app/server/openai-server/api/v1/swagger.json /usr/share/nginx/html/openai-server.swagger.json
+COPY --from=builder /app/server/admin-server/api/v1/swagger.json /usr/share/nginx/html/admin.swagger.json
+COPY --from=builder /app/server/openai-server/api/v1/swagger.json /usr/share/nginx/html/openai.swagger.json
