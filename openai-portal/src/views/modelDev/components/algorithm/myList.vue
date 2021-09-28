@@ -2,13 +2,13 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
       />
     </div>
     <el-button
-      v-if="Type === 1 ? true : false"
+      v-if="algorithmTabType === 1 ? true : false"
       type="primary"
       size="medium"
       class="create"
@@ -71,7 +71,6 @@
     />
     <newVersionCreation
       v-if="newVersionVisible"
-      :newVersionName="newVersionName"
       :row="row"
       @close="close"
       @cancel="cancel"
@@ -80,14 +79,14 @@
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
     />
     <versionList
       v-if="versionListVisible"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       :data="row"
       @close="close"
     />
@@ -113,7 +112,7 @@ export default {
     searchForm
   },
   props: {
-    Type: {
+    algorithmTabType: {
       type: Number,
       default: undefined
     },
@@ -172,7 +171,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
         getMyAlgorithmList(param).then(response => {
           if (response.success) {
             this.algorithmList = response.data.algorithms;
@@ -187,7 +186,7 @@ export default {
     },
     getAlgorithmVersionList(row) {
       this.versionListVisible = true;
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       this.row = row
     },
     createNewVersion(row) {

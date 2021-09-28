@@ -6,9 +6,9 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="名称：" :label-width="formLabelWidth" prop="name">
-          <el-input v-model="ruleForm.name" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
         <el-form-item label="描述：" :label-width="formLabelWidth" prop="desc">
           <el-input
@@ -17,19 +17,18 @@
               placeholder="请输入算法描述"
               maxlength="300"
               show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
-          <el-button type="text" @click="nextStep('ruleForm')" v-show="!showUpload">下一步</el-button>
+          <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
         </el-form-item>
-        <el-form-item v-if="showUpload" label='代码包上传' :label-width="formLabelWidth" prop="path">
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+        <el-form-item v-if="showUpload" label="代码包上传" :label-width="formLabelWidth" prop="path">
+          <upload
             v-model="ruleForm.path"
-          >
-          </upload>
+            :upload-data="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -41,16 +40,19 @@ import upload from '@/components/upload/index.vue'
 import { addPreAlgorithmVersion } from "@/api/modelDev.js";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preAlgorithmVersionCreation",
+  name: "PreAlgorithmVersionCreation",
   components: {
-    upload,
+    upload
   },
   props: {
-    row:{
+    row: {
       type: Object,
-      default: {}
+      default: () => {}
     },
-    dialogType: ""
+    dialogType: {
+      type: String,
+      default: ""
+    }
   },
   data() {
     return {
@@ -58,25 +60,25 @@ export default {
       uploadData: { data: {}, type: undefined },
       ruleForm: {
         desc: "",
-        path: "",
+        path: ""
       },
       rules: {
-        path:[
+        path: [
           {
             required: true,
             message: "请选择基础版本",
             trigger: "blur"
-          },
+          }
         ]
       },
       CreateFormVisible: true,
       pageIndex: 1,
       pageSize: 20,
       formLabelWidth: "120px",
-      algorithmList: [],
+      algorithmList: []
     }
   },
-  created(){
+  created() {
     this.ruleForm.name = this.row.algorithmName
   },
   methods: {
@@ -96,7 +98,7 @@ export default {
             oriVersion: this.row.algorithmVersion
           }
           addPreAlgorithmVersion(param).then(response => {
-            if(response.success) {
+            if (response.success) {
               this.uploadData.type = "newPreAlgorithmVersion"
               this.uploadData.algorithmId = response.data.algorithmId
               this.uploadData.version = response.data.version
@@ -117,7 +119,7 @@ export default {
     },
     confirm(val) {
       this.$emit("confirm", val);
-    },
+    }
   }
 }
 </script>
