@@ -1,13 +1,13 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="我的模型" name="menu1">
-      <Model :Type=1 v-if="tabRefresh.menu1"></Model>
+      <Model v-if="tabRefresh.menu1" :model-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="公共模型" name="menu2">
-      <Model :Type=2 v-if="tabRefresh.menu2"></Model>
+      <Model v-if="tabRefresh.menu2" :model-tab-type="2" />
     </el-tab-pane>
     <el-tab-pane label="预置模型" name="menu3">
-      <Model :Type=3 v-if="tabRefresh.menu3"></Model>
+      <Model v-if="tabRefresh.menu3" :model-tab-type="3" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -44,14 +44,14 @@
         }
       },
       switchTab(tab) {
-        for (let key in this.tabRefresh) {
+        for (const key in this.tabRefresh) {
           if (key === tab) {
             this.tabRefresh[key] = true
           } else {
             this.tabRefresh[key] = false
           }
         }
-      },
+      }
     }
   }
 </script>

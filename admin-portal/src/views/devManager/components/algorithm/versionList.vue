@@ -7,11 +7,11 @@
       :visible.sync="versionListVisible"
       :before-close="handleDialogClose"
     >
-      <el-table 
-        :data="versionList"  
-        style="width: 100%" 
-        height="350" 
+      <el-table
         v-loading="loading"
+        :data="versionList"
+        style="width: 100%"
+        height="350"
       >
         <el-table-column label="算法名称">
           <template slot-scope="scope">
@@ -41,27 +41,27 @@
         <el-table-column label="操作">
           <template slot-scope="scope">
             <!-- <el-button type="text" style="padding-right:10px">预览</el-button> -->
-            <el-button 
+            <el-button
               v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false"
-              type="text" 
-              @click="reupload(scope.row)" 
-              v-show="Type === 2 ? true : false"
+              v-show="algorithmType === 2 ? true : false"
+              type="text"
+              @click="reupload(scope.row)"
             >
               重新上传
             </el-button>
-            <el-button 
-              type="text" 
-              slot="reference" 
+            <el-button
+              slot="reference"
+              type="text"
               :disabled="scope.row.fileStatus === 3 ? false : true"
-              @click="confirmDownload(scope.row)" 
+              @click="confirmDownload(scope.row)"
             >
               下载
             </el-button>
-            <el-button 
-              v-if="Type === 2 ? true : false"
-              type="text" 
-              slot="reference" 
-              @click="confirmDelete(scope.row)" 
+            <el-button
+              v-if="algorithmType === 2 ? true : false"
+              slot="reference"
+              type="text"
+              @click="confirmDelete(scope.row)"
             >
               删除
             </el-button>
@@ -69,14 +69,14 @@
         </el-table-column>
       </el-table>
       <div class="block">
-        <el-pagination 
+        <el-pagination
           :current-page="pageIndex"
-          :page-sizes="[10, 20, 50, 80]" 
-          :page-size="pageSize" 
+          :page-sizes="[10, 20, 50, 80]"
+          :page-size="pageSize"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange" 
-          @current-change="handleCurrentChange" 
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
     </div>
     <div slot="footer">
@@ -84,11 +84,11 @@
     </el-dialog>
     <reuploadAlgorithm
       v-if="myAlgorithmVisible"
-      :data="this.row"
-      @close="close" 
-      @cancel="cancel" 
-      @confirm="confirm">
-    </reuploadAlgorithm>
+      :data="row"
+      @close="close"
+      @cancel="cancel"
+      @confirm="confirm"
+    />
   </div>
 </template>
 
@@ -98,28 +98,28 @@ import { parseTime } from '@/utils/index'
 import reuploadAlgorithm from "./reuploadAlgorithm.vue"
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "versionList",
+  name: "VersionList",
   components: {
     reuploadAlgorithm
   },
   props: {
-    payload: {},
-    Type: { Type: Number, default: undefined },
+    payload: { type: Object, default: () => {} },
+    algorithmType: { type: Number, default: undefined },
     row: {
       type: Object,
-      default: {}
-    },
+      default: () => {}
+    }
   },
   data() {
     return {
-      title:'版本列表/' + this.row.algorithmName,
+      title: '版本列表/' + this.row.algorithmName,
       versionListVisible: true,
       myAlgorithmVisible: false,
       loading: false,
-      pageIndex:1,
-      pageSize:20,
+      pageIndex: 1,
+      pageSize: 20,
       total: undefined,
-      versionList: [],
+      versionList: []
     }
   },
   created() {
@@ -129,7 +129,7 @@ export default {
     getErrorMsg(code) {
       return getErrorMsg(code)
     },
-    reupload(row){
+    reupload(row) {
       this.myAlgorithmVisible = true
     },
     handleSizeChange(val) {
@@ -141,13 +141,13 @@ export default {
       this.getVersionList()
     },
     getVersionList(param) {
-      this.typeChange = this.Type
-      if (!param) { 
-        param = { pageIndex: this.pageIndex, pageSize: this.pageSize } 
+      this.typeChange = this.algorithmType
+      if (!param) {
+        param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
       }
       param.algorithmId = this.row.algorithmId
       getAlgorithmVersionList(param).then(response => {
-        if(response.success) {
+        if (response.success) {
           this.versionList = response.data.algorithms
           this.total = response.data.totalSize
         } else {
@@ -172,13 +172,13 @@ export default {
       link.click(); // 触发a标签的click事件
       document.body.removeChild(link);
     },
-    confirmDownload(row){
-      this.$confirm('是否下载此版本算法？','提示',{
+    confirmDownload(row) {
+      this.$confirm('是否下载此版本算法？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
-      }).then(() =>{
+      }).then(() => {
         this.downloadAlgorithm(row)
       }).catch(() => {
         this.$message({
@@ -188,7 +188,7 @@ export default {
       });
     },
     downloadAlgorithm(row) {
-      let that = this
+      const that = this
       this.loading = true
       const param = {
         algorithmId: row.algorithmId,
@@ -196,12 +196,12 @@ export default {
       }
       let latestCompressed = row.latestCompressed
       compressAlgorithm(param).then(response => {
-        if(response.success) {
+        if (response.success) {
           param.compressAt = response.data.compressAt
           param.domain = this.GLOBAL.DOMAIN
-          let interval = setInterval(function() {
+          const interval = setInterval(function() {
             queryAlgorithmVersion(param).then(response => {
-              if(response.success) {
+              if (response.success) {
                 latestCompressed = response.data.algorithm.latestCompressed
               } else {
                 that.loading = false
@@ -212,12 +212,12 @@ export default {
                 });
               }
             })
-            if ( param.compressAt <= latestCompressed) {
+            if (param.compressAt <= latestCompressed) {
               that.loading = false
               clearInterval(interval)
               downloadAlgorithmVersion(param).then(response => {
-                if(response.success) {
-                  that.URLdownload(row.algorithmName,response.data.downloadUrl)
+                if (response.success) {
+                  that.URLdownload(row.algorithmName, response.data.downloadUrl)
                   that.$message.success("下载成功");
                 } else {
                   that.$message({
@@ -226,8 +226,8 @@ export default {
                   });
                 }
               })
-            } 
-          },3000)
+            }
+          }, 3000)
         } else {
           that.loading = false
           this.$message({
@@ -237,13 +237,13 @@ export default {
         }
       })
     },
-    confirmDelete(row){
-      this.$confirm('是否删除此版本算法','提示',{
+    confirmDelete(row) {
+      this.$confirm('是否删除此版本算法', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
-      }).then(() =>{
+      }).then(() => {
         this.handleDelete(row)
       }).catch(() => {
         this.$message({
@@ -258,7 +258,7 @@ export default {
         version: row.algorithmVersion
       }
       deletePreAlgorithmVersion(param).then(response => {
-        if(response.success) {
+        if (response.success) {
           this.$message.success('删除成功')
           this.getVersionList();
         } else {
@@ -269,13 +269,13 @@ export default {
         }
       })
     },
-    getAlgorithmStatus(value){
+    getAlgorithmStatus(value) {
       switch (value) {
         case 1:
           return "等待上传中"
         case 2:
           return "上传中"
-        case 3: 
+        case 3:
           return "上传完成"
         case 4:
           return "上传失败"
@@ -290,7 +290,7 @@ export default {
     confirm(val) {
       this.myAlgorithmVisible = val
     },
-    //时间戳转换日期
+    // 时间戳转换日期
     parseTime(val) {
       return parseTime(val)
     }

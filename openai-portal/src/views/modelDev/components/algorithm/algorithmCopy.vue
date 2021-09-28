@@ -7,9 +7,9 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules"  ref="ruleForm" label-width="100px" v-loading.fullscreen.lock="loading">
+      <el-form ref="ruleForm" v-loading.fullscreen.lock="loading" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称：" :label-width="formLabelWidth" prop="name">
-          <el-input v-model="ruleForm.name" placeholder="请输入算法名称"></el-input>
+          <el-input v-model="ruleForm.name" placeholder="请输入算法名称" />
         </el-form-item>
         <el-form-item label="算法描述：" :label-width="formLabelWidth" prop="desc">
           <el-input
@@ -18,17 +18,16 @@
             placeholder="请输入算法描述"
             maxlength="300"
             show-word-limit
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="复制版本：" :label-width="formLabelWidth" prop="version">
-          <el-select value-key="algorithmVersion" @visible-change="getAlgorithmSource" v-model="ruleForm.version">
-            <el-option 
-              v-for="item in algorithmList" 
-              :key="item.algorithmVersion" 
-              :label="item.algorithmVersion" 
+          <el-select v-model="ruleForm.version" value-key="algorithmVersion" @visible-change="getAlgorithmSource">
+            <el-option
+              v-for="item in algorithmList"
+              :key="item.algorithmVersion"
+              :label="item.algorithmVersion"
               :value="item"
-            >
-            </el-option>
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="说明：" :label-width="formLabelWidth">
@@ -49,30 +48,30 @@
 import { getAlgorithmVersionList, getPubAlgorithmVersionList, copyAlgorithm } from "@/api/modelDev.js";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "algorithmCopy",
+  name: "AlgorithmCopy",
   props: {
-    row:{
+    row: {
       type: Object,
-      default: {}
+      default: () => {}
     },
-    algorithmType:"",
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
       ruleForm: {
         name: "",
         version: "",
-        desc: "",
+        desc: ""
       },
-      rules:{
-        name:[
+      rules: {
+        name: [
           {
             required: true,
             message: "请输入算法名称",
             trigger: "blur"
-          },
+          }
         ],
-        version:[
+        version: [
           {
             required: true,
             message: "请选择复制版本",
@@ -95,28 +94,28 @@ export default {
     handleDialogClose() {
       this.$emit("close", false);
     },
-    getAlgorithmSource(){
+    getAlgorithmSource() {
       const param = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
         algorithmId: this.row.algorithmId
       }
-      if (this.algorithmType === "publicAlgorithm"){
+      if (this.algorithmTabType === 2) {
         getPubAlgorithmVersionList(param).then(response => {
-          if(response.success) {
-          this.algorithmList = response.data.algorithms
+          if (response.success) {
+            this.algorithmList = response.data.algorithms
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
               type: 'warning'
-            }); 
+            });
           }
         })
       } else {
         getAlgorithmVersionList(param).then(response => {
-          if(response.success) {
-            let newArr = []
-            response.data.algorithms.filter(function(item,index) {
+          if (response.success) {
+            const newArr = []
+            response.data.algorithms.filter(function(item, index) {
               newArr.push(item.algorithmDetail)
             })
             this.algorithmList = newArr
@@ -124,14 +123,14 @@ export default {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
               type: 'warning'
-            }); 
+            });
           }
         })
       }
     },
 
     cancel() {
-      this.$confirm('此操作将被取消，是否继续?','提示',{
+      this.$confirm('此操作将被取消，是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -156,7 +155,7 @@ export default {
             newAlgorithmName: this.ruleForm.name
           }
           copyAlgorithm(param).then(response => {
-            if(response.success) {            
+            if (response.success) {
               this.$message.success("复制成功，请在’我的算法‘中查看");
               this.loading = false
               this.$emit('confirm', false)
@@ -164,7 +163,7 @@ export default {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
-              }); 
+              });
               this.loading = false
             }
           })
@@ -173,7 +172,7 @@ export default {
           return false;
         }
       });
-    },
+    }
   }
 }
 </script>

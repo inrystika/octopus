@@ -1,25 +1,26 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'模板名称 搜索'"></searchForm>
+            <searchForm :search-form="searchForm" :blur-name="'模板名称 搜索'" @searchData="getSearchData" />
 
         </div>
-        <el-button type="primary" @click="open()" class="create">批量删除</el-button>
-        <el-button type="primary" @click="create" class="create">创建模板</el-button>
+        <el-button type="primary" class="create" @click="open()">批量删除</el-button>
+        <el-button type="primary" class="create" @click="create">创建模板</el-button>
         <div class="index">
-            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}"
-                ref="multipleTable" @selection-change="handleSelectionChange" :selectable="checkSelectable">
-                <el-table-column type="selection" width="55">
-                </el-table-column>
-                <el-table-column prop="name" label="任务模板名称" align="center">
-                </el-table-column>
-                <el-table-column prop="algorithmName" label="算法名称" align="center">
-                </el-table-column>
-                <el-table-column prop="dataSetName" label="数据集名称" align="center">
-                </el-table-column>
-                <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true">
-                </el-table-column>
+            <el-table
+                ref="multipleTable"
+                :data="tableData"
+                style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}"
+                :cell-style="{'text-align':'left'}"
+                :selectable="checkSelectable"
+                @selection-change="handleSelectionChange"
+            >
+                <el-table-column type="selection" width="55" />
+                <el-table-column prop="name" label="任务模板名称" align="center" />
+                <el-table-column prop="algorithmName" label="算法名称" align="center" />>
+                <el-table-column prop="dataSetName" label="数据集名称" align="center" />
+                <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true" />
                 <el-table-column label="是否为分布式">
                     <template slot-scope="scope">
                         <span>{{ scope.row.isDistributed?'是':'否' }}</span>
@@ -42,17 +43,27 @@
 
         </div>
         <!-- 创建任务模板 -->
-        <createDialog v-if="createDialog" @cancel="cancel" @confirm="confirm" @close="close" :flag="flag" :row="row">
-        </createDialog>
+        <createDialog v-if="createDialog" :flag="flag" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 编辑对话框 -->
-        <editeDialog v-if="editeDialog" @cancel="cancel" @confirm="confirm" @close="close" :flag="flag" :row="row"
-            @createTraning="createTraning">
-        </editeDialog>
+        <editeDialog
+            v-if="editeDialog"
+            :flag="flag"
+            :row="row"
+            @cancel="cancel"
+            @confirm="confirm"
+            @close="close"
+            @createTraning="createTraning"
+        />
         <div class="block">
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper" :total="total">
-            </el-pagination>
+            <el-pagination
+                :current-page="searchData.pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
         </div>
     </div>
 </template>
@@ -64,7 +75,13 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "preImage",
+        name: "PreImage",
+        components: {
+            createDialog,
+            editeDialog,
+            searchForm
+
+        },
         props: {
             trainingTemplate: {
                 type: Boolean,
@@ -90,15 +107,9 @@
                 timer: null,
                 searchData: {
                     pageSize: 10,
-                    pageIndex: 1,
+                    pageIndex: 1
                 }
             }
-        },
-        components: {
-            createDialog,
-            editeDialog,
-            searchForm
-
         },
         created() {
             this.getTemplate(this.searchData)
@@ -125,17 +136,14 @@
                         getResourceList().then(response => {
                             if (response.success) {
                                 this.resourceOptions = response.data.mapResourceSpecIdList.train.resourceSpecs
-                            }
-                            else {
+                            } else {
                                 this.$message({
                                     message: this.getErrorMsg(response.error.subcode),
                                     type: 'warning'
                                 });
                             }
                         })
-
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
@@ -150,26 +158,21 @@
                             if (response.success) {
                                 this.editeDialog = true
                                 this.row = response.data.jobTemplate
-                                if (name === 'editeTemplate') { this.flag = 1 }
-                                else { this.flag = 2 }
-                            }
-                            else {
+                                if (name === 'editeTemplate') { this.flag = 1 } else { this.flag = 2 }
+                            } else {
                                 this.$message({
                                     message: this.getErrorMsg(response.error.subcode),
                                     type: 'warning'
                                 });
                             }
                         })
-
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: '资源规格为空',
                             type: 'warning'
                         });
                     }
                 })
-
             },
             handleDelete(val) {
                 let templateIds = []
@@ -185,25 +188,20 @@
                                     type: 'success'
                                 });
                                 this.getTemplate(this.searchData)
-                            }
-                            else {
+                            } else {
                                 this.$message({
                                     message: this.getErrorMsg(response.error.subcode),
                                     type: 'warning'
                                 });
                             }
-
                         })
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: '请勾选需要删除的任务模板',
                             type: 'warning'
                         });
-
                     }
-                }
-                else {
+                } else {
                     templateIds = [val.id]
                     deleteTemplate({ templateIds }).then(response => {
                         if (response.success) {
@@ -212,14 +210,12 @@
                                 type: 'success'
                             });
                             this.getTemplate(this.searchData)
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
             },
@@ -231,37 +227,28 @@
                             type: 'success'
                         });
                         this.getTemplate(this.searchData)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             cancel(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
                 this.editeDialog = val
-
-
-
             },
             confirm(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
                 this.editeDialog = val
-
-
             },
             close(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
                 this.editeDialog = val
-
-
             },
             // 新增创建任务模板
             create() {
@@ -270,34 +257,32 @@
                 this.flag = 2
             },
             handleSizeChange(val) {
-                this.searchData.pageSize = val,
-                    this.getTemplate(this.searchData)
+                this.searchData.pageSize = val
+                this.getTemplate(this.searchData)
             },
             handleCurrentChange(val) {
-                this.searchData.pageIndex = val,
-                    this.getTemplate(this.searchData)
+                this.searchData.pageIndex = val
+                this.getTemplate(this.searchData)
             },
             handleSelectionChange(val) {
                 this.multipleSelection = val;
             },
             checkSelectable(row) {
-                return row.status === 'failed' || row.status === 'succeeded' || row.status == 'stopped'
+                return row.status === 'failed' || row.status === 'succeeded' || row.status === 'stopped'
             },
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getTemplate(this.searchData)
-
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },
             // 删除确认
             open(val) {
                 let message = ''
-                if (val) { message = '此操作将永久删除该任务模板' }
-                else { message = '此操作将永久批量删除该任务模板' }
+                if (val) { message = '此操作将永久删除该任务模板' } else { message = '此操作将永久批量删除该任务模板' }
                 this.$confirm(message, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -315,8 +300,8 @@
             createTraning() {
                 // 这里写你要跳转的标签页的name
                 this.$emit('createTraning')
-                //this.resetZuJian()
-            },
+                // this.resetZuJian()
+            }
 
         }
     }

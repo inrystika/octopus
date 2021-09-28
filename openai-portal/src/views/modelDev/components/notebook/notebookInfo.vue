@@ -7,7 +7,7 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <div v-html="this.initInfo"></div>
+      <div v-html="initInfo"></div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
         <el-button type="primary" @click="confirm">确 定</el-button>
@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  name: "notebookInfo",
+  name: "NotebookInfo",
   props: {
     initInfo: {
       type: String,
@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      infoVisible: true,
+      infoVisible: true
     }
   },
   methods: {

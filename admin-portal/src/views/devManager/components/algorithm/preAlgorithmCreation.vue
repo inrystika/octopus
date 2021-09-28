@@ -7,34 +7,33 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
-          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称"></el-input>
+          <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
         <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
           <el-input
+            v-model="ruleForm.desc"
             :autosize="{ minRows: 2, maxRows: 4}"
             :disabled="disabled"
             placeholder="请输入算法描述"
             maxlength="300"
             show-word-limit
-            v-model="ruleForm.desc"
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
-          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称"></el-input>
+          <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称" />
         </el-form-item>
         <el-form-item :label-width="formLabelWidth">
-            <el-button type="text" @click="nextStep('ruleForm')" v-show="!showUpload">下一步</el-button>
+            <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
         </el-form-item>
         <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+          <upload
             v-model="ruleForm.path"
-          >
-          </upload>
+            :upload-data="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -46,9 +45,9 @@ import upload from '@/components/upload/index.vue'
 import { addPreAlgorithm } from "@/api/modelDev";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "preAlgorithmCreation",
+  name: "PreAlgorithmCreation",
   components: {
-    upload,
+    upload
   },
   props: {
   // row: {
@@ -100,7 +99,7 @@ export default {
             message: "长度在 4 到 30 个字符",
             trigger: "blur"
           }
-        ],
+        ]
       },
       CreateFormVisible: true,
       formLabelWidth: "120px"
@@ -126,7 +125,7 @@ export default {
             isEmpty: false
           }
           addPreAlgorithm(param).then(response => {
-            if(response.success){
+            if (response.success) {
               this.showUpload = true;
               this.disabled = true
               this.uploadData.algorithmId = response.data.algorithmId
