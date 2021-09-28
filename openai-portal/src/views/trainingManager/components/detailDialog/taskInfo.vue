@@ -45,8 +45,19 @@
                     message += event['message'] + "<br><br>"
                 }
                 message += "<br>"
-                this.initInfo = message
+                tempTaskInfoData[roleName] = message
             }
+            let obj = {}
+            Object.keys(tempTaskInfoData).sort().forEach(function(key) {
+                obj[key] = tempTaskInfoData[key];
+            });
+            this.initInfo = obj 
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    .select {
+        margin-left: 5px;
+    }
+</style>
