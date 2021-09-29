@@ -88,9 +88,7 @@ export function uploadMiniIO(params) {
     method: 'put',
     data: params.file,
     onUploadProgress: function(progress) {
-      // 处理上传进度事件
-      // console.log(params.uploadUrl)
-      sessionStorage.setItem(JSON.stringify(params.id), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100).toFixed(0))));
+      sessionStorage.setItem(JSON.stringify(params.id), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100))));
     }
   })
 }

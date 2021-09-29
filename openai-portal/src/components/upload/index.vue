@@ -2,7 +2,7 @@
   <div>
     <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
       :http-request="httpRequest" multiple :accept="accept" :before-upload="beforeUpload">
-      <el-button size="small" type="primary" :disabled="progress>0&&progress<100" :loading="loadingShow">点击上传
+      <el-button size="small" type="primary" :disabled="show||progress>0&&progress<100">点击上传
       </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
@@ -49,15 +49,7 @@
         'progressId',
       ])
     },
-    watch: {
-      progress(newValue, oldValue) {
-        if (newValue == 100) {
-          clearInterval(this.timer)
-        }
-      }
-    },
     created() {
-
       this.timer = setInterval(() => {
         if (store.state.user.progressId && store.state.user.progressId == this.uploadData.data.id) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
@@ -69,6 +61,21 @@
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
+      }
+    },
+    destory() {
+      clearInterval(this.timer)
+    },
+    watch: {
+      progress(a, b) {
+        if (a == 100) {
+          this.show = true
+          this.loadingShow = false
+          console.log(this.loadingShow)
+        }
+        if (0 < a < 100) {
+          this.loadingShow = true
+        }
       }
     },
     methods: {
@@ -92,6 +99,7 @@
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               if (response.success) {
@@ -102,19 +110,21 @@
                   id: this.uploadData.data.id
                 }
                 uploadMiniIO(param).then(response => {
-                  this.loadingShow = false
-                  this.show = true
-                  this.showUpload = true
+                  this.$nextTick(() => {
+                    this.loadingShow = false
+                    this.show = true
+                    this.showUpload = true
+                  })
+
                 })
               }
-              else{   
-                console.log(response)
+              else {
                 this.$message({
-                message: this.getErrorMsg(response.error.subcode),
-                type: 'warning'
-              });
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
               }
-             
+
 
             })
           } else {
@@ -255,12 +265,23 @@
         if (this.uploadData.type === "imageManager") {
           finishUpload(this.uploadData.data.id).then(
             response => {
-              this.$message({
-                message: '创建成功',
-                type: 'success'
-              });
+              if (response.success) {
+                this.$message({
+                  message: '创建成功',
+                  type: 'success'
+                });
+                sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
+                  this.$emit('confirm', false)
+              } else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+              }
+
             },
-            this.$emit('confirm', false)
+
+
           )
         } else if (this.uploadData.type === "myDatasetCreation") {
           const payload = {

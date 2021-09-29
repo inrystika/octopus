@@ -126,6 +126,7 @@
                 }
             }
         },
+       
         created() {
             this.getImage(this.searchData)
             if (this.imageTabType !== 1) {

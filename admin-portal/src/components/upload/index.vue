@@ -1,20 +1,14 @@
 <template>
   <div>
-    <el-upload
-      v-if="showUpload"
-      class="upload-demo"
-      action="#"
-      :on-change="upload"
-      :file-list="fileList"
-      :http-request="httpRequest"
-      multiple
-      :accept="accept"
-    >
-      <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
+    <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
+      :http-request="httpRequest" multiple :accept="accept">
+      <el-button size="small" type="primary" :disabled="show||progress>0&&progress<100">点击上传
+      </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress v-if="(progress!='0'||!showUpload)&&(progress!='100'||!showUpload)" :text-inside="true" :stroke-width="18" :percentage="progress" class="progress" />
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
+      v-if="progress>0&&progress<100" />
     <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -46,32 +40,58 @@
         loadingShow: false,
         showUpload: true,
         accept: "application/zip",
-        tipText: '上传文件格式为 zip'
+        tipText: '上传文件格式为 zip',
+        progress:0
       }
     },
     computed: {
       ...mapGetters([
-        'progress'
+        'progressId',
       ])
     },
-    watch: {
-      showUpload() {
-        store.commit('user/CLEAR_PROGRESS')
-      }
-    },
     created() {
+      this.timer = setInterval(() => {
+        if (store.state.user.progressId && store.state.user.progressId == this.uploadData.data.id) {
+          if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
+            this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
+            console.log(this.progress)
+          }
+        }
+      }, 100)
+
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
+      }
+    },
+    destory() {
+      clearInterval(this.timer)
+    },
+    watch: {
+      progress(a, b) {
+        if (a == 100) {       
+          this.show = true
+          this.loadingShow=false
+          console.log(this.loadingShow)
+        }
+        if (0 < a < 100) {
+          this.loadingShow = true
+        }
       }
     },
     methods: {
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
+      beforeUpload() {
+        sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+      },
       upload(file, fileList) {
         // if (this.uploadData.type = "镜像模块") {
-        if (file) { this.fileList = [file] }
+        if (file) {
+          this.fileList = [file]
+          sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+        }
         // }
       },
       httpRequest() {
@@ -84,15 +104,17 @@
             uploadPreImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               const param = {
                 uploadUrl: response.data.uploadUrl,
-                file: this.fileList[0].raw
+                file: this.fileList[0].raw,
+                id:this.uploadData.data.id
               }
               uploadMiniIO(param).then(response => {
-                if (response.success) {
-                  this.loadingShow = false
-                this.show = true
-                this.showUpload = true
-                }
-              })
+                  this.$nextTick(() => {
+                    this.loadingShow = false
+                    this.show = true
+                    this.showUpload = true
+                  })
+
+                })
             })
           } else {
             this.loadingShow = false
@@ -284,8 +306,8 @@
                 this.fileList = []
               }
             })
-           } else {
-             this.loadingShow = false
+          } else {
+            this.loadingShow = false
             this.showUpload = true
             this.fileList = []
             this.$message({
@@ -303,6 +325,7 @@
                 message: '创建成功',
                 type: 'success'
               });
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
               this.$emit('confirm', false)
             } else {
               this.$message({
@@ -417,11 +440,18 @@
   .dialog-footer {
     text-align: right;
   }
+
   .tipText {
-    float:right;
-    margin-left:10px;
-    font-size:12px
+    float: right;
+    margin-left: 10px;
+    font-size: 12px
   }
-  .progress{margin: 5px 0px 10px 0px;}
-  .dialog-footer{margin-top: 10px;}
+
+  .progress {
+    margin: 5px 0px 10px 0px;
+  }
+
+  .dialog-footer {
+    margin-top: 10px;
+  }
 </style>

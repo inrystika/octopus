@@ -96,6 +96,7 @@
     import searchForm from '@/components/search/index.vue'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import store from '@/store'
     export default {
         name: "PreImage",
         components: {
@@ -186,6 +187,7 @@
                 this.row = row
                 this.FormVisible = true
                 this.Logo = false
+                store.commit('user/SET_PROGRESSID', row.id)
             },
             handleDelete(row) {
                 deletePreImage(row.id).then(response => {
