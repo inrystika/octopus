@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 import requestMinIO from '@/utils/requestMinIO'
-
 export function judgeParam(params) {
   const conditions = []
   params.imageType ? conditions.push(`imageType=` + params.imageType) : null;
@@ -87,7 +86,12 @@ export function uploadMiniIO(params) {
   return requestMinIO({
     url: params.uploadUrl,
     method: 'put',
-    data: params.file
+    data: params.file,
+    onUploadProgress: function(progress) {
+      // 处理上传进度事件
+      // console.log(params.uploadUrl)
+      sessionStorage.setItem(JSON.stringify(params.id), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100).toFixed(0))));
+    }
   })
 }
 

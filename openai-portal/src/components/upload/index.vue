@@ -1,26 +1,14 @@
 <template>
   <div>
-    <el-upload
-      v-if="showUpload"
-      class="upload-demo"
-      action="#"
-      :on-change="upload"
-      :file-list="fileList"
-      :http-request="httpRequest"
-      multiple
-      :accept="accept"
-    >
-      <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
+    <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
+      :http-request="httpRequest" multiple :accept="accept" :before-upload="beforeUpload">
+      <el-button size="small" type="primary" :disabled="progress>0&&progress<100" :loading="loadingShow">点击上传
+      </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress
-      v-if="!showUpload"
-      :text-inside="true"
-      :stroke-width="18"
-      :percentage="progress"
-      class="progress"
-    />
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
+      v-if="progress>0&&progress<100" />
     <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -53,7 +41,7 @@
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
         progress: undefined,
-        timer:undefined
+        timer: undefined
       }
     },
     computed: {
@@ -68,14 +56,15 @@
         }
       }
     },
-    created() { 
+    created() {
+
       this.timer = setInterval(() => {
-        if (store.state.user.progressId) {
+        if (store.state.user.progressId && store.state.user.progressId == this.uploadData.data.id) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
           }
         }
-      }, 1000)
+      }, 100)
 
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
@@ -86,9 +75,15 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
+      beforeUpload() {
+        sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+      },
       upload(file, fileList) {
         // if (this.uploadData.type = "镜像模块") {
-        if (file) { this.fileList = [file] }
+        if (file) {
+          this.fileList = [file]
+          sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+        }
         // }
       },
       httpRequest() {
@@ -99,16 +94,28 @@
           this.showUpload = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
-              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
-              const param = {
-                uploadUrl: response.data.uploadUrl,
-                file: this.fileList[0].raw
+              if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
+                const param = {
+                  uploadUrl: response.data.uploadUrl,
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.data.id
+                }
+                uploadMiniIO(param).then(response => {
+                  this.loadingShow = false
+                  this.show = true
+                  this.showUpload = true
+                })
               }
-              uploadMiniIO(param).then(response => {
-                this.loadingShow = false
-                this.show = true
-                this.showUpload = true
-              })
+              else{   
+                console.log(response)
+                this.$message({
+                message: this.getErrorMsg(response.error.subcode),
+                type: 'warning'
+              });
+              }
+             
+
             })
           } else {
             this.loadingShow = false

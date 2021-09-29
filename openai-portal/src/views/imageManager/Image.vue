@@ -4,12 +4,8 @@
             <searchForm :search-form="searchForm" :blur-name="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -61,7 +57,8 @@
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
-                    <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text" @click="open3(scope.row)">分享
+                    <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text"
+                        @click="open3(scope.row)">分享
                     </el-button>
                     <!-- <el-button @click="handleShare(scope.row)" type="text">分享</el-button> -->
                     <el-button type="text" :close-on-click-modal="false" @click="open(scope.row)">修改描述</el-button>
@@ -69,15 +66,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="total"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 镜像对话框 -->
         <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close" />
@@ -91,6 +82,7 @@
     import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage } from '@/api/imageManager.js'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import store from '@/store'
     export default {
         name: "PreImage",
         components: {
@@ -140,7 +132,7 @@
                 this.flag = false
             }
             if (this.image) {
-              this.FormVisible = true
+                this.FormVisible = true
             }
         },
         methods: {
@@ -232,6 +224,7 @@
                 this.row = row
                 this.FormVisible = true
                 this.Logo = false
+                store.commit('user/SET_PROGRESSID', row.id)
             },
             handleDelete(row) {
                 deleteImage(row.id).then(response => {
