@@ -36,6 +36,7 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),

@@ -1,18 +1,18 @@
 <template>
-  <div >
+  <div>
     <div class="searchForm">
-      <searchForm 
-        :searchForm=searchForm 
-        :blurName="'数据集名称 搜索'"
+      <searchForm
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
       />
     </div>
     <div class="index">
-      <el-table 
-        :data="datasetList" 
-        v-loading="loading" 
+      <el-table
+        v-loading="loading"
+        :data="datasetList"
         style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}" 
+        :header-cell-style="{'text-align':'left','color':'black'}"
         :cell-style="{'text-align':'left'}"
       >
         <el-table-column label="数据集名称">
@@ -37,7 +37,7 @@
         </el-table-column>
         <el-table-column label="所属群组">
           <template slot-scope="scope">
-            <span >{{ scope.row.spaceId === 'default-workspace' ? '默认群组' : scope.row.spaceName }}</span>
+            <span>{{ scope.row.spaceId === 'default-workspace' ? '默认群组' : scope.row.spaceName }}</span>
           </template>
         </el-table-column>
         <el-table-column label="提供者">
@@ -59,11 +59,11 @@
     </div>
     <div class="block">
       <el-pagination
-        :current-page="searchData.pageIndex" 
-        :page-sizes="[10, 20, 50, 80]" 
+        :current-page="searchData.pageIndex"
+        :page-sizes="[10, 20, 50, 80]"
         :page-size="searchData.pageSize"
         :total="total"
-        layout="total, sizes, prev, pager, next, jumper" 
+        layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
@@ -72,10 +72,9 @@
     <versionList
       v-if="versionListVisible"
       :data="row"
-      :versionListType="versionListType"
+      :version-list-type="versionListType"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -86,31 +85,31 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "userList",
+    name: "UserList",
     components: {
       versionList,
       searchForm
     },
     props: {
-        payload:{datasets:[]},
-        Type: { type: Number, default: undefined }
+        payload: { type: Array, default: () => [] },
+        dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
         input: "",
         row: {},
-        versionListVisible:false,
-        versionListType:1,
+        versionListVisible: false,
+        versionListType: 1,
         total: undefined,
-        loading: false,  
-        datasetList:[],  
-        typeChange: undefined, 
+        loading: false,
+        datasetList: [],
+        typeChange: undefined,
         searchForm: [
-          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }
         ],
         searchData: {
           pageIndex: 1,
-          pageSize: 10,
+          pageSize: 10
         }
       }
     },
@@ -121,7 +120,7 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      handleSizeChange(val){
+      handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
       },
@@ -129,10 +128,10 @@
         this.searchData.pageIndex = val
         this.getDataList(this.searchData)
       },
-      getDataList(param){
-        this.typeChange = this.Type
+      getDataList(param) {
+        this.typeChange = this.dataTabType
         getUserDatasetList(param).then(response => {
-          if(response.success){
+          if (response.success) {
             this.datasetList = response.data.datasets;
             this.total = response.data.totalSize
           } else {
@@ -140,15 +139,15 @@
               message: this.getErrorMsg(response.error.subcode),
               type: 'warning'
             });
-          }    
+          }
         })
       },
       getSearchData(val) {
-        this.searchData = {pageIndex:1,pageSize:this.searchData.pageSize}
+        this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
         this.searchData = Object.assign(val, this.searchData)
         if (this.searchData.time) {
-          this.searchData.createdAtGte = this.searchData.time[0]/1000
-          this.searchData.createdAtLt = this.searchData.time[1]/1000
+          this.searchData.createdAtGte = this.searchData.time[0] / 1000
+          this.searchData.createdAtLt = this.searchData.time[1] / 1000
           delete this.searchData.time
         }
         this.getDataList(this.searchData)
@@ -157,12 +156,12 @@
         this.versionListVisible = val;
         this.getDataList(this.searchData)
       },
-      getVersionList(index, row){
+      getVersionList(index, row) {
         this.row = row;
         this.versionListVisible = true;
         this.versionListType = this.typeChange
       },
-      //时间戳转换日期
+      // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
       }

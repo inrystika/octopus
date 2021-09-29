@@ -1,15 +1,15 @@
 <template>
     <div>
-        <el-table 
-            :data="tableData" 
+        <el-table
+            :data="tableData"
             style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" 
+            :header-cell-style="{'text-align':'left','color':'black'}"
             :cell-style="{'text-align':'left'}"
         >
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px" v-if="type==='user'">{{ scope.row.userName }}</span>
-                    <span style="margin-left: 10px" v-if="type==='group'">{{ scope.row.spaceName }}</span>
+                    <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    <span v-if="type==='group'" style="margin-left: 10px">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
             <!-- <el-table-column :label="type=='user'?'用户ID':'群组ID'" align="center">
@@ -31,32 +31,41 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination 
-                :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" 
+            <el-pagination
+                :current-page="pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
                 :page-size="pageSize"
                 :total="total"
-                layout="total, sizes, prev, pager, next, jumper" 
-                @size-change="handleSizeChange" 
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
             />
         </div>
         <!-- 对话框 -->
         <el-dialog :title="title" :visible.sync="dialogFormVisible" width="25%" :close-on-click-modal="false">
             <el-form :model="form">
-                <el-form-item v-if="Type===1" label="用户名称" :label-width="formLabelWidth">
+                <el-form-item v-if="timeTabType===1" label="用户名称" :label-width="formLabelWidth">
                     <span>{{ form.userName }}</span>
                 </el-form-item>
-                <el-form-item v-if="Type===2" label="群组名称" :label-width="formLabelWidth">
+                <el-form-item v-if="timeTabType===2" label="群组名称" :label-width="formLabelWidth">
                     <span>{{ form.spaceName }}</span>
                 </el-form-item>
                 <el-form-item v-if="flag===0" label="增加机时" :label-width="formLabelWidth">
-                    <el-input v-model="form.amount" autocomplete="off" style="width: 40%;"
-                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"></el-input>
+                    <el-input
+                        v-model="form.amount"
+                        autocomplete="off"
+                        style="width: 40%;"
+                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"
+                    />
                     <span>小时</span>
                 </el-form-item>
                 <el-form-item v-if="flag===1" label="减少机时" :label-width="formLabelWidth">
-                    <el-input v-model="form.amount" autocomplete="off" style="width: 40%;"
-                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"></el-input>
+                    <el-input
+                        v-model="form.amount"
+                        autocomplete="off"
+                        style="width: 40%;"
+                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"
+                    />
                     <span>小时</span>
                 </el-form-item>
             </el-form>
@@ -69,26 +78,15 @@
 </template>
 <script>
     import { groupList, userList, groupRecharge, userRecharge } from '@/api/machineManager.js'
-    import searchForm from '@/components/search/index.vue'
+    // import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "userMachineTime",
+        name: "UserMachineTime",
+        // components: {
+        //     searchForm
+        // },
         props: {
-            Type: { type: Number, default: undefined }
-        },
-        components: {
-
-            searchForm
-        },
-        computed: {
-            title: function () {
-                if (this.flag === 0) {
-                    return '增加机时'
-                }
-                if (this.flag === 1) {
-                    return '减少机时'
-                }
-            }
+            timeTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -101,18 +99,29 @@
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [{ type: 'Input', label: 'ID', prop: 'id', placeholder: '请输入ID' }],
-                type: '',
+                type: ''
                 // timer: null
 
             }
         },
+        computed: {
+            title: function() {
+                if (this.flag === 0) {
+                    return '增加机时'
+                }
+                if (this.flag === 1) {
+                    return '减少机时'
+                }
+            }
+        },
         created() {
             this.getTime()
-            if (this.Type === 1) { this.type = 'user' }
-            else { this.type = 'group' }
+            if (this.timeTabType === 1) {
+                this.type = 'user'
+            } else {
+              this.type = 'group'
+            }
             // this.timer = setInterval(this.getTime, 1000);
-
-
         },
         // beforeDestroy() {
         //     clearInterval(this.timer);
@@ -133,27 +142,24 @@
             },
             getTime(data) {
                 if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     userList(data).then(response => {
                         if (response.success) {
                             this.total = parseInt(response.data.totalSize)
                             this.tableData = response.data.billingUsers
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
                     })
-                }
-                else {
+                } else {
                     groupList(data).then(response => {
                         if (response.success) {
                             this.total = parseInt(response.data.totalSize)
                             this.tableData = response.data.billingSpaces
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
@@ -165,36 +171,43 @@
             getSearchData(val) {
                 let data = {}
                 data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     data.userId = data.id
+                } else {
+                    data.spaceId = data.id
                 }
-                else { data.spaceId = data.id }
                 delete data.id
                 this.getTime(data)
-
             },
             addTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                if (this.Type === 1) { this.form.userName = val.userName; this.form.userId = val.userId }
-                else { this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId }
+                if (this.timeTabType === 1) {
+                    this.form.userName = val.userName; this.form.userId = val.userId
+                } else {
+                    this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
+                }
                 this.flag = 0
             },
             deleteTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                if (this.Type === 1) { this.form.userName = val.userName; this.form.userId = val.userId }
-                else { this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId }
+                if (this.timeTabType === 1) {
+                    this.form.userName = val.userName; this.form.userId = val.userId
+                  } else {
+                      this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
+                  }
                 this.flag = 1
             },
             cancel() { this.dialogFormVisible = false },
             confirm() {
-                let data = JSON.parse(JSON.stringify(this.form))
+                const data = JSON.parse(JSON.stringify(this.form))
                 if (this.flag === 1) {
                     data.amount = -data.amount
+                } else {
+                  data.amount = +data.amount
                 }
-                else { data.amount = +data.amount }
-                if (this.Type === 1) {
+                if (this.timeTabType === 1) {
                     delete data.userName
                     delete data.spaceName
                     delete data.spaceId
@@ -205,16 +218,14 @@
                                 type: 'success'
                             });
                             this.getTime()
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
                     })
-                }
-                else {
+                } else {
                     groupRecharge(data).then(response => {
                         delete data.userName
                         delete data.spaceName
@@ -225,8 +236,7 @@
                                 type: 'success'
                             });
                             this.getTime()
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
@@ -235,10 +245,8 @@
                     })
                 }
 
-
                 this.dialogFormVisible = false
             }
-
 
         }
     }

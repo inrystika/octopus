@@ -303,7 +303,7 @@ export default {
             // 镜像二级框
             imageName: false,
             imageNameOption: [],
-            imageCount: 1,
+            imageNameCount: 1,
             imageNameTotal: undefined,
             // 数据集三级框
             dataSetName: false,
@@ -461,7 +461,7 @@ export default {
         // 镜像二级对话框实现
         changeimageSource() {
             this.imageName = true;
-            this.imageCount = 1;
+            this.imageNameCount = 1;
             this.imageNameOption = []
             this.ruleForm.imageItem = "";
             this.getImageNameList();
@@ -469,7 +469,7 @@ export default {
         getImageNameList(searchKey) {
             if (this.ruleForm.imageSource === "my") {
                 getMyImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -493,7 +493,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "pre") {
                 getPreImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -509,7 +509,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "common") {
                 getPublicImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -525,7 +525,7 @@ export default {
             }
         },
         loadImageName() {
-            this.imageCount = this.imageCount + 1;
+            this.imageNameCount = this.imageNameCount + 1;
             if (this.imageNameOption.length < this.imageNameTotal) {
                 this.getImageNameList(this.imageTemp)
             }
