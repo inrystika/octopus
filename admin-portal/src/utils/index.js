@@ -120,25 +120,19 @@ export function formatSize(size) {
     size = size.substring(0, size.length - 2)
     size = size * 1024
     return size
-  }
-  else if (size.indexOf('Mi') !== -1) {
+  } else if (size.indexOf('Mi') !== -1) {
     size = size.substring(0, size.length - 2)
     size = size * 1024 * 1024
     return size
-  }
-  else if (size.indexOf('Gi') !== -1) {
+  } else if (size.indexOf('Gi') !== -1) {
     size = size.substring(0, size.length - 2)
     size = size * 1024 * 1024 * 1024
     return size
-  }
-  else if (size.indexOf('Ti') !== -1) {
+  } else if (size.indexOf('Ti') !== -1) {
     size = size.substring(0, size.length - 2)
     size = size * 1024 * 1024 * 1024 * 1024
     return size
   }
-
-
-
 }
 export function formatDuring(mss) {
   mss = mss * 1000
@@ -152,6 +146,4 @@ export function formatDuring(mss) {
   seconds = seconds === 0 ? '' : seconds
   return days + hours + minutes + seconds
 }
-
-
 

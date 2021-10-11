@@ -48,7 +48,6 @@ service.interceptors.response.use(
    */
 
   response => {
-
     // res = response.data
     // res.data = response.data.payload
     if (response.status === 200) {

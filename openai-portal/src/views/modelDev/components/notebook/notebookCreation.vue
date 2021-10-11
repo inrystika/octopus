@@ -303,7 +303,7 @@ export default {
             // 镜像二级框
             imageName: false,
             imageNameOption: [],
-            imageCount: 1,
+            imageNameCount: 1,
             imageNameTotal: undefined,
             // 数据集三级框
             dataSetName: false,
@@ -384,19 +384,40 @@ export default {
                         datasetId: this.ruleForm.dataSetId || "",
                         datasetVersion: this.ruleForm.dataSetVersion || ""
                     };
-                    createNotebook(param).then(response => {
-                        if (response.success) {
-                            this.$message.success("创建成功");
-                            this.$emit("confirm", false);
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(
-                                    response.error.subcode
-                                ),
-                                type: "warning"
-                            });
-                        }
-                    });
+                    const confirmInfo = this.$createElement
+                    this.$confirm(
+                      '温馨提示',{
+                        title: "温馨提示",
+                        message:confirmInfo('div',[
+                          confirmInfo('p','Debug 队列的任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
+                          confirmInfo('br',''),
+                          confirmInfo('p','调试代码保存路径默认为 Linux 系统的/code'),
+                          confirmInfo('br',''),
+                          confirmInfo('p','调试程序根据管理员设置的运行时间后,会自动停止并释放调试资源'),
+                        ])
+                      }                  
+                    )
+                      .then(() => {
+                        createNotebook(param).then(response => {
+                            if (response.success) {
+                                this.$message.success("创建成功");
+                                this.$emit("confirm", false);
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(
+                                        response.error.subcode
+                                    ),
+                                    type: "warning"
+                                });
+                            }
+                        });
+                      })
+                      .catch(() => {
+                          this.$message({
+                              type: "info",
+                              message: "已取消"
+                          });
+                      });
                 } else {
                     return false;
                 }
@@ -461,7 +482,7 @@ export default {
         // 镜像二级对话框实现
         changeimageSource() {
             this.imageName = true;
-            this.imageCount = 1;
+            this.imageNameCount = 1;
             this.imageNameOption = []
             this.ruleForm.imageItem = "";
             this.getImageNameList();
@@ -469,7 +490,7 @@ export default {
         getImageNameList(searchKey) {
             if (this.ruleForm.imageSource === "my") {
                 getMyImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -493,7 +514,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "pre") {
                 getPreImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -509,7 +530,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "common") {
                 getPublicImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -525,7 +546,7 @@ export default {
             }
         },
         loadImageName() {
-            this.imageCount = this.imageCount + 1;
+            this.imageNameCount = this.imageNameCount + 1;
             if (this.imageNameOption.length < this.imageNameTotal) {
                 this.getImageNameList(this.imageTemp)
             }

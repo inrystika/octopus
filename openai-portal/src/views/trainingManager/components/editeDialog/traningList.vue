@@ -59,7 +59,7 @@
             distributedTask
         },
         props: {
-            Table: {
+            trainingTable: {
                 type: Array,
                 default: () => []
             },
@@ -84,7 +84,7 @@
             }
         },
         created() {
-            this.tableData = this.Table
+            this.tableData = this.trainingTable
             this.getResourceList()
         },
         methods: {

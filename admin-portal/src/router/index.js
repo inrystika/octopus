@@ -33,7 +33,7 @@ import Layout from '@/layout'
 export const constantRoutes = [
   {
     path: '/',
-    component: () => import('@/views/Home/login'),
+    component: () => import('@/views/Home/login')
   },
 
   {
@@ -125,7 +125,7 @@ export const constantRoutes = [
         name: 'dataManager',
         component: () => import('@/views/dataManager/index'),
         meta: { title: '数据管理', icon: 'data' }
-      },
+      }
     ]
   },
   {
@@ -157,7 +157,7 @@ export const constantRoutes = [
         name: '/',
         component: () => import('@/views/devManager/algorithmManager'),
         meta: { title: '算法管理', icon: 'dot' }
-      },
+      }
     ]
   },
   {

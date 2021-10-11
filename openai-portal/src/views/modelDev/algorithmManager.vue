@@ -2,13 +2,13 @@
     <div>
       <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
         <el-tab-pane label="我的算法" name="myAlgorithm">
-          <myList v-if="tabRefresh.myMenu" :algorithm="algorithm" :Type="1" />
+          <myList v-if="tabRefresh.myMenu" :algorithm="algorithm" :algorithm-tab-type="1" />
         </el-tab-pane>
         <el-tab-pane label="公共算法" name="publicAlgorithm">
-          <publicList v-if="tabRefresh.pubMenu" :Type="2" />
+          <publicList v-if="tabRefresh.pubMenu" :algorithm-tab-type="2" />
         </el-tab-pane>
         <el-tab-pane label="预置算法" name="preAlgorithm">
-          <presetList v-if="tabRefresh.preMenu" :Type="3" />
+          <presetList v-if="tabRefresh.preMenu" :algorithm-tab-type="3" />
         </el-tab-pane>
       </el-tabs>
     </div>

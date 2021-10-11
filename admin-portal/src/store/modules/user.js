@@ -1,6 +1,5 @@
 import { login } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
+import { getToken, setToken } from '@/utils/auth'
 import { Message } from 'element-ui'
 const getDefaultState = () => {
   return {

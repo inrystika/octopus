@@ -14,7 +14,7 @@ export function getPreModel(params) {
   })
 }
 
-//查询模型版本列表
+// 查询模型版本列表
 export function getModelList(params) {
   return request({
     url: `/v1/modelmanage/model/${params.modelId}`,
@@ -22,25 +22,25 @@ export function getModelList(params) {
     params: { pageIndex: params.pageIndex, pageSize: params.pageSize }
   })
 }
-//删除预置模型
+// 删除预置模型
 export function deletePreModel(params) {
   return request({
     url: `/v1/modelmanage/premodel/${params.modelId}`,
-    method: 'delete',
+    method: 'delete'
   })
 }
 // 删除预置模型版本
 export function deletePreModelVersion(params) {
   return request({
     url: `/v1/modelmanage/premodel/${params.modelId}/version/${params.version}`,
-    method: 'delete',
+    method: 'delete'
   })
 }
 // 模型版本下载
 export function downloadModel(params) {
   return request({
     url: `/v1/modelmanage/model/${params.modelId}/version/${params.version}/download?domain=${params.domain}`,
-    method: 'get',
+    method: 'get'
   })
 }
 // 模型管理预览

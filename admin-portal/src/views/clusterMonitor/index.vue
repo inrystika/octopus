@@ -1,16 +1,23 @@
 <template>
-  <div class="wrapper"> <iframe :src="grafanaUri" :height="iFrameHeight" frameBorder="0" scrolling="no"
-      class="clusterDashboard"></iframe></div>
+  <div class="wrapper">
+    <iframe
+      :src="grafanaUri"
+      :height="iFrameHeight"
+      frameBorder="0"
+      scrolling="no"
+      class="clusterDashboard"
+    >
+    </iframe>
+  </div>
 </template>
 <script>
-  import clusterMonitor from "./clusterMonitor.vue";
-  import groupMonitor from "./groupMonitor.vue";
+  // import clusterMonitor from "./clusterMonitor.vue";
+  // import groupMonitor from "./groupMonitor.vue";
   export default {
-    components: {
-      clusterMonitor,
-      groupMonitor
-
-    },
+    // components: {
+    //   clusterMonitor,
+    //   groupMonitor
+    // },
     data() {
       return {
         activeName: 'first',

@@ -35,7 +35,7 @@
         <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
           />

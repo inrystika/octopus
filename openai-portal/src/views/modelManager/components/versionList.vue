@@ -25,15 +25,15 @@
                     <template slot-scope="scope">
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">预览
                         </el-button>
-                        <el-button v-if="!scope.row.isShared&&Type===1" type="text" @click="open(scope.row)">分享
+                        <el-button v-if="!scope.row.isShared&&modelType===1" type="text" @click="open(scope.row)">分享
                         </el-button>
                         <el-button
-                            v-if="scope.row.isShared&&scope.row.isShared&&Type===1"
+                            v-if="scope.row.isShared&&scope.row.isShared&&modelType===1"
                             type="text"
                             @click="open(scope.row)"
                         >取消分享</el-button>
-                        <el-button v-if="Type===1" type="text" @click="open2(scope.row)">删除</el-button>
-                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="Type==1">删除</el-button> -->
+                        <el-button v-if="modelType===1" type="text" @click="open2(scope.row)">删除</el-button>
+                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="modelType==1">删除</el-button> -->
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载</el-button>
                     </template>
@@ -75,7 +75,7 @@
                 type: String,
                 default: ""
             },
-            Type: { type: Number, default: undefined },
+            modelType: { type: Number, default: undefined },
             modelName: { type: String, default: "" }
         },
         data() {
@@ -196,7 +196,7 @@
                 this.getList()
             },
             getList() {
-                if (this.Type !== 2) {
+                if (this.modelType !== 2) {
                     getNoPublicList({ pageIndex: this.pageIndex, pageSize: this.pageSize, modelId: this.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {

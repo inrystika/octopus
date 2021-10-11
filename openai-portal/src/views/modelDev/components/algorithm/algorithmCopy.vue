@@ -54,7 +54,7 @@ export default {
       type: Object,
       default: () => {}
     },
-    algorithmType: { type: String, default: "" }
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
@@ -100,10 +100,10 @@ export default {
         pageSize: this.pageSize,
         algorithmId: this.row.algorithmId
       }
-      if (this.algorithmType === "publicAlgorithm") {
+      if (this.algorithmTabType === 2) {
         getPubAlgorithmVersionList(param).then(response => {
           if (response.success) {
-          this.algorithmList = response.data.algorithms
+            this.algorithmList = response.data.algorithms
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
