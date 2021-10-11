@@ -375,6 +375,10 @@ func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
+	if len(res) == 0 || len(res[0].Series) == 0 || len(res[0].Series[0].Values) == 0 || len(res[0].Series[0].Values[0]) < 1 {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
 	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
 	if err != nil {
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
