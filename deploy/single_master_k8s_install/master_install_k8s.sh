@@ -20,7 +20,7 @@ init_k8s() {
     rm -rf /var/lib/etcd/*
 	kubeadm reset -f
 	echo "1" >/proc/sys/net/bridge/bridge-nf-call-iptables
-	kubeadm init --kubernetes-version=$k8s_version --pod-network-cidr=$pod_network_cidr --service-cidr=$service_cidr --apiserver-advertise-address=$masterip --ignore-preflight-errors=Swap
+	kubeadm init --image-repository=registry.aliyuncs.com/google_containers --kubernetes-version=$k8s_version --pod-network-cidr=$pod_network_cidr --service-cidr=$service_cidr --apiserver-advertise-address=$masterip --ignore-preflight-errors=Swap
 	mkdir -p $HOME/.kube
     cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 	chown $(id -u):$(id -g) $HOME/.kube/config

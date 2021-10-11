@@ -101,10 +101,10 @@ install_docker() {
             esac
 
         tee /etc/docker/daemon.json <<EOF
-            {
-                "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
-                "exec-opts": ["native.cgroupdriver=systemd"]
-            }
+{
+    "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
+    "exec-opts": ["native.cgroupdriver=systemd"]
+}
 EOF
         sudo systemctl daemon-reload
         sudo systemctl restart docker
@@ -121,17 +121,17 @@ install_nvidia_docker() {
     curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
     sudo apt-get update && sudo apt-get install -y nvidia-docker2
     tee /etc/docker/daemon.json <<EOF
-        {
-            "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
-            "exec-opts": ["native.cgroupdriver=systemd"],
-            "default-runtime": "nvidia",
-            "runtimes": {
-                "nvidia": {
-                    "path": "/usr/bin/nvidia-container-runtime",
-                    "runtimeArgs": []
-                }
-            }
+{
+    "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",
+            "runtimeArgs": []
         }
+    }
+}
 EOF
     sudo systemctl daemon-reload
     sudo systemctl restart docker
@@ -142,8 +142,8 @@ EOF
 set_repo() {
     set -e
     tee -a /etc/apt/sources.list <<EOF
-        # kubeadm及kubernetes组件安装源
-        deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
+# kubeadm及kubernetes组件安装源
+deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
 EOF
     cd $bash_path
     cat apt-key.gpg | sudo apt-key add -
