@@ -58,11 +58,11 @@ export function getTempalteDetail(params) {
   })
 }
 // 训任务运行信息
-export function getTempalteInfo(data) {
+export function getTempalteInfo(params) {
   return request({
     url: `/v1/trainmanage/trainjobevent`,
     method: 'get',
-    data
+    params
   })
 }
 // 任务模板接口
