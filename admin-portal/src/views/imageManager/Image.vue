@@ -152,7 +152,7 @@
                 )
             }
         },
-        destroy() {
+        destroyed() {
             clearInterval(this.timer)
         },
         methods: {

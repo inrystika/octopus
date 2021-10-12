@@ -142,8 +142,9 @@
                 this.FormVisible = true
             }
         },
-        destroy() {
+        destroyed() {
             clearInterval(this.timer)
+            this.timer=null
         },
         methods: {
             // 错误码
