@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
-      :http-request="httpRequest" multiple :accept="accept" :before-upload="beforeUpload">
+      :http-request="httpRequest" multiple :accept="accept" :before-upload="beforeUpload" :disabled="show||progress>0&&progress<100">
       <el-button size="small" type="primary" :disabled="show||progress>0&&progress<100">点击上传
       </el-button>
       <div class="tipText">{{ tipText }}</div>
@@ -71,7 +71,6 @@
         if (a == 100) {
           this.show = true
           this.loadingShow = false
-          console.log(this.loadingShow)
         }
         if (0 < a < 100) {
           this.loadingShow = true
