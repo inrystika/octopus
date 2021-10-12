@@ -389,11 +389,11 @@ export default {
                       '温馨提示',{
                         title: "温馨提示",
                         message:confirmInfo('div',[
-                          confirmInfo('p','Debug 队列的任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
+                          confirmInfo('p','NoteBook 任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
                           confirmInfo('br',''),
                           confirmInfo('p','调试代码保存路径默认为 Linux 系统的/code'),
                           confirmInfo('br',''),
-                          confirmInfo('p','调试程序根据管理员设置的运行时间后,会自动停止并释放调试资源'),
+                          confirmInfo('p','NoteBook 任务达到管理员设置的运行时间后,会自动停止并释放资源'),
                         ])
                       }                  
                     )
