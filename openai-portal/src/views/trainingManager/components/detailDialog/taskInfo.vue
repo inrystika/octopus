@@ -1,22 +1,36 @@
 <template>
     <div>
-        <el-form ref="ruleForm" :model="ruleForm">
-            <el-form-item label="子任务名:" prop="subTaskItem">
-                <el-select
-                    v-model="ruleForm.subTaskItem"
-                    value-key="label"
-                    placeholder="请选择"
-                    @change="selectedSubTaskOption"
-                >
-                    <el-option
-                        v-for="item in subTaskOptions"
-                        :key="item.label"
-                        :label="item.label"
-                        :value="item"
-                    />
-                </el-select>
-            </el-form-item>
-        </el-form>
+      <el-row>
+            <el-col :span="12">
+                <div>任务名称:<span>{{ data.name }}</span></div>
+            </el-col>
+            <el-col :span="12">
+                <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
+            </el-col>
+        </el-row>
+        <el-row>
+            <el-col :span="12">
+                <el-form ref="ruleForm" :model="ruleForm">
+                    <el-form-item prop="subTaskItem">
+                        <div style="font-size: 15px">子任务名:
+                            <el-select
+                                v-model="ruleForm.subTaskItem"
+                                value-key="label"
+                                placeholder="请选择"
+                                @change="selectedSubTaskOption"
+                            >
+                                <el-option
+                                    v-for="item in subTaskOptions"
+                                    :key="item.label"
+                                    :label="item.label"
+                                    :value="item"
+                                />
+                            </el-select>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+        </el-row>
 
         <div>
             <el-input
@@ -30,6 +44,7 @@
 
         <div class="block">
             <el-pagination
+              v-if="showInfo"
               :current-page="pageIndex"
               :page-sizes="[10, 20, 50, 80]"
               :page-size="pageSize"
@@ -55,6 +70,7 @@
         },
         data() {
             return {
+                data: {},
                 initInfo: "",
                 subTaskOptions: [],
                 ruleForm: {
@@ -68,6 +84,7 @@
             }
         },
         created() {
+            this.data = JSON.parse(JSON.stringify(this.row))
             for (let i = 0; i < this.row.config.length; i++) {
                 for (let j = 0; j < this.row.config[i].taskNumber; j++) {
                     this.subTaskOptions.push({
@@ -130,6 +147,17 @@
 </script>
 
 <style lang="scss" scoped>
+    .el-col {
+        margin: 10px 0 20px 0;
+        font-size: 15px;
+        font-weight: 800;
+
+        span {
+            font-weight: 400;
+            margin-left: 20px
+        }
+    }
+
     .select {
         margin-left: 5px;
     }
