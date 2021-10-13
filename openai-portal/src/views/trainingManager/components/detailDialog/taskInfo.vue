@@ -2,26 +2,30 @@
     <div>
         <el-form ref="ruleForm" :model="ruleForm">
             <el-form-item label="子任务名:" prop="subTaskItem">
-                <el-select 
+                <el-select
                     v-model="ruleForm.subTaskItem"
                     value-key="label"
-                    placeholder="请选择" 
-                    @change="selectedSubTaskOption" 
+                    placeholder="请选择"
+                    @change="selectedSubTaskOption"
                 >
-                    <el-option 
-                        v-for="item in subTaskOptions" 
-                        :key="item.label" 
-                        :label="item.label" 
-                        :value="item" 
+                    <el-option
+                        v-for="item in subTaskOptions"
+                        :key="item.label"
+                        :label="item.label"
+                        :value="item"
                     />
                 </el-select>
             </el-form-item>
         </el-form>
 
         <div>
-            <el-row>
-                <div v-html="subTaskInfo"></div>
-            </el-row>
+            <el-input
+                v-if="showInfo"
+                v-model="subTaskInfo"
+                type="textarea"
+                :readonly="true"
+                :autosize="true"
+            />
         </div>
 
         <div class="block">
@@ -59,15 +63,20 @@
                 subTaskInfo: "",
                 pageIndex: 1,
                 pageSize: 10,
-                total: 0
+                total: 0,
+                showInfo: false
             }
         },
         created() {
-              for (let i = 0; i < this.row.config.length; i++) {
-                  for (let j = 0; j < this.row.config[i].taskNumber; j++) {
-                      this.subTaskOptions.push({ label: this.row.config[i].replicaStates[j].key, taskIndex: i + 1, replicaIndex: j + 1})
-                  }
-              }                    
+            for (let i = 0; i < this.row.config.length; i++) {
+                for (let j = 0; j < this.row.config[i].taskNumber; j++) {
+                    this.subTaskOptions.push({
+                        label: this.row.config[i].replicaStates[j].key,
+                        taskIndex: i + 1,
+                        replicaIndex: j + 1
+                    })
+                }
+            }
         },
         methods: {
             // 错误码
@@ -84,13 +93,14 @@
                 }
                 getTempalteInfo(param).then(response => {
                     if (response.success) {
+                        this.showInfo = response.payload.jobEvents.length
                         this.total = response.payload.totalSize
                         let infoMessage = ""
-                        response.payload.jobEvents.forEach(function (element) {
+                        response.payload.jobEvents.forEach(function(element) {
                             const title = element.reason
                             const message = element.message
-                            infoMessage += "[" + title + "]" + "<br>"
-                            infoMessage += "[" + message + "]" + "<br><br>"
+                            infoMessage += "\n" + "[" + title + "]"
+                            infoMessage += "\n" + "[" + message + "]" + "\n"
                         })
                         this.subTaskInfo = infoMessage
                     } else {
@@ -100,7 +110,7 @@
                         });
                     }
                 }).catch(err => {
-                    console.log("err:",err)
+                    console.log("err:", err)
                     this.$message({
                         message: "未知错误",
                         type: 'warning'
