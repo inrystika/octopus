@@ -384,19 +384,40 @@ export default {
                         datasetId: this.ruleForm.dataSetId || "",
                         datasetVersion: this.ruleForm.dataSetVersion || ""
                     };
-                    createNotebook(param).then(response => {
-                        if (response.success) {
-                            this.$message.success("创建成功");
-                            this.$emit("confirm", false);
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(
-                                    response.error.subcode
-                                ),
-                                type: "warning"
-                            });
-                        }
-                    });
+                    const confirmInfo = this.$createElement
+                    this.$confirm(
+                      '温馨提示',{
+                        title: "温馨提示",
+                        message:confirmInfo('div',[
+                          confirmInfo('p','NoteBook 任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
+                          confirmInfo('br',''),
+                          confirmInfo('p','调试代码保存路径默认为 Linux 系统的/code'),
+                          confirmInfo('br',''),
+                          confirmInfo('p','NoteBook 任务达到管理员设置的运行时间后,会自动停止并释放资源'),
+                        ])
+                      }                  
+                    )
+                      .then(() => {
+                        createNotebook(param).then(response => {
+                            if (response.success) {
+                                this.$message.success("创建成功");
+                                this.$emit("confirm", false);
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(
+                                        response.error.subcode
+                                    ),
+                                    type: "warning"
+                                });
+                            }
+                        });
+                      })
+                      .catch(() => {
+                          this.$message({
+                              type: "info",
+                              message: "已取消"
+                          });
+                      });
                 } else {
                     return false;
                 }
