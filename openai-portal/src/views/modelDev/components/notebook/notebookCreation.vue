@@ -42,6 +42,7 @@
                             remote
                             :remote-method="remoteAlgorithm"
                             @change="changeAlgorithmName"
+                            @click.native="getAlgorithmItem"
                         >
                             <el-option
                                 v-for="item in algorithmNameOption"
@@ -98,6 +99,7 @@
                             filterable
                             remote
                             :remote-method="remoteImage"
+                            @click.native="getImageItem"
                         >
                             <el-option
                                 v-for="item in imageNameOption"
@@ -136,6 +138,7 @@
                             remote
                             :remote-method="remoteDataSet"
                             @change="changeDataSetName"
+                            @click.native="getDataSetItem"
                         >
                             <el-option
                                 v-for="item in dataSetNameOption"
@@ -386,18 +389,17 @@ export default {
                     };
                     const confirmInfo = this.$createElement
                     this.$confirm(
-                      '温馨提示',{
+                      '温馨提示', {
                         title: "温馨提示",
-                        message:confirmInfo('div',[
-                          confirmInfo('p','NoteBook 任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
-                          confirmInfo('br',''),
-                          confirmInfo('p','调试代码保存路径默认为 Linux 系统的/code'),
-                          confirmInfo('br',''),
-                          confirmInfo('p','NoteBook 任务达到管理员设置的运行时间后,会自动停止并释放资源'),
+                        message: confirmInfo('div', [
+                          confirmInfo('p', 'NoteBook 任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
+                          confirmInfo('br', ''),
+                          confirmInfo('p', '调试代码保存路径默认为 Linux 系统的/code'),
+                          confirmInfo('br', ''),
+                          confirmInfo('p', 'NoteBook 任务达到管理员设置的运行时间后,会自动停止并释放资源')
                         ])
-                      }                  
-                    )
-                      .then(() => {
+                      }
+                    ).then(() => {
                         createNotebook(param).then(response => {
                             if (response.success) {
                                 this.$message.success("创建成功");
@@ -654,6 +656,12 @@ export default {
             this.algorithmNameCount = 1
             this.getAlgorithmNameList(this.algorithmNameTemp);
         },
+        getAlgorithmItem() {
+            this.algorithmNameOption = []
+            this.algorithmNameTemp = ''
+            this.algorithmNameCount = 1
+            this.getAlgorithmNameList();
+        },
         // 远程请求镜像名称
         remoteImage(searchKey) {
             if (searchKey === '') {
@@ -665,6 +673,12 @@ export default {
             this.imageNameCount = 1
             this.getImageNameList(this.imageTemp);
         },
+        getImageItem() {
+            this.imageNameOption = []
+            this.imageTemp = ''
+            this.imageNameCount = 1
+            this.getImageNameList();
+        },
         // 远程请求数据集名称
         remoteDataSet(searchKey) {
             if (searchKey === '') {
@@ -675,6 +689,12 @@ export default {
             this.dataSetNameOption = []
             this.dataSetNameCount = 1
             this.getDataSetNameList(this.dataSetTemp);
+        },
+        getDataSetItem() {
+            this.dataSetNameOption = []
+            this.dataSetTemp = ''
+            this.dataSetNameCount = 1
+            this.getDataSetNameList();
         }
     }
 };
