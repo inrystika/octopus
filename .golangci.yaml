@@ -72,4 +72,4 @@ run:
     - resourcespec.go
     - node.go
     - develop.go
-    - trainjob.go
+    - train_job.go
