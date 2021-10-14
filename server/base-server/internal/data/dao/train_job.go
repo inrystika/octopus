@@ -384,7 +384,8 @@ func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' and kind = 'Pod' LIMIT %d OFFSET %d", keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' and kind = 'Pod' LIMIT %d OFFSET %d",
+		keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
 	res, err = d.influxdb.Query(query)
 
 	if err != nil {
