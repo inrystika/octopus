@@ -1,18 +1,28 @@
 package server
 
 import (
+	"context"
 	nethttp "net/http"
+	commctx "server/common/context"
+	"server/common/errors"
 	comHttp "server/common/http"
 	"server/common/middleware/logging"
 	"server/common/middleware/validate"
 	"server/third-server/internal/conf"
-	"server/third-server/internal/server/middleware/auth"
 	"server/third-server/internal/service"
+	"strings"
+
+	oserver "github.com/go-oauth2/oauth2/v4/server"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/http"
+)
+
+const (
+	authHeader = "Authorization"
+	authType   = "Bearer"
 )
 
 // NewHTTPServer new a HTTP server.
@@ -37,10 +47,7 @@ func NewHTTPServer(c *conf.Bootstrap, service *service.Service) *http.Server {
 				recovery.Recovery(),
 				tracing.Server(),
 				logging.Server(),
-				auth.Server(func(options *auth.Options) {
-					options.NoAuthUris = []string{"/v1/oauth/token"}
-					options.Server = osrv
-				}),
+				authMiddleware([]string{"/v1/oauth/token"}, osrv),
 				validate.Server(),
 			),
 		),
@@ -54,4 +61,44 @@ func NewHTTPServer(c *conf.Bootstrap, service *service.Service) *http.Server {
 		token(w, r, osrv)
 	})
 	return srv
+}
+
+func authMiddleware(noAuthUris []string, server *oserver.Server) middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			var request *nethttp.Request
+			if info, ok := http.FromServerContext(ctx); ok {
+				request = info.Request
+			} else {
+				return handler(ctx, req)
+			}
+
+			needAuth := true
+			for _, i := range noAuthUris {
+				if strings.Contains(request.RequestURI, i) {
+					needAuth = false
+					break
+				}
+			}
+
+			if needAuth {
+				authorization := request.Header.Get(authHeader)
+				if authorization == "" {
+					return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
+				}
+
+				if strings.Index(authorization, authType) != 0 || authorization[0:len(authType)] != authType {
+					return nil, errors.Errorf(nil, errors.ErrorTokenInvalid)
+				}
+
+				tokenInfo, err := server.Manager.LoadAccessToken(ctx, authorization[len(authType)+1:])
+				if err != nil {
+					return nil, err
+				}
+				ctx = commctx.PlatformIdToContext(ctx, tokenInfo.GetClientID())
+			}
+
+			return handler(ctx, req)
+		}
+	}
 }
