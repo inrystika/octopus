@@ -24,7 +24,7 @@
             <span>{{ getDatasetStatus(scope.row.status) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="上传进度" align="center" v-if="typeChange===1">
+        <el-table-column label="上传进度" v-if="typeChange===1">
           <template slot-scope="scope">
             <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
               scope.row.progress+'%' }}</span>
@@ -71,6 +71,7 @@
   import preview from './preview.vue'
   import reuploadDataset from "./reuploadDataset.vue"
   import { getErrorMsg } from '@/error/index'
+  import store from '@/store'
   export default {
     name: "VersionList",
     components: {
@@ -130,7 +131,8 @@
       },
       reupload(row) {
         this.myDatasetVisible = true
-        this.versionData = row
+        this.versionData = row,
+        store.commit('user/SET_PROGRESSID', row.datasetId+row.version)
       },
       handlePreview(row) {
         this.preVisible = true

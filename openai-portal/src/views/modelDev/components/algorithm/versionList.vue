@@ -28,7 +28,7 @@
             <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="上传进度" align="center" v-if="algorithmTabType == 1">
+        <el-table-column label="上传进度" v-if="algorithmTabType == 1">
           <template slot-scope="scope">
             <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
               scope.row.progress+'%' }}</span>
@@ -77,6 +77,7 @@
   import { parseTime } from '@/utils/index'
   import reuploadAlgorithm from './reuploadAlgorithm.vue'
   import { getErrorMsg } from '@/error/index'
+  import store from '@/store'
   export default {
     name: "VersionList",
     components: {
@@ -117,6 +118,7 @@
         return getErrorMsg(code)
       },
       reupload(row) {
+        store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
         this.myAlgorithmVisible = true
       },
       handleSizeChange(val) {
