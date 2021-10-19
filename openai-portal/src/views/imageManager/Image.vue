@@ -53,12 +53,14 @@
             </el-table-column>
             <el-table-column label="上传进度" align="center" v-if="flag">
                 <template slot-scope="scope">
-                    <span>{{ (scope.row.progress&&scope.row.progress!=0)?scope.row.progress+'%':'未上传' }}</span>
+                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
+                        scope.row.progress+'%' }}</span>
                 </template>
             </el-table-column>
             <el-table-column v-if="flag" label="操作" align="center" :width="250">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text" @click="handleEdit(scope.row)">重新上传
+                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
+                        @click="handleEdit(scope.row)">重新上传
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
@@ -128,15 +130,15 @@
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
-                }
+                },
+                timer:null
             }
         },
-
         created() {
             this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             if (this.imageTabType !== 1) {
                 this.flag = false,
-                this.getImage(this.searchData)
+                    this.getImage(this.searchData)
             }
             if (this.image) {
                 this.FormVisible = true
@@ -144,7 +146,7 @@
         },
         destroyed() {
             clearInterval(this.timer)
-            this.timer=null
+            this.timer = null
         },
         methods: {
             // 错误码
