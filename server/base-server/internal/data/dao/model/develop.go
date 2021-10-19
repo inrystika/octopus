@@ -80,3 +80,18 @@ type NotebookJobQuery struct {
 	PayStatus   api.BillingPayRecordStatus
 	Ids         []string
 }
+
+type NotebookEvent struct {
+	Timestamp string
+	Name      string
+	Reason    string
+	Message   string
+}
+
+type NotebookEventQuery struct {
+	PageIndex    int
+	PageSize     int
+	Id           string
+	TaskIndex    int
+	ReplicaIndex int
+}

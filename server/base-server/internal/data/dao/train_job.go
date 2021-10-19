@@ -2,9 +2,11 @@ package dao
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
 	"server/base-server/internal/data/dao/model"
+	"server/base-server/internal/data/influxdb"
 	"server/common/errors"
 	"server/common/utils"
 	"time"
@@ -42,17 +44,21 @@ type TrainJobDao interface {
 	UpdateTrainJobTemplate(ctx context.Context, trainJobTemplate *model.TrainJobTemplate) error
 	//网关层删除任务模板（软删除）
 	DeleteTrainJobTemplate(userId string, ids []string) error
+	//获取训练任务事件
+	GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*model.TrainJobEvent, int64, error)
 }
 
 type trainJobDao struct {
-	log *log.Helper
-	db  *gorm.DB
+	log      *log.Helper
+	db       *gorm.DB
+	influxdb influxdb.Influxdb
 }
 
-func NewTrainJobDao(db *gorm.DB, logger log.Logger) TrainJobDao {
+func NewTrainJobDao(db *gorm.DB, influxdb influxdb.Influxdb, logger log.Logger) TrainJobDao {
 	return &trainJobDao{
-		log: log.NewHelper("TrainJobDao", logger),
-		db:  db,
+		log:      log.NewHelper("TrainJobDao", logger),
+		db:       db,
+		influxdb: influxdb,
 	}
 }
 
@@ -346,4 +352,55 @@ func (d *trainJobDao) DeleteTrainJobTemplate(userId string, ids []string) error 
 		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 	}
 	return nil
+}
+
+func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*model.TrainJobEvent, int64, error) {
+
+	keyName := "object_name"
+	keyReason := "reason"
+	keyMessage := "message"
+
+	PageIndex := jobEventQuery.PageIndex
+	PageSize := jobEventQuery.PageSize
+	TaskIndex := jobEventQuery.TaskIndex
+	ReplicaIndex := jobEventQuery.ReplicaIndex
+	events := make([]*model.TrainJobEvent, 0)
+
+	objectName := fmt.Sprintf("%s-task%d-%d", jobEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
+
+	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name = '%s'", keyMessage, objectName)
+	res, err := d.influxdb.Query(countQuery)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	if len(res) == 0 || len(res[0].Series) == 0 || len(res[0].Series[0].Values) == 0 || len(res[0].Series[0].Values[0]) < 2 {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' and kind = 'Pod' LIMIT %d OFFSET %d",
+		keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	res, err = d.influxdb.Query(query)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	for _, row := range res[0].Series[0].Values {
+
+		event := &model.TrainJobEvent{}
+		event.Timestamp = row[0].(string)
+		event.Name = row[1].(string)
+		event.Reason = row[2].(string)
+		event.Message = row[3].(string)
+		events = append(events, event)
+	}
+
+	return events, totalSize, nil
 }

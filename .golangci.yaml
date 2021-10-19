@@ -71,3 +71,5 @@ run:
     - resourcepool.go
     - resourcespec.go
     - node.go
+    - develop.go
+    - train_job.go

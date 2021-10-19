@@ -57,6 +57,14 @@ export function getTempalteDetail(params) {
     method: 'get'
   })
 }
+// 训任务运行信息
+export function getTempalteInfo(params) {
+  return request({
+    url: `/v1/trainmanage/trainjobevent`,
+    method: 'get',
+    params
+  })
+}
 // 任务模板接口
 export function getTemplate(params) {
   const conditions = []
