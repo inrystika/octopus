@@ -60,6 +60,10 @@ const (
 	ErroRedisHGetFailed        = 10102 // redisHGet失败
 	ErroRedisHDelFailed        = 10103 // redisHDel失败
 	ErrorRedisLockObtainFailed = 10104 // redis锁获取失败
+	// influxdb操作相关错误
+	ErroInfluxdbInitFailed  = 10200 // influxdb初始化失败
+	ErroInfluxdbFindFailed  = 10201 // influxdb列表查询失败
+	ErroInfluxdbWriteFailed = 10202 // influxdb插入失败
 
 	/* 11001~12000 资源管理错误*/
 	ErrorDeleteResourcePool   = 11001 // 删除资源池失败
