@@ -9,6 +9,8 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
+	github.com/go-oauth2/oauth2/v4 v4.4.2
+	github.com/go-oauth2/redis/v4 v4.1.1
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3
@@ -26,7 +28,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/text v0.3.6
 	gonum.org/v1/gonum v0.6.2
-	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20210212180131-e7f2df4ecc2d
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0

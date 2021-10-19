@@ -96,7 +96,7 @@ func initApp(ctx context.Context, bc *conf.Bootstrap) (*kratos.App, error) {
 	}
 
 	service := service.NewService(bc, data)
-	httpServer := server.NewHTTPServer(bc.Server, service)
+	httpServer := server.NewHTTPServer(bc, service)
 
 	app := newApp(ctx, httpServer)
 	return app, nil
