@@ -44,14 +44,14 @@
 
         <div class="block">
             <el-pagination
-              v-if="showInfo"
-              :current-page="pageIndex"
-              :page-sizes="[10, 20, 50, 80]"
-              :page-size="pageSize"
-              layout="total, sizes, prev, pager, next, jumper"
-              :total="total"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
+                v-if="showInfo"
+                :current-page="pageIndex"
+                :page-sizes="[10, 20, 50, 80]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
             />
         </div>
     </div>
@@ -59,7 +59,6 @@
 
 <script>
     import { getTempalteInfo } from '@/api/trainingManager'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TaskInfo",
         props: {
@@ -96,10 +95,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             selectedSubTaskOption() {
                 const param = {
                     id: this.row.id,
@@ -122,7 +117,7 @@
                         this.subTaskInfo = infoMessage
                     } else {
                         this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
+                            message: "暂无相关运行信息",
                             type: 'warning'
                         });
                     }
