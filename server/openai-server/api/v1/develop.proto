@@ -48,7 +48,7 @@ service Develop {
     };
   }
   // 获取Notebook事件列表
-  rpc GetJobEventList (NotebookEventListRequest) returns (NotebookEventListReply) {
+  rpc GetNotebookEventList (NotebookEventListRequest) returns (NotebookEventListReply) {
     option (google.api.http) = {
        get: "/v1/developmanage/notebookevent"
     };
@@ -133,6 +133,7 @@ message Notebook {
   string datasetVersion = 18;
   string datasetName = 19;
   uint32 resourceSpecPrice = 20;
+  string notebookJobId = 21;
 }
 
 message ListNotebookReply {
