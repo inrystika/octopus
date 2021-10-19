@@ -368,7 +368,7 @@
           if (store.state.user.progressId == this.uploadData.data.id) {
             return true
           }
-          if (store.state.user.progressId == this.uploadData.id) {
+          if (store.state.user.progressId == this.uploadData.id+this.uploadData.version) {
             return true
           }
           if (store.state.user.progressId == this.uploadData.AlgorithmId + this.uploadData.Version) {
