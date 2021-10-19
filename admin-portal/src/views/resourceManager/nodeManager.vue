@@ -1,18 +1,17 @@
 <template>
-    <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+    <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
       <el-tab-pane label="节点管理" name="first">
-        <nodeList></nodeList>
-      </el-tab-pane> 
+        <nodeList />
+      </el-tab-pane>
     </el-tabs>
   </template>
   <script>
 import nodeList from "./components/nodeList.vue";
-  
+
     export default {
       components: {
         nodeList
-       
-  
+
       },
       data() {
         return {
@@ -21,7 +20,7 @@ import nodeList from "./components/nodeList.vue";
       },
       methods: {
         handleClick(tab, event) {
-     
+
         }
       }
     }

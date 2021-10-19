@@ -72,8 +72,6 @@ func (s *Service) onTaskSetAdd(obj interface{}) {
 
 	ta := s.convert(obj)
 
-	InitPodInfoWatch(s, ta.Name, ta.Namespace)
-
 	if nil == ta {
 		return
 	}
@@ -189,5 +187,4 @@ func (s *Service) onTaskSetDelete(obj interface{}) {
 
 	s.emit(ta.Name, jobstate.STOPPED, ta)
 	s.app.Services().Job().StopJob(ta.Name, ta.Namespace, "exception stopped")
-	EndPodInfoWatch(ta.Name)
 }

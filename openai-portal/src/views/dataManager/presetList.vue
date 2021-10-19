@@ -1,16 +1,20 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm 
-        :searchForm=searchForm 
-        @searchData="getSearchData" 
-        :blurName="'数据集名称 搜索'">
-      </searchForm>
+      <searchForm
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
+        @searchData="getSearchData"
+      />
     </div>
     <div class="index">
-      <el-table :data="datasetList" style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}"
-        v-loading="loading">
+      <el-table
+        v-loading="loading"
+        :data="datasetList"
+        style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}"
+        :cell-style="{'text-align':'left'}"
+      >
         <el-table-column label="名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -38,27 +42,33 @@
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-button type="text" @click="getVersionList(scope.$index, scope.row)" style="padding-right:10px">版本列表
+            <el-button type="text" style="padding-right:10px" @click="getVersionList(scope.$index, scope.row)">
+              版本列表
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="block">
-      <el-pagination 
-        @size-change="handleSizeChange" 
-        @current-change="handleCurrentChange" 
+      <el-pagination
         :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]" 
-        :page-size="searchData.pageSize" 
+        :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="total">
-      </el-pagination>
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
-    <versionList v-if="versionListVisible" @cancel="cancel" @confirm="confirm"
-      @close="close" :data="this.row" :typeChange="this.typeChange">
-    </versionList>
+    <versionList
+      v-if="versionListVisible"
+      :data="row"
+      :type-change="typeChange"
+      @cancel="cancel"
+      @confirm="confirm"
+      @close="close"
+    />
   </div>
 </template>
 
@@ -69,13 +79,16 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "presetList",
+    name: "PresetList",
     components: {
       versionList,
       searchForm
     },
     props: {
-      Type: { type: Number }
+        dataType: {
+        type: Number,
+        default: undefined
+      }
     },
 
     data() {
@@ -90,10 +103,11 @@
         typeChange: undefined,
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'Input', label: '数据集名称', prop: 'nameLike', placeholder: '请输入数据集名称' }
         ],
         searchData: {
           pageIndex: 1,
-          pageSize: 10,
+          pageSize: 10
         }
       };
     },
@@ -113,7 +127,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataType
         getPresetDatasetList(param).then(response => {
           if (response.success) {
             this.datasetList = response.data.datasets;
@@ -127,11 +141,11 @@
         })
       },
       getSearchData(val) {
-        this.searchData={pageIndex:1,pageSize:this.searchData.pageSize}
+        this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
         this.searchData = Object.assign(val, this.searchData)
         if (this.searchData.time) {
-          this.searchData.createdAtGte = this.searchData.time[0]/1000
-          this.searchData.createdAtLt = this.searchData.time[1]/1000
+          this.searchData.createdAtGte = this.searchData.time[0] / 1000
+          this.searchData.createdAtLt = this.searchData.time[1] / 1000
           delete this.searchData.time
         }
         this.getDataList(this.searchData)
@@ -151,7 +165,7 @@
         this.versionListVisible = val;
         this.getDataList(this.searchData)
       },
-      //时间戳转换日期
+      // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
       }

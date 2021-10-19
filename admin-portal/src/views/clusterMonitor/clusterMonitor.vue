@@ -10,9 +10,9 @@
 
 <script>
   export default {
-    name: "clusterMonitor",
+    name: "ClusterMonitor",
     components: {
-        
+
     },
     data() {
       return {
@@ -25,11 +25,10 @@
     this.iFrameHeight = scrollHeight + "px"
   },
     methods: {
-        
 
     }
   }
 </script>
 <style lang="scss" scoped>
-    
+
 </style>

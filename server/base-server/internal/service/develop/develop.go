@@ -559,8 +559,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      nbJob.Id,
 		},
 		Spec: vcBatch.JobSpec{
-			MinAvailable: 1,
-			Queue:        startJobInfo.queue,
+			MinAvailable:  1,
+			Queue:         startJobInfo.queue,
+			SchedulerName: "volcano",
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
@@ -795,12 +796,35 @@ func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRe
 	notebook.CreatedAt = notebookTbl.CreatedAt.Unix()
 	notebook.UpdatedAt = notebookTbl.UpdatedAt.Unix()
 
-	//pipeline获取job最新任务信息
-	info, err := s.data.Pipeline.GetJobDetail(ctx, notebookTbl.NotebookJobId)
+	return &api.GetNotebookReply{Notebook: notebook}, nil
+}
+
+func (s *developService) GetNotebookEventList(ctx context.Context, req *api.NotebookEventListRequest) (*api.NotebookEventListReply, error) {
+
+	query := &model.NotebookEventQuery{}
+	err := copier.Copy(query, req)
 	if err != nil {
 		return nil, err
 	}
-	notebook.InitInfo = info.Job.ExitDiagnostics
 
-	return &api.GetNotebookReply{Notebook: notebook}, nil
+	events, totalSize, err := s.data.DevelopDao.GetNotebookEvents(query)
+	if err != nil {
+		return nil, err
+	}
+
+	notebookEvents := make([]*api.NotebookEvent, 0)
+
+	for _, value := range events {
+		event := &api.NotebookEvent{}
+		event.Timestamp = value.Timestamp
+		event.Name = value.Name
+		event.Reason = value.Reason
+		event.Message = value.Message
+		notebookEvents = append(notebookEvents, event)
+	}
+
+	return &api.NotebookEventListReply{
+		TotalSize:      totalSize,
+		NotebookEvents: notebookEvents,
+	}, nil
 }

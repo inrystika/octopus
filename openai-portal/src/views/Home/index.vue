@@ -1,11 +1,11 @@
 <template>
     <div class="firstPage">
-        <header1></header1>
-        <banner1></banner1>
-        <login></login>
-        <description></description>
-        <banner2 class="banner"></banner2>
-        <description2></description2>
+        <header1 />
+        <banner1 />
+        <login />
+        <description />
+        <banner2 class="banner" />
+        <description2 />
     </div>
 </template>
 
@@ -18,16 +18,14 @@
     import description2 from './description2.vue';
 
     export default {
-        name: "firstPage",
+        name: "FirstPage",
         components: {
             header1,
             banner1,
             banner2,
             login,
             description,
-            description2,
-
-
+            description2
         },
         data() {
             return {

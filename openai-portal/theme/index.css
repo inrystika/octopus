@@ -1129,6 +1129,7 @@
   content: "\e7b3"; }
 
 .el-icon-circle-close:before {
+  color:#409EFF;
   content: "\e78d"; }
 
 .el-icon-circle-check:before {
@@ -30473,7 +30474,7 @@
 
 .el-message-box {
   display: inline-block;
-  width: 420px;
+  width: 520px;
   padding-bottom: 10px;
   vertical-align: middle;
   background-color: #FFFFFF;

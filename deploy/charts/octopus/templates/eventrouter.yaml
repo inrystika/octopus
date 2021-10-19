@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eventrouter 
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: eventrouter 
+rules:
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: eventrouter 
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eventrouter
+subjects:
+- kind: ServiceAccount
+  name: eventrouter
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+data:
+  config.json: |- 
+    {
+      "sink": "influxdb",
+      "influxdbHost": "{{ include "influxdb.serviceAddr" . }}",
+      "influxdbUsername": "{{ .Values.influxdb.setDefaultUser.user.username }}",
+      "influxdbPassword":"{{ .Values.influxdb.setDefaultUser.user.password }}",
+      "influxdbName": "octopus",
+      "influxdbWithFields": true
+    }
+kind: ConfigMap
+metadata:
+  name: eventrouter-cm
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "eventrouter.fullname" . }}
+  labels:
+    app: eventrouter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eventrouter
+  template:
+    metadata:
+      labels:
+        app: eventrouter
+        tier: control-plane-addons
+    spec:
+      containers:
+        - name: kube-eventrouter
+          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/heptio-images/eventrouter:v0.3
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: config-volume
+            mountPath: /etc/eventrouter
+      serviceAccount: eventrouter
+      volumes:
+        - name: config-volume
+          configMap:
+            name: eventrouter-cm
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
