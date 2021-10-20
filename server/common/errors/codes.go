@@ -171,6 +171,7 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+	ErrorDatasetTypeRefered     = 19006 // 数据集状态被引用，不能删除
 )
 
 type codeMsg struct {
@@ -343,4 +344,5 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+	ErrorDatasetTypeRefered:     {codeType: OutOfRange, msg: "type refered"},
 }

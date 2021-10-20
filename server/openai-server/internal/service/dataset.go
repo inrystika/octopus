@@ -61,6 +61,27 @@ func (s *DatasetService) checkVersionQueryPerm(ctx context.Context, datasetId st
 	return nil
 }
 
+func (s *DatasetService) ListDatasetType(ctx context.Context, req *api.ListDatasetTypeRequest) (*api.ListDatasetTypeReply, error) {
+	innerReq := &innerapi.ListDatasetTypeRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DatasetClient.ListDatasetType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListDatasetTypeReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
 func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatasetRequest) (*api.CreateDatasetReply, error) {
 	session := session.SessionFromContext(ctx)
 	if session == nil {
@@ -72,7 +93,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		UserId:     session.UserId,
 		SourceType: innerapi.DatasetSourceType_DST_USER,
 		Name:       req.Name,
-		Type:       req.Type,
+		TypeId:     req.TypeId,
 		Desc:       req.Desc,
 	}
 
