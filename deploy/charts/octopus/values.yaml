@@ -29,6 +29,7 @@ ingress:
   minioPath:
     web: /minio
     api: /oss
+  apidocPath: /apidoc
   tls: []
 
 pvc:
@@ -301,3 +302,11 @@ prometheus:
   resources: {}
   affinity: {}
   nodeSelector: {}
+
+# apidoc
+apidoc:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "api-doc"
