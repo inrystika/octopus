@@ -38,7 +38,7 @@ func NewHTTPServer(c *conf.Bootstrap, service *service.Service) *http.Server {
 		opts = append(opts, http.Timeout(c.Server.Http.Timeout.AsDuration()))
 	}
 
-	osrv := newOauthServer(c)
+	osrv := newOauthServer(c, service)
 
 	handleOptions := comHttp.NewHandleOptions()
 	_ = []http.HandleOption{

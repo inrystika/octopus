@@ -7,6 +7,8 @@ import (
 	"server/third-server/internal/conf"
 	"time"
 
+	api "server/base-server/api/v1"
+
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/status"
@@ -14,6 +16,7 @@ import (
 )
 
 type Data struct {
+	PlatformClient api.PlatformServiceClient
 }
 
 func NewData(confData *conf.Data) (*Data, error) {
@@ -22,7 +25,7 @@ func NewData(confData *conf.Data) (*Data, error) {
 		return nil, err
 	}
 
-	_, err = grpc.DialInsecure(
+	conn, err := grpc.DialInsecure(
 		context.Background(),
 		grpc.WithEndpoint(confData.BaseServerAddr),
 		grpc.WithTimeout(baseServerRequestTimeout),
@@ -38,5 +41,7 @@ func NewData(confData *conf.Data) (*Data, error) {
 		return nil, err
 	}
 
-	return &Data{}, nil
+	return &Data{
+		PlatformClient: api.NewPlatformServiceClient(conn),
+	}, nil
 }

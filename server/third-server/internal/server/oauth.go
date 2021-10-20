@@ -5,9 +5,8 @@ import (
 	nethttp "net/http"
 	"server/common/log"
 	"server/third-server/internal/conf"
+	"server/third-server/internal/service"
 	"time"
-
-	"github.com/go-oauth2/oauth2/v4"
 
 	"github.com/go-oauth2/oauth2/v4/generates"
 
@@ -19,7 +18,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func newOauthServer(c *conf.Bootstrap) *oserver.Server {
+func newOauthServer(c *conf.Bootstrap, service *service.Service) *oserver.Server {
 	manager := manage.NewDefaultManager()
 	manager.SetClientTokenCfg(&manage.Config{AccessTokenExp: time.Second * time.Duration(c.Service.TokenExpirationSec)})
 
@@ -33,8 +32,7 @@ func newOauthServer(c *conf.Bootstrap) *oserver.Server {
 
 	manager.MapAccessGenerate(generates.NewAccessGenerate())
 
-	clientStore := newClientStore()
-	manager.MapClientStorage(clientStore)
+	manager.MapClientStorage(service.OauthService)
 
 	srv := oserver.NewServer(oserver.NewConfig(), manager)
 	srv.SetInternalErrorHandler(func(err error) (re *errors.Response) {
@@ -54,15 +52,4 @@ func token(w nethttp.ResponseWriter, r *nethttp.Request, osrv *oserver.Server) {
 	if err != nil {
 		nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
 	}
-}
-
-type clientStore struct {
-}
-
-func newClientStore() *clientStore {
-	return &clientStore{}
-}
-
-func (cs *clientStore) GetByID(ctx context.Context, id string) (oauth2.ClientInfo, error) {
-	return nil, nil
 }
