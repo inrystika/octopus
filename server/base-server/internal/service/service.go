@@ -11,6 +11,7 @@ import (
 	"server/base-server/internal/service/develop"
 	"server/base-server/internal/service/image"
 	"server/base-server/internal/service/model"
+	"server/base-server/internal/service/platform"
 	"server/base-server/internal/service/resources"
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
@@ -34,6 +35,7 @@ type Service struct {
 	DatasetService      api.DatasetServiceServer
 	ImageService        api.ImageServer
 	BillingService      api.BillingServiceServer
+	PlatformService     api.PlatformServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -65,6 +67,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	if err != nil {
 		return nil, err
 	}
+	service.PlatformService = platform.NewPlatformService(conf, data)
 
 	return service, nil
 }

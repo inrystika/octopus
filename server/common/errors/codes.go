@@ -167,6 +167,9 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+
+	/* 20001-21000 第三方平台管理错误*/
+	ErrorPlatformNameRepeat = 20001 // 平台名称重复
 )
 
 type codeMsg struct {
@@ -339,4 +342,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+
+	/* 20001-21000 第三方平台管理错误*/
+	ErrorPlatformNameRepeat: {codeType: AlreadyExists, msg: "platform existed"},
 }

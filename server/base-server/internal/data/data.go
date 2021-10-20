@@ -36,6 +36,7 @@ type Data struct {
 	Minio           minio.Minio
 	Registry        registry.ArtifactRegistry
 	Redis           redis.Redis
+	PlatformDao     dao.PlatformDao
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
@@ -67,6 +68,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 	d.Redis = redis
+	d.PlatformDao = dao.NewPlatformDao(db)
 
 	return d, func() {
 		redis.Close()
@@ -211,6 +213,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.BillingPayRecord{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.Platform{})
 	if err != nil {
 		return nil, err
 	}
