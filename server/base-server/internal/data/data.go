@@ -7,6 +7,7 @@ import (
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/dao/model/resources"
+	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/data/redis"
@@ -36,6 +37,7 @@ type Data struct {
 	Minio           minio.Minio
 	Registry        registry.ArtifactRegistry
 	Redis           redis.Redis
+	Influxdb        influxdb.Influxdb
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
@@ -46,17 +48,22 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
+	influxdb, err := influxdb.NewInfluxdb(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
 	d.AlgorithmDao = algorithm_dao.NewAlgorithmDao(db, logger)
 	d.ResourceDao = dao.NewResourceDao(db, logger)
 	d.ResourceSpecDao = dao.NewResourceSpecDao(db, logger)
-	d.DevelopDao = dao.NewDevelopDao(db, logger)
+	d.DevelopDao = dao.NewDevelopDao(db, influxdb, logger)
 	d.ModelDao = dao.NewModelDao(db, logger)
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)
 	d.ImageDao = dao.NewImageDao(db, logger)
-	d.TrainJobDao = dao.NewTrainJobDao(db, logger)
+	d.TrainJobDao = dao.NewTrainJobDao(db, influxdb, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
 	d.Cluster = cluster.NewCluster(confData, logger)

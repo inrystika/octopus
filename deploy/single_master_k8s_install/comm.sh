@@ -12,6 +12,7 @@ get_localip() {
 set_ufw_config() {
     echo -e "---------------------\033[31m close ufw \033[0m---------------------"
     ufw disable
+    swapoff -a
     echo -e "---------------------\033[31m close ufw success \033[0m---------------------"
 }
 
@@ -99,6 +100,13 @@ install_docker() {
             * ) exit ;;
             esac
 
+        tee /etc/docker/daemon.json <<EOF
+{
+    "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
+    "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+        sudo systemctl daemon-reload
         sudo systemctl restart docker
         echo -e "---------------------\033[31m docker install success \033[0m---------------------"
     fi
@@ -112,21 +120,20 @@ install_nvidia_docker() {
     curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
     curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
     sudo apt-get update && sudo apt-get install -y nvidia-docker2
-    sudo systemctl restart docker
     tee /etc/docker/daemon.json <<EOF
-        {
-            "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
-            "exec-opts": ["native.cgroupdriver=systemd"],
-            "default-runtime": "nvidia",
-            "runtimes": {
-                "nvidia": {
-                    "path": "/usr/bin/nvidia-container-runtime",
-                    "runtimeArgs": []
-                }
-            }
+{
+    "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",
+            "runtimeArgs": []
         }
+    }
+}
 EOF
-
+    sudo systemctl daemon-reload
     sudo systemctl restart docker
     echo -e "---------------------\033[31m nvidia docker install success \033[0m---------------------"
 }
@@ -135,8 +142,8 @@ EOF
 set_repo() {
     set -e
     tee -a /etc/apt/sources.list <<EOF
-        # kubeadm及kubernetes组件安装源
-        deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
+# kubeadm及kubernetes组件安装源
+deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
 EOF
     cd $bash_path
     cat apt-key.gpg | sudo apt-key add -
@@ -172,4 +179,14 @@ install_k8s() {
 	docker pull calico/pod2daemon-flexvol:v3.9.0
 	docker pull calico/kube-controllers:v3.9.0
     echo -e "---------------------\033[31m pull images success \033[0m---------------------"
+}
+
+# nvidia gpu节点打标签
+nvidia_gpu_label() {
+    kubectl label nodes `hostname` hardware-type=NVIDIAGPU
+}
+
+# huawei a910节点打标签
+huawei_a910_label() {
+    kubectl label nodes `hostname` a910-device-plugin=active
 }

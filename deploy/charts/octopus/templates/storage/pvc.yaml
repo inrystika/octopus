@@ -59,6 +59,21 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: octopus-influxdb-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.influxdb.requests }}
+  selector:
+    matchLabels:
+      pv: influxdb-pv
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
   name: octopus-logger-pvc
 spec:
   accessModes: ["ReadWriteMany"]

@@ -38,4 +38,4 @@ bin/
 # pb
 *.pb.go
 *.pb.validate.go
-*.swagger.json
+*swagger.json
