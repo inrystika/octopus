@@ -9,7 +9,7 @@
             </el-col>
         </el-row>
         <el-row>
-            <el-col :span="12">
+            <el-col v-if="data.isDistributed" :span="12">
                 <el-form ref="ruleForm" :model="ruleForm">
                     <el-form-item prop="subTaskItem">
                         <div style="font-size: 15px">子任务名:
@@ -33,13 +33,14 @@
         </el-row>
 
         <div>
-            <el-input
-                v-if="showInfo"
-                v-model="subTaskInfo"
-                type="textarea"
-                :readonly="true"
-                :autosize="true"
-            />
+            <el-row>
+                <el-input               
+                    v-model="subTaskInfo"
+                    type="textarea"
+                    :readonly="true"                  
+                    :rows="20"
+                />
+            </el-row>
         </div>
 
         <div class="block">
@@ -93,6 +94,10 @@
                     })
                 }
             }
+            if (!this.data.isDistributed) {
+                this.isDistributed = !this.data.isDistributed
+                this.selectedSubTaskOption()
+            }
         },
         methods: {
             selectedSubTaskOption() {
@@ -100,8 +105,8 @@
                     id: this.row.id,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize,
-                    taskIndex: this.ruleForm.subTaskItem.taskIndex,
-                    replicaIndex: this.ruleForm.subTaskItem.replicaIndex
+                    taskIndex: this.ruleForm.subTaskItem.taskIndex?this.ruleForm.subTaskItem.taskIndex:1,
+                    replicaIndex: this.ruleForm.subTaskItem.replicaIndex?this.ruleForm.subTaskItem.replicaIndex:1
                 }
                 getTempalteInfo(param).then(response => {
                     if (response.success) {
