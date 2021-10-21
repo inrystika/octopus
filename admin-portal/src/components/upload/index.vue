@@ -277,6 +277,7 @@
                   this.loadingShow = false
                   this.show = true
                   this.showUpload = true
+                  this.confirm()
                 })
               } else {
                 this.$message({
@@ -319,6 +320,7 @@
                   this.loadingShow = false
                   this.show = true
                   this.showUpload = true
+                  this.confirm()
                 })
               } else {
                 this.$message({
@@ -351,7 +353,7 @@
                 type: 'success'
               });
               sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                this.$emit('confirm', false)
+              this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
@@ -367,6 +369,7 @@
                   message: '创建成功',
                   type: 'success'
                 });
+                sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
                 this.$emit('confirm', false)
               } else {
                 this.$message({
@@ -385,6 +388,7 @@
           }
           preDatasetFinishUpload(payload).then(response => {
             if (response.success) {
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
               this.$message.success("上传预置数据集成功");
             } else {
               this.$message({
@@ -401,6 +405,7 @@
           }
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
               this.$message.success("上传预置数据集版本成功");
             } else {
               this.$message({
@@ -417,6 +422,7 @@
           }
           preAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
               this.$message.success("上传预置算法成功");
             } else {
               this.$message({
@@ -433,6 +439,7 @@
           }
           preAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
               this.$message.success("上传预置算法新版本成功");
             } else {
               this.$message({
