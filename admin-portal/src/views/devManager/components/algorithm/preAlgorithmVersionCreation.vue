@@ -50,7 +50,7 @@ export default {
       default: () => {}
     },
     dialogType: {
-      type: String,
+      type: Boolean,
       default: ""
     }
   },
@@ -80,6 +80,7 @@ export default {
   },
   created() {
     this.ruleForm.name = this.row.algorithmName
+   
   },
   methods: {
     getErrorMsg(code) {

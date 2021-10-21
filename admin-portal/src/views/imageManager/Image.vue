@@ -58,9 +58,15 @@
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="上传进度" align="center" v-if="!flag">
+                <template slot-scope="scope">
+                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
+                        scope.row.progress+'%' }}</span>
+                </template>
+            </el-table-column>
             <el-table-column v-if="!flag" label="操作" align="center" width="250">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.imageStatus!==3" type="text" @click="handleEdit(scope.row)">重新上传
+                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text" @click="handleEdit(scope.row)">重新上传
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)">删除</el-button>
                     <el-button type="text" @click="open(scope.row)">修改描述</el-button>
@@ -96,6 +102,7 @@
     import searchForm from '@/components/search/index.vue'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import store from '@/store'
     export default {
         name: "PreImage",
         components: {
@@ -136,7 +143,7 @@
             }
         },
         created() {
-            this.getImage(this.searchData)
+            this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             if (this.imageTabType !== 1) {
                 this.flag = false
             } else {
@@ -145,6 +152,9 @@
                     { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
                 )
             }
+        },
+        destroyed() {
+            clearInterval(this.timer)
         },
         methods: {
             // 错误码
@@ -171,7 +181,13 @@
                         if (response.success) {
                             if (response.data !== null) {
                                 this.total = parseInt(response.data.totalSize)
-                                this.tableData = response.data.images
+                                this.tableData = response.data.images,
+                                this.tableData.forEach(item => {
+                                    if (sessionStorage.getItem(JSON.stringify(item.id))) {
+                                        item.progress = sessionStorage.getItem(JSON.stringify(item.id))
+                                    }
+
+                                })
                             }
                         } else {
                             this.$message({
@@ -186,6 +202,7 @@
                 this.row = row
                 this.FormVisible = true
                 this.Logo = false
+                store.commit('user/SET_PROGRESSID', row.id)
             },
             handleDelete(row) {
                 deletePreImage(row.id).then(response => {

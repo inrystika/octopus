@@ -350,7 +350,7 @@
 
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 20px !important;
+    margin: 15px !important;
   }
 
   .create {
