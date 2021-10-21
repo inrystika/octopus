@@ -1,11 +1,7 @@
 <template>
     <div>
-        <el-dialog
-            title="预览"
-            :visible.sync="dialogTableVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
+        <el-dialog title="预览" :visible.sync="dialogTableVisible" :before-close="handleDialogClose"
+            :close-on-click-modal="false">
             <el-table :data="tableData" height="300">
                 <el-table-column property="name" label="模型名称" />
                 <el-table-column property="contentType" label="内容类型" />
@@ -27,7 +23,7 @@
     export default {
         name: "PreviewDialog",
         props: {
-            row: { type: Object, default: () => {} }
+            row: { type: Object, default: () => { } }
         },
         data() {
             return {
@@ -55,8 +51,8 @@
                         this.tableData = response.data.modelInfoList
                     } else {
                         this.$message({
-                            message: '目前暂无数据',
-                            type: 'success'
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
                         });
                     }
                 })

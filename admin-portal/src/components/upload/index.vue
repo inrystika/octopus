@@ -9,10 +9,10 @@
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
     <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
       v-if="progress>0&&progress<100" />
-    <div v-if="show" slot="footer" class="dialog-footer">
+    <!-- <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
@@ -41,7 +41,8 @@
         showUpload: true,
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
-        progress:0
+        progress: undefined,
+        timer: undefined
       }
     },
     computed: {
@@ -51,14 +52,12 @@
     },
     created() {
       this.timer = setInterval(() => {
-        if (store.state.user.progressId && store.state.user.progressId == this.uploadData.data.id) {
+        if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
-            console.log(this.progress)
           }
         }
       }, 100)
-
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
@@ -69,10 +68,9 @@
     },
     watch: {
       progress(a, b) {
-        if (a == 100) {       
+        if (a == 100) {
           this.show = true
-          this.loadingShow=false
-          console.log(this.loadingShow)
+          this.loadingShow = false
         }
         if (0 < a < 100) {
           this.loadingShow = true
@@ -100,21 +98,23 @@
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadPreImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw,
-                id:this.uploadData.data.id
+                id: this.uploadData.data.id
               }
               uploadMiniIO(param).then(response => {
-                  this.$nextTick(() => {
-                    this.loadingShow = false
-                    this.show = true
-                    this.showUpload = true
-                  })
-
+                this.$nextTick(() => {
+                  this.loadingShow = false
+                  this.show = true
+                  this.showUpload = true
+                  this.confirm()
                 })
+
+              })
             })
           } else {
             this.loadingShow = false
@@ -131,17 +131,32 @@
           this.showUpload = false
           if (fileForm === 'zip') {
             uploadModel({ modelId: this.uploadData.data.modelId, version: this.uploadData.data.version, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
-              const param = {
-                uploadUrl: response.data.uploadUrl,
-                file: this.fileList[0].raw
-              }
-              uploadMiniIO(param).then(response => {
-                if (response.success) {
-                  this.show = true
-                  this.loadingShow = false
-                  this.showUpload = true
+              if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.data.modelId + this.uploadData.data.version)
+                const param = {
+                  uploadUrl: response.data.uploadUrl,
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.data.modelId + this.uploadData.data.version
                 }
-              })
+                uploadMiniIO(param).then(response => {
+                  if (response.success) {
+                    this.show = true
+                    this.loadingShow = false
+                    this.showUpload = true
+                    this.confirm()
+                  }
+                })
+              }
+              else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+                this.loadingShow = false
+                this.showUpload = true
+                this.fileList = []
+              }
+
             })
           } else {
             this.loadingShow = false
@@ -165,14 +180,17 @@
             uploadPreDataset(param).then(response => {
               if (response.success) {
                 // let uploadUrl = response.data.uploadUrl.replace("octopus-dev-minio:9000","192.168.202.73")
+                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.id + this.uploadData.version
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true
                   this.showUpload = true
+                  this.confirm()
                 })
               } else {
                 this.$message({
@@ -206,14 +224,17 @@
           if (fileForm === 'zip') {
             uploadNewVersion(param).then(response => {
               if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.datasetId + this.uploadData.version
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true
                   this.showUpload = true
+                  this.confirm()
                 })
               } else {
                 this.$message({
@@ -246,9 +267,11 @@
           if (fileForm === 'zip') {
             uploadPreAlgorithm(param).then(response => {
               if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.algorithmId + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.algorithmId + this.uploadData.version
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -285,10 +308,12 @@
           }
           if (fileForm === 'zip') {
             uploadPreAlgorithm(param).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.algorithmId + this.uploadData.version)
               if (response.success) {
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.algorithmId + this.uploadData.version
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -322,11 +347,11 @@
           finishUpload({ id: this.uploadData.data.id }).then(response => {
             if (response.success) {
               this.$message({
-                message: '创建成功',
+                message: '上传成功',
                 type: 'success'
               });
               sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$emit('confirm', false)
+                this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
@@ -431,7 +456,28 @@
             message: '已中断取消操作'
           });
         })
+      },
+      // 显示进度条
+      showProgress() {
+        if (store.state.user.progressId) {
+          if (store.state.user.progressId == this.uploadData.data.id) {
+            return true
+          }
+          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
+            return true
+          }
+          if (store.state.user.progressId == this.uploadData.algorithmId + this.uploadData.version) {
+            return true
+          }
+          if (store.state.user.progressId == this.uploadData.data.modelId + this.uploadData.data.version) {
+            return true
+          }
+          else { return false }
+        }
+        else { return false }
+
       }
+
 
     }
   }

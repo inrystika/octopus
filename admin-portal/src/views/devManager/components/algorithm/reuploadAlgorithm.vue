@@ -69,6 +69,7 @@ export default {
     this.uploadData.algorithmId = this.data.algorithmId
     this.uploadData.version = this.data.algorithmVersion
     this.uploadData.type = "newPreAlgorithm"
+    console.log(this.data,"OPPO")
   },
   methods: {
     handleDialogClose() {

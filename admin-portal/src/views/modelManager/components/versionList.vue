@@ -1,30 +1,35 @@
 <template>
     <div>
-        <el-dialog
-            :title="'版本列表/' + modelName"
-            width="70%"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
-            <el-table
-              :data="tableData"
-              style="width: 100%"
-              height="500"
-            >
-                <el-table-column prop="version" label="算法版本" align="center" />
-                <el-table-column prop="descript" label="模型描述" align="center" />
-                <el-table-column label="状态" align="center">
+        <el-dialog :title="'版本列表/' + modelName" width="70%" :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose" :close-on-click-modal="false">
+            <el-table :data="tableData" style="width: 100%" height="350">
+                <el-table-column label="算法版本">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ fileStatus(scope.row.fileStatus) }}</span>
+                        <span>{{ scope.row.version }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="创建时间" align="center">
+                <el-table-column label="模型描述" :show-overflow-tooltip="true">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
+                        <span>{{ scope.row.descript }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="操作" align="center" width="350px">
+                <el-table-column label="状态">
+                    <template slot-scope="scope">
+                        {{ fileStatus(scope.row.fileStatus) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="创建时间">
+                    <template slot-scope="scope">
+                        {{ parseTime(scope.row.createdAt) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="上传进度" v-if="modelType == 3">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
+                            scope.row.progress+'%' }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
                             预览
@@ -37,15 +42,9 @@
                 </el-table-column>
             </el-table>
             <div class="block">
-                <el-pagination
-                  :current-page="pageIndex"
-                  :page-sizes="[10, 20, 50, 80]"
-                  :page-size="pageSize"
-                  :total="total"
-                  layout="total, sizes, prev, pager, next, jumper"
-                  @size-change="handleSizeChange"
-                  @current-change="handleCurrentChange"
-                />
+                <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
+                    :total="total" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange" />
             </div>
             <div slot="footer">
             </div>
@@ -82,16 +81,20 @@
                 pageSize: 10,
                 tableData: [],
                 row: { flag: undefined, data: undefined },
-                data: { modelId: undefined, version: undefined }
+                data: { modelId: undefined, version: undefined },
+                timer: null
 
             }
         },
         created() {
-            this.getList()
-        },
-        beforeDestroy() {
+            this.timer = setInterval(() => { this.getList() }, 1000)
 
         },
+        destroyed() {
+            clearInterval(this.timer)
+            this.timer = null
+        },
+
         methods: {
             // 错误码
             getErrorMsg(code) {
@@ -184,15 +187,16 @@
                 this.dialogVisible = val
             },
             getList() {
-                this.tableData = []
                 getModelList({ pageIndex: this.pageIndex, pageSize: this.pageSize, modelId: this.modelId }).then(response => {
                     if (response.success) {
-                        this.total = response.data.totalSize
                         this.tableData = response.data.modelVersions
-                        this.$message({
-                            message: "获取列表成功",
-                            type: 'success'
-                        });
+                        this.tableData.forEach(item => {
+                            if (sessionStorage.getItem(JSON.stringify(item.modelId + item.version))) {
+                                item.progress = sessionStorage.getItem(JSON.stringify(item.modelId + item.version))
+                            }
+
+                        })
+                        this.total = response.data.totalSize
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
