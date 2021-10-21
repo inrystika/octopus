@@ -1,19 +1,18 @@
 <template>
-    <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+    <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
       <el-tab-pane label="资源池列表" name="first">
-        <poolManager></poolManager>
+        <poolManager />
       </el-tab-pane>
-     
+
     </el-tabs>
   </template>
   <script>
 import poolManager from "./components/poolManager.vue";
-  
+
     export default {
       components: {
         poolManager
-       
-  
+
       },
       data() {
         return {
@@ -22,7 +21,7 @@ import poolManager from "./components/poolManager.vue";
       },
       methods: {
         handleClick(tab, event) {
-     
+
         }
       }
     }

@@ -11,8 +11,7 @@
         <el-row>
             <el-col v-if="show" :span="12">
                 <div>子任务名:<el-select v-model="value" placeholder="请选择" class="select" @change="selectLoad">
-                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-                        </el-option>
+                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
             </el-col>
@@ -21,7 +20,7 @@
             <el-row v-if="value!==''||!data.isDistributed">
                 <el-col :span="24">
                     <div class="loadName">任务负载</div>
-                    <iframe :src="loadHref" class="load" frameBorder="0" scrolling="no"></iframe>
+                    <iframe :src="loadHref" class="load" frameBorder="0" scrolling="no" />
                 </el-col>
             </el-row>
 
@@ -30,7 +29,7 @@
 </template>
 <script>
     export default {
-        name: "taskLoad",
+        name: "TaskLoad",
         components: {
         },
         props: {

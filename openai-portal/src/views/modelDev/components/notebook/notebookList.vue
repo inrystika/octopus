@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm :searchForm="searchForm" :blurName="'NoteBook名称 搜索'" @searchData="getSearchData">
-      </searchForm>
+      <searchForm :search-form="searchForm" :blur-name="'NoteBook名称 搜索'" @searchData="getSearchData" />
     </div>
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
@@ -74,7 +73,7 @@
           >
             停止
           </el-button>
-          <el-button slot="reference" type="text" @click="getNotebookInfo(scope.row)">
+          <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
             信息
           </el-button>
         </template>
@@ -89,19 +88,17 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <notebookInfo
       v-if="notebookInfoVisible"
-      :initInfo="initInfo"
+      :notebook-data="notebookData"
       @confirm="confirm"
       @cancel="cancel"
       @close="close"
     />
-    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
-    </notebookCreation>
+    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -109,12 +106,12 @@
   import notebookCreation from "./notebookCreation.vue"
   import notebookInfo from "./notebookInfo.vue"
   import searchForm from '@/components/search/index.vue'
-  import { getNotebookInfo, getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
+  import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "notebookList",
+    name: "NotebookList",
     components: {
       notebookCreation,
       notebookInfo,
@@ -129,7 +126,7 @@
     data() {
       return {
         row: {},
-        initInfo: "",
+        notebookData: {},
         notebookVisible: false,
         notebookInfoVisible: false,
         total: undefined,
@@ -153,7 +150,7 @@
           pageSize: 10
         },
         resourceList: [],
-        title: "是否启动Notebook？",
+        title: "是否启动NoteBook？",
         statusText: {
           'preparing': ['status-ready', '初始中'],
           'pending': ['status-agent', '等待中'],
@@ -253,7 +250,7 @@
           } else {
             if (response.error.subcode === 11014) {
               this.$message({
-                message: '资源规格已被删除，请重新提交notebook',
+                message: '资源规格已被删除，请重新提交NoteBook',
                 type: 'warning'
               })
             } else {
@@ -266,7 +263,7 @@
         })
       },
       confirmStop(row) {
-        this.$confirm('是否停止Notebook？', '提示', {
+        this.$confirm('是否停止NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -280,45 +277,9 @@
           });
         });
       },
-      getNotebookInfo(row) {
-        getNotebookInfo(row.id).then(response => {
-          if (response.success) {
-            this.notebookInfoVisible = true
-            const notebookDialogString = response.payload.notebook.initInfo ? response.payload.notebook.initInfo.replace(/\n/g, "<br>") : ''
-            const notebookDialogData = JSON.parse(notebookDialogString)
-            for (const pid in notebookDialogData['podEvents']) {
-              const eventList = notebookDialogData['podEvents'][pid]
-              const roleName = notebookDialogData['podRoleName'][pid]
-              if (roleName == "") {
-                continue
-              }
-              let message = ""
-              for (const key in eventList) {
-                const event = eventList[key]
-                if (event['reason'] == "" && event['message'] == "") {
-                  continue
-                }
-                message += "[" + event['reason'] + "]" + "<br>"
-                message += event['message'] + "<br><br>"
-              }
-              for (const key in notebookDialogData['extras']) {
-                const event = notebookDialogData['extras'][key]
-                if (event['reason'] == "" && event['message'] == "") {
-                  continue
-                }
-                message += "[" + event['reason'] + "]" + "<br>"
-                message += event['message'] + "<br><br>"
-              }
-              message += "<br>"
-              this.initInfo = message
-            }
-          } else {
-            this.$message({
-              message: this.getErrorMsg(response.error.subcode),
-              type: 'warning'
-            })
-          }
-        })
+      showNotebookInfo(row) {
+        this.notebookInfoVisible = true
+        this.notebookData = row
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
@@ -334,7 +295,7 @@
         })
       },
       confirmDelete(row) {
-        this.$confirm('是否删除Notebook？', '提示', {
+        this.$confirm('是否删除NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',

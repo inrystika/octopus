@@ -2,14 +2,13 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-button
-      v-if="Type === 1 ? true : false"
+      v-if="algorithmTabType === 1 ? true : false"
       type="primary"
       size="medium"
       class="create"
@@ -61,8 +60,7 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <myAlgorithmCreation
@@ -70,33 +68,28 @@
       @cancel="cancel"
       @close="close"
       @confirm="confirm"
-    >
-    </myAlgorithmCreation>
+    />
     <newVersionCreation
       v-if="newVersionVisible"
-      :newVersionName="newVersionName"
       :row="row"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </newVersionCreation>
+    />
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </algorithmCopy>
+    />
     <versionList
       v-if="versionListVisible"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       :data="row"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -110,7 +103,7 @@ import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "myList",
+  name: "MyList",
   components: {
     newVersionCreation,
     algorithmCopy,
@@ -119,7 +112,10 @@ export default {
     searchForm
   },
   props: {
-    Type: { type: Number },
+    algorithmTabType: {
+      type: Number,
+      default: undefined
+    },
     algorithm: {
       type: Boolean,
       default: false
@@ -175,7 +171,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
         getMyAlgorithmList(param).then(response => {
           if (response.success) {
             this.algorithmList = response.data.algorithms;
@@ -190,7 +186,7 @@ export default {
     },
     getAlgorithmVersionList(row) {
       this.versionListVisible = true;
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       this.row = row
     },
     createNewVersion(row) {

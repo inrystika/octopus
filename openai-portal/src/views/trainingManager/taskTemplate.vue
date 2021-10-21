@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :searchForm="searchForm" :blurName="'模板名称 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :search-form="searchForm" :blur-name="'模板名称 搜索'" @searchData="getSearchData" />
 
         </div>
         <el-button type="primary" class="create" @click="open()">批量删除</el-button>
@@ -16,16 +16,11 @@
                 :selectable="checkSelectable"
                 @selection-change="handleSelectionChange"
             >
-                <el-table-column type="selection" width="55">
-                </el-table-column>
-                <el-table-column prop="name" label="任务模板名称" align="center">
-                </el-table-column>
-                <el-table-column prop="algorithmName" label="算法名称" align="center">
-                </el-table-column>
-                <el-table-column prop="dataSetName" label="数据集名称" align="center">
-                </el-table-column>
-                <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true">
-                </el-table-column>
+                <el-table-column type="selection" width="55" />
+                <el-table-column prop="name" label="任务模板名称" align="center" />
+                <el-table-column prop="algorithmName" label="算法名称" align="center" />>
+                <el-table-column prop="dataSetName" label="数据集名称" align="center" />
+                <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true" />
                 <el-table-column label="是否为分布式">
                     <template slot-scope="scope">
                         <span>{{ scope.row.isDistributed?'是':'否' }}</span>
@@ -48,8 +43,7 @@
 
         </div>
         <!-- 创建任务模板 -->
-        <createDialog v-if="createDialog" :flag="flag" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
-        </createDialog>
+        <createDialog v-if="createDialog" :flag="flag" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 编辑对话框 -->
         <editeDialog
             v-if="editeDialog"
@@ -59,8 +53,7 @@
             @confirm="confirm"
             @close="close"
             @createTraning="createTraning"
-        >
-        </editeDialog>
+        />
         <div class="block">
             <el-pagination
                 :current-page="searchData.pageIndex"
@@ -70,8 +63,7 @@
                 :total="total"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-            >
-            </el-pagination>
+            />
         </div>
     </div>
 </template>
@@ -83,7 +75,7 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "preImage",
+        name: "PreImage",
         components: {
             createDialog,
             editeDialog,
@@ -276,7 +268,7 @@
                 this.multipleSelection = val;
             },
             checkSelectable(row) {
-                return row.status === 'failed' || row.status === 'succeeded' || row.status == 'stopped'
+                return row.status === 'failed' || row.status === 'succeeded' || row.status === 'stopped'
             },
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }

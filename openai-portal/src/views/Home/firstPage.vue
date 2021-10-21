@@ -23,8 +23,7 @@
                                     type="text"
                                     auto-complete="off"
                                     placeholder="请输入用户账号"
-                                >
-                                </el-input>
+                                />
                             </el-form-item>
                             <el-form-item prop="password">
                                 <el-input
@@ -32,8 +31,7 @@
                                     type="password"
                                     auto-complete="off"
                                     placeholder="密码"
-                                >
-                                </el-input>
+                                />
                             </el-form-item>
                             <el-form-item style="width:100%;">
                                 <el-button type="primary" style="width:100%;" :loading="logining" @click="handleLogin">

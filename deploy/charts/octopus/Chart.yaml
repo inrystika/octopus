@@ -35,6 +35,9 @@ dependencies:
 - name: nginx-ingress-controller
   version: 7.6.9
   repository: https://charts.bitnami.com/bitnami
+- name: influxdb
+  version: 4.10.0
+  repository: https://helm.influxdata.com/
 
 home: https://octopus.openi.org.cn/
 icon: https://git.openi.org.cn/OpenI/octopus/media/branch/master/logo.png

@@ -7,9 +7,10 @@ const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
   // timeout: 5000 // request timeout
+  // eslint-disable-next-line no-undef
   onUploadProgress: function(progress) {
     // 处理上传进度事件
-    store.commit('user/SET_PROGRESS', parseInt(((progress.loaded / progress.total) * 100).toFixed(0)))
+    sessionStorage.setItem(JSON.stringify(store.state.user.progressId), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100).toFixed(0))));
   }
 })
 
@@ -84,7 +85,6 @@ service.interceptors.response.use(
     // }
   },
   error => {
-    store.commit('user/CLEAR_PROGRESS')
     console.log('err' + error) // for debug
     Message({
       message: error.message,

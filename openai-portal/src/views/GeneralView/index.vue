@@ -92,7 +92,7 @@
             <div class="mainBlock">
               <el-button class="mainButtonBorder" size="small" @click="create('notebook')">
                 <span class="mainButtonText">
-                  创建Notebook
+                  创建NoteBook
                 </span>
               </el-button>
               <el-button class="mainButtonBorder" size="small" @click="create('algorithm')">

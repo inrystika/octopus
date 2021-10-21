@@ -1,7 +1,7 @@
 <template>
     <div>
         <div>
-            <searchForm :searchForm="searchForm" :blurName="'名称/描述 搜索'" @searchData="getSearchData"></searchForm>
+            <searchForm :search-form="searchForm" :blur-name="'名称/描述 搜索'" @searchData="getSearchData" />
         </div>
         <div class="index">
             <el-table
@@ -10,16 +10,11 @@
                 :header-cell-style="{'text-align':'left','color':'black'}"
                 :cell-style="{'text-align':'left'}"
             >
-                <el-table-column prop="modelName" label="模型名称" align="center">
-                </el-table-column>
-                <el-table-column v-if="Type===2" prop="userName" label="提供者" align="center">
-                </el-table-column>
-                <el-table-column prop="algorithmName" label="算法名称" align="center">
-                </el-table-column>
-                <el-table-column prop="algorithmVersion" label="算法版本" align="center">
-                </el-table-column>
-                <el-table-column prop="modelDescript" label="模型描述" align="center">
-                </el-table-column>
+                <el-table-column prop="modelName" label="模型名称" align="center" />
+                <el-table-column v-if="modelTabType===2" prop="userName" label="提供者" align="center" />
+                <el-table-column prop="algorithmName" label="算法名称" align="center" />
+                <el-table-column prop="algorithmVersion" label="算法版本" align="center" />
+                <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
@@ -42,19 +37,18 @@
                 :total="total"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-            >
-            </el-pagination>
+            />
         </div>
         <!-- 版本列表对话框 -->
         <versionList
             v-if="FormVisible"
-            :modelId="modelId"
-            :Type="type"
-            :modelName="modelName"
+            :model-id="modelId"
+            :model-type="type"
+            :model-name="modelName"
             @close="close"
             @cancel="cancel"
             @confirm="confirm"
-        ></versionList>
+        />
     </div>
 </template>
 
@@ -65,13 +59,13 @@
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "myModel",
+        name: "MyModel",
         components: {
             versionList,
             searchForm
         },
         props: {
-            Type: { type: Number }
+            modelTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -92,7 +86,7 @@
         },
         created() {
             this.getModel(this.searchData)
-            if (this.Type !== 1) {
+            if (this.modelTabType !== 1) {
                 this.flag = false
             }
         },
@@ -148,7 +142,7 @@
                 })
             },
             getModel(data) {
-                this.type = this.Type
+                this.type = this.modelTabType
                 if (this.type === 1) {
                     getMyModel(data).then(response => {
                         if (response.success) {

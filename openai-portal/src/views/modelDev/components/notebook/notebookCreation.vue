@@ -15,16 +15,16 @@
                 class="demo-ruleForm"
             >
                 <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" placeholder="请输入noteBook名称"></el-input>
+                    <el-input v-model="ruleForm.name" placeholder="请输入NoteBook名称" />
                 </el-form-item>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input
                         v-model="ruleForm.desc"
                         :autosize="{ minRows: 2, maxRows: 4}"
-                        placeholder="请输入noteBook描述"
+                        placeholder="请输入NoteBook描述"
                         maxlength="300"
                         show-word-limit
-                    ></el-input>
+                    />
                 </el-form-item>
                 <!-- 算法三级框 -->
                 <div>
@@ -42,13 +42,14 @@
                             remote
                             :remote-method="remoteAlgorithm"
                             @change="changeAlgorithmName"
+                            @click.native="getAlgorithmItem"
                         >
                             <el-option
                                 v-for="item in algorithmNameOption"
                                 :key="item.algorithmId+item.algorithmName"
                                 :label="item.algorithmName"
                                 :value="item.algorithmId"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -67,7 +68,7 @@
                                 :key="item.algorithmDetail.algorithmId+item.algorithmDetail.algorithmVersion"
                                 :label="item.algorithmDetail.algorithmVersion"
                                 :value="item.algorithmDetail.algorithmVersion"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -79,9 +80,9 @@
                             placeholder="请选择"
                             @change="changeimageSource"
                         >
-                            <el-option label="我的镜像" value="my"></el-option>
-                            <el-option label="预置镜像" value="pre"></el-option>
-                            <el-option label="公共镜像" value="common"></el-option>
+                            <el-option label="我的镜像" value="my" />
+                            <el-option label="预置镜像" value="pre" />
+                            <el-option label="公共镜像" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -98,13 +99,14 @@
                             filterable
                             remote
                             :remote-method="remoteImage"
+                            @click.native="getImageItem"
                         >
                             <el-option
                                 v-for="item in imageNameOption"
                                 :key="item.id"
                                 :label="item.imageName+':'+item.imageVersion"
                                 :value="item"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -117,9 +119,9 @@
                             placeholder="请选择"
                             @change="changedataSetSource"
                         >
-                            <el-option label="我的数据集" value="my"></el-option>
-                            <el-option label="预置数据集" value="pre"></el-option>
-                            <el-option label="公共数据集" value="common"></el-option>
+                            <el-option label="我的数据集" value="my" />
+                            <el-option label="预置数据集" value="pre" />
+                            <el-option label="公共数据集" value="common" />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -136,13 +138,14 @@
                             remote
                             :remote-method="remoteDataSet"
                             @change="changeDataSetName"
+                            @click.native="getDataSetItem"
                         >
                             <el-option
                                 v-for="item in dataSetNameOption"
                                 :key="item.id+item.name"
                                 :label="item.name"
                                 :value="item.id"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                     <el-form-item
@@ -161,7 +164,7 @@
                                 :key="item.datasetId+item.version"
                                 :label="item.version"
                                 :value="item.version"
-                            ></el-option>
+                            />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -177,7 +180,7 @@
                             :key="index"
                             :label="item.label"
                             :value="item.value"
-                        ></el-option>
+                        />
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -196,7 +199,7 @@ import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
 import { getResourceList } from "@/api/trainingManager";
 import { getErrorMsg } from "@/error/index";
 export default {
-    name: "notebookCreation",
+    name: "NotebookCreation",
     directives: {
         loadmore: {
             inserted: function(el, binding) {
@@ -303,7 +306,7 @@ export default {
             // 镜像二级框
             imageName: false,
             imageNameOption: [],
-            imageCount: 1,
+            imageNameCount: 1,
             imageNameTotal: undefined,
             // 数据集三级框
             dataSetName: false,
@@ -324,7 +327,7 @@ export default {
     },
     created() {
         this.getResource();
-        this.getAlgorithmNameList();
+        // this.getAlgorithmNameList();
     },
     methods: {
         getErrorMsg(code) {
@@ -384,19 +387,39 @@ export default {
                         datasetId: this.ruleForm.dataSetId || "",
                         datasetVersion: this.ruleForm.dataSetVersion || ""
                     };
-                    createNotebook(param).then(response => {
-                        if (response.success) {
-                            this.$message.success("创建成功");
-                            this.$emit("confirm", false);
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(
-                                    response.error.subcode
-                                ),
-                                type: "warning"
-                            });
-                        }
-                    });
+                    const confirmInfo = this.$createElement
+                    this.$confirm(
+                      '温馨提示', {
+                        title: "温馨提示",
+                        message: confirmInfo('div', [
+                          confirmInfo('p', 'NoteBook 任务用于调试程序,使用 Jupyterlab 代码编辑器调试程序'),
+                          confirmInfo('br', ''),
+                          confirmInfo('p', '调试代码保存路径默认为 Linux 系统的/code'),
+                          confirmInfo('br', ''),
+                          confirmInfo('p', 'NoteBook 任务达到管理员设置的运行时间后,会自动停止并释放资源')
+                        ])
+                      }
+                    ).then(() => {
+                        createNotebook(param).then(response => {
+                            if (response.success) {
+                                this.$message.success("创建成功");
+                                this.$emit("confirm", false);
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(
+                                        response.error.subcode
+                                    ),
+                                    type: "warning"
+                                });
+                            }
+                        });
+                      })
+                      .catch(() => {
+                          this.$message({
+                              type: "info",
+                              message: "已取消"
+                          });
+                      });
                 } else {
                     return false;
                 }
@@ -461,7 +484,7 @@ export default {
         // 镜像二级对话框实现
         changeimageSource() {
             this.imageName = true;
-            this.imageCount = 1;
+            this.imageNameCount = 1;
             this.imageNameOption = []
             this.ruleForm.imageItem = "";
             this.getImageNameList();
@@ -469,7 +492,7 @@ export default {
         getImageNameList(searchKey) {
             if (this.ruleForm.imageSource === "my") {
                 getMyImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -493,7 +516,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "pre") {
                 getPreImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -509,7 +532,7 @@ export default {
             }
             if (this.ruleForm.imageSource === "common") {
                 getPublicImage({
-                    pageIndex: this.imageCount,
+                    pageIndex: this.imageNameCount,
                     pageSize: 10,
                     imageStatus: 3,
                     imageType: 1,
@@ -525,7 +548,7 @@ export default {
             }
         },
         loadImageName() {
-            this.imageCount = this.imageCount + 1;
+            this.imageNameCount = this.imageNameCount + 1;
             if (this.imageNameOption.length < this.imageNameTotal) {
                 this.getImageNameList(this.imageTemp)
             }
@@ -633,6 +656,17 @@ export default {
             this.algorithmNameCount = 1
             this.getAlgorithmNameList(this.algorithmNameTemp);
         },
+        getAlgorithmItem() {
+            this.algorithmNameTemp = ''
+            this.algorithmNameCount = 1
+            getMyAlgorithmList({
+                pageIndex: this.algorithmNameCount,
+                pageSize: 10,
+            }).then(response => {
+                this.algorithmNameOption = response.data.algorithms;
+                this.algorithmNameTotal = response.data.totalSize
+            })
+        },
         // 远程请求镜像名称
         remoteImage(searchKey) {
             if (searchKey === '') {
@@ -644,6 +678,57 @@ export default {
             this.imageNameCount = 1
             this.getImageNameList(this.imageTemp);
         },
+        getImageItem() {
+            this.imageTemp = ''
+            this.imageNameCount = 1
+            if (this.ruleForm.imageSource === "my") {
+                getMyImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        const data = response.data.images;
+                        const tableData = [];
+                        this.imageNameTotal = response.data.totalSize;
+                        data.forEach(item => {
+                            tableData.push({
+                                ...item.image,
+                                isShared: item.isShared
+                            });
+                        });
+                        this.imageNameOption = tableData
+                    }
+                });
+            }
+            if (this.ruleForm.imageSource === "pre") {
+                getPreImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        this.imageNameOption = response.data.images
+                        this.imageNameTotal = response.data.totalSize;
+                    }
+                });
+            }
+            if (this.ruleForm.imageSource === "common") {
+                getPublicImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        this.imageNameOption = response.data.images
+                        this.imageNameTotal = response.data.totalSize;
+                    }
+                });
+            }
+        },
         // 远程请求数据集名称
         remoteDataSet(searchKey) {
             if (searchKey === '') {
@@ -654,6 +739,49 @@ export default {
             this.dataSetNameOption = []
             this.dataSetNameCount = 1
             this.getDataSetNameList(this.dataSetTemp);
+        },
+        getDataSetItem() {
+            this.dataSetTemp = ''
+            this.dataSetNameCount = 1
+            if (this.ruleForm.dataSetSource === "my") {
+                getMyDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets === null) {
+                            response.data.datasets = []
+                        } else {
+                            this.dataSetNameOption = response.data.datasets;
+                            this.dataSetNameTotal = response.data.totalSize;
+                        }
+                });
+            }
+            if (this.ruleForm.dataSetSource === "pre") {
+                getPresetDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets !== null) {
+                            this.dataSetNameOption = response.data.datasets
+                            this.dataSetNameTotal = response.data.totalSize;
+                        } else {
+                            response.data.datasets = [];
+                        }
+                });
+            }
+            if (this.ruleForm.dataSetSource === "common") {
+                getPublicDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets !== null) {
+                            this.dataSetNameOption = response.data.datasets
+                            this.dataSetNameTotal = response.data.totalSize;
+                        } else {
+                            response.data.datasets = [];
+                        }
+                });
+            }
         }
     }
 };

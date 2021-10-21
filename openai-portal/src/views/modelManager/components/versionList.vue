@@ -9,10 +9,8 @@
             :close-on-click-modal="false"
         >
             <el-table :data="tableData" style="width: 100%" height="500">
-                <el-table-column prop="version" label="模型版本" align="center">
-                </el-table-column>
-                <el-table-column prop="descript" label="模型描述" align="center">
-                </el-table-column>
+                <el-table-column prop="version" label="模型版本" align="center" />
+                <el-table-column prop="descript" label="模型描述" align="center" />
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ fileStatus(scope.row.fileStatus) }}</span>
@@ -27,15 +25,15 @@
                     <template slot-scope="scope">
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">预览
                         </el-button>
-                        <el-button v-if="!scope.row.isShared&&Type===1" type="text" @click="open(scope.row)">分享
+                        <el-button v-if="!scope.row.isShared&&modelType===1" type="text" @click="open(scope.row)">分享
                         </el-button>
                         <el-button
-                            v-if="scope.row.isShared&&scope.row.isShared&&Type===1"
+                            v-if="scope.row.isShared&&scope.row.isShared&&modelType===1"
                             type="text"
                             @click="open(scope.row)"
                         >取消分享</el-button>
-                        <el-button v-if="Type===1" type="text" @click="open2(scope.row)">删除</el-button>
-                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="Type==1">删除</el-button> -->
+                        <el-button v-if="modelType===1" type="text" @click="open2(scope.row)">删除</el-button>
+                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="modelType==1">删除</el-button> -->
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载</el-button>
                     </template>
@@ -50,8 +48,7 @@
                     :total="total"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                >
-                </el-pagination>
+                />
             </div>
             <div slot="footer">
                 <!-- <el-button @click="cancel">取 消</el-button>
@@ -59,7 +56,7 @@
             </div>
         </el-dialog>
         <!-- 预览对话框 -->
-        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog"></previewDialog>
+        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog" />
     </div>
 </template>
 
@@ -69,16 +66,17 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "versionList",
+        name: "VersionList",
         components: {
             previewDialog
         },
         props: {
             modelId: {
-                type: String
+                type: String,
+                default: ""
             },
-            Type: { type: Number },
-            modelName: { type: String }
+            modelType: { type: Number, default: undefined },
+            modelName: { type: String, default: "" }
         },
         data() {
             return {
@@ -198,7 +196,7 @@
                 this.getList()
             },
             getList() {
-                if (this.Type !== 2) {
+                if (this.modelType !== 2) {
                     getNoPublicList({ pageIndex: this.pageIndex, pageSize: this.pageSize, modelId: this.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {

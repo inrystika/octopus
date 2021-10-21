@@ -1,13 +1,13 @@
 <template>
   <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="我的模型" name="menu1">
-      <Model v-if="tabRefresh.menu1" :Type="1"></Model>
+      <Model v-if="tabRefresh.menu1" :model-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="公共模型" name="menu2">
-      <Model v-if="tabRefresh.menu2" :Type="2"></Model>
+      <Model v-if="tabRefresh.menu2" :model-tab-type="2" />
     </el-tab-pane>
     <el-tab-pane label="预置模型" name="menu3">
-      <Model v-if="tabRefresh.menu3" :Type="3"></Model>
+      <Model v-if="tabRefresh.menu3" :model-tab-type="3" />
     </el-tab-pane>
   </el-tabs>
 </template>

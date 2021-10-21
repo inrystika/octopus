@@ -2,11 +2,10 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'算法名称/描述 搜索'"
+        :search-form="searchForm"
+        :blur-name="'算法名称/描述 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-table
         :data="algorithmList"
@@ -55,26 +54,23 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <algorithmCopy
       v-if="algorithmCopyVisible"
       :row="row"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </algorithmCopy>
+    />
     <versionList
       v-if="versionListVisible"
-      :Type="this.typeChange"
+      :algorithm-tab-type="typeChange"
       :data="row"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -86,14 +82,14 @@ import { getPresetAlgorithmList } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "presetList",
+  name: "PresetList",
   components: {
     algorithmCopy,
     versionList,
     searchForm
   },
   props: {
-    Type: { type: Number }
+    algorithmTabType: { type: Number, default: undefined }
   },
   data() {
     return {
@@ -139,7 +135,7 @@ export default {
       this.getAlgorithmList(this.searchData)
     },
     getAlgorithmList(param) {
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       getPresetAlgorithmList(param).then(response => {
         if (response.success) {
           this.algorithmList = response.data.algorithms;
@@ -154,7 +150,7 @@ export default {
     },
     getAlgorithmVersionList(row) {
       this.versionListVisible = true;
-      this.typeChange = this.Type
+      this.typeChange = this.algorithmTabType
       this.row = row
     },
     close(val) {

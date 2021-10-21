@@ -701,7 +701,6 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	if err != nil {
 		return nil, err
 	}
-	trainJobDetail.InitInfo = info.Job.ExitDiagnostics
 	for index, config := range trainJobDetail.Config {
 		replyStates := make([]*api.ReplicaState, 0)
 		for ri := 0; ri < int(config.TaskNumber); ri++ {
@@ -1023,4 +1022,34 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 	}
 
 	return common.PipeLineCallbackOK
+}
+
+func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
+
+	query := &model.JobEventQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, err
+	}
+
+	events, totalSize, err := s.data.TrainJobDao.GetTrainJobEvents(query)
+	if err != nil {
+		return nil, err
+	}
+
+	jobEvents := make([]*api.JobEvent, 0)
+
+	for _, value := range events {
+		event := &api.JobEvent{}
+		event.Timestamp = value.Timestamp
+		event.Name = value.Name
+		event.Reason = value.Reason
+		event.Message = value.Message
+		jobEvents = append(jobEvents, event)
+	}
+
+	return &api.JobEventListReply{
+		TotalSize: totalSize,
+		JobEvents: jobEvents,
+	}, nil
 }

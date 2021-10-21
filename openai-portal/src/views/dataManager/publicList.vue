@@ -2,11 +2,10 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'数据集名称 搜索'"
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <div class="index">
       <el-table
@@ -59,19 +58,17 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
     <versionList
       v-if="versionListVisible"
-      :data="this.row"
-      :typeChange="this.typeChange"
+      :data="row"
+      :type-change="typeChange"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    >
-    </versionList>
+    />
   </div>
 </template>
 
@@ -82,13 +79,16 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "publicList",
+    name: "PublicList",
     components: {
       versionList,
       searchForm
     },
     props: {
-      Type: { type: Number }
+      dataType: {
+        type: Number,
+        default: undefined
+      }
     },
 
     data() {
@@ -127,7 +127,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataType
         getPublicDatasetList(param).then(response => {
           if (response.success) {
             this.datasetList = response.data.datasets;

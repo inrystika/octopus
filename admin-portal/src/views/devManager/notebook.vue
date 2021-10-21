@@ -2,7 +2,7 @@
   <div>
     <el-tabs v-model="activeName" class="Wrapper">
       <el-tab-pane label="NoteBook列表" name="notebookList">
-        <notebookList></notebookList>
+        <notebookList />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -12,11 +12,11 @@
 import notebookList from "./components/notebook/notebookList.vue";
 export default {
   components: {
-    notebookList,  
+    notebookList
   },
   data() {
     return {
-      activeName: "notebookList",
+      activeName: "notebookList"
     }
   },
   methods: {

@@ -9,22 +9,21 @@
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
-          <el-input v-model="ruleForm.algorithmName" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.algorithmName" :disabled="true" />
         </el-form-item>
         <el-form-item label="算法描述" :label-width="formLabelWidth" prop="desc">
-          <el-input v-model="ruleForm.algorithmDescript" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.algorithmDescript" :disabled="true" />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
-          <el-input v-model="ruleForm.modelName" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.modelName" :disabled="true" />
         </el-form-item>
         <el-form-item label="上传代码包" :label-width="formLabelWidth" prop="path">
           <upload
             v-model="ruleForm.path"
-            :uploadData="uploadData"
+            :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
-          >
-          </upload>
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -34,7 +33,7 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadAlgorithm",
+  name: "ReuploadAlgorithm",
   components: {
     upload
   },

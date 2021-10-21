@@ -16,19 +16,17 @@
                 class="demo-ruleForm"
             >
                 <el-form-item label="任务名称" prop="name">
-                    <el-input v-model="ruleForm.name"></el-input>
+                    <el-input v-model="ruleForm.name" />
                 </el-form-item>
                 <el-form-item label="运行命令" prop="command">
-                    <el-input v-model="ruleForm.command" type="textarea"></el-input>
+                    <el-input v-model="ruleForm.command" type="textarea" />
                 </el-form-item>
                 <el-form-item label="运行参数">
                     <div v-for="(item, index) in ruleForm.parameters" :key="index">
                         <el-form-item style="margin-bottom:10px">
-                            <el-input v-model="item.key" placeholder="key" style="width: 20%;">
-                            </el-input>
+                            <el-input v-model="item.key" placeholder="key" style="width: 20%;" />
                             <span style="margin:0 10px 0 10px">=</span>
-                            <el-input v-model="item.value" placeholder="value" style="width: 20%;">
-                            </el-input>
+                            <el-input v-model="item.value" placeholder="value" style="width: 20%;" />
                             <i class="el-icon-delete" @click="deleteItem(item, index)"></i>
                         </el-form-item>
                     </div>
@@ -42,26 +40,22 @@
                             :key="item.id"
                             :label="item.label"
                             :value="item.value"
-                        >
-                        </el-option>
+                        />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="副本个数" prop="taskNumber">
-                    <el-input v-model.number="ruleForm.taskNumber">
-                    </el-input>
+                    <el-input v-model.number="ruleForm.taskNumber" />
                 </el-form-item>
                 <el-form-item label="最小副本成功数" prop="minSucceededTaskCount">
-                    <el-input v-model.number="ruleForm.minSucceededTaskCount">
-                    </el-input>
+                    <el-input v-model.number="ruleForm.minSucceededTaskCount" />
                 </el-form-item>
                 <el-form-item label="最小副本失败数" prop="minFailedTaskCount">
-                    <el-input v-model.number="ruleForm.minFailedTaskCount">
-                    </el-input>
+                    <el-input v-model.number="ruleForm.minFailedTaskCount" />
                 </el-form-item>
                 <el-form-item label="是否是主任务" prop="isMainRole">
                     <el-select v-model="ruleForm.isMainRole" placeholder="是否是主任务">
-                        <el-option label="是" :value="true"></el-option>
-                        <el-option label="否" :value="false"></el-option>
+                        <el-option label="是" :value="true" />
+                        <el-option label="否" :value="false" />
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -77,7 +71,7 @@
     import { getResourceList } from '@/api/trainingManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "distributedTask",
+        name: "DistributedTask",
         props: {
             row: {
                 type: Object,

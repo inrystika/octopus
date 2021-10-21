@@ -2,11 +2,10 @@
   <div>
     <div class="searchForm">
       <searchForm
-        :searchForm="searchForm"
-        :blurName="'数据集名称 搜索'"
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
-      >
-      </searchForm>
+      />
     </div>
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
@@ -65,28 +64,25 @@
         :total="total"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-      >
-      </el-pagination>
+      />
     </div>
 
-    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close">
-    </myDatasetCreation>
+    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close" />
     <newVersionCreation
       v-if="newVersionCreationVisible"
-      :row="this.data"
+      :row="data"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    ></newVersionCreation>
+    />
     <versionList
       v-if="versionListVisible"
-      :data="this.data"
-      :typeChange="this.typeChange"
+      :data="data"
+      :type-change="typeChange"
       @cancel="cancel"
       @confirm="confirm"
       @close="close"
-    >
-    </versionList>
+    />
 
   </div>
 </template>
@@ -100,7 +96,7 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "myList",
+    name: "MyList",
     components: {
       newVersionCreation,
       versionList,
@@ -108,7 +104,10 @@
       searchForm
     },
     props: {
-      Type: { type: Number },
+        dataType: {
+        type: Number,
+        default: undefined
+      },
       dataset: {
         type: Boolean,
         default: false
@@ -156,7 +155,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataType
           getMyDatasetList(param).then(response => {
             if (response.success) {
               this.datasetList = response.data.datasets;

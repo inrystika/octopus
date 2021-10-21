@@ -23,7 +23,7 @@
             <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column v-if="Type === 1 ? false :true" label="提供者">
+        <el-table-column v-if="algorithmTabType === 1 ? false :true" label="提供者">
           <template slot-scope="scope">
             <span>{{ scope.row.userName }}</span>
           </template>
@@ -37,7 +37,7 @@
           <template slot-scope="scope">
             <!-- <el-button type="text">预览</el-button> -->
             <el-button
-              v-show="Type === 1 ? true :false"
+              v-show="algorithmTabType === 1 ? true :false"
               v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false"
               type="text"
               @click="reupload(scope.row)"
@@ -60,7 +60,7 @@
               下载
             </el-button>
             <el-button
-              v-if="Type === 1 ? true :false"
+              v-if="algorithmTabType === 1 ? true :false"
               slot="reference"
               style="padding-right:10px"
               type="text"
@@ -70,7 +70,7 @@
               {{ scope.row.isShared?"取消分享":"分享" }}
             </el-button>
             <el-button
-              v-if="Type === 1 ? true :false"
+              v-if="algorithmTabType === 1 ? true :false"
               slot="reference"
               type="text"
               @click="confirmDelete(scope.row)"
@@ -89,20 +89,18 @@
           :total="total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-        >
-        </el-pagination>
+        />
     </div>
     <div slot="footer">
     </div>
     </el-dialog>
     <reuploadAlgorithm
       v-if="myAlgorithmVisible"
-      :data="this.data"
+      :data="data"
       @close="close"
       @cancel="cancel"
       @confirm="confirm"
-    >
-    </reuploadAlgorithm>
+    />
   </div>
 </template>
 
@@ -112,12 +110,12 @@
   import reuploadAlgorithm from './reuploadAlgorithm.vue'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "versionList",
+    name: "VersionList",
     components: {
       reuploadAlgorithm
     },
     props: {
-      Type: { type: Number },
+      algorithmTabType: { type: Number, default: undefined },
       data: {
         type: Object,
         default: () => {}
@@ -156,7 +154,7 @@
         this.getVersionList()
       },
       getVersionList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.algorithmTabType
         if (!param) {
           param = { pageIndex: this.pageIndex, pageSize: this.pageSize }
         }
@@ -383,7 +381,7 @@
         const data = row
         data.trainingTask = true
         // data.open = true
-        switch (this.Type) {
+        switch (this.algorithmTabType) {
           case 1:
             data.type = '我的算法'
             break;
