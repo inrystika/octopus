@@ -51,6 +51,7 @@
       ])
     },
     created() {
+    
       this.timer = setInterval(() => {
         if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
@@ -82,13 +83,13 @@
         return getErrorMsg(code)
       },
       beforeUpload() {
-        sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+        // sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },
       upload(file, fileList) {
         // if (this.uploadData.type = "镜像模块") {
         if (file) {
           this.fileList = [file]
-          sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+          // sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
         }
         // }
       },
@@ -129,6 +130,7 @@
         if (this.uploadData.type === "modelManager") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           if (fileForm === 'zip') {
             uploadModel({ modelId: this.uploadData.data.modelId, version: this.uploadData.data.version, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               if (response.success) {
@@ -170,6 +172,7 @@
         } else if (this.uploadData.type === "preDatasetCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -179,6 +182,7 @@
           if (fileForm === 'zip') {
             uploadPreDataset(param).then(response => {
               if (response.success) {
+               
                 // let uploadUrl = response.data.uploadUrl.replace("octopus-dev-minio:9000","192.168.202.73")
                 store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
@@ -215,6 +219,7 @@
         } else if (this.uploadData.type === "newPreDatasetVersion") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             datasetId: this.uploadData.datasetId,
             fileName: this.fileList[0].name,
@@ -224,7 +229,7 @@
           if (fileForm === 'zip') {
             uploadNewVersion(param).then(response => {
               if (response.success) {
-                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
+                store.commit('user/SET_PROGRESSID', this.uploadData.datasetId + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
                   file: this.fileList[0].raw,
@@ -258,6 +263,8 @@
           }
         } else if (this.uploadData.type === 'newPreAlgorithm') {
           this.loadingShow = true
+          this.showUpload = false
+          this.show = false
           const param = {
             algorithmId: this.uploadData.algorithmId,
             FileName: this.fileList[0].name,
@@ -301,6 +308,8 @@
           }
         } else if (this.uploadData.type === 'newPreAlgorithmVersion') {
           this.loadingShow = true
+          this.showUpload = false
+          this.show = false
           const param = {
             algorithmId: this.uploadData.algorithmId,
             FileName: this.fileList[0].name,
@@ -470,7 +479,7 @@
           if (store.state.user.progressId == this.uploadData.data.id) {
             return true
           }
-          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
+          if (store.state.user.progressId == this.uploadData.datasetId + this.uploadData.version) {
             return true
           }
           if (store.state.user.progressId == this.uploadData.algorithmId + this.uploadData.version) {
