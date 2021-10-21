@@ -38,7 +38,7 @@ export default {
     upload
   },
   props: {
-  data: {
+  reuploadData: {
     type: Object,
     default: () => {}
   }
@@ -64,12 +64,11 @@ export default {
     };
   },
   created() {
-    const { algorithmName, algorithmDescript, modelName } = this.data
+    const { algorithmName, algorithmDescript, modelName } = this.reuploadData
     this.ruleForm = { algorithmName, algorithmDescript, modelName }
-    this.uploadData.algorithmId = this.data.algorithmId
-    this.uploadData.version = this.data.algorithmVersion
+    this.uploadData.algorithmId = this.reuploadData.algorithmId
+    this.uploadData.version = this.reuploadData.algorithmVersion
     this.uploadData.type = "newPreAlgorithm"
-    console.log(this.data,"OPPO")
   },
   methods: {
     handleDialogClose() {

@@ -60,7 +60,7 @@
       <div slot="footer">
       </div>
     </el-dialog>
-    <reuploadAlgorithm v-if="myAlgorithmVisible" :data="row" @close="close" @cancel="cancel" @confirm="confirm" />
+    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel" @confirm="confirm" />
   </div>
 </template>
 
@@ -92,7 +92,8 @@
         pageIndex: 1,
         pageSize: 20,
         total: undefined,
-        versionList: []
+        versionList: [],
+        reuploadData: {}
       }
     },
     created() {
@@ -110,6 +111,7 @@
       reupload(row) {
         store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
         this.myAlgorithmVisible = true
+        this.reuploadData = row
       },
       handleSizeChange(val) {
         this.pageSize = val

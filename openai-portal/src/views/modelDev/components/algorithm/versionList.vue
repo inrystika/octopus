@@ -68,7 +68,7 @@
       <div slot="footer">
       </div>
     </el-dialog>
-    <reuploadAlgorithm v-if="myAlgorithmVisible" :data="data" @close="close" @cancel="cancel" @confirm="confirm" />
+    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel" @confirm="confirm" />
   </div>
 </template>
 
@@ -102,7 +102,8 @@
         typeChange: undefined,
         versionList: [],
         shareTitle: "是否分享至本群组，分享后群内所有人员可见",
-        timer:null
+        timer: null,
+        reuploadData: {}
       }
     },
     created() {
@@ -120,6 +121,7 @@
       reupload(row) {
         store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
         this.myAlgorithmVisible = true
+        this.reuploadData = row
       },
       handleSizeChange(val) {
         this.pageSize = val

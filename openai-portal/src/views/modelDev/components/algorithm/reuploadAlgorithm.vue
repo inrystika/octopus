@@ -38,7 +38,7 @@ export default {
     upload
   },
   props: {
-    data: {
+    reuploadData: {
       type: Object,
       default: () => { }
     }
@@ -67,10 +67,10 @@ export default {
     };
   },
   created() {
-    const { algorithmName, algorithmDescript, modelName } = this.data
+    const { algorithmName, algorithmDescript, modelName } = this.reuploadData
     this.ruleForm = { algorithmName, algorithmDescript, modelName }
-    this.uploadData.AlgorithmId = this.data.algorithmId
-    this.uploadData.Version = this.data.algorithmVersion
+    this.uploadData.AlgorithmId = this.reuploadData.algorithmId
+    this.uploadData.Version = this.reuploadData.algorithmVersion
     this.uploadData.type = "myAlgorithmCreation"
   },
   methods: {
