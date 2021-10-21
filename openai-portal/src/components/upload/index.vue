@@ -82,7 +82,7 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      beforeUpload() {
+      beforeUpload() {      
         sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },
       upload(file, fileList) {
@@ -149,11 +149,11 @@
           if (fileForm === 'zip') {
             uploadMyDataset(param).then(response => {
               if (response.success) {
-                store.commit('user/SET_PROGRESSID', this.uploadData.id+this.uploadData.version)
+                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
                   file: this.fileList[0].raw,
-                  id: this.uploadData.id+this.uploadData.version,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -236,12 +236,12 @@
           }
           if (fileForm === 'zip') {
             uploadNewVersion(param).then(response => {
-              store.commit('user/SET_PROGRESSID', this.uploadData.id+this.uploadData.version)
+              store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
               if (response.success) {
                 const param = {
                   uploadUrl: response.data.uploadUrl,
                   file: this.fileList[0].raw,
-                  id: this.uploadData.id+this.uploadData.version,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -281,7 +281,7 @@
                   type: 'success'
                 });
                 sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                  this.$emit('confirm', false)
+                this.$emit('confirm', false)
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
@@ -301,7 +301,7 @@
           }
           myDatasetFinishUpload(payload).then(response => {
             if (response.success) {
-              store.commit('user/SET_PROGRESSID', this.uploadData.id)
+              // store.commit('user/SET_PROGRESSID', this.uploadData.id)
               this.$message.success("上传数据集成功");
               sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
                 this.$emit('confirm', false)
@@ -321,6 +321,7 @@
           myAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传我的算法成功");
+              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
@@ -368,7 +369,7 @@
           if (store.state.user.progressId == this.uploadData.data.id) {
             return true
           }
-          if (store.state.user.progressId == this.uploadData.id+this.uploadData.version) {
+          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
             return true
           }
           if (store.state.user.progressId == this.uploadData.AlgorithmId + this.uploadData.Version) {
