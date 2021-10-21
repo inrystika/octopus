@@ -1,28 +1,9 @@
 <template>
     <div>
-        <searchForm 
-          :searchForm=searchForm 
-          class="searchForm" 
-          :blurName="'镜像名称/标签/描述 搜索'"
-          @searchData="getSearchData" 
-        />
+        <searchForm :searchForm=searchForm class="searchForm" :blurName="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         <el-button v-if="!flag" type="primary" @click="create" class="create">创建</el-button>
-        <el-table 
-            :data="tableData" 
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" 
-            :cell-style="{'text-align':'left'}"
-        >
-            <el-table-column v-if="flag" label="群组名">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column v-if="flag" label="提供者" align="center">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.username }}</span>
-                </template>
-            </el-table-column>
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -33,6 +14,21 @@
                     <span>{{ scope.row.imageVersion }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="镜像描述" align="center" :show-overflow-tooltip="true">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.imageDesc }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="flag" label="群组名">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="flag" label="提供者" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.username }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="镜像地址" align="center" :show-overflow-tooltip="true">
                 <template slot-scope="scope">
                     <span>{{ scope.row.sourceType===2?scope.row.imageAddr:'' }}</span>
@@ -40,17 +36,12 @@
             </el-table-column>
             <el-table-column label="镜像类型" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.imageType===1?'notebook类型':'训练类型' }}</span>
+                    <span>{{ scope.row.imageType===1?'NoteBook类型':'训练类型' }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="上传类型" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="镜像描述" align="center" :show-overflow-tooltip="true">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -73,15 +64,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination 
-              :current-page="searchData.pageIndex" 
-              :page-sizes="[10, 20, 50, 80]" 
-              :page-size="searchData.pageSize"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper" 
-              @size-change="handleSizeChange" 
-              @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 镜像对话框 -->
         <dialogForm v-if="FormVisible" :flag="Logo" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
@@ -109,6 +94,10 @@
             if (this.Type !== 1) {
                 this.flag = false
             }
+            else {
+                this.searchForm.push({ type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
+                    { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' })
+            }
 
         },
         data() {
@@ -121,19 +110,19 @@
                 flag: true,
                 Logo: true,
                 searchForm: [
-                {
-                    type: 'Select', label: '状态', prop: 'imageStatus', placeholder: '请选择状态',
-                    options: [{ label: '未制作', value: 1 }, { label: '制作中', value: 2 }, { label: '制作完成', value: 3 }, { label: '制作失败', value: 4 }]
-                },
-                { type: 'Input', label: '镜像名', prop: 'imageNameLike', placeholder: '请输入镜像名' },          
-                {
-                    type: 'Select', label: '镜像类型', prop: 'imageType', placeholder: '请选择镜像类型',
-                    options: [{ label: 'notebook类型', value: 1 }, { label: '训练类型', value: 2 }]
-                },
-                {
-                    type: 'Select', label: '来源类型', prop: 'sourceType', placeholder: '请选择来源类型',
-                    options: [{ label: '上传', value: 1 }, { label: '远程', value: 2 }]
-                }],
+                    {
+                        type: 'Select', label: '状态', prop: 'imageStatus', placeholder: '请选择状态',
+                        options: [{ label: '未制作', value: 1 }, { label: '制作中', value: 2 }, { label: '制作完成', value: 3 }, { label: '制作失败', value: 4 }]
+                    },
+                    { type: 'Input', label: '镜像名', prop: 'imageNameLike', placeholder: '请输入镜像名' },
+                    {
+                        type: 'Select', label: '镜像类型', prop: 'imageType', placeholder: '请选择镜像类型',
+                        options: [{ label: 'NoteBook类型', value: 1 }, { label: '训练类型', value: 2 }]
+                    },
+                    {
+                        type: 'Select', label: '来源类型', prop: 'sourceType', placeholder: '请选择来源类型',
+                        options: [{ label: '上传', value: 1 }, { label: '远程', value: 2 }]
+                    }],
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10,
@@ -230,9 +219,9 @@
                 this.Logo = true
             },
             getSearchData(val) {
-                this.searchData = { pageIndex:1, pageSize: this.searchData.pageSize }
+                this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
-                this.getImage(this.searchData )
+                this.getImage(this.searchData)
 
             },
             //时间戳转换日期

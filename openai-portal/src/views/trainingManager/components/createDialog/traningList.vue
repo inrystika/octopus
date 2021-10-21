@@ -1,9 +1,13 @@
 <template>
     <div>
         <div class="index">
-            <el-button type="primary" @click="add" class="add">添加</el-button>
-            <el-table :data="tableData" style="width: 100%" :header-cell-style="{'text-align':'left','color':'black'}"
-                :cell-style="{'text-align':'left'}">
+            <el-button type="primary" class="add" @click="add">添加</el-button>
+            <el-table
+                :data="tableData"
+                style="width: 100%"
+                :header-cell-style="{'text-align':'left','color':'black'}"
+                :cell-style="{'text-align':'left'}"
+            >
                 <el-table-column prop="name" label="任务名称" align="center">
                 </el-table-column>
                 <el-table-column label="是否是主任务" align="center">
@@ -19,12 +23,12 @@
                 </el-table-column>
                 <el-table-column label="资源规格" align="center">
                     <template slot-scope="scope">
-                        <span>{{showResource(scope.row)}}</span>
+                        <span>{{ showResource(scope.row) }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="运行命令" align="center">
                     <template slot-scope="scope">
-                        <span>{{command(scope.row)}}</span>
+                        <span>{{ command(scope.row) }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作">
@@ -37,8 +41,15 @@
             </el-table>
         </div>
         <!-- 分布式任务对话框 -->
-        <distributedTask v-if="FormVisible" @cancel="cancel" @confirm="confirm" @close="close" :row="row" :flag="flag"
-            @subTasks="getsubTasksList">
+        <distributedTask
+            v-if="FormVisible"
+            :row="row"
+            :flag="flag"
+            @cancel="cancel"
+            @confirm="confirm"
+            @close="close"
+            @subTasks="getsubTasksList"
+        >
         </distributedTask>
     </div>
 </template>
@@ -71,7 +82,6 @@
                 resourceOptions: []
 
             }
-
         },
         watch: {
             tableData() {
@@ -81,8 +91,6 @@
         created() {
             this.tableData = this.Table
             this.getResourceList()
-
-
         },
         methods: {
             // 错误码
@@ -90,29 +98,24 @@
                 return getErrorMsg(code)
             },
             add() {
-                this.FormVisible = true,
-                    this.flag = true,
-                    this.row = { parameters: [] }
+                this.FormVisible = true
+                this.flag = true
+                this.row = { parameters: [] }
             },
             handleEdit(row) {
                 this.FormVisible = true
                 this.row = row
                 this.flag = false
-
-
             },
             handleDelete(index, rows) { rows.splice(index, 1); },
             cancel(val) {
                 this.FormVisible = val
-
             },
             confirm(val) {
                 this.FormVisible = val
-
             },
             close(val) {
                 this.FormVisible = val
-
             },
             getsubTasksList(val) {
                 val.taskNumber = parseInt(val.taskNumber)
@@ -121,7 +124,6 @@
                 // flag为true新增
                 // flag为false编辑
                 if (this.flag) { this.tableData.push(val); }
-
             },
             showResource(row) {
                 let name = ''
@@ -132,7 +134,7 @@
                 })
                 return name
             },
-            // 获取资源规格      
+            // 获取资源规格
             getResourceList() {
                 getResourceList().then(response => {
                     if (response.success) {
@@ -141,9 +143,7 @@
                                 this.resourceOptions.push({ name: item.name + ' ' + item.price + '机时/h', id: item.id })
                             }
                         )
-
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
@@ -151,20 +151,19 @@
                     }
                 })
             },
-            command: function (data) {
+            command: function(data) {
                 let command = data.command
-                if (data.parameters != null && data.parameters.length != 0) {
+                if (data.parameters !== null && data.parameters.length !== 0) {
                     data.parameters.forEach(
                         item => {
-                            if (item.key != '' || item.value != '') {
+                            if (item.key !== '' || item.value !== '') {
                                 command += " " + '--' + item.key + '=' + item.value
                             }
-
                         }
                     )
                 }
                 return command
-            },
+            }
         }
     }
 </script>

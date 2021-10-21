@@ -1,63 +1,63 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  let conditions = []
-  params.pageSize?conditions.push(`pageSize=`+params.pageSize):null;
-  params.pageIndex?conditions.push(`pageIndex=`+params.pageIndex):null;
-  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
-  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
+  const conditions = []
+  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
+  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
+  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
+  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
   return conditions
 }
 
-export async function getUserHour(){
+export async function getUserHour() {
   const res = await request({
     url: "/v1/billingmanage/user",
-    method: "get",  
+    method: "get"
   })
   return res
 }
 
-export async function getGroupHour(){
+export async function getGroupHour() {
   const res = await request({
     url: "/v1/billingmanage/workspace",
-    method: "get",  
+    method: "get"
   })
   return res
 }
 
-export async function getUserConsumptionRecord(payload){
-  let conditions = judgeParam(payload)
+export async function getUserConsumptionRecord(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/billingmanage/user/payrecord?" + conditions.join("&"),
-    method: "get",  
+    method: "get"
   })
   return res
 }
 
-export async function getGroupConsumptionRecord(payload){
-  let conditions = judgeParam(payload)
+export async function getGroupConsumptionRecord(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/billingmanage/workspace/payrecord?" + conditions.join("&"),
-    method: "get",  
+    method: "get"
   })
   return res
 }
 
-export async function getUserRechargeRecord(payload){
-  let conditions = judgeParam(payload)
+export async function getUserRechargeRecord(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/billingmanage/user/rechargerecord?" + conditions.join("&"),
-    method: "get",  
+    method: "get"
   })
   return res
 }
 
-export async function getGroupRechargeRecord(payload){
-  let conditions = judgeParam(payload)
+export async function getGroupRechargeRecord(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/billingmanage/workspace/rechargerecord?" + conditions.join("&"),
-    method: "get",  
+    method: "get"
   })
   return res
 }

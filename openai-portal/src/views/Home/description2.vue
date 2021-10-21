@@ -77,8 +77,6 @@
     margin-left: 5%;
   }
 
-
-
   /* .copyRight {
     text-align: center;
     color: rgba(0, 0, 0, 0.65);

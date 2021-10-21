@@ -250,40 +250,6 @@ type ImageAccessDel struct {
 	UserId  string
 }
 
-func (i ImageAccessDel) Where(db *gorm.DB) *gorm.DB {
-	whereSql := "1 = 1"
-	params := make([]interface{}, 0)
-	hasCondition := false
-	if i.Id != "" {
-		whereSql += " AND id = ? "
-		params = append(params, i.Id)
-		hasCondition = true
-	}
-
-	if i.ImageId != "" {
-		whereSql += " AND image_id = ? "
-		params = append(params, i.ImageId)
-		hasCondition = true
-	}
-
-	if i.SpaceId != "" {
-		whereSql += " AND space_id = ? "
-		params = append(params, i.SpaceId)
-		hasCondition = true
-	}
-
-	if i.UserId != "" {
-		whereSql += " AND user_id = ? "
-		params = append(params, i.UserId)
-		hasCondition = true
-	}
-
-	if hasCondition {
-		return db.Where(whereSql, params...)
-	}
-	return db
-}
-
 type ImageAccessList struct {
 	SortBy        string
 	OrderBy       string

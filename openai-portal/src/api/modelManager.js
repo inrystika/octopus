@@ -20,12 +20,15 @@ export function getPublicModel(params) {
     params
   })
 }
-//查询公共模型版本列表
+// 查询公共模型版本列表
 export function getPublicList(params) {
   return request({
     url: `/v1/modelmanage/commmodel/${params.modelId}`,
     method: 'get',
-    params:{pageIndex:params.pageIndex,pageSize:params.pageSize}
+    params: {
+      pageIndex: params.pageIndex,
+      pageSize: params.pageSize
+    }
   })
 }
 // 查询非公共版本列表
@@ -33,24 +36,27 @@ export function getNoPublicList(params) {
   return request({
     url: `/v1/modelmanage/model/${params.modelId}`,
     method: 'get',
-    params:{pageIndex:params.pageIndex,pageSize:params.pageSize}
+    params: {
+      pageIndex: params.pageIndex,
+      pageSize: params.pageSize
+    }
   })
 }
-//分享模型
+// 分享模型
 export function shareModel(data) {
   return request({
     url: `/v1/modelmanage/model/${data.modelId}/version/${data.version}/share`,
     method: 'post'
   })
 }
-//取消分享
+// 取消分享
 export function cancelShareModel(data) {
   return request({
     url: `/v1/modelmanage/model/${data.modelId}/version/${data.version}/closeshare`,
-    method: 'post' 
+    method: 'post'
   })
 }
-//删除我的模型
+// 删除我的模型
 export function deleteMyModel(params) {
   return request({
     url: `/v1/modelmanage/mymodel/${params.modelId}`,

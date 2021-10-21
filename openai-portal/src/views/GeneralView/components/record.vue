@@ -1,79 +1,78 @@
 <template>
   <div>
-    <el-dialog 
-      :title="recordType === 1 ? '机时消费记录' : '机时充值记录'" 
-      width="70%" 
-      :visible.sync="createFormVisible" 
-      :before-close="handleDialogClose">
+    <el-dialog
+      :title="recordType === 1 ? '机时消费记录' : '机时充值记录'"
+      width="70%"
+      :visible.sync="createFormVisible"
+      :before-close="handleDialogClose"
+    >
       <el-popover style="float: right" placement="left-end" title="计时规则" width="500" trigger="hover">
         <div>
           <div style="padding-bottom:2%">
-            任务 <code>i</code> 机时 = 子任务 <code>1</code> 机时 + 子任务 <code>2</code> 机时 + …… + 子任务 <code>n</code> 机时;<br/>
+            任务 <code>i</code> 机时 = 子任务 <code>1</code> 机时 + 子任务 <code>2</code> 机时 + …… + 子任务 <code>n</code> 机时;<br>
           </div>
           <div style="padding-bottom:2%">
-            子任务 <code>i</code> 机时 = 副本 <code>1</code> 机时 + 副本 <code>2</code> 机时 + …… + 副本 <code>n</code> 机时;<br/>
+            子任务 <code>i</code> 机时 = 副本 <code>1</code> 机时 + 副本 <code>2</code> 机时 + …… + 副本 <code>n</code> 机时;<br>
           </div>
           <div>
             副本 <code>k</code> 机时 = 资源规格价格 * 运行时间;
           </div>
         </div>
-        <el-button slot="reference" type="text" v-if="recordType === 1 ? true : false">计时规则</el-button>
+        <el-button v-if="recordType === 1 ? true : false" slot="reference" type="text">计时规则</el-button>
       </el-popover>
       <el-table :data="recordList" :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
-        <div v-if="recordType === 1 ? true : false">      
+        <div v-if="recordType === 1 ? true : false">
           <el-table-column label="类型" align="center" prop="type">
             <template slot-scope="scope">
-              <span >{{ changeType(scope.row.bizType) }}</span>
+              <span>{{ changeType(scope.row.bizType) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="名称" align="center" prop="name">
             <template slot-scope="scope">
-              <span >{{ scope.row.Title }}</span>
+              <span>{{ scope.row.Title }}</span>
             </template>
           </el-table-column>
           <el-table-column label="消费机时(h)" align="center" prop="consumption">
             <template slot-scope="scope">
-              <span >{{ scope.row.amount }}</span>
+              <span>{{ scope.row.amount }}</span>
             </template>
           </el-table-column>
           <el-table-column label="开始时间" align="center" prop="startTime">
             <template slot-scope="scope">
-              <span >{{ parseTime(scope.row.startedAt) }}</span>
+              <span>{{ parseTime(scope.row.startedAt) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="结束时间" align="center" prop="endTime">
             <template slot-scope="scope">
-              <span >{{ parseTime(scope.row.endedAt) }}</span>
+              <span>{{ parseTime(scope.row.endedAt) }}</span>
             </template>
           </el-table-column>
         </div>
         <div v-if="recordType === 2 ? true : false">
           <el-table-column label="充值时间" align="center" prop="rechargeTime">
             <template slot-scope="scope">
-              <span >{{ parseTime(scope.row.updatedAt) }}</span>
+              <span>{{ parseTime(scope.row.updatedAt) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="充值机时(h)" align="center" prop="rechargeHour">
             <template slot-scope="scope">
-              <span >{{ scope.row.amount }}</span>
+              <span>{{ scope.row.amount }}</span>
             </template>
           </el-table-column>
         </div>
       </el-table>
       <div class="pagination">
         <el-pagination
+          :current-page="pageIndex"
+          :page-sizes="[10, 20, 50]"
+          :page-size="pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="pageIndex" 
-          :page-sizes="[10, 20, 50]" 
-          :page-size="pageSize"
-          layout="total, sizes, prev, pager, next, jumper" 
-          :total="total"
-        >
-        </el-pagination>
+        />
       </div>
-      <div slot="footer">
-      </div>
+      <div slot="footer" />
     </el-dialog>
   </div>
 </template>
@@ -83,9 +82,9 @@ import { parseTime } from '@/utils/index'
 import { getUserConsumptionRecord, getGroupConsumptionRecord, getUserRechargeRecord, getGroupRechargeRecord } from "@/api/generalView";
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "record",
+  name: "Record",
   props: {
-    groupName: { 
+    groupName: {
       type: String,
       default: " "
     },
@@ -95,12 +94,12 @@ export default {
     }
   },
   data() {
-    return{
+    return {
       createFormVisible: true,
       recordList: {},
       pageIndex: 1,
       pageSize: 20,
-      total: undefined,
+      total: undefined
     }
   },
   created() {
@@ -119,10 +118,10 @@ export default {
         case 1:
           return '训练'
         default:
-          return 'notebook' 
+          return 'noteBook'
       }
     },
-    handleSizeChange(val){
+    handleSizeChange(val) {
       this.pageSize = val
       this.getConsumptionRecord()
     },
@@ -130,14 +129,14 @@ export default {
       this.pageIndex = val
       this.getConsumptionRecord()
     },
-    getConsumptionRecord(){
+    getConsumptionRecord() {
       const param = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize
       }
       if (this.groupName === "default-workspace") {
         getUserConsumptionRecord(param).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.recordList = response.data.records
             this.total = response.data.totalSize
           } else {
@@ -149,7 +148,7 @@ export default {
         })
       } else {
         getGroupConsumptionRecord(param).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.recordList = response.data.records
             this.total = response.data.totalSize
           } else {
@@ -161,14 +160,14 @@ export default {
         })
       }
     },
-    getRechargeRecord(){
+    getRechargeRecord() {
       const param = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize
       }
       if (this.groupName === "default-workspace") {
         getUserRechargeRecord(param).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.recordList = response.data.records
             this.total = response.data.totalSize
           } else {
@@ -180,7 +179,7 @@ export default {
         })
       } else {
         getGroupRechargeRecord(param).then(response => {
-          if(response.success) {
+          if (response.success) {
             this.recordList = response.data.records
             this.total = response.data.totalSize
           } else {
@@ -195,7 +194,7 @@ export default {
     handleDialogClose() {
       this.$emit("close", false);
     },
-    //时间戳转换日期
+    // 时间戳转换日期
     parseTime(val) {
       return parseTime(val)
     }

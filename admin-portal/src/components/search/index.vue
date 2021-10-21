@@ -74,6 +74,10 @@
         text-align: center;
     }
 
+    .el-select {
+        width: 188px;
+    }
+
     .el-select>.el-input {
         max-width: 185px !important;
     }

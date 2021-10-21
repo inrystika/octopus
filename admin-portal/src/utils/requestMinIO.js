@@ -1,11 +1,15 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
-
+import store from '@/store'
 // create an axios instance
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
   // timeout: 5000 // request timeout
+  onUploadProgress: function(progress) {
+    // 处理上传进度事件
+    store.commit('user/SET_PROGRESS', parseInt(((progress.loaded / progress.total) * 100).toFixed(0)))
+  }
 })
 
 // request interceptor
@@ -23,6 +27,7 @@ service.interceptors.request.use(
     return config
   },
   error => {
+    store.commit('user/CLEAR_PROGRESS')
     // do something with request error
     console.log(error) // for debug
     return Promise.reject(error)
@@ -82,6 +87,7 @@ service.interceptors.response.use(
     // }
   },
   error => {
+    store.commit('user/CLEAR_PROGRESS')
     console.log('err' + error) // for debug
     Message({
       message: error.message,

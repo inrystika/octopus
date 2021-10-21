@@ -7,7 +7,7 @@
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
@@ -23,12 +23,12 @@
         <!-- <el-form-item :label-width="formLabelWidth">
           <el-button type="text" @click="nextStep('ruleForm')" v-show="!showUpload">下一步</el-button>
         </el-form-item> -->
-        <el-form-item label='数据集上传' :label-width="formLabelWidth" prop="path" >
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+        <el-form-item label="数据集上传" :label-width="formLabelWidth" prop="path">
+          <upload
             v-model="ruleForm.path"
+            :uploadData="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
           >
           </upload>
         </el-form-item>
@@ -42,7 +42,7 @@ import upload from '@/components/upload/index.vue'
 export default {
   name: "reuploadDataset",
   components: {
-    upload,
+    upload
   },
   props: {
     versionData: {
@@ -52,7 +52,7 @@ export default {
     data: {
       type: Object,
       default: () => { }
-    },
+    }
   },
   data() {
     return {
@@ -73,10 +73,10 @@ export default {
       formLabelWidth: "120px"
     }
   },
-  created(){
-    let {desc} = this.versionData
-    let {name,type} = this.data
-    this.ruleForm = {name,type,desc}
+  created() {
+    const { desc } = this.versionData
+    const { name, type } = this.data
+    this.ruleForm = { name, type, desc }
     this.uploadData.id = this.versionData.datasetId
     this.uploadData.type = "myDatasetCreation"
     this.uploadData.version = this.versionData.version
@@ -93,7 +93,7 @@ export default {
     },
     close(val) {
       this.$emit("close", false);
-    },
+    }
   }
 }
 </script>

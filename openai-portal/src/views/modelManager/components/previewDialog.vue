@@ -1,7 +1,11 @@
 <template>
     <div>
-        <el-dialog title="预览" :visible.sync="dialogTableVisible" :before-close="handleDialogClose"
-            :close-on-click-modal="false">
+        <el-dialog
+            title="预览"
+            :visible.sync="dialogTableVisible"
+            :before-close="handleDialogClose"
+            :close-on-click-modal="false"
+        >
             <el-table :data="tableData" height="300">
                 <el-table-column property="name" label="模型名称"></el-table-column>
                 <el-table-column property="contentType" label="模型类型"></el-table-column>
@@ -23,7 +27,7 @@
     export default {
         name: "previewDialog",
         props: {
-            row: { type: Object, }
+            row: { type: Object }
         },
         data() {
             return {
@@ -34,8 +38,8 @@
             }
         },
         created() {
-            this.data = this.row,
-                this.getPreList()
+            this.data = this.row
+            this.getPreList()
         },
         beforeDestroy() {
 
@@ -47,28 +51,23 @@
             },
             handleDialogClose() {
                 this.$emit('close', false)
-
             },
             getPreList() {
                 preview(this.row).then(response => {
                     if (response.success) {
                         this.tableData = response.data.modelInfoList
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: '目前暂无数据',
                             type: 'success'
                         });
                     }
-
-
                 })
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             }
-
 
         }
     }

@@ -2,17 +2,21 @@
     <div>
         <el-row>
             <el-col :span="12">
-                <div>任务名称:<span>{{data.name}}</span></div>
+                <div>任务名称:<span>{{ data.name }}</span></div>
             </el-col>
             <el-col :span="12">
-                <div>是否分布式:<span>{{data.isDistributed?'是':'否'}}</span></div>
+                <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
             </el-col>
         </el-row>
         <el-row>
-            <el-col :span="10" v-if="show">
-                <div>子任务名:<el-select v-model="value" placeholder="请选择" @change="selectLog" class="select">
-                        <el-option v-for="item in options" :key="item.value+item.label" :label="item.label"
-                            :value="item.value">
+            <el-col v-if="show" :span="10">
+                <div>子任务名:<el-select v-model="value" placeholder="请选择" class="select" @change="selectLog">
+                        <el-option
+                            v-for="item in options"
+                            :key="item.value+item.label"
+                            :label="item.label"
+                            :value="item.value"
+                        >
                         </el-option>
                     </el-select>
                 </div>
@@ -20,21 +24,29 @@
         </el-row>
         <div>
             <el-row>
-                <el-col :span="6" v-if="showLog">
-                    <div>任务日志:<a :href="href+'/log/user/trainjob/'+data.id+'/'+subName+'/index.log'" download="日志.text"
-                            class="download" target="_blank">下载</a></div>
+                <el-col v-if="showLog" :span="6">
+                    <div>
+                        任务日志:
+                        <a
+                            :href="href+'/log/user/trainjob/'+data.id+'/'+subName+'/index.log'"
+                            download="日志.text"
+                            class="download"
+                            target="_blank"
+                        >
+                            下载
+                        </a>
+                    </div>
                 </el-col>
             </el-row>
 
         </div>
         <div>
             <el-row>
-                <el-input type="textarea" :rows="20" v-model="textarea">
+                <el-input v-model="textarea" type="textarea" :rows="20">
                 </el-input>
             </el-row>
 
         </div>
-
 
     </div>
 </template>
@@ -48,18 +60,8 @@
             row: {
                 type: Object,
                 default: () => { }
-            },
-
-        },
-        computed: {
-            show: function () {
-                if (this.data.isDistributed === true) {
-                    return true
-                }
-                else {
-                    return false
-                }
             }
+
         },
         data() {
             return {
@@ -79,28 +81,33 @@
 
             }
         },
+        computed: {
+            show: function() {
+                if (this.data.isDistributed === true) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        },
         created() {
-            this.data =JSON.parse(JSON.stringify(this.row))
+            this.data = JSON.parse(JSON.stringify(this.row))
             this.href = window.location.protocol + '//' + window.location.host
             if (!this.data.isDistributed) {
                 // this.logName = this.data.config[0].name
                 this.subName = 'task0/0'
                 this.getState()
-            }
-            else {
+            } else {
                 for (let i = 0; i < this.data.config.length; i++) {
                     for (let j = 0; j < this.data.config[i].taskNumber; j++) {
                         this.options.push({ label: this.data.config[i].replicaStates[j].key, value: 'task' + i + "/" + j })
                     }
-
                 }
             }
-
-
         },
         destroyed() {
-            this.flag = false,
-                clearInterval(this.timer2);
+            this.flag = false
+            clearInterval(this.timer2);
             this.timer2 = null;
             clearTimeout(this.timer);
             this.timer = null;
@@ -113,22 +120,19 @@
             selectLog() {
                 this.subName = this.value
                 this.getState()
-
             },
             getLog(status) {
-                let data = { jobId: this.data.id, subName: this.subName }
+                const data = { jobId: this.data.id, subName: this.subName }
                 if (status === 'stopped' || status == 'succeeded') {
                     showLog(data).then(response => {
                         if (response) {
                             this.showLog = true
                             this.textarea = response.data
-                        }
-                        else {
+                        } else {
                             this.textarea = ''
                         }
                     })
-                }
-                else {
+                } else {
                     showLog(data).then(response => {
                         if (response) {
                             this.showLog = true
@@ -145,39 +149,30 @@
                             if (this.flag && this.status === 'running') {
                                 this.timer = setTimeout(this.getLog, 1000);
                                 this.timer2 = setInterval(this.getState, 1000);
-
                             }
-
-                        }
-                        else {
+                        } else {
                             clearInterval(this.timer2);
                             this.timer2 = null;
                             clearTimeout(this.timer);
                             this.timer = null;
                             this.textarea = ''
                         }
-
                     })
                 }
-
             },
             getState() {
                 getTraningDetail(this.data.id).then(response => {
                     if (response.success) {
                         this.status = response.data.trainJob.status
                         this.getLog(this.status)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             }
-
-
 
         }
     }

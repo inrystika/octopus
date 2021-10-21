@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-tabs v-model="activeName" class="Wrapper">
-      <el-tab-pane label="我的NoteBook" name="myNoteBook">
+      <el-tab-pane label="NoteBook" name="myNoteBook">
         <notebookList :notebook="notebook"></notebookList>
       </el-tab-pane>
     </el-tabs>
@@ -12,7 +12,7 @@
 import notebookList from "./components/notebook/notebookList.vue";
 export default {
   components: {
-    notebookList,
+    notebookList
   },
   data() {
     return {
@@ -35,6 +35,6 @@ export default {
     margin: 20px!important;
     background-color:#fff;
     padding: 20px;
-    min-height: 800px;
+    min-height: 900px;
   }
 </style>
