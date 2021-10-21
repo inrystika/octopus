@@ -869,7 +869,7 @@ func (s *trainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobT
 		return nil, err
 	}
 	newTrainJobTemplate.Id = newJobTemplateId
-	newTrainJobTemplate.Name = fmt.Sprintf("%s-%v", tpl.Name, time.Now().Unix())
+	newTrainJobTemplate.Name = fmt.Sprintf("copy-tpl-%v", time.Now().Unix())
 	newTrainJobTemplate.DeletedAt = 0
 	newTrainJobTemplate.CreatedAt = time.Time{}
 	newTrainJobTemplate.UpdatedAt = time.Time{}
