@@ -140,6 +140,7 @@
         } else if (this.uploadData.type === "myDatasetCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -184,6 +185,7 @@
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             algorithmId: this.uploadData.AlgorithmId,
             FileName: this.fileList[0].name,
@@ -228,6 +230,7 @@
         } else if (this.uploadData.type === "newDatasetVersionCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
