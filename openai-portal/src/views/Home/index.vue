@@ -38,6 +38,18 @@
                 formLabelWidth: '120px'
             }
         },
+        mounted() {
+            window.addEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            });
+
+        },
+        destroyed() {
+            window.removeEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            })
+
+        },
         methods: {
             close() { this.dialogFormVisible = false }
         }

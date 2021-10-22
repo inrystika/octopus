@@ -31,11 +31,11 @@
                     <span>{{ imageType(scope.row.imageType) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像状态" align="center">
+            <!-- <el-table-column label="镜像状态" align="center">
                 <template slot-scope="scope">
                     <span>{{ imageStatus(scope.row.imageStatus) }}</span>
                 </template>
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -46,15 +46,17 @@
                     <span>{{ scope.row.username }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="上传类型" align="center">
+            <el-table-column label="镜像来源" align="center">
                 <template slot-scope="scope">
                     <span>{{ sourceType(scope.row.sourceType) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="上传进度" align="center" v-if="flag">
+            <el-table-column label="状态" align="center" v-if="flag">
                 <template slot-scope="scope">
-                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-                        scope.row.progress+'%' }}</span>
+                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus) }}</span>
+                    <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+                    <el-progress :percentage="parseInt(scope.row.progress-1)"
+                        v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
                 </template>
             </el-table-column>
             <el-table-column v-if="flag" label="操作" align="center" :width="250">
@@ -131,7 +133,7 @@
                     pageIndex: 1,
                     pageSize: 10
                 },
-                timer:null
+                timer: null
             }
         },
         created() {
@@ -144,7 +146,16 @@
                 this.FormVisible = true
             }
         },
+        mounted() {
+            window.addEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            });
+
+        },
         destroyed() {
+            window.removeEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            })
             clearInterval(this.timer)
             this.timer = null
         },
@@ -161,7 +172,6 @@
                             if (response.data.images !== null) {
                                 this.total = response.data.totalSize
                                 const data = response.data.images
-
                                 this.tableData = []
                                 data.forEach(item => {
                                     this.tableData.push({ ...item.image, isShared: item.isShared })
@@ -231,7 +241,7 @@
             imageStatus(value) {
                 switch (value) {
                     case 1:
-                        return '未制作'
+                        return '未上传'
                     case 2:
                         return '制作中'
                     case 3:
