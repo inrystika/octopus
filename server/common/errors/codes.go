@@ -169,7 +169,8 @@ const (
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
 
 	/* 20001-21000 第三方平台管理错误*/
-	ErrorPlatformNameRepeat = 20001 // 平台名称重复
+	ErrorPlatformNameRepeat              = 20001 // 平台名称重复
+	ErrorPlatformStorageConfigNameRepeat = 20002 // 平台存储配置名称重复
 )
 
 type codeMsg struct {
@@ -344,5 +345,6 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
 
 	/* 20001-21000 第三方平台管理错误*/
-	ErrorPlatformNameRepeat: {codeType: AlreadyExists, msg: "platform existed"},
+	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},
+	ErrorPlatformStorageConfigNameRepeat: {codeType: AlreadyExists, msg: "platform storage config existed"},
 }

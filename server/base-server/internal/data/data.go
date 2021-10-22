@@ -221,5 +221,10 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&model.PlatformStorageConfig{})
+	if err != nil {
+		return nil, err
+	}
 	return db, err
 }

@@ -12,7 +12,7 @@ data:
   baseServerAddr: dns:///127.0.0.1:9001
   baseServerRequestTimeout: 30s
   redis:
-    addr: 192.168.202.73:31570
+    addr: 192.168.202.73:32493
     username:
     password: abcde
 service:

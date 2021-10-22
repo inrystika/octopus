@@ -93,6 +93,11 @@ func (s *platformService) CreatePlatform(ctx context.Context, req *api.CreatePla
 		return nil, errors.Errorf(nil, errors.ErrorPlatformNameRepeat)
 	}
 
+	_, err = s.data.Cluster.CreateNamespace(ctx, platform.Id)
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.data.PlatformDao.CreatePlatform(ctx, platform)
 	if err != nil {
 		return nil, err
@@ -113,4 +118,99 @@ func (s *platformService) UpdatePlatform(ctx context.Context, req *api.UpdatePla
 	}
 
 	return &api.UpdatePlatformReply{}, nil
+}
+
+func (s *platformService) ListPlatformConfigKey(ctx context.Context, req *api.ListPlatformConfigKeyRequest) (*api.ListPlatformConfigKeyReply, error) {
+	reply := &api.ListPlatformConfigKeyReply{}
+	for _, i := range s.conf.Service.Platform.ConfigKeys {
+		reply.ConfigKeys = append(reply.ConfigKeys, &api.ListPlatformConfigKeyReply_ConfigKey{
+			Key:     i.Key,
+			KeyDesc: i.KeyDesc,
+		})
+	}
+	return reply, nil
+}
+
+func (s *platformService) ListPlatformStorageConfig(ctx context.Context, req *api.ListPlatformStorageConfigRequest) (*api.ListPlatformStorageConfigReply, error) {
+	query := &model.PlatformStorageConfigQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	platformStorageConfigs, totalSize, err := s.listPlatformStorageConfig(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.ListPlatformStorageConfigReply{
+		TotalSize:              totalSize,
+		PlatformStorageConfigs: platformStorageConfigs,
+	}, nil
+}
+
+func (s *platformService) listPlatformStorageConfig(ctx context.Context, query *model.PlatformStorageConfigQuery) ([]*api.PlatformStorageConfig, int64, error) {
+	platformStorageConfigsTbl, totalSize, err := s.data.PlatformDao.ListPlatformStorageConfig(ctx, query)
+	if err != nil {
+		return nil, 0, err
+	}
+	platformStorageConfigs := make([]*api.PlatformStorageConfig, 0)
+	for _, n := range platformStorageConfigsTbl {
+		platformStorageConfig := &api.PlatformStorageConfig{}
+		err := copier.Copy(platformStorageConfig, n)
+		if err != nil {
+			return nil, 0, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		platformStorageConfig.CreatedAt = n.CreatedAt.Unix()
+		platformStorageConfig.UpdatedAt = n.UpdatedAt.Unix()
+		platformStorageConfigs = append(platformStorageConfigs, platformStorageConfig)
+	}
+
+	return platformStorageConfigs, totalSize, nil
+}
+
+func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *api.CreatePlatformStorageConfigRequest) (*api.CreatePlatformStorageConfigReply, error) {
+	platformStorageConfig := &model.PlatformStorageConfig{}
+	err := copier.Copy(platformStorageConfig, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+	platformStorageConfig.Id = utils.GetUUIDWithoutSeparator()
+
+	_, size, err := s.data.PlatformDao.ListPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{
+		PlatformId: req.PlatformId,
+		Name:       req.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if size > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorPlatformStorageConfigNameRepeat)
+	}
+
+	err = s.data.PlatformDao.CreatePlatformStorageConfig(ctx, platformStorageConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CreatePlatformStorageConfigReply{Id: platformStorageConfig.Id}, nil
+}
+
+func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *api.DeletePlatformStorageConfigRequest) (*api.DeletePlatformStorageConfigReply, error) {
+	err := s.data.PlatformDao.DeletePlatformStorageConfig(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &api.DeletePlatformStorageConfigReply{}, nil
+}
+func (s *platformService) GetPlatformStorageConfigByName(ctx context.Context, req *api.GetPlatformStorageConfigByNameRequest) (*api.GetPlatformStorageConfigByNameReply, error) {
+	platformStorageConfigs, _, err := s.listPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{PlatformId: req.PlatformId, Name: req.Name})
+	if err != nil {
+		return nil, err
+	}
+	if len(platformStorageConfigs) != 1 {
+		return nil, errors.Errorf(nil, errors.ErrorDBFindEmpty)
+	}
+
+	return &api.GetPlatformStorageConfigByNameReply{PlatformStorageConfig: platformStorageConfigs[0]}, nil
 }
