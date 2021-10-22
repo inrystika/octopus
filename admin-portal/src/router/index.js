@@ -184,6 +184,25 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/platformManager',
+    component: Layout,
+    redirect: '/platform',
+    name: 'platformManager',
+    meta: {
+      title: '平台管理',
+      icon: 'example'
+    },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'platform',
+        component: () => import('@/views/platformManager/platform'),
+        name: 'platform',
+        meta: { title: '平台', icon: 'dot' }
+      },
+    ]
+  },
 
   // {
   //   path: 'external-link',

@@ -107,6 +107,14 @@ message Resource {
   string ignoreSystemResources = 11;
 }
 
+message Platform {
+  message ConfigKey {
+    string key = 1;
+    string keyDesc = 2;
+  }
+  repeated ConfigKey configKeys = 1;
+}
+
 message Service {
   string baseServerAddr = 2;
   string dockerDatasetPath = 3;
@@ -116,6 +124,7 @@ message Service {
   Resource resource = 7;
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
+  Platform platform = 10;
 }
 
 message Administrator {

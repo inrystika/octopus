@@ -64,6 +64,11 @@ service:
     discoveryLeaderLeaseLockName: resourcediscovery
     discoveryDuration: 15s
     ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+  platform:
+    # 数组内字段为key和keyDesc
+    configKeys:
+    - key: testKey
+      keyDesc: testKey描述
 administrator:
   username: "admin"
   password: "123456"
