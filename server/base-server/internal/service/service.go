@@ -21,21 +21,22 @@ import (
 )
 
 type Service struct {
-	AlgorithmService    api.AlgorithmServer
-	UserService         api.UserServer
-	AdminUserService    api.AdminUserServer
-	ModelService        api.ModelServer
-	ResourceService     api.ResourceServiceServer
-	ResourceSpecService api.ResourceSpecServiceServer
-	ResourcePoolService api.ResourcePoolServiceServer
-	NodeService         api.NodeServiceServer
-	DevelopService      develop.DevelopService
-	TrainJobService     trainjob.TrainJobService
-	WorkspaceService    api.WorkspaceServer
-	DatasetService      api.DatasetServiceServer
-	ImageService        api.ImageServer
-	BillingService      api.BillingServiceServer
-	PlatformService     api.PlatformServiceServer
+	AlgorithmService        api.AlgorithmServer
+	UserService             api.UserServer
+	AdminUserService        api.AdminUserServer
+	ModelService            api.ModelServer
+	ResourceService         api.ResourceServiceServer
+	ResourceSpecService     api.ResourceSpecServiceServer
+	ResourcePoolService     api.ResourcePoolServiceServer
+	NodeService             api.NodeServiceServer
+	DevelopService          develop.DevelopService
+	TrainJobService         trainjob.TrainJobService
+	WorkspaceService        api.WorkspaceServer
+	DatasetService          api.DatasetServiceServer
+	ImageService            api.ImageServer
+	BillingService          api.BillingServiceServer
+	PlatformService         api.PlatformServiceServer
+	PlatformTrainJobService api.PlatformTrainJobServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -68,6 +69,12 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 	service.PlatformService = platform.NewPlatformService(conf, data)
+	service.PlatformTrainJobService, err = platform.NewPlatformTrainJobService(conf, logger, data,
+		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
+		service.ModelService, service.ResourceSpecService, service.ResourceService, service.ResourcePoolService)
+	if err != nil {
+		return nil, err
+	}
 
 	return service, nil
 }

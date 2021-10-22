@@ -169,7 +169,8 @@ const (
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
 
 	/* 20001-21000 第三方平台管理错误*/
-	ErrorPlatformNameRepeat = 20001 // 平台名称重复
+	ErrorPlatformNameRepeat       = 20001 // 平台名称重复
+	ErrorPlatformBatchGetPlatform = 20002 // 批量获取平台信息错误
 )
 
 type codeMsg struct {

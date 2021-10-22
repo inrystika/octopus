@@ -1,0 +1,229 @@
+syntax = "proto3";
+
+package thirdserver.api.v1;
+
+option go_package = "server/third-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service TrainJobService {
+    // 创建训练任务
+    rpc TrainJob (TrainJobRequest) returns (TrainJobReply) {
+      option (google.api.http) = {
+        post: "/v1/platform/trainjob"
+        body: "*"
+      };
+    };
+    //停止训练任务
+    rpc StopJob (StopJobRequest) returns (StopJobReply) {
+       option (google.api.http) = {
+           post: "/v1/platform/trainjob/{id}/stop"
+           body: "*"
+       };
+    };
+    // 获取训练任务详情
+    rpc GetJobInfo(TrainJobInfoRequest) returns (TrainJobInfoReply){
+       option (google.api.http) = {
+          get: "/v1/platform/trainjob/{id}"
+       };
+    };
+    //获取训练任务列表
+    rpc TrainJobList(TrainJobListRequest) returns (TrainJobListReply){
+       option (google.api.http) = {
+         get: "/v1/platform/trainjob"
+       };
+    };
+    //获取训练任务统计信息
+    rpc TrainJobStastics(TrainJobStasticsRequest) returns (TrainJobStasticsReply){
+       option (google.api.http) = {
+         get: "/v1/overall/trainjobStastics"
+       };
+    };
+    //获取集群资源信息
+    rpc PlatformResources(PlatformResourcesRequest) returns (PlatformResourcesReply){
+      option (google.api.http) = {
+        get: "/v1/platform/resource"
+      };
+   };
+}
+
+message TrainJobRequest {
+  //训练任务名称，必填，长度1-30
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  //训练任务描述，非必填
+  string desc = 2[(validate.rules).string = {max_len: 300}];
+  //镜像信息
+  Image image = 3;
+  //数据集信息
+  Dataset dataset = 4;
+  //子任务信息
+  repeated Task tasks = 5;
+}
+
+message Image {
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 300}];
+  string version = 2[(validate.rules).string = {min_len: 1, max_len: 30}];
+}
+
+message Dataset {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  //数据集地址，必填
+  string addr = 2[(validate.rules).string = {min_len: 1, max_len: 300}];
+  //数据集名称，必填
+  string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
+}
+
+message Task {
+  //子任务名称，非必填，校验规则"^[0-9a-zA-Z_]*$"，最大长度30个字符
+  string name = 1[(validate.rules).string = {min_len: 1, max_len:30}];
+  //子任务执行命令
+  string command = 2[(validate.rules).string = {min_len: 0, max_len: 300}];
+  //command执行命令参数,key-value，数组
+  repeated Parameter parameters = 3;
+  //资源
+  repeated Resource resources = 4;
+  //副本个数，非必填
+  int64 taskNumber = 5[(validate.rules).int64 = {gte:1}];
+  //子任务最小失败数，非必填
+  int64  minFailedTaskCount = 6[(validate.rules).int64 = {gte:1}];
+  //子任务最小成功数，非必填
+  int64  minSucceededTaskCount = 7[(validate.rules).int64 = {gte:1}];
+  //是否主任务，非必填
+  bool isMainRole = 8;
+}
+
+message Parameter {
+  //命令参数key，非必填
+  string key = 1;
+  //命令参数value，非必填
+  string value = 2;
+}
+
+message Resource {
+  //命令参数key，必填
+  string name = 1;
+  //命令参数value，必填
+  string size = 2;
+}
+
+message TrainJobReply {
+  //训练任务ID，必填
+  string jobId = 1;
+}
+
+message  StopJobRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StopJobReply {
+  //停止时间
+  int64 stoppedAt = 1;
+}
+
+message TrainJobListRequest{
+  // 页码，从1开始，非必填
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条，非必填
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 分组依据，非必填
+  string sortBy = 3;
+  //升序、降序，非必填
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 5;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 6;
+  //状态查询，非必填
+  string status = 7;
+  //模糊查找字段，可用于name等模糊查找，非必填
+  string searchKey = 8;
+}
+
+message TrainJobListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务
+  repeated TrainJob jobs = 2;
+}
+
+message TrainJob{
+  //任务ID
+  string  id = 1;
+  //job名称
+  string name = 2;
+  //job描述
+  string desc = 3;
+  //数据集
+  Dataset dataset = 4;
+  //镜像
+  Image image = 5;
+  //子任务配置信息
+  repeated Task tasks = 6;
+  //创建时间
+  int64 createdAt = 7;
+  //更新时间
+  int64 updatedAt = 8;
+  //任务状态
+  string status   = 9;
+  //job完成时间
+  int64  completedAt = 10;
+  //运行时
+  int64 runSec = 11;
+  //启动时间
+  int64  startedAt = 12;
+}
+
+
+message TrainJobInfoRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message TrainJobInfoReply {
+  //训练任务
+  TrainJob trainJob = 1;
+}
+
+message TrainJobStasticsRequest {
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 1;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 2;
+}
+
+message TrainJobStasticsReply {
+  //任务数量
+  int64 totalSize = 1;
+  //成功数量
+  int64 succeededSize = 2;
+  //失败数量
+  int64 failedSize = 3;
+  //停止数量
+  int64 stoppedSize = 4;
+  //正在运行数量
+  int64 runningSize = 5;
+  //等待数量
+  int64 waitingSize = 6;
+
+}
+
+message Node {
+  string nodeName = 1;
+  string ip = 2;
+  string status = 3;
+  map<string,string> capacity = 4;
+  map<string,string> allocated = 5;
+}
+
+message PlatformResourcesRequest {
+
+}
+
+message PlatformResourcesReply {
+  repeated Node resources = 1;
+}

@@ -6,7 +6,9 @@ import (
 	"server/base-server/internal/data/dao"
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
+	"server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
+	platformDao "server/base-server/internal/data/dao/platform"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/data/redis"
@@ -19,24 +21,25 @@ import (
 )
 
 type Data struct {
-	UserDao         dao.UserDao
-	AdminUserDao    dao.AdminUserDao
-	AlgorithmDao    algorithm_dao.AlgorithmDao
-	ResourceDao     dao.ResourceDao
-	ResourceSpecDao dao.ResourceSpecDao
-	DevelopDao      dao.DevelopDao
-	TrainJobDao     dao.TrainJobDao
-	ModelDao        dao.ModelDao
-	DatasetDao      dao.DatasetDao
-	WorkspaceDao    dao.WorkspaceDao
-	ImageDao        dao.ImageDao
-	BillingDao      dao.BillingDao
-	Pipeline        pipeline.Pipeline
-	Cluster         cluster.Cluster
-	Minio           minio.Minio
-	Registry        registry.ArtifactRegistry
-	Redis           redis.Redis
-	PlatformDao     dao.PlatformDao
+	UserDao             dao.UserDao
+	AdminUserDao        dao.AdminUserDao
+	AlgorithmDao        algorithm_dao.AlgorithmDao
+	ResourceDao         dao.ResourceDao
+	ResourceSpecDao     dao.ResourceSpecDao
+	DevelopDao          dao.DevelopDao
+	TrainJobDao         dao.TrainJobDao
+	ModelDao            dao.ModelDao
+	DatasetDao          dao.DatasetDao
+	WorkspaceDao        dao.WorkspaceDao
+	ImageDao            dao.ImageDao
+	BillingDao          dao.BillingDao
+	PlatformTrainJobDao platformDao.PlatformTrainJobDao
+	Pipeline            pipeline.Pipeline
+	Cluster             cluster.Cluster
+	Minio               minio.Minio
+	Registry            registry.ArtifactRegistry
+	Redis               redis.Redis
+	PlatformDao         dao.PlatformDao
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
@@ -59,6 +62,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d.ImageDao = dao.NewImageDao(db, logger)
 	d.TrainJobDao = dao.NewTrainJobDao(db, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
+	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
 	d.Cluster = cluster.NewCluster(confData, logger)
 	d.Minio = minio.NewMinio(confData, logger)
@@ -221,5 +225,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&platform.PlatformTrainJob{})
+	if err != nil {
+		return nil, err
+	}
+
 	return db, err
 }
