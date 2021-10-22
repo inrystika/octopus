@@ -6,6 +6,7 @@ export async function minIO(payload) {
     data: payload.file,
     onUploadProgress: function(progress) {
       sessionStorage.setItem(JSON.stringify(payload.id), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100))));
+      console.log(progress.loaded / progress.total)
     }
   })
   if (res && res.success) {

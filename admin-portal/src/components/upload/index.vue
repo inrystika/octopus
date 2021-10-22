@@ -7,8 +7,8 @@
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
-      v-if="progress>0&&progress<100" />
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress-1" class="progress"
+      v-if="progress>0&&progress<=100" />
     <!-- <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -50,8 +50,7 @@
         'progressId',
       ])
     },
-    created() {
-    
+    created() {  
       this.timer = setInterval(() => {
         if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
@@ -102,6 +101,7 @@
           this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
             uploadPreImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
                 uploadUrl: response.data.uploadUrl,
                 file: this.fileList[0].raw,
@@ -482,9 +482,13 @@
           if (store.state.user.progressId == this.uploadData.datasetId + this.uploadData.version) {
             return true
           }
+          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
+            return true
+          }
           if (store.state.user.progressId == this.uploadData.algorithmId + this.uploadData.version) {
             return true
           }
+          
           if (store.state.user.progressId == this.uploadData.data.modelId + this.uploadData.data.version) {
             return true
           }
