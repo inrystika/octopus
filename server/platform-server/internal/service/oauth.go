@@ -4,8 +4,8 @@ import (
 	"context"
 	innerapi "server/base-server/api/v1"
 	"server/common/errors"
-	"server/third-server/internal/conf"
-	"server/third-server/internal/data"
+	"server/platform-server/internal/conf"
+	"server/platform-server/internal/data"
 
 	"github.com/go-oauth2/oauth2/v4/models"
 

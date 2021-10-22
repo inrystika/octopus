@@ -8,8 +8,8 @@ import (
 	comHttp "server/common/http"
 	"server/common/middleware/logging"
 	"server/common/middleware/validate"
-	"server/third-server/internal/conf"
-	"server/third-server/internal/service"
+	"server/platform-server/internal/conf"
+	"server/platform-server/internal/service"
 	"strings"
 
 	oserver "github.com/go-oauth2/oauth2/v4/server"

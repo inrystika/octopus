@@ -4,8 +4,8 @@ import (
 	"context"
 	nethttp "net/http"
 	"server/common/log"
-	"server/third-server/internal/conf"
-	"server/third-server/internal/service"
+	"server/platform-server/internal/conf"
+	"server/platform-server/internal/service"
 	"time"
 
 	"github.com/go-oauth2/oauth2/v4/generates"

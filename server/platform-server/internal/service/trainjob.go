@@ -5,9 +5,9 @@ import (
 	innerapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
-	api "server/third-server/api/v1"
-	"server/third-server/internal/conf"
-	"server/third-server/internal/data"
+	api "server/platform-server/api/v1"
+	"server/platform-server/internal/conf"
+	"server/platform-server/internal/data"
 
 	"github.com/jinzhu/copier"
 )

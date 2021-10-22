@@ -1,8 +1,8 @@
 package service
 
 import (
-	"server/third-server/internal/conf"
-	"server/third-server/internal/data"
+	"server/platform-server/internal/conf"
+	"server/platform-server/internal/data"
 )
 
 type Service struct {

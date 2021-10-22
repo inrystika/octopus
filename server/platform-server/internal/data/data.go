@@ -4,7 +4,7 @@ import (
 	"context"
 	"server/common/errors"
 	"server/common/middleware/ctxcopy"
-	"server/third-server/internal/conf"
+	"server/platform-server/internal/conf"
 	"time"
 
 	api "server/base-server/api/v1"
@@ -17,7 +17,7 @@ import (
 
 type Data struct {
 	PlatformClient         api.PlatformServiceClient
-	PlatformTrainJobClient api.PlatformTrainJobClientServiceClient
+	PlatformTrainJobClient api.PlatformTrainJobServiceClient
 }
 
 func NewData(confData *conf.Data) (*Data, error) {
