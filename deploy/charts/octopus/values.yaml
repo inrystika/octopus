@@ -280,6 +280,7 @@ mysql:
 
 # redis
 redis:
+  architecture: standalone
   master:
     service:
       type: NodePort
@@ -302,8 +303,6 @@ redis:
             - key: beta.kubernetes.io/arch
               operator: In
               values: ["amd64", "x64", "x86-64", "x86_64"]
-  replica:
-    replicaCount: 1
   auth:
     enabled: true
     password: "abcde"
