@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+  labels:
+{{ include "platformserver.labels" . | indent 4 }}
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ template "platformserver.port" . }}
+    targetPort: {{ template "platformserver.port" . }}
+  selector:
+{{ include "platformserver.select-labels" . | indent 8 }}
+
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "platformserver.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+      - create
+      - update
+      - patch
+      - delete
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+  labels:
+{{ include "platformserver.labels" . | indent 4 }}
+data:
+  platformserver-config.yml: |
+    app:
+        name: platformserver
+        version: v1.0
+        isDev: false
+        logLevel: {{ .Values.platformserver.app.logLevel }}
+    server:
+        http:
+          addr:  0.0.0.0:8001
+          timeout: 60s
+          jwtSecrect: asdf
+         
+    data:
+        baseServerAddr: {{ include "baseserver.grpcServiceAddr" . }}
+        baseServerRequestTimeout: 30s
+        redis:
+          addr: {{ include "redis.serviceAddr" . }} 
+          username: {{ .Values.platformserver.data.redis.username }}
+          password: {{ .Values.platformserver.data.redis.password }}
+    service:
+        port: {{ template "platformserver.port" . }}
+        targetPort: {{ template "platformserver.port" . }}
+        tokenExpirationSec: 86400
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "platformserver.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+{{ include "platformserver.select-labels" . | indent 8 }}
+  replicas: {{ .Values.platformserver.replicas }}
+  template:
+    metadata:
+      labels:
+{{ include "platformserver.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "platformserver.fullname" . }}
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: platformserver-config
+        configMap:
+          name: {{ template "platformserver.fullname" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.platformserver.image.name }}:{{ default .Chart.AppVersion .Values.platformserver.image.tag }}"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        args: [ "-conf", "/etc/platformserver/platformserver-config.yml" ]
+        volumeMounts:
+          - name: localtime
+            mountPath: /etc/localtime
+          - name: platformserver-config
+            mountPath: /etc/platformserver
+        ports:
+        - name: {{ template "platformserver.name" . }}
+          containerPort: {{ template "platformserver.port" . }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- with .Values.global.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
