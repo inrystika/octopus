@@ -29,11 +29,31 @@ service PlatformService {
       body: "*"
     };
   };
-
-  rpc ListPlatformStorageConfig (ListPlatformStorageConfigRequest) returns (ListPlatformStorageConfigReply);
-  rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply);
-  rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply);
-  rpc ListPlatformConfigKey (ListPlatformConfigKeyRequest) returns (ListPlatformConfigKeyReply);
+  // 查询存储配置列表
+  rpc ListPlatformStorageConfig (ListPlatformStorageConfigRequest) returns (ListPlatformStorageConfigReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platformstorageconfig"
+    };
+  };
+  // 创建存储配置
+  rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply) {
+    option (google.api.http) = {
+      post: "/v1/platformmanage/platformstorageconfig"
+      body: "*"
+    };
+  };
+  // 删除存储配置
+  rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply) {
+    option (google.api.http) = {
+      delete: "/v1/platformmanage/platformstorageconfig/{id}"
+    };
+  }
+  // 查询配置key列表
+  rpc ListPlatformConfigKey (ListPlatformConfigKeyRequest) returns (ListPlatformConfigKeyReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platformconfigkey"
+    };
+  }
 }
 
 message ListPlatformRequest {
@@ -90,7 +110,12 @@ message UpdatePlatformReply {
 
 
 message StorageOptions {
+  message Juicefs {
+    string name = 1;
+    string metaUrl = 2;
+  }
 
+  Juicefs juicefs = 1;
 }
 
 message ListPlatformStorageConfigRequest {

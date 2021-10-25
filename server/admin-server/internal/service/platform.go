@@ -96,3 +96,47 @@ func (s *platformService) ListPlatformConfigKey(ctx context.Context, req *api.Li
 
 	return reply, nil
 }
+
+func (s *platformService) ListPlatformStorageConfig(ctx context.Context, req *api.ListPlatformStorageConfigRequest) (*api.ListPlatformStorageConfigReply, error) {
+	innerReq := &innerapi.ListPlatformStorageConfigRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.PlatformClient.ListPlatformStorageConfig(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListPlatformStorageConfigReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *api.CreatePlatformStorageConfigRequest) (*api.CreatePlatformStorageConfigReply, error) {
+	innerReq := &innerapi.CreatePlatformStorageConfigRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, err
+	}
+
+	innerReply, err := s.data.PlatformClient.CreatePlatformStorageConfig(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CreatePlatformStorageConfigReply{Id: innerReply.Id}, nil
+}
+
+func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *api.DeletePlatformStorageConfigRequest) (*api.DeletePlatformStorageConfigReply, error) {
+	_, err := s.data.PlatformClient.DeletePlatformStorageConfig(ctx, &innerapi.DeletePlatformStorageConfigRequest{Id: req.Id})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeletePlatformStorageConfigReply{}, nil
+}
