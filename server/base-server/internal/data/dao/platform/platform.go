@@ -1,9 +1,9 @@
-package dao
+package platform
 
 import (
 	"context"
 	"fmt"
-	"server/base-server/internal/data/dao/model"
+	model "server/base-server/internal/data/dao/model/platform"
 	"server/common/errors"
 	"server/common/transaction"
 	"server/common/utils"
@@ -21,6 +21,9 @@ type PlatformDao interface {
 	CreatePlatformStorageConfig(ctx context.Context, platformStorageConfig *model.PlatformStorageConfig) error
 	ListPlatformStorageConfig(ctx context.Context, query *model.PlatformStorageConfigQuery) ([]*model.PlatformStorageConfig, int64, error)
 	DeletePlatformStorageConfig(ctx context.Context, id string) error
+
+	UpdatePlatformConfig(ctx context.Context, platformId string, config map[string]string) error
+	GetPlatformConfig(ctx context.Context, platformId string) (map[string]string, error)
 }
 
 type platformDao struct {
@@ -209,4 +212,48 @@ func (d *platformDao) DeletePlatformStorageConfig(ctx context.Context, id string
 	}
 
 	return nil
+}
+
+func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId string, config map[string]string) error {
+	db := d.db(ctx)
+	if platformId == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := db.Where("platform_id = ?", platformId).Delete(&model.PlatformConfig{})
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
+	}
+
+	items := make([]*model.PlatformConfig, 0)
+	for k, v := range config {
+		items = append(items, &model.PlatformConfig{
+			PlatformId: platformId,
+			Key:        k,
+			Value:      v,
+		})
+	}
+
+	res = db.Create(&items)
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
+	}
+
+	return nil
+}
+
+func (d *platformDao) GetPlatformConfig(ctx context.Context, platformId string) (map[string]string, error) {
+	db := d.db(ctx)
+	platformConfigs := make([]*model.PlatformConfig, 0)
+
+	res := db.Where("platform_id = ?", platformId).Find(&platformConfigs)
+	if res.Error != nil {
+		return nil, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
+	}
+
+	r := map[string]string{}
+	for _, i := range platformConfigs {
+		r[i.Key] = i.Value
+	}
+
+	return r, nil
 }

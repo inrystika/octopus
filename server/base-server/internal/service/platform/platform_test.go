@@ -66,3 +66,21 @@ func TestPlatformService_CreatePlatformStorageConfig(t *testing.T) {
 
 	fmt.Println(reply)
 }
+
+func TestPlatformService_UpdatePlatformConfig(t *testing.T) {
+	client, err := newPlatformClient()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := context.Background()
+	reply, err := client.UpdatePlatformConfig(ctx, &api.UpdatePlatformConfigRequest{
+		PlatformId: "1f4a1345025f408a9ec7b62f0689c4fb",
+		Config:     map[string]string{"k1": "v1", "k2": "v2"},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(reply)
+}

@@ -1,9 +1,6 @@
-package model
+package platform
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"server/common/dao"
 
 	"gorm.io/plugin/soft_delete"
@@ -18,7 +15,6 @@ type Platform struct {
 	ContactInfo  string                `gorm:"type:varchar(100);not null;default:'';comment:联系方式"`
 	ResourcePool string                `gorm:"type:varchar(100);not null;default:'';comment:资源池"`
 	DeletedAt    soft_delete.DeletedAt `gorm:"uniqueIndex:name_deleteAt,priority:2"`
-	Config       PlatformConfig        `gorm:"type:json;comment:'配置信息'"`
 }
 
 func (Platform) TableName() string {
@@ -35,21 +31,6 @@ type PlatformQuery struct {
 	SearchKey    string
 	Ids          []string
 	Name         string
-}
-
-type PlatformConfig map[string]string
-
-func (r PlatformConfig) Value() (driver.Value, error) {
-	return json.Marshal(r)
-}
-
-func (r *PlatformConfig) Scan(input interface{}) error {
-	switch v := input.(type) {
-	case []byte:
-		return json.Unmarshal(input.([]byte), r)
-	default:
-		return fmt.Errorf("cannot Scan() from: %#v", v)
-	}
 }
 
 type PlatformStorageConfig struct {
@@ -80,4 +61,16 @@ type PlatformStorageConfigQuery struct {
 	Ids          []string
 	Name         string
 	PlatformId   string
+}
+
+type PlatformConfig struct {
+	dao.Model
+	PlatformId string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_key_deleteAt,priority:1;comment:平台id"`
+	Key        string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_key_deleteAt,priority:2;comment:key"`
+	Value      string                `gorm:"type:text;comment:value"`
+	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:platformId_key_deleteAt,priority:3"`
+}
+
+func (PlatformConfig) TableName() string {
+	return "platform_config"
 }

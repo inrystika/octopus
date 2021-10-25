@@ -55,7 +55,6 @@ message Platform {
   string contactName = 6;
   string contactInfo = 7;
   string resourcePool = 8;
-  map<string, string> config = 9;
 }
 
 message ListPlatformReply {
@@ -72,7 +71,6 @@ message CreatePlatformRequest {
   string contactInfo = 3;
   // 资源池，必填
   string resourcePool = 4[(validate.rules).string = {min_len: 1}];
-  map<string, string> config = 5;
 }
 
 message CreatePlatformReply {
@@ -84,7 +82,6 @@ message UpdatePlatformRequest {
   string contactName = 2;
   string contactInfo = 3;
   string resourcePool = 4[(validate.rules).string = {min_len: 1}];
-  map<string, string> config = 5;
 }
 
 message UpdatePlatformReply {

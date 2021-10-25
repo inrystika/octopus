@@ -19,6 +19,9 @@ service PlatformService {
   rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply);
   rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply);
   rpc GetPlatformStorageConfigByName (GetPlatformStorageConfigByNameRequest) returns (GetPlatformStorageConfigByNameReply);
+
+  rpc GetPlatformConfig (GetPlatformConfigRequest) returns (GetPlatformConfigReply);
+  rpc UpdatePlatformConfig (UpdatePlatformConfigRequest) returns (UpdatePlatformConfigReply);
 }
 
 message ListPlatformRequest {
@@ -40,7 +43,6 @@ message Platform {
   string contactName = 6;
   string contactInfo = 7;
   string resourcePool = 8;
-  map<string, string> config = 9;
 }
 
 message ListPlatformReply {
@@ -61,7 +63,6 @@ message CreatePlatformRequest {
   string contactName = 2;
   string contactInfo = 3;
   string resourcePool = 4[(validate.rules).string = {min_len: 1}];
-  map<string, string> config = 5;
 }
 
 message CreatePlatformReply {
@@ -73,7 +74,6 @@ message UpdatePlatformRequest {
   string contactName = 2;
   string contactInfo = 3;
   string resourcePool = 4[(validate.rules).string = {min_len: 1}];
-  map<string, string> config = 5;
 }
 
 message UpdatePlatformReply {
@@ -148,4 +148,21 @@ message GetPlatformStorageConfigByNameRequest {
 
 message GetPlatformStorageConfigByNameReply {
   PlatformStorageConfig platformStorageConfig = 1;
+}
+
+message GetPlatformConfigRequest {
+  string platformId = 1;
+}
+
+message GetPlatformConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdatePlatformConfigRequest {
+  string platformId = 1;
+  map<string, string> config = 2;
+}
+
+message UpdatePlatformConfigReply {
+
 }

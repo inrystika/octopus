@@ -5,7 +5,7 @@ import (
 	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
-	"server/base-server/internal/data/dao/model"
+	model "server/base-server/internal/data/dao/model/platform"
 	"server/common/errors"
 	"server/common/utils"
 
@@ -203,6 +203,7 @@ func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *
 	}
 	return &api.DeletePlatformStorageConfigReply{}, nil
 }
+
 func (s *platformService) GetPlatformStorageConfigByName(ctx context.Context, req *api.GetPlatformStorageConfigByNameRequest) (*api.GetPlatformStorageConfigByNameReply, error) {
 	platformStorageConfigs, _, err := s.listPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{PlatformId: req.PlatformId, Name: req.Name})
 	if err != nil {
@@ -213,4 +214,23 @@ func (s *platformService) GetPlatformStorageConfigByName(ctx context.Context, re
 	}
 
 	return &api.GetPlatformStorageConfigByNameReply{PlatformStorageConfig: platformStorageConfigs[0]}, nil
+}
+
+func (s *platformService) GetPlatformConfig(ctx context.Context, req *api.GetPlatformConfigRequest) (*api.GetPlatformConfigReply, error) {
+	config, err := s.data.PlatformDao.GetPlatformConfig(ctx, req.PlatformId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GetPlatformConfigReply{
+		Config: config,
+	}, nil
+}
+func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.UpdatePlatformConfigRequest) (*api.UpdatePlatformConfigReply, error) {
+	err := s.data.PlatformDao.UpdatePlatformConfig(ctx, req.PlatformId, req.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePlatformConfigReply{}, nil
 }
