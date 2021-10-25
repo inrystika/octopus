@@ -148,7 +148,7 @@ message TrainJobListReply {
   //查询结果总数
   int64  totalSize = 1;
   //任务
-  repeated TrainJob jobs = 2;
+  repeated TrainJob trainJobs = 2;
 }
 
 message TrainJob{

@@ -1,4 +1,4 @@
-package trainjob
+package platform
 
 import (
 	"context"
@@ -8,9 +8,8 @@ import (
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
-	"server/base-server/internal/data/dao/model"
+	model "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/pipeline"
-	"server/common/constant"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
@@ -138,6 +137,7 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 	if err != nil {
 		return nil, err
 	}
+	startJobInfo.queue = req.ResourcePool
 	//submit job
 	closeFunc, err := s.submitJob(ctx, trainJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
@@ -154,15 +154,15 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 		return nil, err
 	}
 
-	return &api.TrainJobReply{JobId: trainJobId}, nil
+	return &api.PlatformTrainJobReply{JobId: trainJobId}, nil
 }
 
-func (s *platformTrainJobService) buildCmd(config *model.Config) []string {
-	cmd := fmt.Sprintf("cd %s;%s ", s.conf.Service.DockerCodePath, config.Command)
-	if len(config.Parameters) == 0 {
+func (s *platformTrainJobService) buildCmd(task *model.Task) []string {
+	cmd := fmt.Sprintf("cd %s;%s ", s.conf.Service.DockerCodePath, task.Command)
+	if len(task.Parameters) == 0 {
 		return []string{"sh", "-c", cmd}
 	} else {
-		for _, i := range config.Parameters {
+		for _, i := range task.Parameters {
 			if i.Key == "" || i.Value == "" {
 				continue
 			} else {
@@ -191,22 +191,7 @@ type startJobInfo struct {
 	specs       map[string]*startJobInfoSpec
 }
 
-func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *model.TrainJob) (*startJobInfo, error) {
-	queue := ""
-	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-		if err != nil {
-			return nil, err
-		}
-		queue = pool.ResourcePool.Name
-	} else {
-		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: job.WorkspaceId})
-		if err != nil {
-			return nil, err
-		}
-		queue = workspace.Workspace.ResourcePoolId
-	}
-
+func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *model.PlatformTrainJob) (*startJobInfo, error) {
 	//image
 	imageAddr := fmt.Sprintf("%s:%s", job.Image.Name, job.Image.Version)
 
@@ -221,14 +206,13 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 		resourceMap[i.Name] = i
 	}
 
-	//非分布式任务,config 个数不能超过1.
-	if !job.IsDistributed && len(job.Config) > 1 {
+	if len(job.Tasks) < 1 {
 		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
 	}
 
 	//非分布式任务config中的副本总数、成功副本数、失败副本数，接口无需传参数; 若传，强制默认个数为1个。
-	if !job.IsDistributed {
-		for _, i := range job.Config {
+	if len(job.Tasks) == 1 {
+		for _, i := range job.Tasks {
 			i.TaskNumber = NoDistributedJobNum
 			i.MinFailedTaskCount = NoDistributedJobNum
 			i.MinSucceededTaskCount = NoDistributedJobNum
@@ -253,14 +237,14 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 		nodeSelectors := map[string]string{}
 		var shm *resource.Quantity = nil
 		//解析资源规格包中的各项资源（cpu,gpu,memory,shared-memory等）的值
-		for _, v := range i.resources {
-			name := v.name
+		for _, v := range i.Resources {
+			name := v.Name
 			r, ok := resourceMap[name]
 			if !ok {
 				return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
 			}
 			//解析资源规格value值
-			quantity, err := resource.ParseQuantity(v.size)
+			quantity, err := resource.ParseQuantity(v.Size)
 			if err != nil {
 				return nil, err
 			}
@@ -278,14 +262,13 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 			}
 		}
 		i.ShareMemory = shm
-		startJobSpecs[i.name] = &startJobInfoSpec{
+		startJobSpecs[i.Name] = &startJobInfoSpec{
 			resources:     resources,
 			nodeSelectors: nodeSelectors,
 		}
 	}
 
 	return &startJobInfo{
-		queue:       queue,
 		imageAddr:   imageAddr,
 		datasetPath: job.Dataset.Addr,
 		specs:       startJobSpecs,
@@ -293,7 +276,7 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 }
 
 //提交任务并将算法名称、数据集名称等字段赋值
-func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.TrainJob, startJobInfo *startJobInfo) (closeFunc, error) {
+func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.PlatformTrainJob, startJobInfo *startJobInfo) (closeFunc, error) {
 	var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
@@ -401,14 +384,14 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Trai
 							Name:  taskName,
 							Image: startJobInfo.imageAddr,
 							Resources: v1.ResourceRequirements{
-								Requests: startJobInfo.specs[i.name].resources,
-								Limits:   startJobInfo.specs[i.name].resources,
+								Requests: startJobInfo.specs[i.Name].resources,
+								Limits:   startJobInfo.specs[i.Name].resources,
 							},
 							VolumeMounts: volumeMounts,
 							Command:      s.buildCmd(i),
 						},
 					},
-					NodeSelector: startJobInfo.specs[i.name].nodeSelectors,
+					NodeSelector: startJobInfo.specs[i.Name].nodeSelectors,
 					Volumes:      volumes,
 				},
 			},
@@ -432,7 +415,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Trai
 			Kind:       "Job",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: job.UserId,
+			Namespace: job.PlatformId,
 			//Namespace: "default",
 			Name: job.Id,
 		},
@@ -480,7 +463,7 @@ func (s *platformTrainJobService) StopJob(ctx context.Context, req *api.Platform
 	}
 
 	now := time.Now()
-	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, &model.TrainJob{
+	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, &model.PlatformTrainJob{
 		Id:          req.Id,
 		Operation:   req.Operation,
 		Status:      pipeline.STOPPED,
@@ -522,26 +505,12 @@ func (s *platformTrainJobService) GetTrainJobInfo(ctx context.Context, req *api.
 		return nil, err
 	}
 
-	for index, config := range trainJobDetail.Config {
-		replyStates := make([]*api.ReplicaState, 0)
-		for ri := 0; ri < int(config.TaskNumber); ri++ {
-			replicaState := new(api.ReplicaState)
-			stateKey := "task" + strconv.Itoa(index) + "-replica-" + strconv.Itoa(ri)
-			replicaState.Key = stateKey
-			replicaState.State = taskReplicaStatesMap[stateKey]
-			replicaState.Key = config.Name + "-replica-" + strconv.Itoa(ri)
-			replyStates = append(replyStates, replicaState)
-		}
-		config.ReplicaStates = replyStates
-		config.SubTaskState = subTaskStateMap[index]
-	}
-
 	return &api.PlatformTrainJobInfoReply{
 		TrainJob: trainJobDetail,
 	}, nil
 }
 
-func (s *platformTrainJobService) convertJobFromDb(jobDb *model.TrainJob) (*api.PlatformTrainJob, error) {
+func (s *platformTrainJobService) convertJobFromDb(jobDb *model.PlatformTrainJob) (*api.PlatformTrainJob, error) {
 	r := &api.PlatformTrainJob{}
 	err := copier.CopyWithOption(r, jobDb, copier.Option{DeepCopy: true}) //model.Config实现了scan方法，这里需要DeepCopy设置为true，否则复制时转化为字符串
 	if err != nil {
@@ -568,7 +537,7 @@ func (s *platformTrainJobService) convertJobFromDb(jobDb *model.TrainJob) (*api.
 }
 
 func (s *platformTrainJobService) TrainJobList(ctx context.Context, req *api.PlatformTrainJobListRequest) (*api.PlatformTrainJobListReply, error) {
-	query := &model.TrainJobListQuery{}
+	query := &model.PlatformTrainJobListQuery{}
 	err := copier.Copy(query, req)
 	if err != nil {
 		return nil, err
@@ -611,7 +580,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		return common.PipeLineCallbackOK
 	}
 
-	update := &model.TrainJob{
+	update := &model.PlatformTrainJob{
 		Id:     req.Id,
 		Status: info.Job.State,
 	}
@@ -627,7 +596,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		return common.PipeLineCallbackRE
 	}
 
-	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
+	/*if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
 		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
 			SpaceId:          trainJob.WorkspaceId,
 			UserId:           trainJob.UserId,
@@ -636,7 +605,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 			FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
 		})
 		s.log.Error(ctx, err)
-	}
+	}*/
 
 	return common.PipeLineCallbackOK
 }
@@ -644,12 +613,12 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *api.PlatformResourcesRequest) (*api.PlatformResourcesReply, error) {
 
 	resNodeList := &api.PlatformResourcesReply{
-		Resources: []*api.Node{},
+		Resources: []*api.PlatformNode{},
 	}
 
 	resNodeAllcatedResourceMap := make(map[string]map[string]*resource.Quantity)
 
-	allNodeMap, err := s.getNodesByResourcePool(req.ResourcePool)
+	allNodeMap, err := s.getNodesByResourcePool(ctx, req.ResourcePool)
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListNode)
@@ -663,8 +632,8 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 
 	for nodename, node := range allNodeMap {
 		resNodeAllcatedResourceMap[nodename] = make(map[string]*resource.Quantity)
-		resNode := &api.Node{
-			Name:      nodename,
+		resNode := &api.PlatformNode{
+			NodeName:  nodename,
 			Status:    "NotReady",
 			Capacity:  make(map[string]string),
 			Allocated: make(map[string]string),
@@ -693,7 +662,7 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 			}
 		}
 
-		resNodeList.Nodes = append(resNodeList.Resources, resNode)
+		resNodeList.Resources = append(resNodeList.Resources, resNode)
 	}
 
 	for _, task := range tasks.Items {
@@ -712,8 +681,8 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 		}
 	}
 
-	for _, node := range resNodeList.Nodes {
-		nodeAllcatedResourceMap := resNodeAllcatedResourceMap[node.Name]
+	for _, node := range resNodeList.Resources {
+		nodeAllcatedResourceMap := resNodeAllcatedResourceMap[node.NodeName]
 		for resname, quantity := range nodeAllcatedResourceMap {
 			if !strings.Contains(s.conf.Service.Resource.IgnoreSystemResources, resname) {
 				node.Allocated[resname] = quantity.String()
@@ -745,7 +714,7 @@ func (s *platformTrainJobService) getNodesByResourcePool(ctx context.Context, re
 	err = json.Unmarshal(nodeListBytes, nodeList)
 
 	if err != nil {
-		return &api.ResourcePoolList{}, errors.Errorf(err, errors.ErrorListResourcePool)
+		return nodeMap, errors.Errorf(err, errors.ErrorListResourcePool)
 	}
 
 	for _, node := range nodeList.Items {

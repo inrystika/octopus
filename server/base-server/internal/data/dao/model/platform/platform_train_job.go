@@ -20,7 +20,7 @@ type PlatformTrainJob struct {
 	Desc        string     `gorm:"type:varchar(1024);not null;default:'';comment:'描述'"`
 	Dataset     Dataset    `gorm:"type:json;comment:'数据集信息'"`
 	Image       Image      `gorm:"type:json;comment:'镜像信息'"`
-	Task        Tasks      `gorm:"type:json;comment:'task信息'"`
+	Tasks       Tasks      `gorm:"type:json;comment:'task信息'"`
 	Operation   string     `gorm:"type:varchar(100);not null;default:''"`
 	Status      string     `gorm:"type:varchar(100);not null;comment:'preparing/pending/running/stopped/succeeded/failed'"`
 	CompletedAt *time.Time `gorm:"type:datetime(3);comment:'结束运行时间'"`
