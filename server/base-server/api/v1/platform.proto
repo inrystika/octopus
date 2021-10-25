@@ -93,7 +93,12 @@ message ListPlatformConfigKeyReply {
 }
 
 message StorageOptions {
+  message Juicefs {
+    string name = 1;
+    string metaUrl = 2;
+  }
 
+    Juicefs juicefs = 1;
 }
 
 message ListPlatformStorageConfigRequest {

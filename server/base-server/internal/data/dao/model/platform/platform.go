@@ -1,6 +1,9 @@
 package platform
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"server/common/dao"
 
 	"gorm.io/plugin/soft_delete"
@@ -47,7 +50,26 @@ func (PlatformStorageConfig) TableName() string {
 	return "platform_storage_config"
 }
 
+type Juicefs struct {
+	Name    string `json:"name"`
+	MetaUrl string `json:"metaUrl"`
+}
+
 type StorageOptions struct {
+	Juicefs *Juicefs `json:"juicefs,omitempty"`
+}
+
+func (r StorageOptions) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *StorageOptions) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }
 
 type PlatformStorageConfigQuery struct {

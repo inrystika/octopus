@@ -157,7 +157,7 @@ func (s *platformService) listPlatformStorageConfig(ctx context.Context, query *
 	platformStorageConfigs := make([]*api.PlatformStorageConfig, 0)
 	for _, n := range platformStorageConfigsTbl {
 		platformStorageConfig := &api.PlatformStorageConfig{}
-		err := copier.Copy(platformStorageConfig, n)
+		err := copier.CopyWithOption(platformStorageConfig, n, copier.Option{DeepCopy: true})
 		if err != nil {
 			return nil, 0, errors.Errorf(err, errors.ErrorStructCopy)
 		}
