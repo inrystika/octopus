@@ -1,6 +1,7 @@
 package service
 
 import (
+	api "server/platform-server/api/v1"
 	"server/platform-server/internal/conf"
 	"server/platform-server/internal/data"
 )
@@ -8,7 +9,7 @@ import (
 type Service struct {
 	Data            *data.Data
 	OauthService    OauthService
-	TrainJobService TrainJobService
+	TrainJobService api.TrainJobServiceServer
 }
 
 func NewService(conf *conf.Bootstrap, data *data.Data) *Service {

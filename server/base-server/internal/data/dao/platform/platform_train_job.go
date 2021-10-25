@@ -187,7 +187,7 @@ func (d *platformTrainJobDao) TrainJobStastics(ctx context.Context, query *model
 
 	db := d.db
 	trainJobStasticsReply := &model.TrainJobStasticsReply{}
-	size, totalSize, succeededSize, failedSize, stoppedSize, runningSize, waitingSize := 0, 0, 0, 0, 0, 0, 0
+	var size, totalSize, succeededSize, failedSize, stoppedSize, runningSize, waitingSize int64 = 0, 0, 0, 0, 0, 0, 0
 
 	baseQuerySql := "1 = 1"
 	baseParams := make([]interface{}, 0)

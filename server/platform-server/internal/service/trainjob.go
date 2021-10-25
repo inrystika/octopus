@@ -31,12 +31,17 @@ func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	if err != nil {
 		return nil, err
 	}
+	resourcePool, err := s.getResourcePool(ctx, platformId)
+	if err != nil {
+		return nil, err
+	}
 	innerReq := &innerapi.PlatformTrainJobRequest{}
 	err = copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 	innerReq.PlatformId = platformId
+	innerReq.ResourcePool = resourcePool
 
 	innerReply, err := s.data.PlatformTrainJobClient.TrainJob(ctx, innerReq)
 	if err != nil {
@@ -52,7 +57,7 @@ func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	if err != nil {
 		return nil, err
 	}
-	trainJob, err := s.data.PlatformTrainJobClient.GetTrainJobInfo(ctx, &innerapi.TrainJobInfoRequest{Id: req.Id})
+	trainJob, err := s.data.PlatformTrainJobClient.GetTrainJobInfo(ctx, &innerapi.PlatformTrainJobInfoRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
@@ -164,20 +169,15 @@ func (s *TrainJobService) PlatformResources(ctx context.Context, req *api.Platfo
 	if err != nil {
 		return nil, err
 	}
-	ids := []string{platformId}
-	reply, err := s.data.PlatformClient.BatchGetPlatform(ctx, &innerapi.BatchGetPlatformRequest{ids: ids})
+	resourcePool, err := s.getResourcePool(ctx, platformId)
 	if err != nil {
 		return nil, err
 	}
-	if len(reply.platforms) == 0 {
-		return nil, errors.ErrorPlatformBatchGetPlatform
-	}
-	resourcePool := reply.platforms[0].ResourcePool
 	innerReply, err := s.data.PlatformTrainJobClient.PlatformResources(ctx, &innerapi.PlatformResourcesRequest{ResourcePool: resourcePool})
 	if err != nil {
 		return nil, err
 	}
-	reply = &api.PlatformResourcesReply{}
+	reply := &api.PlatformResourcesReply{}
 	err = copier.Copy(reply, innerReply)
 	if err != nil {
 		return nil, err
@@ -198,4 +198,17 @@ func (s *TrainJobService) getPlatformId(ctx context.Context) (string, error) {
 	}
 
 	return platformId, nil
+}
+
+func (s *TrainJobService) getResourcePool(ctx context.Context, platformId string) (string, error) {
+	ids := []string{platformId}
+	reply, err := s.data.PlatformClient.BatchGetPlatform(ctx, &innerapi.BatchGetPlatformRequest{Ids: ids})
+	if err != nil {
+		return "", err
+	}
+	if len(reply.Platforms) == 0 {
+		return "", errors.Errorf(nil, errors.ErrorPlatformBatchGetPlatform)
+	}
+	resourcePool := reply.Platforms[0].ResourcePool
+	return resourcePool, nil
 }
