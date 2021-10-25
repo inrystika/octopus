@@ -347,7 +347,6 @@ nginx-ingress-controller:
               operator: In
               values: ["amd64", "x64", "x86-64", "x86_64"]
 
-
 # influxdb
 influxdb:
   replicaCount: 1
