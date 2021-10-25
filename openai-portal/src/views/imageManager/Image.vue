@@ -4,12 +4,8 @@
             <searchForm :search-form="searchForm" :blur-name="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -55,13 +51,21 @@
                     <span>{{ sourceType(scope.row.sourceType) }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="上传进度" align="center" v-if="flag">
+                <template slot-scope="scope">
+                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
+                        scope.row.progress+'%' }}</span>
+                </template>
+            </el-table-column>
             <el-table-column v-if="flag" label="操作" align="center" :width="250">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.imageStatus!==3" type="text" @click="handleEdit(scope.row)">重新上传
+                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
+                        @click="handleEdit(scope.row)">重新上传
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
-                    <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text" @click="open3(scope.row)">分享
+                    <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text"
+                        @click="open3(scope.row)">分享
                     </el-button>
                     <!-- <el-button @click="handleShare(scope.row)" type="text">分享</el-button> -->
                     <el-button type="text" :close-on-click-modal="false" @click="open(scope.row)">修改描述</el-button>
@@ -69,15 +73,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="total"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 镜像对话框 -->
         <dialogForm v-if="FormVisible" :row="row" :flag="Logo" @cancel="cancel" @confirm="confirm" @close="close" />
@@ -91,6 +89,7 @@
     import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage } from '@/api/imageManager.js'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import store from '@/store'
     export default {
         name: "PreImage",
         components: {
@@ -131,17 +130,23 @@
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
-                }
+                },
+                timer:null
             }
         },
         created() {
-            this.getImage(this.searchData)
+            this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             if (this.imageTabType !== 1) {
-                this.flag = false
+                this.flag = false,
+                    this.getImage(this.searchData)
             }
             if (this.image) {
-              this.FormVisible = true
+                this.FormVisible = true
             }
+        },
+        destroyed() {
+            clearInterval(this.timer)
+            this.timer = null
         },
         methods: {
             // 错误码
@@ -156,9 +161,16 @@
                             if (response.data.images !== null) {
                                 this.total = response.data.totalSize
                                 const data = response.data.images
+
                                 this.tableData = []
                                 data.forEach(item => {
                                     this.tableData.push({ ...item.image, isShared: item.isShared })
+                                })
+                                this.tableData.forEach(item => {
+                                    if (sessionStorage.getItem(JSON.stringify(item.id))) {
+                                        item.progress = sessionStorage.getItem(JSON.stringify(item.id))
+                                    }
+
                                 })
                             }
                         } else {
@@ -232,6 +244,7 @@
                 this.row = row
                 this.FormVisible = true
                 this.Logo = false
+                store.commit('user/SET_PROGRESSID', row.id)
             },
             handleDelete(row) {
                 deleteImage(row.id).then(response => {

@@ -73,7 +73,7 @@
           >
             停止
           </el-button>
-          <el-button slot="reference" type="text" @click="getNotebookInfo(scope.row)">
+          <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
             信息
           </el-button>
         </template>
@@ -93,7 +93,7 @@
 
     <notebookInfo
       v-if="notebookInfoVisible"
-      :init-info="initInfo"
+      :notebook-data="notebookData"
       @confirm="confirm"
       @cancel="cancel"
       @close="close"
@@ -106,7 +106,7 @@
   import notebookCreation from "./notebookCreation.vue"
   import notebookInfo from "./notebookInfo.vue"
   import searchForm from '@/components/search/index.vue'
-  import { getNotebookInfo, getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
+  import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
@@ -126,7 +126,7 @@
     data() {
       return {
         row: {},
-        initInfo: "",
+        notebookData: {},
         notebookVisible: false,
         notebookInfoVisible: false,
         total: undefined,
@@ -277,45 +277,9 @@
           });
         });
       },
-      getNotebookInfo(row) {
-        getNotebookInfo(row.id).then(response => {
-          if (response.success) {
-            this.notebookInfoVisible = true
-            const notebookDialogString = response.payload.notebook.initInfo ? response.payload.notebook.initInfo.replace(/\n/g, "<br>") : ''
-            const notebookDialogData = JSON.parse(notebookDialogString)
-            for (const pid in notebookDialogData['podEvents']) {
-              const eventList = notebookDialogData['podEvents'][pid]
-              const roleName = notebookDialogData['podRoleName'][pid]
-              if (roleName == "") {
-                continue
-              }
-              let message = ""
-              for (const key in eventList) {
-                const event = eventList[key]
-                if (event['reason'] == "" && event['message'] == "") {
-                  continue
-                }
-                message += "[" + event['reason'] + "]" + "<br>"
-                message += event['message'] + "<br><br>"
-              }
-              for (const key in notebookDialogData['extras']) {
-                const event = notebookDialogData['extras'][key]
-                if (event['reason'] == "" && event['message'] == "") {
-                  continue
-                }
-                message += "[" + event['reason'] + "]" + "<br>"
-                message += event['message'] + "<br><br>"
-              }
-              message += "<br>"
-              this.initInfo = message
-            }
-          } else {
-            this.$message({
-              message: this.getErrorMsg(response.error.subcode),
-              type: 'warning'
-            })
-          }
-        })
+      showNotebookInfo(row) {
+        this.notebookInfoVisible = true
+        this.notebookData = row
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
@@ -368,19 +332,16 @@
       close(val) {
         this.notebookVisible = val;
         this.notebookInfoVisible = val;
-        this.initInfo = ""
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
         this.notebookInfoVisible = val;
-        this.initInfo = ""
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
         this.notebookInfoVisible = val;
-        this.initInfo = ""
         this.getNotebookList(this.searchData);
       }
     }
@@ -389,7 +350,7 @@
 
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 20px !important;
+    margin: 15px !important;
   }
 
   .create {

@@ -41,9 +41,6 @@ const mutations = {
   },
   SET_PROGRESSID: (state, progressId) => {
     state.progressId = progressId
-  },
-  SET_PROGRESS: (state, data) => {
-    state[data.id] = data.progress
   }
 }
 
