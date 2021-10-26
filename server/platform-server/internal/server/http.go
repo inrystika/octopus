@@ -12,6 +12,8 @@ import (
 	"server/platform-server/internal/service"
 	"strings"
 
+	api "server/platform-server/api/v1"
+
 	oserver "github.com/go-oauth2/oauth2/v4/server"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -41,7 +43,7 @@ func NewHTTPServer(c *conf.Bootstrap, service *service.Service) *http.Server {
 	osrv := newOauthServer(c, service)
 
 	handleOptions := comHttp.NewHandleOptions()
-	_ = []http.HandleOption{
+	options := []http.HandleOption{
 		http.Middleware(
 			middleware.Chain(
 				recovery.Recovery(),
@@ -60,6 +62,8 @@ func NewHTTPServer(c *conf.Bootstrap, service *service.Service) *http.Server {
 	srv.HandleFunc("/v1/oauth/token", func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		token(w, r, osrv)
 	})
+	srv.HandlePrefix("/v1/platform", api.NewTrainJobServiceHandler(service.TrainJobService, options...))
+	srv.HandlePrefix("/v1/overall", api.NewTrainJobServiceHandler(service.TrainJobService, options...))
 	return srv
 }
 

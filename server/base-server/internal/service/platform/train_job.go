@@ -135,6 +135,12 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 	}
 	trainJob.Id = trainJobId
 	trainJob.Status = pipeline.PREPARING
+	trainJob.DatasetName = req.Dataset.Name
+	trainJob.DatasetAddr = req.Dataset.Addr
+	trainJob.DatasetStorageConfigName = req.Dataset.StorageConfigName
+	trainJob.ImageName = req.Image.Name
+	trainJob.ImageVersion = req.Image.Version
+
 	//各类参数校验
 	startJobInfo, err := s.checkPermForJob(ctx, trainJob)
 	if err != nil {
@@ -196,7 +202,7 @@ type startJobInfo struct {
 
 func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *model.PlatformTrainJob) (*startJobInfo, error) {
 	//image
-	imageAddr := fmt.Sprintf("%s:%s", job.Image.Name, job.Image.Version)
+	imageAddr := fmt.Sprintf("%s:%s", job.ImageName, job.ImageVersion)
 
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	//resource
@@ -273,7 +279,7 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 
 	return &startJobInfo{
 		imageAddr:   imageAddr,
-		datasetPath: job.Dataset.Addr,
+		datasetPath: job.DatasetAddr,
 		specs:       startJobSpecs,
 	}, nil
 }
@@ -310,15 +316,13 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		//JobNamespace: "default",
 		Cluster: "",
 	}
-
-	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id, job.Dataset.StorageConfigName)
+	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id, job.DatasetStorageConfigName)
 	if err != nil {
 		return nil, err
 	}
 
 	minAvailable := 0
 	tasks := make([]vcBatch.TaskSpec, 0)
-
 	for idx, i := range job.Tasks {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
 		minAvailable += i.TaskNumber
@@ -328,6 +332,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 				// 改为挂载dataset路径创建的pvc
 				Name:      "data",
 				MountPath: s.conf.Service.DockerDatasetPath,
+				SubPath:   startJobInfo.datasetPath,
 				ReadOnly:  true,
 			},
 			//{
@@ -359,7 +364,6 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 					}},
 			},
 		}
-
 		//add shareMemory for each subTask
 		if i.ShareMemory != nil {
 			volumeMounts = append(volumeMounts, v1.VolumeMount{
@@ -415,7 +419,6 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		}
 		tasks = append(tasks, task)
 	}
-
 	param.Job = &vcBatch.Job{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "batch.volcano.sh/v1alpha1",
@@ -442,7 +445,6 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		},
 		Status: vcBatch.JobStatus{},
 	}
-
 	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
 	closes = append(closes, func(ctx context.Context) error {
 		err1 := s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: job.Id, Reason: "stop job because error"})
@@ -539,6 +541,13 @@ func (s *platformTrainJobService) convertJobFromDb(jobDb *model.PlatformTrainJob
 		//其他情况，默认任务没有启动，不计算
 		r.RunSec = 0
 	}
+	r.Dataset = &api.PlatformDataset{}
+	r.Image = &api.PlatformImage{}
+	r.Dataset.Name = jobDb.DatasetName
+	r.Dataset.Addr = jobDb.DatasetAddr
+	r.Dataset.StorageConfigName = jobDb.DatasetStorageConfigName
+	r.Image.Name = jobDb.ImageName
+	r.Image.Version = jobDb.ImageVersion
 
 	return r, nil
 }
@@ -757,7 +766,6 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	volumeMode := v1.PersistentVolumeFilesystem
 	pvLableKey := "octopus-pv-label-key"
 	pvLableValue := fmt.Sprintf("octopus-pv-label-%s", jobId)
-
 	reply, err := s.platformService.GetPlatformStorageConfig(ctx, &api.GetPlatformStorageConfigRequest{
 		PlatformId: platformId,
 		Name:       storageConfigName,
@@ -785,8 +793,8 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 					Driver:       "csi.juicefs.com",
 					FSType:       "juicefs",
 					NodePublishSecretRef: &v1.SecretReference{
-						Name:      "juicefs-secret",
-						Namespace: "default",
+						Name:      fmt.Sprintf("juicefs-secret-%s", jobId),
+						Namespace: platformId,
 					},
 				},
 			},
@@ -794,8 +802,9 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	}
 	pvc := &v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   pvcName,
-			Labels: map[string]string{pvLableKey: pvLableValue},
+			Name:      pvcName,
+			Namespace: platformId,
+			Labels:    map[string]string{pvLableKey: pvLableValue},
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
 			VolumeMode:  &volumeMode,
@@ -810,7 +819,8 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	}
 	sct := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "juicefs-secret",
+			Name:      fmt.Sprintf("juicefs-secret-%s", jobId),
+			Namespace: platformId,
 		},
 		Type: v1.SecretTypeOpaque,
 		Data: map[string][]byte{
