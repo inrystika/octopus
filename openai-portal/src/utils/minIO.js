@@ -1,4 +1,5 @@
 import requestMinIO from '@/utils/requestMinIO'
+import { Message } from 'element-ui'
 export async function minIO(payload) {
   const res = await requestMinIO({
     url: payload.uploadUrl,
@@ -12,6 +13,11 @@ export async function minIO(payload) {
     return res
   } else {
     sessionStorage.setItem(JSON.stringify(payload.id), 0)
+    Message({
+      message: '上传失败',
+      type: 'error',
+      duration: 5 * 1000
+    })
     return {
       success: false
     }
