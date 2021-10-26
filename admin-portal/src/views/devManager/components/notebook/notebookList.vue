@@ -52,14 +52,33 @@
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <div v-if="({'running':true,'pending':true,'preparing':true})[scope.row.status] || false">
-            <el-button slot="reference" type="text" @click="confirmStop(scope.row)">停止</el-button>
-          </div>
-          <div v-if="({'stopped':true})[scope.row.status] || false">
-          </div>
+          <!-- <div v-if="({'running':true,'pending':true,'preparing':true})[scope.row.status] || false"> -->
+            <el-button
+              v-if="({'running':true,'pending':true,'preparing':true})[scope.row.status] || false" 
+              slot="reference" 
+              type="text" 
+              @click="confirmStop(scope.row)"
+            >
+              停止
+            </el-button>
+          <!-- </div> -->
+          <!-- <div v-if="({'stopped':true})[scope.row.status] || false">
+          </div> -->
+          <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
+            详情
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <detailDialog
+      v-if="detailVisible"
+      :detail-data="detailData"
+      @confirm="confirm"
+      @cancel="cancel"
+      @close="close"
+    />
+
     <div class="block">
       <el-pagination
         :current-page="searchData.pageIndex"
@@ -75,6 +94,7 @@
 </template>
 
 <script>
+import detailDialog from "./detailDialog.vue"
 import searchForm from '@/components/search/index.vue'
 import { getNotebookList, stopNotebook } from "@/api/modelDev"
 import { parseTime } from '@/utils/index'
@@ -82,10 +102,13 @@ import { getErrorMsg } from '@/error/index'
 export default {
   name: "NotebookList",
   components: {
-    searchForm
+    searchForm,
+    detailDialog
   },
   data() {
     return {
+      detailData: {},
+      detailVisible: false,
       row: {},
       total: undefined,
       notebookList: [],
@@ -170,6 +193,10 @@ export default {
         });
       });
     },
+    showNotebookInfo(row) {
+      this.detailVisible = true
+      this.detailData = row
+    },
     handleStop(row) {
       stopNotebook(row.id).then(response => {
         if (response.success) {
@@ -182,6 +209,18 @@ export default {
             });
           }
       })
+    },
+    close(val) {
+      this.detailVisible = val;
+      this.getNotebookList(this.searchData);
+    },
+    cancel(val) {
+      this.detailVisible = val;
+      this.getNotebookList(this.searchData);
+    },
+    confirm(val) {
+      this.detailVisible = val;
+      this.getNotebookList(this.searchData);
     },
     // 时间戳转换日期
     parseTime(val) {
