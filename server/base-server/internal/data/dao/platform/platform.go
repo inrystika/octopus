@@ -20,7 +20,7 @@ type PlatformDao interface {
 
 	CreatePlatformStorageConfig(ctx context.Context, platformStorageConfig *model.PlatformStorageConfig) error
 	ListPlatformStorageConfig(ctx context.Context, query *model.PlatformStorageConfigQuery) ([]*model.PlatformStorageConfig, int64, error)
-	DeletePlatformStorageConfig(ctx context.Context, id string) error
+	DeletePlatformStorageConfig(ctx context.Context, platformId string, name string) error
 
 	UpdatePlatformConfig(ctx context.Context, platformId string, config map[string]string) error
 	GetPlatformConfig(ctx context.Context, platformId string) (map[string]string, error)
@@ -200,13 +200,13 @@ func (d *platformDao) ListPlatformStorageConfig(ctx context.Context, query *mode
 	return platformStorageConfigs, totalSize, nil
 }
 
-func (d *platformDao) DeletePlatformStorageConfig(ctx context.Context, id string) error {
+func (d *platformDao) DeletePlatformStorageConfig(ctx context.Context, platformId string, name string) error {
 	db := d.db(ctx)
-	if id == "" {
+	if platformId == "" || name == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	res := db.Where("id = ?", id).Delete(&model.PlatformStorageConfig{})
+	res := db.Where("platform_id = ? and name = ?", platformId, name).Limit(1).Delete(&model.PlatformStorageConfig{})
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 	}

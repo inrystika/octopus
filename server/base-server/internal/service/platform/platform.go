@@ -175,7 +175,6 @@ func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	platformStorageConfig.Id = utils.GetUUIDWithoutSeparator()
 
 	_, size, err := s.data.PlatformDao.ListPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{
 		PlatformId: req.PlatformId,
@@ -193,18 +192,18 @@ func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *
 		return nil, err
 	}
 
-	return &api.CreatePlatformStorageConfigReply{Id: platformStorageConfig.Id}, nil
+	return &api.CreatePlatformStorageConfigReply{}, nil
 }
 
 func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *api.DeletePlatformStorageConfigRequest) (*api.DeletePlatformStorageConfigReply, error) {
-	err := s.data.PlatformDao.DeletePlatformStorageConfig(ctx, req.Id)
+	err := s.data.PlatformDao.DeletePlatformStorageConfig(ctx, req.PlatformId, req.Name)
 	if err != nil {
 		return nil, err
 	}
 	return &api.DeletePlatformStorageConfigReply{}, nil
 }
 
-func (s *platformService) GetPlatformStorageConfigByName(ctx context.Context, req *api.GetPlatformStorageConfigByNameRequest) (*api.GetPlatformStorageConfigByNameReply, error) {
+func (s *platformService) GetPlatformStorageConfig(ctx context.Context, req *api.GetPlatformStorageConfigRequest) (*api.GetPlatformStorageConfigReply, error) {
 	platformStorageConfigs, _, err := s.listPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{PlatformId: req.PlatformId, Name: req.Name})
 	if err != nil {
 		return nil, err
@@ -213,7 +212,7 @@ func (s *platformService) GetPlatformStorageConfigByName(ctx context.Context, re
 		return nil, errors.Errorf(nil, errors.ErrorDBFindEmpty)
 	}
 
-	return &api.GetPlatformStorageConfigByNameReply{PlatformStorageConfig: platformStorageConfigs[0]}, nil
+	return &api.GetPlatformStorageConfigReply{PlatformStorageConfig: platformStorageConfigs[0]}, nil
 }
 
 func (s *platformService) GetPlatformConfig(ctx context.Context, req *api.GetPlatformConfigRequest) (*api.GetPlatformConfigReply, error) {

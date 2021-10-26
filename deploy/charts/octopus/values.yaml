@@ -324,3 +324,7 @@ apidoc:
     address: ""
     pathname: ""
     name: "api-doc"
+
+juicefs-csi-driver:
+  storageClasses:
+    - enabled: false

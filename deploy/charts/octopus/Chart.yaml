@@ -35,3 +35,6 @@ dependencies:
 - name: nginx-ingress-controller
   version: 7.6.9
   repository: https://charts.bitnami.com/bitnami
+- name: juicefs-csi-driver
+  version: 0.6.1
+  repository: https://juicedata.github.io/juicefs-csi-driver

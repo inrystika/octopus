@@ -758,7 +758,7 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	pvLableKey := "octopus-pv-label-key"
 	pvLableValue := fmt.Sprintf("octopus-pv-label-%s", jobId)
 
-	reply, err := s.platformService.GetPlatformStorageConfigByName(ctx, &api.GetPlatformStorageConfigByNameRequest{
+	reply, err := s.platformService.GetPlatformStorageConfig(ctx, &api.GetPlatformStorageConfigRequest{
 		PlatformId: platformId,
 		Name:       storageConfigName,
 	})
