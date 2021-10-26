@@ -283,13 +283,14 @@
                   message: '上传成功',
                   type: 'success'
                 });
-                sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0),
                 this.$emit('confirm', false)
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0)
               }
 
             },
@@ -306,13 +307,15 @@
             if (response.success) {
               // store.commit('user/SET_PROGRESSID', this.uploadData.id)
               this.$message.success("上传数据集成功");
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                this.$emit('confirm', false)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
+              this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
+
             }
           })
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
@@ -324,12 +327,13 @@
           myAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传我的算法成功");
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0);
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newDatasetVersionCreation') {
@@ -341,13 +345,14 @@
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传数据集新版本成功");
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
                 this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
             }
           })
         }

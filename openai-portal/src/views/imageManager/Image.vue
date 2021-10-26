@@ -53,7 +53,8 @@
             </el-table-column>
             <el-table-column label="状态" align="center" v-if="flag">
                 <template slot-scope="scope">
-                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus) }}</span>
+                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus)
+                        }}</span>
                     <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
                     <el-progress :percentage="parseInt(scope.row.progress-1)"
                         v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
@@ -137,10 +138,13 @@
             }
         },
         created() {
-            this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+            this.getImage(this.searchData)
             if (this.imageTabType !== 1) {
-                this.flag = false,
-                    this.getImage(this.searchData)
+                this.flag = false
+
+            }
+            if (this.imageTabType == 1) {
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             }
             if (this.image) {
                 this.FormVisible = true

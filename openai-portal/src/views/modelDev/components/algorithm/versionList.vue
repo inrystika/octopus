@@ -117,6 +117,7 @@
       }
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
