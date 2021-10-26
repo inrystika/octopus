@@ -189,3 +189,24 @@ func (s *TrainJobService) assignValue(ctx context.Context, trainJobs []*api.Trai
 
 	return nil
 }
+
+// 任务事件列表
+func (s *TrainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
+	innerReq := &innerapi.JobEventListRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.TrainJobClient.GetJobEventList(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.JobEventListReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

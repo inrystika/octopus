@@ -74,7 +74,7 @@
             停止
           </el-button>
           <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
-            信息
+            详情
           </el-button>
         </template>
       </el-table-column>
@@ -91,9 +91,9 @@
       />
     </div>
 
-    <notebookInfo
-      v-if="notebookInfoVisible"
-      :notebook-data="notebookData"
+    <detailDialog
+      v-if="detailVisible"
+      :detail-data="detailData"
       @confirm="confirm"
       @cancel="cancel"
       @close="close"
@@ -104,7 +104,7 @@
 
 <script>
   import notebookCreation from "./notebookCreation.vue"
-  import notebookInfo from "./notebookInfo.vue"
+  import detailDialog from "./detailDialog.vue"
   import searchForm from '@/components/search/index.vue'
   import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
@@ -114,7 +114,7 @@
     name: "NotebookList",
     components: {
       notebookCreation,
-      notebookInfo,
+      detailDialog,
       searchForm
     },
     props: {
@@ -126,9 +126,9 @@
     data() {
       return {
         row: {},
-        notebookData: {},
+        detailData: {},
         notebookVisible: false,
-        notebookInfoVisible: false,
+        detailVisible: false,
         total: undefined,
         notebookList: [],
         searchForm: [
@@ -278,8 +278,8 @@
         });
       },
       showNotebookInfo(row) {
-        this.notebookInfoVisible = true
-        this.notebookData = row
+        this.detailVisible = true
+        this.detailData = row
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
@@ -331,17 +331,17 @@
       },
       close(val) {
         this.notebookVisible = val;
-        this.notebookInfoVisible = val;
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
-        this.notebookInfoVisible = val;
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
-        this.notebookInfoVisible = val;
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       }
     }
