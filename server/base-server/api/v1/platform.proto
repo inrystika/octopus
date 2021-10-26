@@ -18,7 +18,7 @@ service PlatformService {
   rpc ListPlatformStorageConfig (ListPlatformStorageConfigRequest) returns (ListPlatformStorageConfigReply);
   rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply);
   rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply);
-  rpc GetPlatformStorageConfigByName (GetPlatformStorageConfigByNameRequest) returns (GetPlatformStorageConfigByNameReply);
+  rpc GetPlatformStorageConfig (GetPlatformStorageConfigRequest) returns (GetPlatformStorageConfigReply);
 
   rpc GetPlatformConfig (GetPlatformConfigRequest) returns (GetPlatformConfigReply);
   rpc UpdatePlatformConfig (UpdatePlatformConfigRequest) returns (UpdatePlatformConfigReply);
@@ -146,12 +146,12 @@ message DeletePlatformStorageConfigReply {
 
 }
 
-message GetPlatformStorageConfigByNameRequest {
+message GetPlatformStorageConfigRequest {
   string platformId = 1;
   string name = 2;
 }
 
-message GetPlatformStorageConfigByNameReply {
+message GetPlatformStorageConfigReply {
   PlatformStorageConfig platformStorageConfig = 1;
 }
 
