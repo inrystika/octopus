@@ -311,7 +311,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		Cluster: "",
 	}
 
-	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id)
+	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id, job.Dataset.StorageConfigName)
 	if err != nil {
 		return nil, err
 	}
@@ -750,7 +750,7 @@ func (s *platformTrainJobService) TrainJobStastics(ctx context.Context, req *api
 	}, nil
 }
 
-func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, platformId, jobId string) (error, string) {
+func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, platformId, jobId, storageConfigName string) (error, string) {
 	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
 	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
 	capacity := "10Pi"
@@ -760,7 +760,7 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 
 	reply, err := s.platformService.GetPlatformStorageConfig(ctx, &api.GetPlatformStorageConfigRequest{
 		PlatformId: platformId,
-		Name:       "tidu",
+		Name:       storageConfigName,
 	})
 	if err != nil {
 		return err, ""
