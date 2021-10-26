@@ -17,7 +17,7 @@
   </div>
 </template>
 <script>
-  import { uploadImage, finishUpload, uploadMiniIO } from '@/api/imageManager.js'
+  import { uploadImage, finishUpload } from '@/api/imageManager.js'
   import { uploadMyDataset, myDatasetFinishUpload, uploadNewVersion, newVersionFinishUpload } from "@/api/datasetManager.js"
   import { uploadMyAlgorithm, myAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { minIO } from '@/utils/minIO'
@@ -109,7 +109,7 @@
                   file: this.fileList[0].raw,
                   id: this.uploadData.data.id
                 }
-                uploadMiniIO(param).then(response => {
+                minIO(param).then(response => {
                   this.$nextTick(() => {
                     this.loadingShow = false
                     this.show = true

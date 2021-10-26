@@ -11,6 +11,7 @@ export async function minIO(payload) {
   if (res && res.success) {
     return res
   } else {
+    sessionStorage.setItem(JSON.stringify(payload.id), 0)
     return {
       success: false
     }
