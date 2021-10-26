@@ -23,6 +23,7 @@ ingress:
   enabled: true
   adminserverPath: /adminserver
   openaiserverPath: /openaiserver
+  platformserverPath: /platformserver
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
@@ -126,7 +127,20 @@ openaiserver:
     redis:
       username: ""
       password: "abcde"
-        
+
+# platform-server
+platformserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "platform-server"
+  app:
+    logLevel: info
+  data:
+    redis:
+      username: ""
+      password: "abcde"
 
 # admin-server
 adminserver:

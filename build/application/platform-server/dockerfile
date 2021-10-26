@@ -1,0 +1,13 @@
+from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
+WORKDIR /app
+COPY ./ ./
+
+RUN make platform-server_build binary_dir="/app/server/bin"
+
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/server/bin/platform-server /app/platform-server
+RUN chmod +x /app/platform-server
+EXPOSE 8001
+
+ENTRYPOINT ["/app/platform-server"]

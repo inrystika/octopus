@@ -403,3 +403,10 @@ func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pv
 	}
 	return p, nil
 }
+func (kc *kubernetesCluster) CreateSecret(ctx context.Context, secret *v1.Secret) (*v1.Secret, error) {
+	p, err := kc.kubeclient.CoreV1().Secrets(secret.Namespace).Create(ctx, secret, metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}

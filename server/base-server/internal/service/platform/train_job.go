@@ -2,6 +2,7 @@ package platform
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	api "server/base-server/api/v1"
@@ -45,6 +46,7 @@ type platformTrainJobService struct {
 	resourceSpecService api.ResourceSpecServiceServer
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
+	platformService     api.PlatformServiceServer
 }
 
 type PlatformTrainJobService interface {
@@ -56,7 +58,7 @@ func NewPlatformTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *d
 	workspaceService api.WorkspaceServer, algorithmService api.AlgorithmServer,
 	imageService api.ImageServer, datasetService api.DatasetServiceServer, modelService api.ModelServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer) (PlatformTrainJobService, error) {
+	resourcePoolService api.ResourcePoolServiceServer, platformService api.PlatformServiceServer) (PlatformTrainJobService, error) {
 	log := log.NewHelper("PlatformTrainJobService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -79,6 +81,7 @@ func NewPlatformTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *d
 		resourceSpecService: resourceSpecService,
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
+		platformService:     platformService,
 	}
 
 	return s, nil
@@ -308,6 +311,11 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		Cluster: "",
 	}
 
+	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id)
+	if err != nil {
+		return nil, err
+	}
+
 	minAvailable := 0
 	tasks := make([]vcBatch.TaskSpec, 0)
 
@@ -320,7 +328,6 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 				// 改为挂载dataset路径创建的pvc
 				Name:      "data",
 				MountPath: s.conf.Service.DockerDatasetPath,
-				SubPath:   startJobInfo.datasetPath,
 				ReadOnly:  true,
 			},
 			//{
@@ -340,7 +347,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 				Name: "data",
 				VolumeSource: v1.VolumeSource{
 					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-						ClaimName: common.GetStoragePersistentVolumeChaim(job.PlatformId),
+						ClaimName: pvcName,
 					},
 				},
 			},
@@ -741,4 +748,91 @@ func (s *platformTrainJobService) TrainJobStastics(ctx context.Context, req *api
 		RunningSize:   reply.RunningSize,
 		WaitingSize:   reply.WaitingSize,
 	}, nil
+}
+
+func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, platformId, jobId string) (error, string) {
+	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
+	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
+	capacity := "10Pi"
+	volumeMode := v1.PersistentVolumeFilesystem
+	pvLableKey := "octopus-pv-label-key"
+	pvLableValue := fmt.Sprintf("octopus-pv-label-%s", jobId)
+
+	reply, err := s.platformService.GetPlatformStorageConfigByName(ctx, &api.GetPlatformStorageConfigByNameRequest{
+		PlatformId: platformId,
+		Name:       "tidu",
+	})
+	if err != nil {
+		return err, ""
+	}
+
+	juiceName := reply.PlatformStorageConfig.Options.Juicefs.Name
+	metaUrl := reply.PlatformStorageConfig.Options.Juicefs.MetaUrl
+
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   pvName,
+			Labels: map[string]string{pvLableKey: pvLableValue},
+		},
+		Spec: v1.PersistentVolumeSpec{
+			VolumeMode:                    &volumeMode,
+			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimRetain,
+			AccessModes:                   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			Capacity:                      map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
+			PersistentVolumeSource: v1.PersistentVolumeSource{
+				CSI: &v1.CSIPersistentVolumeSource{
+					VolumeHandle: fmt.Sprintf("dataset-%s", jobId),
+					Driver:       "csi.juicefs.com",
+					FSType:       "juicefs",
+					NodePublishSecretRef: &v1.SecretReference{
+						Name:      "juicefs-secret",
+						Namespace: "default",
+					},
+				},
+			},
+		},
+	}
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   pvcName,
+			Labels: map[string]string{pvLableKey: pvLableValue},
+		},
+		Spec: v1.PersistentVolumeClaimSpec{
+			VolumeMode:  &volumeMode,
+			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			Resources: v1.ResourceRequirements{
+				Requests: map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
+			},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{pvLableKey: pvLableValue},
+			},
+		},
+	}
+	sct := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "juicefs-secret",
+		},
+		Type: v1.SecretTypeOpaque,
+		Data: map[string][]byte{
+			"Name":    []byte(base64.StdEncoding.EncodeToString([]byte(juiceName))),
+			"Metaurl": []byte(base64.StdEncoding.EncodeToString([]byte(metaUrl))),
+		},
+	}
+
+	_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+	if err != nil {
+		return err, ""
+	}
+
+	_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+	if err != nil {
+		return err, ""
+	}
+
+	_, err = s.data.Cluster.CreateSecret(ctx, sct)
+	if err != nil {
+		return err, ""
+	}
+
+	return nil, pvcName
 }
