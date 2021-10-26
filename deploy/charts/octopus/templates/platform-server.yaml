@@ -73,7 +73,7 @@ data:
         logLevel: {{ .Values.platformserver.app.logLevel }}
     server:
         http:
-          addr:  0.0.0.0:8001
+          addr:  0.0.0.0:8004
           timeout: 60s
           jwtSecrect: asdf
          
