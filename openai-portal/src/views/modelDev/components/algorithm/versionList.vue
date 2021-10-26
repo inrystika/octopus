@@ -23,15 +23,24 @@
             <span>{{ scope.row.userName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="算法状态" props="status">
+        <!-- <el-table-column label="算法状态" props="status">
           <template slot-scope="scope">
             <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="上传进度" v-if="algorithmTabType == 1">
+        </el-table-column> -->
+        <!-- <el-table-column label="上传进度" v-if="algorithmTabType == 1">
           <template slot-scope="scope">
             <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
               scope.row.progress+'%' }}</span>
+          </template>
+        </el-table-column> -->
+        <el-table-column label="算法状态">
+          <template slot-scope="scope">
+            <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getAlgorithmStatus(scope.row.fileStatus)
+              }}</span>
+            <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+            <el-progress :percentage="parseInt(scope.row.progress-1)" v-if="scope.row.progress&&scope.row.progress!=0">
+            </el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -68,7 +77,8 @@
       <div slot="footer">
       </div>
     </el-dialog>
-    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel" @confirm="confirm" />
+    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel"
+      @confirm="confirm" />
   </div>
 </template>
 
@@ -107,6 +117,7 @@
       }
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
@@ -119,7 +130,7 @@
         return getErrorMsg(code)
       },
       reupload(row) {
-        store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
+        store.commit('user/SET_PROGRESSID', row.algorithmId + row.algorithmVersion)
         this.myAlgorithmVisible = true
         this.reuploadData = row
       },
@@ -160,7 +171,7 @@
               })
               this.versionList = newArr
               this.versionList.forEach(item => {
-                if (sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))) {          
+                if (sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))) {
                   item.progress = sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))
                 }
 
@@ -308,7 +319,7 @@
       getAlgorithmStatus(value) {
         switch (value) {
           case 1:
-            return "等待上传中"
+            return "未上传"
           case 2:
             return "上传中"
           case 3:

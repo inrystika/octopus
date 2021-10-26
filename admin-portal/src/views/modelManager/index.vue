@@ -23,13 +23,24 @@
       handleClick(tab, event) {
 
       }
-    }
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
   }
 </script>
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 15px!important;
-    background-color:#fff;
+    margin: 15px !important;
+    background-color: #fff;
     padding: 20px;
     min-height: 900px;
   }

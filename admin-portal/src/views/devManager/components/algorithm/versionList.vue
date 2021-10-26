@@ -23,15 +23,13 @@
             <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="算法状态" props="status">
+        <el-table-column label="算法状态">
           <template slot-scope="scope">
-            <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="上传进度" v-if="algorithmType === 2">
-          <template slot-scope="scope">
-            <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-              scope.row.progress+'%' }}</span>
+            <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getAlgorithmStatus(scope.row.fileStatus)
+              }}</span>
+            <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+            <el-progress :percentage="parseInt(scope.row.progress-1)" v-if="scope.row.progress&&scope.row.progress!=0">
+            </el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -60,7 +58,8 @@
       <div slot="footer">
       </div>
     </el-dialog>
-    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel" @confirm="confirm" />
+    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel"
+      @confirm="confirm" />
   </div>
 </template>
 
@@ -97,6 +96,7 @@
       }
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
@@ -109,7 +109,7 @@
         return getErrorMsg(code)
       },
       reupload(row) {
-        store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
+        store.commit('user/SET_PROGRESSID', row.algorithmId + row.algorithmVersion)
         this.myAlgorithmVisible = true
         this.reuploadData = row
       },
@@ -258,14 +258,14 @@
       },
       getAlgorithmStatus(value) {
         switch (value) {
+          case 0:
+            return "未上传"
           case 1:
-            return "等待上传中"
+            return "制作中"
           case 2:
-            return "上传中"
-          case 3:
-            return "上传完成"
-          case 4:
-            return "上传失败"
+            return "制作完成"
+          default:
+            return "制作失败"
         }
       },
       cancel(val) {

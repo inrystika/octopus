@@ -5,12 +5,8 @@
         </div>
         <el-button v-if="modelTabType===3" type="primary" class="create" @click="createModel">创建</el-button>
         <div class="index">
-            <el-table
-                :data="tableData"
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}"
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
                 <el-table-column prop="modelName" label="模型名称" />
                 <el-table-column prop="latestVersion" label="模型版本" />
                 <el-table-column prop="algorithmName" label="算法名称" />
@@ -37,35 +33,16 @@
             </el-table>
         </div>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50,80]"
-                :page-size="searchData.pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50,80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 版本列表对话框 -->
-        <versionList
-            v-if="FormVisible"
-            :model-id="modelId"
-            :model-name="modelName"
-            :model-type="type"
-            @close="close"
-            @cancel="cancel"
-            @confirm="confirm"
-        />
+        <versionList v-if="FormVisible" :model-id="modelId" :model-name="modelName" :model-type="type" @close="close"
+            @cancel="cancel" @confirm="confirm" />
         <!-- 创建对话框 -->
-        <createDialog
-            v-if="CreateVisible"
-            :row="row"
-            :is-list="isList"
-            @close="close"
-            @cancel="cancel"
-            @confirm="confirm"
-        />
+        <createDialog v-if="CreateVisible" :row="row" :is-list="isList" @close="close" @cancel="cancel"
+            @confirm="confirm" />
     </div>
 </template>
 
@@ -113,10 +90,6 @@
             this.getModel(this.searchData)
             // this.timer = setInterval(this.getModel, 1000);
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
             // 错误码
             getErrorMsg(code) {

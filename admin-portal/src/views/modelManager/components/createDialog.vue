@@ -18,7 +18,7 @@
                     >
                         <el-option
                             v-for="item in algorithmNameOption"
-                            :key="item.algorithmId"
+                            :key="item.algorithmId+item.algorithmVersion"
                             :label="item.algorithmName"
                             :value="item.algorithmId"
                         />
@@ -28,7 +28,7 @@
                     <el-select v-model="ruleForm.algorithmVersion" placeholder="请选择" :disabled="!flag">
                         <el-option
                             v-for="item in algorithmVersionOption"
-                            :key="item.algorithmId"
+                            :key="item.algorithmId+item.algorithmVersion"
                             :label="item.AlgorithmVersion"
                             :value="item.algorithmVersion"
                         />

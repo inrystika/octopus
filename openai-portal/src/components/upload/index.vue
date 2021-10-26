@@ -8,8 +8,8 @@
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress" class="progress"
-      v-if="progress>0&&progress<100" />
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress-1" class="progress"
+      v-if="progress>0&&progress<=100" />
     <!-- <div v-if="show" slot="footer" class="dialog-footer">
       <el-button @click="cancel">取 消</el-button>
       <el-button type="primary" @click="confirm">确 定</el-button>
@@ -82,7 +82,7 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      beforeUpload() {
+      beforeUpload() {      
         sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },
       upload(file, fileList) {
@@ -140,6 +140,7 @@
         } else if (this.uploadData.type === "myDatasetCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -149,11 +150,11 @@
           if (fileForm === 'zip') {
             uploadMyDataset(param).then(response => {
               if (response.success) {
-                store.commit('user/SET_PROGRESSID', this.uploadData.id+this.uploadData.version)
+                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
                   file: this.fileList[0].raw,
-                  id: this.uploadData.id+this.uploadData.version,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -184,6 +185,7 @@
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             algorithmId: this.uploadData.AlgorithmId,
             FileName: this.fileList[0].name,
@@ -228,6 +230,7 @@
         } else if (this.uploadData.type === "newDatasetVersionCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -236,12 +239,12 @@
           }
           if (fileForm === 'zip') {
             uploadNewVersion(param).then(response => {
-              store.commit('user/SET_PROGRESSID', this.uploadData.id+this.uploadData.version)
+              store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
               if (response.success) {
                 const param = {
                   uploadUrl: response.data.uploadUrl,
                   file: this.fileList[0].raw,
-                  id: this.uploadData.id+this.uploadData.version,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
@@ -280,13 +283,14 @@
                   message: '上传成功',
                   type: 'success'
                 });
-                sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                  this.$emit('confirm', false)
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0),
+                this.$emit('confirm', false)
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0)
               }
 
             },
@@ -301,15 +305,17 @@
           }
           myDatasetFinishUpload(payload).then(response => {
             if (response.success) {
-              store.commit('user/SET_PROGRESSID', this.uploadData.id)
+              // store.commit('user/SET_PROGRESSID', this.uploadData.id)
               this.$message.success("上传数据集成功");
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                this.$emit('confirm', false)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
+              this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
+
             }
           })
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
@@ -321,11 +327,13 @@
           myAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传我的算法成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0);
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newDatasetVersionCreation') {
@@ -337,13 +345,14 @@
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传数据集新版本成功");
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
                 this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
             }
           })
         }
@@ -368,7 +377,7 @@
           if (store.state.user.progressId == this.uploadData.data.id) {
             return true
           }
-          if (store.state.user.progressId == this.uploadData.id+this.uploadData.version) {
+          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
             return true
           }
           if (store.state.user.progressId == this.uploadData.AlgorithmId + this.uploadData.Version) {
