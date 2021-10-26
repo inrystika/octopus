@@ -175,7 +175,6 @@ func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	platformStorageConfig.Id = utils.GetUUIDWithoutSeparator()
 
 	_, size, err := s.data.PlatformDao.ListPlatformStorageConfig(ctx, &model.PlatformStorageConfigQuery{
 		PlatformId: req.PlatformId,
@@ -193,11 +192,11 @@ func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *
 		return nil, err
 	}
 
-	return &api.CreatePlatformStorageConfigReply{Id: platformStorageConfig.Id}, nil
+	return &api.CreatePlatformStorageConfigReply{}, nil
 }
 
 func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *api.DeletePlatformStorageConfigRequest) (*api.DeletePlatformStorageConfigReply, error) {
-	err := s.data.PlatformDao.DeletePlatformStorageConfig(ctx, req.Id)
+	err := s.data.PlatformDao.DeletePlatformStorageConfig(ctx, req.PlatformId, req.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -32,20 +32,20 @@ service PlatformService {
   // 查询存储配置列表
   rpc ListPlatformStorageConfig (ListPlatformStorageConfigRequest) returns (ListPlatformStorageConfigReply) {
     option (google.api.http) = {
-      get: "/v1/platformmanage/platformstorageconfig"
+      get: "/v1/platformmanage/platform/{platformId}/storageconfig"
     };
   };
   // 创建存储配置
   rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply) {
     option (google.api.http) = {
-      post: "/v1/platformmanage/platformstorageconfig"
+      post: "/v1/platformmanage/platform/{platformId}/storageconfig"
       body: "*"
     };
   };
   // 删除存储配置
   rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply) {
     option (google.api.http) = {
-      delete: "/v1/platformmanage/platformstorageconfig/{id}"
+      delete: "/v1/platformmanage/platform/{platformId}/storageconfig/{name}"
     };
   }
   // 查询配置key列表
@@ -54,6 +54,21 @@ service PlatformService {
       get: "/v1/platformmanage/platformconfigkey"
     };
   }
+
+  // 查询平台配置
+  rpc GetPlatformConfig (GetPlatformConfigRequest) returns (GetPlatformConfigReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platform/{platformId}/config"
+    };
+  };
+
+  // 更新平台配置
+  rpc UpdatePlatformConfig (UpdatePlatformConfigRequest) returns (UpdatePlatformConfigReply) {
+    option (google.api.http) = {
+      put: "/v1/platformmanage/platform/{platformId}/config"
+      body: "*"
+    };
+  };
 }
 
 message ListPlatformRequest {
@@ -127,16 +142,16 @@ message ListPlatformStorageConfigRequest {
   int64 createdAtLt = 6;
   string searchKey = 7;
   string platformId = 8;
+  string name = 9;
 }
 
 message PlatformStorageConfig {
   int64 createdAt = 1;
   int64 updatedAt = 2;
-  string id = 3;
-  string platformId = 4;
-  string name = 5;
-  string type = 6;
-  StorageOptions options = 7;
+  string platformId = 3;
+  string name = 4;
+  string type = 5;
+  StorageOptions options = 6;
 }
 
 message ListPlatformStorageConfigReply {
@@ -146,17 +161,18 @@ message ListPlatformStorageConfigReply {
 
 message CreatePlatformStorageConfigRequest {
   string platformId = 1[(validate.rules).string = {min_len: 1}];
-  string name = 2[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string name = 2[(validate.rules).string = {min_len: 1, max_len: 30, not_contains: "/"}];
   string type = 3[(validate.rules).string = {min_len: 1}];
   StorageOptions options = 4;
 }
 
 message CreatePlatformStorageConfigReply {
-  string id = 1;
 }
 
+
 message DeletePlatformStorageConfigRequest {
-  string id = 1;
+  string platformId = 1;
+  string name = 2;
 }
 
 message DeletePlatformStorageConfigReply {
@@ -173,4 +189,21 @@ message ListPlatformConfigKeyReply {
     string keyDesc = 2;
   }
   repeated ConfigKey configKeys = 1;
+}
+
+message GetPlatformConfigRequest {
+  string platformId = 1;
+}
+
+message GetPlatformConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdatePlatformConfigRequest {
+  string platformId = 1;
+  map<string, string> config = 2;
+}
+
+message UpdatePlatformConfigReply {
+
 }

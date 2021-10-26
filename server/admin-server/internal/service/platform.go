@@ -124,19 +124,34 @@ func (s *platformService) CreatePlatformStorageConfig(ctx context.Context, req *
 		return nil, err
 	}
 
-	innerReply, err := s.data.PlatformClient.CreatePlatformStorageConfig(ctx, innerReq)
+	_, err = s.data.PlatformClient.CreatePlatformStorageConfig(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.CreatePlatformStorageConfigReply{Id: innerReply.Id}, nil
+	return &api.CreatePlatformStorageConfigReply{}, nil
 }
 
 func (s *platformService) DeletePlatformStorageConfig(ctx context.Context, req *api.DeletePlatformStorageConfigRequest) (*api.DeletePlatformStorageConfigReply, error) {
-	_, err := s.data.PlatformClient.DeletePlatformStorageConfig(ctx, &innerapi.DeletePlatformStorageConfigRequest{Id: req.Id})
+	_, err := s.data.PlatformClient.DeletePlatformStorageConfig(ctx, &innerapi.DeletePlatformStorageConfigRequest{PlatformId: req.PlatformId, Name: req.Name})
 	if err != nil {
 		return nil, err
 	}
 
 	return &api.DeletePlatformStorageConfigReply{}, nil
+}
+
+func (s *platformService) GetPlatformConfig(ctx context.Context, req *api.GetPlatformConfigRequest) (*api.GetPlatformConfigReply, error) {
+	reply, err := s.data.PlatformClient.GetPlatformConfig(ctx, &innerapi.GetPlatformConfigRequest{PlatformId: req.PlatformId})
+	if err != nil {
+		return nil, err
+	}
+	return &api.GetPlatformConfigReply{Config: reply.Config}, nil
+}
+func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.UpdatePlatformConfigRequest) (*api.UpdatePlatformConfigReply, error) {
+	_, err := s.data.PlatformClient.UpdatePlatformConfig(ctx, &innerapi.UpdatePlatformConfigRequest{PlatformId: req.PlatformId, Config: req.Config})
+	if err != nil {
+		return nil, err
+	}
+	return &api.UpdatePlatformConfigReply{}, nil
 }

@@ -38,7 +38,6 @@ type PlatformQuery struct {
 
 type PlatformStorageConfig struct {
 	dao.Model
-	Id         string                `gorm:"primaryKey;type:varchar(100);not null;comment:Id"`
 	PlatformId string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_name_deleteAt,priority:1;comment:平台id"`
 	Name       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_name_deleteAt,priority:2;comment:名称"`
 	Type       string                `gorm:"type:varchar(100);not null;default:'';comment:存储类型"`
