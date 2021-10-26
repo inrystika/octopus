@@ -50,7 +50,7 @@
         'progressId',
       ])
     },
-    created() {  
+    created() {
       this.timer = setInterval(() => {
         if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
@@ -182,7 +182,7 @@
           if (fileForm === 'zip') {
             uploadPreDataset(param).then(response => {
               if (response.success) {
-               
+
                 // let uploadUrl = response.data.uploadUrl.replace("octopus-dev-minio:9000","192.168.202.73")
                 store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
@@ -361,13 +361,14 @@
                 message: '上传成功',
                 type: 'success'
               });
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$emit('confirm', false)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0),
+                this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0)
             }
           })
         } else if (this.uploadData.type === "modelManager") {
@@ -378,13 +379,14 @@
                   message: '创建成功',
                   type: 'success'
                 });
-                sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-                this.$emit('confirm', false)
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.modelId + this.uploadData.data.version), 0),
+                  this.$emit('confirm', false)
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.modelId + this.uploadData.data.version), 0)
               }
             }
 
@@ -397,13 +399,14 @@
           }
           preDatasetFinishUpload(payload).then(response => {
             if (response.success) {
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$message.success("上传预置数据集成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0),
+                this.$message.success("上传预置数据集成功");
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newPreDatasetVersion') {
@@ -414,13 +417,14 @@
           }
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$message.success("上传预置数据集版本成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.datasetId + this.uploadData.version), 0),
+                this.$message.success("上传预置数据集版本成功");
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.datasetId + this.uploadData.version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newPreAlgorithm') {
@@ -431,13 +435,14 @@
           }
           preAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$message.success("上传预置算法成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.algorithmId + this.uploadData.version), 0),
+                this.$message.success("上传预置算法成功");
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.algorithmId + this.uploadData.version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newPreAlgorithmVersion') {
@@ -448,13 +453,14 @@
           }
           preAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
-              sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0),
-              this.$message.success("上传预置算法新版本成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.algorithmId + this.uploadData.version), 0),
+                this.$message.success("上传预置算法新版本成功");
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.algorithmId + this.uploadData.version), 0)
             }
           }, this.$emit('confirm', false))
         }
@@ -488,7 +494,7 @@
           if (store.state.user.progressId == this.uploadData.algorithmId + this.uploadData.version) {
             return true
           }
-          
+
           if (store.state.user.progressId == this.uploadData.data.modelId + this.uploadData.data.version) {
             return true
           }

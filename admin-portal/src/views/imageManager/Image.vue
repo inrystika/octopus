@@ -63,7 +63,8 @@
             </el-table-column> -->
             <el-table-column label="状态" align="center">
                 <template slot-scope="scope">
-                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus) }}</span>
+                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus)
+                        }}</span>
                     <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
                     <el-progress :percentage="parseInt(scope.row.progress-1)"
                         v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
@@ -136,14 +137,17 @@
             }
         },
         created() {
-            this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+            this.getImage(this.searchData)
+            // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             if (this.imageTabType !== 1) {
                 this.flag = false
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             } else {
                 this.searchForm.push(
                     { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
                     { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
                 )
+                // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             }
         },
         mounted() {

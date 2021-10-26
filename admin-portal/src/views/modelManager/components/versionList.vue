@@ -18,10 +18,11 @@
                         {{ parseTime(scope.row.createdAt) }}</span>
                     </template>
                 </el-table-column>
-              
+
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
-                        <span v-if="!(scope.row.progress&&scope.row.progress!=0)"> {{ fileStatus(scope.row.fileStatus)}}</span>
+                        <span v-if="!(scope.row.progress&&scope.row.progress!=0)"> {{
+                            fileStatus(scope.row.fileStatus)}}</span>
                         <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
                         <el-progress :percentage="parseInt(scope.row.progress-1)"
                             v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
@@ -85,6 +86,7 @@
             }
         },
         created() {
+            this.getList()
             this.timer = setInterval(() => { this.getList() }, 1000)
 
         },
