@@ -63,9 +63,9 @@
             <el-table-column v-if="flag" label="操作" align="center" :width="250">
                 <template slot-scope="scope">
                     <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
-                        @click="handleEdit(scope.row)">重新上传
+                        @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
-                    <el-button type="text" @click="open2(scope.row)">删除</el-button>
+                    <el-button type="text" @click="open2(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
                     <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text"
                         @click="open3(scope.row)">分享

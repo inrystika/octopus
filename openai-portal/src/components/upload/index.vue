@@ -8,12 +8,11 @@
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
+    <el-tooltip class="item" effect="dark" :content="message" placement="top-start" v-if="!showUpload">
+      <i class="el-icon-warning-outline"></i>
+    </el-tooltip>
     <el-progress :text-inside="true" :stroke-width="18" :percentage="progress-1" class="progress"
       v-if="progress>0&&progress<=100" />
-    <!-- <div v-if="show" slot="footer" class="dialog-footer">
-      <el-button @click="cancel">取 消</el-button>
-      <el-button type="primary" @click="confirm">确 定</el-button>
-    </div> -->
   </div>
 </template>
 <script>
@@ -42,7 +41,8 @@
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
         progress: undefined,
-        timer: undefined
+        timer: undefined,
+        message:'上传过程中，关闭或者刷新页面都会导致文件上传失败'
       }
     },
     computed: {
@@ -55,6 +55,7 @@
         if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
+            this.$emit('upload', true)
           }
         }
       }, 100)
@@ -82,7 +83,7 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      beforeUpload() {      
+      beforeUpload() {
         sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },
       upload(file, fileList) {
@@ -101,6 +102,7 @@
           this.showUpload = false
           this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
+            this.$emit('upload', false)
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
@@ -148,6 +150,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadMyDataset(param).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
@@ -193,6 +196,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadMyAlgorithm(param).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.AlgorithmId + this.uploadData.Version)
@@ -238,6 +242,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadNewVersion(param).then(response => {
               store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
               if (response.success) {
@@ -284,7 +289,7 @@
                   type: 'success'
                 });
                 sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0),
-                this.$emit('confirm', false)
+                  this.$emit('confirm', false)
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
@@ -307,14 +312,14 @@
             if (response.success) {
               // store.commit('user/SET_PROGRESSID', this.uploadData.id)
               this.$message.success("上传数据集成功");
-              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
-              this.$emit('confirm', false)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0),
+                this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
-              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0)
 
             }
           })
@@ -327,13 +332,13 @@
           myAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传我的算法成功");
-              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0);
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId + this.uploadData.Version), 0);
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
-              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId+this.uploadData.Version), 0)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId + this.uploadData.Version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newDatasetVersionCreation') {
@@ -345,14 +350,14 @@
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传数据集新版本成功");
-              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0),
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0),
                 this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
-              sessionStorage.setItem(JSON.stringify(this.uploadData.id+this.uploadData.version), 0)
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0)
             }
           })
         }
@@ -410,4 +415,5 @@
   .dialog-footer {
     margin-top: 10px;
   }
+  .item{margin-left: 5px;font-size: 16px;color:#409EFF;}
 </style>

@@ -12,12 +12,8 @@ export async function minIO(payload) {
   if (res && res.success) {
     return res
   } else {
+    console.log("OPPO")
     sessionStorage.setItem(JSON.stringify(payload.id), 0)
-    Message({
-      message: '上传失败',
-      type: 'error',
-      duration: 5 * 1000
-    })
     return {
       success: false
     }

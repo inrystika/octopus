@@ -48,7 +48,7 @@
             <!-- <el-button type="text">预览</el-button> -->
             <el-button v-show="algorithmTabType === 1 ? true :false"
               v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false" type="text"
-              @click="reupload(scope.row)">重新上传
+              @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="(scope.row.fileStatus === 3)? false : true"
               @click="createTask(scope.row)">
@@ -63,7 +63,7 @@
               {{ scope.row.isShared?"取消分享":"分享" }}
             </el-button>
             <el-button v-if="algorithmTabType === 1 ? true :false" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>
