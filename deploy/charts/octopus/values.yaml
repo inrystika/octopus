@@ -89,6 +89,7 @@ taskset:
 
 # base-server
 baseserver:
+  replicas: 3
   image:
     pullPolicy: ""
     address: ""
@@ -124,6 +125,7 @@ baseserver:
 
 # openai-server
 openaiserver:
+  replicas: 3
   image:
     pullPolicy: ""
     address: ""
@@ -139,6 +141,7 @@ openaiserver:
 
 # admin-server
 adminserver:
+  replicas: 3
   image:
     pullPolicy: ""
     address: ""
@@ -153,6 +156,7 @@ adminserver:
 
 # openaiportal
 openaiportal:
+  replicas: 3
   image:
     pullPolicy: ""
     address: ""
@@ -162,6 +166,7 @@ openaiportal:
 
 # adminportal
 adminportal:
+  replicas: 3
   image:
     pullPolicy: ""
     address: ""
@@ -275,6 +280,7 @@ mysql:
 
 # redis
 redis:
+  architecture: standalone
   master:
     service:
       type: NodePort
@@ -297,8 +303,6 @@ redis:
             - key: beta.kubernetes.io/arch
               operator: In
               values: ["amd64", "x64", "x86-64", "x86_64"]
-  replica:
-    replicaCount: 1
   auth:
     enabled: true
     password: "abcde"
@@ -326,6 +330,22 @@ nginx-ingress-controller:
           - key: beta.kubernetes.io/arch
             operator: In
             values: ["amd64", "x64", "x86-64", "x86_64"]
+  defaultBackend:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
 
 # influxdb
 influxdb:

@@ -311,7 +311,7 @@ charts: charts_build charts_push
 
 charts_build:
 	-mkdir -p ./tmp/charts
-	helm package ./deploy/charts/octopus --dependency-update --version ${RELEASE_VER} --app-version ${RELEASE_VER} -d ./tmp/charts
+	helm package ./deploy/charts/octopus  --version ${RELEASE_VER} --app-version ${RELEASE_VER} -d ./tmp/charts
 
 charts_push:
 	-helm repo add --ca-file=${HARBOR_HUB_CA_FILE} --cert-file=${HARBOR_HUB_CERT_FILE} --username=${HARBOR_HUB_USERNAME} --password=${HARBOR_HUB_PASSWD} chartrepo ${HARBOR_HUB_HOST}/chartrepo/${HARBOR_HUB_PROJECT}

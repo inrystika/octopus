@@ -36,4 +36,12 @@ export function downloadLog(params) {
         method: 'get'
     })
   }
+  // 训任务运行信息
+export function getTempalteInfo(params) {
+  return request({
+    url: `/v1/trainmanage/trainjobevent`,
+    method: 'get',
+    params
+  })
+}
 

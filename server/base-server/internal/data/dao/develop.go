@@ -319,10 +319,14 @@ func (d *developDao) GetNotebookEvents(notebookEventQuery *model.NotebookEventQu
 
 	objectName := fmt.Sprintf("%s-task%d-%d", notebookEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
 
-	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM events where object_name =~ /^%s/", keyMessage, objectName)
+	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name = '%s'", keyMessage, objectName)
 	res, err := d.influxdb.Query(countQuery)
 
 	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	if len(res) == 0 || len(res[0].Series) == 0 || len(res[0].Series[0].Values) == 0 || len(res[0].Series[0].Values[0]) < 2 {
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
@@ -331,7 +335,8 @@ func (d *developDao) GetNotebookEvents(notebookEventQuery *model.NotebookEventQu
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	query := fmt.Sprintf("select %s, %s, %s from events where object_name =~ /^%s/ and kind = 'Pod' LIMIT %d OFFSET %d", keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' and kind = 'Pod' LIMIT %d OFFSET %d",
+		keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
 	res, err = d.influxdb.Query(query)
 
 	if err != nil {
