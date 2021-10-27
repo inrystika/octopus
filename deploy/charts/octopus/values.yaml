@@ -12,7 +12,7 @@ global:
       address: "swr.cn-south-1.myhuaweicloud.com"
       pathname: "/openioctopus"
     pullPolicy: IfNotPresent
-  nodeSelector:
+  nodeSelector: &nodeSelector
     octopus.openi.pcl.cn/node: "server"
 
 common:
@@ -192,12 +192,14 @@ logger:
   filebeat:
     resources: {}
   logstash:
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
   httpd:
     replicaCount: 1
     image:
       pullPolicy: Always
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
 
 
 # minio
@@ -222,6 +224,8 @@ minio:
     type: NodePort
     nodePort: "31311"
     port: "9000"
+  nodeSelector:
+    <<: *nodeSelector
 
 # mysql
 mysql:
@@ -245,6 +249,8 @@ mysql:
       - name: mysql-initdb
         configMap:
           name: mysql-initdb-config
+    nodeSelector:
+      <<: *nodeSelector
 
 
 # redis
@@ -256,6 +262,8 @@ redis:
     persistence:
       size: "50Gi"
       existingClaim: "octopus-redis-pvc"
+    nodeSelector:
+      <<: *nodeSelector
   replica:
     replicaCount: 1
   auth:
@@ -297,7 +305,8 @@ grafana:
     path: /grafana
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 #prometheus
 prometheus:
@@ -315,7 +324,8 @@ prometheus:
     targetPort: "9090"
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 # apidoc
 apidoc:
