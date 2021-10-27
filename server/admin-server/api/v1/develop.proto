@@ -66,6 +66,7 @@ message Notebook {
   string datasetVersion = 20;
   string datasetName = 21;
   uint32 resourceSpecPrice = 22;
+  string imageVersion = 23;
 }
 
 message ListNotebookReply {
