@@ -18,7 +18,7 @@
       <el-col :span="12">
         <div>
           选用算法:
-          <span>{{ profileInfo.algorithmName }}</span>
+          <span>{{ profileInfo.algorithmName + ":" + profileInfo.algorithmVersion }}</span>
         </div>
       </el-col>
       <el-col :span="12">
@@ -32,7 +32,7 @@
       <el-col :span="12">
         <div>
           选用数据集:
-          <span>{{ profileInfo.datasetName }}</span>
+          <span>{{ profileInfo.datasetName + ":" + profileInfo.datasetVersion }}</span>
         </div>
       </el-col>
       <el-col :span="12">
