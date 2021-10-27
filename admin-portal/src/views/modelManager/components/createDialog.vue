@@ -3,7 +3,7 @@
         <el-dialog
             :title="flag?'创建预置模型':'创建模型列表'"
             :visible.sync="dialogFormVisible"
-            width="25%"
+            width="650px"
             :before-close="handleDialogClose"
             :close-on-click-modal="false"
         >

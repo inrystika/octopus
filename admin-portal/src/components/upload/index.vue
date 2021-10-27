@@ -7,12 +7,11 @@
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
+    <el-tooltip class="item" effect="dark" :content="message" placement="top-start" v-if="!showUpload">
+      <i class="el-icon-warning-outline"></i>
+    </el-tooltip>
     <el-progress :text-inside="true" :stroke-width="18" :percentage="progress-1" class="progress"
       v-if="progress>0&&progress<=100" />
-    <!-- <div v-if="show" slot="footer" class="dialog-footer">
-      <el-button @click="cancel">取 消</el-button>
-      <el-button type="primary" @click="confirm">确 定</el-button>
-    </div> -->
   </div>
 </template>
 <script>
@@ -42,7 +41,8 @@
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
         progress: undefined,
-        timer: undefined
+        timer: undefined,
+        message:'在上传过程中，刷新页面都会导致文件上传失败'
       }
     },
     computed: {
@@ -526,4 +526,5 @@
   .dialog-footer {
     margin-top: 10px;
   }
+  .item{margin-left: 5px;font-size: 16px;color:#409EFF;}
 </style>

@@ -45,22 +45,11 @@
                     <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
                 </template>
             </el-table-column>
-            <!-- <el-table-column label="状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
-            <!-- <el-table-column label="上传进度" align="center" v-if="!flag">
-                <template slot-scope="scope">
-                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-                        scope.row.progress+'%' }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="状态" align="center">
                 <template slot-scope="scope">
                     <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus)

@@ -2,7 +2,7 @@
     <div>
         <el-dialog
             :title="flag?'创建镜像':'编辑镜像'"
-            width="35%"
+            width="650px"
             :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose"
             :close-on-click-modal="false"

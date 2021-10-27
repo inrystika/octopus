@@ -2,7 +2,7 @@
   <div>
     <el-dialog
       title="创建预置数据集"
-      width="35%"
+      width="650px"
       :visible.sync="CreateFormVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
