@@ -32,7 +32,7 @@
       <el-col :span="12">
         <div>
           选用数据集:
-          <span>{{ profileInfo.datasetName + ":" + profileInfo.datasetVersion }}</span>
+          <span>{{ profileInfo.datasetShow }}</span>
         </div>
       </el-col>
       <el-col :span="12">
@@ -82,6 +82,11 @@ export default {
   },
   created() {
     this.profileInfo = this.notebookData
+    if(!this.profileInfo.datasetName) {
+      this.profileInfo.datasetShow = ''
+      return
+    }
+    this.profileInfo.datasetShow = this.profileInfo.datasetName + ":" + this.profileInfo.datasetVersion
   }
 }
 </script>
