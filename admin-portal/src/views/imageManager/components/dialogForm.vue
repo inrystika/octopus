@@ -1,12 +1,7 @@
 <template>
     <div>
-        <el-dialog
-            :title="flag?'创建镜像':'编辑镜像'"
-            width="650px"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="flag?'创建镜像':'编辑镜像'" width="650px" :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose" :close-on-click-modal="false" :show-close="close">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
                     <el-select v-model="ruleForm.imageType" placeholder="请选择镜像类型" :disabled="!flag||showUpload">
@@ -28,14 +23,11 @@
                         <el-option label="文件上传" :value="1" />
                         <el-option label="远程镜像" :value="2" />
                     </el-select>
-                    <upload
-                        v-if="showUpload && ruleForm.sourceType===1"
-                        :upload-data="uploadData"
-                        @confirm="confirm"
-                        @cancel="cancel"
-                    />
+                    <upload v-if="showUpload && ruleForm.sourceType===1" :upload-data="uploadData" @confirm="confirm"
+                        @cancel="cancel" @upload="isCloseX" />
                 </el-form-item>
-                <el-form-item v-if="ruleForm.sourceType===2" label="远程镜像地址" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="imageAddr">
+                <el-form-item v-if="ruleForm.sourceType===2" label="远程镜像地址" :label-width="formLabelWidth"
+                    placeholder="请输入镜像名称" prop="imageAddr">
                     <el-input v-model="ruleForm.imageAddr" placeholder="请输入远程镜像地址" :disabled="!flag" />
                 </el-form-item>
             </el-form>
@@ -115,7 +107,8 @@
                     ]
 
                 },
-                formLabelWidth: '120px'
+                formLabelWidth: '120px',
+                close: true
             }
         },
         created() {
@@ -228,7 +221,10 @@
                 this.$emit('close', false)
             },
             confirm(val) { this.$emit('confirm', val) },
-            cancel(val) { this.$emit('cancel', val) }
+            cancel(val) { this.$emit('cancel', val) },
+            isCloseX(val) {
+                this.close = val
+            }
 
         }
     }

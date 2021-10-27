@@ -33,7 +33,7 @@
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
                             预览
                         </el-button>
-                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载
                         </el-button>

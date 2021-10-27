@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="创建新版本" width="650px" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" :show-close="close">
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="名称：" :label-width="formLabelWidth" prop="name">
           <el-input v-model="ruleForm.name" :disabled="true" />
@@ -14,7 +14,8 @@
           <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
         </el-form-item>
         <el-form-item v-if="showUpload" label="代码包上传" :label-width="formLabelWidth" prop="path">
-          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" />
+          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel"
+            @upload="isCloseX" />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -61,7 +62,8 @@
         pageIndex: 1,
         pageSize: 20,
         formLabelWidth: "120px",
-        algorithmList: []
+        algorithmList: [],
+        close: true
       }
     },
     created() {
@@ -73,7 +75,7 @@
         return getErrorMsg(code)
       },
       handleDialogClose() {
-        this.$emit("close", false);
+        this.$emit('close', false)
       },
       nextStep(formName) {
         this.$refs[formName].validate((valid) => {
@@ -106,7 +108,11 @@
       },
       confirm(val) {
         this.$emit("confirm", val);
+      },
+      isCloseX(val) {
+        this.close = val
       }
+
     }
   }
 </script>

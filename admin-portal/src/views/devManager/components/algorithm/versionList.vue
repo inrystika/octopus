@@ -36,7 +36,7 @@
           <template slot-scope="scope">
             <!-- <el-button type="text" style="padding-right:10px">预览</el-button> -->
             <el-button v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false"
-              v-show="algorithmType === 2 ? true : false" type="text" @click="reupload(scope.row)">
+              v-show="algorithmType === 2 ? true : false" type="text" @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               重新上传
             </el-button>
             <el-button slot="reference" type="text" :disabled="scope.row.fileStatus === 3 ? false : true"
@@ -44,7 +44,7 @@
               下载
             </el-button>
             <el-button v-if="algorithmType === 2 ? true : false" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>

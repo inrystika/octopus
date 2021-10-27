@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
-      :http-request="httpRequest" multiple :accept="accept" :disabled="show||progress>0&&progress<100">
-      <el-button size="small" type="primary" :disabled="show||progress>0&&progress<100">点击上传
+      :http-request="httpRequest" multiple :accept="accept" :disabled="show||progress>=0&&progress<=100">
+      <el-button size="small" type="primary" :disabled="show||progress>=0&&progress<=100">点击上传
       </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
@@ -42,7 +42,7 @@
         tipText: '上传文件格式为 zip',
         progress: undefined,
         timer: undefined,
-        message:'在上传过程中，刷新页面都会导致文件上传失败'
+        message: '在上传过程中，刷新页面会导致文件上传失败'
       }
     },
     computed: {
@@ -55,9 +55,10 @@
         if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
+            this.$emit('upload', true)
           }
         }
-      }, 100)
+      }, 1000)
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
@@ -81,7 +82,8 @@
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      beforeUpload() {
+      beforeUpload(file, fileList) {
+
         // sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },
       upload(file, fileList) {
@@ -100,6 +102,7 @@
           this.showUpload = false
           this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
+            this.$emit('upload', false)
             uploadPreImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
               const param = {
@@ -132,6 +135,7 @@
           this.showUpload = false
           this.show = false
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadModel({ modelId: this.uploadData.data.modelId, version: this.uploadData.data.version, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.data.modelId + this.uploadData.data.version)
@@ -180,9 +184,9 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadPreDataset(param).then(response => {
               if (response.success) {
-
                 // let uploadUrl = response.data.uploadUrl.replace("octopus-dev-minio:9000","192.168.202.73")
                 store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
@@ -227,6 +231,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadNewVersion(param).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.datasetId + this.uploadData.version)
@@ -272,6 +277,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadPreAlgorithm(param).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.algorithmId + this.uploadData.version)
@@ -317,6 +323,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadPreAlgorithm(param).then(response => {
               store.commit('user/SET_PROGRESSID', this.uploadData.algorithmId + this.uploadData.version)
               if (response.success) {
@@ -526,5 +533,10 @@
   .dialog-footer {
     margin-top: 10px;
   }
-  .item{margin-left: 5px;font-size: 16px;color:#409EFF;}
+
+  .item {
+    margin-left: 5px;
+    font-size: 16px;
+    color: #409EFF;
+  }
 </style>

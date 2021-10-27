@@ -30,7 +30,7 @@
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
             <el-button v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false"
-              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)">
+              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="scope.row.status === 3 ? false : true"
@@ -38,7 +38,7 @@
               预览
             </el-button>
             <el-button v-if="versionListType === 1 ? false : true" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>
