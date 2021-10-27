@@ -56,6 +56,7 @@ func NewGRPCServer(c *conf.Server, s *service.Service) *grpc.Server {
 	api.RegisterImageServer(gs, s.ImageService)
 	api.RegisterBillingServiceServer(gs, s.BillingService)
 	api.RegisterPlatformServiceServer(gs, s.PlatformService)
+	api.RegisterPlatformTrainJobServiceServer(gs, s.PlatformTrainJobService)
 
 	return gs
 }

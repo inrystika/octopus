@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-package thirdserver.api.v1;
+package platformserver.api.v1;
 
-option go_package = "server/third-server/api/v1;v1";
+option go_package = "server/platform-server/api/v1;v1";
 
 
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "google/protobuf/empty.proto";
 
 service TrainJobService {
     // 创建训练任务
@@ -43,7 +44,7 @@ service TrainJobService {
        };
     };
     //获取集群资源信息
-    rpc PlatformResources(PlatformResourcesRequest) returns (PlatformResourcesReply){
+    rpc PlatformResources(google.protobuf.Empty) returns (PlatformResourcesReply){
       option (google.api.http) = {
         get: "/v1/platform/resource"
       };
@@ -71,8 +72,8 @@ message Image {
 message Dataset {
   //存储配置名称，必填
   string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  //数据集地址，必填
-  string addr = 2[(validate.rules).string = {min_len: 1, max_len: 300}];
+  //数据集子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
   //数据集名称，必填
   string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
 }
@@ -218,10 +219,6 @@ message Node {
   string status = 3;
   map<string,string> capacity = 4;
   map<string,string> allocated = 5;
-}
-
-message PlatformResourcesRequest {
-
 }
 
 message PlatformResourcesReply {

@@ -49,8 +49,8 @@ message PlatformImage {
 message PlatformDataset {
   //存储配置名称，必填
   string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  //数据集地址，必填
-  string addr = 2[(validate.rules).string = {min_len: 1, max_len: 300}];
+  //数据集子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
   //数据集名称，必填
   string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
 }
