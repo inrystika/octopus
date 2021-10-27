@@ -2,7 +2,6 @@ package platform
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	api "server/base-server/api/v1"
@@ -216,6 +215,10 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 	}
 
 	if len(job.Tasks) < 1 {
+		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
+	}
+
+	if strings.HasPrefix(job.DatasetAddr, "/") {
 		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
 	}
 
@@ -460,7 +463,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 }
 
 func (s *platformTrainJobService) StopJob(ctx context.Context, req *api.PlatformStopJobRequest) (*api.PlatformStopJobReply, error) {
-	_, err := s.data.PlatformTrainJobDao.GetTrainJob(ctx, req.Id)
+	trainJob, err := s.data.PlatformTrainJobDao.GetTrainJob(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -478,6 +481,11 @@ func (s *platformTrainJobService) StopJob(ctx context.Context, req *api.Platform
 		Status:      pipeline.STOPPED,
 		CompletedAt: &now,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.deleteDatasetStorageResource(ctx, req.PlatformId, req.Id, trainJob.DatasetStorageConfigName)
 	if err != nil {
 		return nil, err
 	}
@@ -605,6 +613,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 	} else if strings.EqualFold(info.Job.State, pipeline.FAILED) ||
 		strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
 		update.CompletedAt = &info.Job.FinishedAt.Time
+		s.deleteDatasetStorageResource(ctx, trainJob.PlatformId, trainJob.Id, trainJob.DatasetStorageConfigName)
 	}
 
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)
@@ -762,6 +771,7 @@ func (s *platformTrainJobService) TrainJobStastics(ctx context.Context, req *api
 func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, platformId, jobId, storageConfigName string) (error, string) {
 	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
 	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
+	sctName := fmt.Sprintf("juicefs-secret-%s", jobId)
 	capacity := "10Pi"
 	volumeMode := v1.PersistentVolumeFilesystem
 	pvLableKey := "octopus-pv-label-key"
@@ -793,7 +803,7 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 					Driver:       "csi.juicefs.com",
 					FSType:       "juicefs",
 					NodePublishSecretRef: &v1.SecretReference{
-						Name:      fmt.Sprintf("juicefs-secret-%s", jobId),
+						Name:      sctName,
 						Namespace: platformId,
 					},
 				},
@@ -819,13 +829,13 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	}
 	sct := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("juicefs-secret-%s", jobId),
+			Name:      sctName,
 			Namespace: platformId,
 		},
 		Type: v1.SecretTypeOpaque,
 		Data: map[string][]byte{
-			"Name":    []byte(base64.StdEncoding.EncodeToString([]byte(juiceName))),
-			"Metaurl": []byte(base64.StdEncoding.EncodeToString([]byte(metaUrl))),
+			"name":    []byte(juiceName),
+			"metaurl": []byte(metaUrl),
 		},
 	}
 
@@ -845,4 +855,28 @@ func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Conte
 	}
 
 	return nil, pvcName
+}
+
+func (s *platformTrainJobService) deleteDatasetStorageResource(ctx context.Context, platformId, jobId, storageConfigName string) error {
+
+	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
+	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
+	sctName := fmt.Sprintf("juicefs-secret-%s", jobId)
+
+	err := s.data.Cluster.DeletePersistentVolume(ctx, pvName)
+	if err != nil {
+		return err
+	}
+
+	err = s.data.Cluster.DeletePersistentVolumeClaim(ctx, platformId, pvcName)
+	if err != nil {
+		return err
+	}
+
+	err = s.data.Cluster.DeleteSecret(ctx, platformId, sctName)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

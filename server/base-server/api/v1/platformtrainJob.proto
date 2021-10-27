@@ -92,7 +92,8 @@ message PlatformTrainJobReply {
 
 message  PlatformStopJobRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
-  string operation = 2;
+  string platformId = 2;
+  string operation = 3;
 }
 
 message PlatformStopJobReply {

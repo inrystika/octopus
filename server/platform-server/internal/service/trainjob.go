@@ -66,8 +66,9 @@ func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 	innerReq := &innerapi.PlatformStopJobRequest{
-		Id:        req.Id,
-		Operation: "user stop job",
+		Id:         req.Id,
+		PlatformId: platformId,
+		Operation:  "user stop job",
 	}
 	reply, err := s.data.PlatformTrainJobClient.StopJob(ctx, innerReq)
 	if err != nil {
