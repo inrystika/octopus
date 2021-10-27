@@ -24,7 +24,7 @@
       <el-col :span="12">
         <div>
           镜像选择:
-          <span>{{ profileInfo.imageName }}</span>
+          <span>{{ profileInfo.imageName + ":" + profileInfo.imageVersion }}</span>
         </div>
       </el-col>
     </el-row>
