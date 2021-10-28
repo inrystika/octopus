@@ -323,9 +323,9 @@
           case 2:
             return "上传中"
           case 3:
-            return "上传完成"
+            return "解压完成"
           case 4:
-            return "上传失败"
+            return "解压失败"
         }
       },
       cancel(val) {
