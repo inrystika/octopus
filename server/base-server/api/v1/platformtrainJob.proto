@@ -138,7 +138,7 @@ message PlatformTrainJob{
   //job描述
   string desc = 4;
   //数据集
-  PlatformDataset dataset = 5;
+  repeated PlatformDataset datasets = 5;
   //镜像
   PlatformImage image = 6;
   //子任务配置信息
