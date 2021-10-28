@@ -134,9 +134,6 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 	}
 	trainJob.Id = trainJobId
 	trainJob.Status = pipeline.PREPARING
-	trainJob.DatasetName = req.Dataset.Name
-	trainJob.DatasetAddr = req.Dataset.Addr
-	trainJob.DatasetStorageConfigName = req.Dataset.StorageConfigName
 	trainJob.ImageName = req.Image.Name
 	trainJob.ImageVersion = req.Image.Version
 
@@ -193,10 +190,9 @@ type startJobInfoSpec struct {
 }
 
 type startJobInfo struct {
-	queue       string
-	imageAddr   string
-	datasetPath string
-	specs       map[string]*startJobInfoSpec
+	queue     string
+	imageAddr string
+	specs     map[string]*startJobInfoSpec
 }
 
 func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *model.PlatformTrainJob) (*startJobInfo, error) {
@@ -218,8 +214,13 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
 	}
 
-	if strings.HasPrefix(job.DatasetAddr, "/") {
-		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
+	for _, dataset := range job.Datasets {
+		if strings.HasPrefix(dataset.Addr, "/") {
+			return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
+		}
+		if !strings.HasPrefix(dataset.Path, "/") {
+			return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
+		}
 	}
 
 	//非分布式任务config中的副本总数、成功副本数、失败副本数，接口无需传参数; 若传，强制默认个数为1个。
@@ -281,9 +282,8 @@ func (s *platformTrainJobService) checkPermForJob(ctx context.Context, job *mode
 	}
 
 	return &startJobInfo{
-		imageAddr:   imageAddr,
-		datasetPath: job.DatasetAddr,
-		specs:       startJobSpecs,
+		imageAddr: imageAddr,
+		specs:     startJobSpecs,
 	}, nil
 }
 
@@ -319,7 +319,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		//JobNamespace: "default",
 		Cluster: "",
 	}
-	err, pvcName := s.createDatasetStorageResource(ctx, job.PlatformId, job.Id, job.DatasetStorageConfigName)
+	err, pvcNames := s.createDatasetStorageResource(ctx, job.Datasets, job.PlatformId, job.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -332,33 +332,12 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 		//挂载卷
 		volumeMounts := []v1.VolumeMount{
 			{
-				// 改为挂载dataset路径创建的pvc
-				Name:      "data",
-				MountPath: s.conf.Service.DockerDatasetPath,
-				SubPath:   startJobInfo.datasetPath,
-				ReadOnly:  true,
-			},
-			//{
-			//	Name:      "data",
-			//	MountPath: s.conf.Service.DockerModelPath,
-			//	SubPath:   s.getModelSubPath(job),
-			//	ReadOnly:  false,
-			//},
-			{
 				Name:      "localtime",
 				MountPath: "/etc/localtime",
 			},
 		}
 
 		volumes := []v1.Volume{
-			{
-				Name: "data",
-				VolumeSource: v1.VolumeSource{
-					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-						ClaimName: pvcName,
-					},
-				},
-			},
 			{
 				Name: "localtime",
 				VolumeSource: v1.VolumeSource{
@@ -367,6 +346,25 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 					}},
 			},
 		}
+
+		for idx, dataset := range job.Datasets {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
+				// 改为挂载dataset路径创建的pvc
+				Name:      fmt.Sprintf("dataset-%d", idx),
+				MountPath: dataset.Path,
+				SubPath:   dataset.Addr,
+				ReadOnly:  true,
+			})
+			volumes = append(volumes, v1.Volume{
+				Name: fmt.Sprintf("dataset-%d", idx),
+				VolumeSource: v1.VolumeSource{
+					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+						ClaimName: pvcNames[idx],
+					},
+				},
+			})
+		}
+
 		//add shareMemory for each subTask
 		if i.ShareMemory != nil {
 			volumeMounts = append(volumeMounts, v1.VolumeMount{
@@ -485,7 +483,7 @@ func (s *platformTrainJobService) StopJob(ctx context.Context, req *api.Platform
 		return nil, err
 	}
 
-	err = s.deleteDatasetStorageResource(ctx, req.PlatformId, req.Id, trainJob.DatasetStorageConfigName)
+	err = s.deleteDatasetStorageResource(ctx, trainJob.Datasets, req.PlatformId, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -549,11 +547,7 @@ func (s *platformTrainJobService) convertJobFromDb(jobDb *model.PlatformTrainJob
 		//其他情况，默认任务没有启动，不计算
 		r.RunSec = 0
 	}
-	r.Dataset = &api.PlatformDataset{}
 	r.Image = &api.PlatformImage{}
-	r.Dataset.Name = jobDb.DatasetName
-	r.Dataset.Addr = jobDb.DatasetAddr
-	r.Dataset.StorageConfigName = jobDb.DatasetStorageConfigName
 	r.Image.Name = jobDb.ImageName
 	r.Image.Version = jobDb.ImageVersion
 
@@ -613,7 +607,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 	} else if strings.EqualFold(info.Job.State, pipeline.FAILED) ||
 		strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
 		update.CompletedAt = &info.Job.FinishedAt.Time
-		s.deleteDatasetStorageResource(ctx, trainJob.PlatformId, trainJob.Id, trainJob.DatasetStorageConfigName)
+		s.deleteDatasetStorageResource(ctx, trainJob.Datasets, trainJob.PlatformId, trainJob.Id)
 	}
 
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)
@@ -768,114 +762,125 @@ func (s *platformTrainJobService) TrainJobStastics(ctx context.Context, req *api
 	}, nil
 }
 
-func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, platformId, jobId, storageConfigName string) (error, string) {
-	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
-	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
-	sctName := fmt.Sprintf("juicefs-secret-%s", jobId)
-	capacity := "10Pi"
-	volumeMode := v1.PersistentVolumeFilesystem
-	pvLableKey := "octopus-pv-label-key"
-	pvLableValue := fmt.Sprintf("octopus-pv-label-%s", jobId)
-	reply, err := s.platformService.GetPlatformStorageConfig(ctx, &api.GetPlatformStorageConfigRequest{
-		PlatformId: platformId,
-		Name:       storageConfigName,
-	})
-	if err != nil {
-		return err, ""
-	}
+func (s *platformTrainJobService) createDatasetStorageResource(ctx context.Context, datasets model.Datasets, platformId, jobId string) (error, []string) {
 
-	juiceName := reply.PlatformStorageConfig.Options.Juicefs.Name
-	metaUrl := reply.PlatformStorageConfig.Options.Juicefs.MetaUrl
+	pvcNames := make([]string, 0)
 
-	pv := &v1.PersistentVolume{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   pvName,
-			Labels: map[string]string{pvLableKey: pvLableValue},
-		},
-		Spec: v1.PersistentVolumeSpec{
-			VolumeMode:                    &volumeMode,
-			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimRetain,
-			AccessModes:                   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
-			Capacity:                      map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
-			PersistentVolumeSource: v1.PersistentVolumeSource{
-				CSI: &v1.CSIPersistentVolumeSource{
-					VolumeHandle: fmt.Sprintf("dataset-%s", jobId),
-					Driver:       "csi.juicefs.com",
-					FSType:       "juicefs",
-					NodePublishSecretRef: &v1.SecretReference{
-						Name:      sctName,
-						Namespace: platformId,
+	for idx, dataset := range datasets {
+
+		pvName := fmt.Sprintf("octopus-pv-juicefs-%s-%d", jobId, idx)
+		pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s-%d", jobId, idx)
+		sctName := fmt.Sprintf("juicefs-secret-%s-%d", jobId, idx)
+		capacity := "10Pi"
+		volumeMode := v1.PersistentVolumeFilesystem
+		pvLableKey := "octopus-pv-label-key"
+		pvLableValue := fmt.Sprintf("octopus-pv-label-%s-%d", jobId, idx)
+		reply, err := s.platformService.GetPlatformStorageConfig(ctx, &api.GetPlatformStorageConfigRequest{
+			PlatformId: platformId,
+			Name:       dataset.StorageConfigName,
+		})
+		if err != nil {
+			return err, pvcNames
+		}
+
+		juiceName := reply.PlatformStorageConfig.Options.Juicefs.Name
+		metaUrl := reply.PlatformStorageConfig.Options.Juicefs.MetaUrl
+
+		pv := &v1.PersistentVolume{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   pvName,
+				Labels: map[string]string{pvLableKey: pvLableValue},
+			},
+			Spec: v1.PersistentVolumeSpec{
+				VolumeMode:                    &volumeMode,
+				PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimRetain,
+				AccessModes:                   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+				Capacity:                      map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
+				PersistentVolumeSource: v1.PersistentVolumeSource{
+					CSI: &v1.CSIPersistentVolumeSource{
+						VolumeHandle: fmt.Sprintf("dataset-%s-%d", jobId, idx),
+						Driver:       "csi.juicefs.com",
+						FSType:       "juicefs",
+						NodePublishSecretRef: &v1.SecretReference{
+							Name:      sctName,
+							Namespace: platformId,
+						},
 					},
 				},
 			},
-		},
-	}
-	pvc := &v1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      pvcName,
-			Namespace: platformId,
-			Labels:    map[string]string{pvLableKey: pvLableValue},
-		},
-		Spec: v1.PersistentVolumeClaimSpec{
-			VolumeMode:  &volumeMode,
-			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
-			Resources: v1.ResourceRequirements{
-				Requests: map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
+		}
+		pvc := &v1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      pvcName,
+				Namespace: platformId,
+				Labels:    map[string]string{pvLableKey: pvLableValue},
 			},
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{pvLableKey: pvLableValue},
+			Spec: v1.PersistentVolumeClaimSpec{
+				VolumeMode:  &volumeMode,
+				AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+				Resources: v1.ResourceRequirements{
+					Requests: map[v1.ResourceName]resource.Quantity{v1.ResourceStorage: resource.MustParse(capacity)},
+				},
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{pvLableKey: pvLableValue},
+				},
 			},
-		},
-	}
-	sct := &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      sctName,
-			Namespace: platformId,
-		},
-		Type: v1.SecretTypeOpaque,
-		Data: map[string][]byte{
-			"name":    []byte(juiceName),
-			"metaurl": []byte(metaUrl),
-		},
+		}
+		sct := &v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      sctName,
+				Namespace: platformId,
+			},
+			Type: v1.SecretTypeOpaque,
+			Data: map[string][]byte{
+				"name":    []byte(juiceName),
+				"metaurl": []byte(metaUrl),
+			},
+		}
+
+		_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+		if err != nil {
+			return err, pvcNames
+		}
+
+		_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+		if err != nil {
+			return err, pvcNames
+		}
+
+		_, err = s.data.Cluster.CreateSecret(ctx, sct)
+		if err != nil {
+			return err, pvcNames
+		}
+		pvcNames = append(pvcNames, pvcName)
+
 	}
 
-	_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
-	if err != nil {
-		return err, ""
-	}
-
-	_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
-	if err != nil {
-		return err, ""
-	}
-
-	_, err = s.data.Cluster.CreateSecret(ctx, sct)
-	if err != nil {
-		return err, ""
-	}
-
-	return nil, pvcName
+	return nil, pvcNames
 }
 
-func (s *platformTrainJobService) deleteDatasetStorageResource(ctx context.Context, platformId, jobId, storageConfigName string) error {
+func (s *platformTrainJobService) deleteDatasetStorageResource(ctx context.Context, datasets model.Datasets, platformId, jobId string) error {
 
-	pvName := fmt.Sprintf("octopus-pv-juicefs-%s", jobId)
-	pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s", jobId)
-	sctName := fmt.Sprintf("juicefs-secret-%s", jobId)
+	for idx := range datasets {
 
-	err := s.data.Cluster.DeletePersistentVolume(ctx, pvName)
-	if err != nil {
-		return err
-	}
+		pvName := fmt.Sprintf("octopus-pv-juicefs-%s-%d", jobId, idx)
+		pvcName := fmt.Sprintf("octopus-pvc-juicefs-%s-%d", jobId, idx)
+		sctName := fmt.Sprintf("juicefs-secret-%s-%d", jobId, idx)
 
-	err = s.data.Cluster.DeletePersistentVolumeClaim(ctx, platformId, pvcName)
-	if err != nil {
-		return err
-	}
+		err := s.data.Cluster.DeletePersistentVolume(ctx, pvName)
+		if err != nil {
+			return err
+		}
 
-	err = s.data.Cluster.DeleteSecret(ctx, platformId, sctName)
-	if err != nil {
-		return err
+		err = s.data.Cluster.DeletePersistentVolumeClaim(ctx, platformId, pvcName)
+		if err != nil {
+			return err
+		}
+
+		err = s.data.Cluster.DeleteSecret(ctx, platformId, sctName)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

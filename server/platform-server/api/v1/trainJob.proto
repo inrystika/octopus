@@ -59,7 +59,7 @@ message TrainJobRequest {
   //镜像信息
   Image image = 3;
   //数据集信息
-  Dataset dataset = 4;
+  repeated Dataset datasets = 4;
   //子任务信息
   repeated Task tasks = 5;
 }
@@ -71,11 +71,13 @@ message Image {
 
 message Dataset {
   //存储配置名称，必填
-  string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
   //数据集子目录
   string addr = 2[(validate.rules).string = {max_len: 300}];
   //数据集名称，必填
-  string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
+  string name = 3[(validate.rules).string = {max_len: 300}];
+  //数据集容器内路径
+  string path = 4[(validate.rules).string = {max_len: 300}];;
 }
 
 message Task {
@@ -160,7 +162,7 @@ message TrainJob{
   //job描述
   string desc = 3;
   //数据集
-  Dataset dataset = 4;
+  repeated Dataset datasets = 4;
   //镜像
   Image image = 5;
   //子任务配置信息
