@@ -40,7 +40,7 @@
           <template slot-scope="scope">
             <el-button v-show="typeChange === 1 ? true : false"
               v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false" type="text"
-              @click="reupload(scope.row)">重新上传
+              @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="scope.row.status === 3 ? false : true"
               @click="handlePreview(scope.row)">
@@ -51,7 +51,7 @@
               {{ scope.row.shared ? "取消分享":"分享" }}
             </el-button>
             <el-button v-show="typeChange === 1 ? true : false" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>

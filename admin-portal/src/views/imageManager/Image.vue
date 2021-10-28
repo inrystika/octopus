@@ -45,22 +45,11 @@
                     <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
                 </template>
             </el-table-column>
-            <!-- <el-table-column label="状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
-            <!-- <el-table-column label="上传进度" align="center" v-if="!flag">
-                <template slot-scope="scope">
-                    <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-                        scope.row.progress+'%' }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="状态" align="center">
                 <template slot-scope="scope">
                     <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus)
@@ -73,9 +62,9 @@
             <el-table-column v-if="!flag" label="操作" align="center" width="250">
                 <template slot-scope="scope">
                     <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
-                        @click="handleEdit(scope.row)">重新上传
+                        @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
-                    <el-button type="text" @click="open2(scope.row)">删除</el-button>
+                    <el-button type="text" @click="open2(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                     <el-button type="text" @click="open(scope.row)">修改描述</el-button>
                 </template>
             </el-table-column>
