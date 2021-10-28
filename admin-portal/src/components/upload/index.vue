@@ -42,7 +42,7 @@
         tipText: '上传文件格式为 zip',
         progress: undefined,
         timer: undefined,
-        message: '在上传过程中，刷新页面会导致文件上传失败'
+        message: '在上传过程中，刷新页面将会导致文件上传失败'
       }
     },
     computed: {

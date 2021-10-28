@@ -17,7 +17,8 @@
           <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
         </el-form-item>
         <el-form-item v-if="showUpload" label="数据集上传" :label-width="formLabelWidth" prop="path">
-          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" @upload="isCloseX"/>
+          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel"
+            @upload="isCloseX" />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -103,8 +104,8 @@
         this.$emit("confirm", val);
       },
       isCloseX(val) {
-                this.close = val
-            }
+        this.close = val
+      }
     }
   }
 </script>
