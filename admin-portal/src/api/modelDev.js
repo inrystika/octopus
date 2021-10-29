@@ -24,6 +24,15 @@ export async function getNotebookList(payload) {
   return res
 }
 
+export async function getNotebookInfo(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebookevent`,
+    method: 'get',
+    params
+  })
+  return res
+}
+
 export async function stopNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}/stop`,

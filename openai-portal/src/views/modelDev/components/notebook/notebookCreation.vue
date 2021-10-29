@@ -327,7 +327,7 @@ export default {
     },
     created() {
         this.getResource();
-        this.getAlgorithmNameList();
+        // this.getAlgorithmNameList();
     },
     methods: {
         getErrorMsg(code) {
@@ -657,10 +657,15 @@ export default {
             this.getAlgorithmNameList(this.algorithmNameTemp);
         },
         getAlgorithmItem() {
-            this.algorithmNameOption = []
             this.algorithmNameTemp = ''
             this.algorithmNameCount = 1
-            this.getAlgorithmNameList();
+            getMyAlgorithmList({
+                pageIndex: this.algorithmNameCount,
+                pageSize: 10,
+            }).then(response => {
+                this.algorithmNameOption = response.data.algorithms;
+                this.algorithmNameTotal = response.data.totalSize
+            })
         },
         // 远程请求镜像名称
         remoteImage(searchKey) {
@@ -674,10 +679,55 @@ export default {
             this.getImageNameList(this.imageTemp);
         },
         getImageItem() {
-            this.imageNameOption = []
             this.imageTemp = ''
             this.imageNameCount = 1
-            this.getImageNameList();
+            if (this.ruleForm.imageSource === "my") {
+                getMyImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        const data = response.data.images;
+                        const tableData = [];
+                        this.imageNameTotal = response.data.totalSize;
+                        data.forEach(item => {
+                            tableData.push({
+                                ...item.image,
+                                isShared: item.isShared
+                            });
+                        });
+                        this.imageNameOption = tableData
+                    }
+                });
+            }
+            if (this.ruleForm.imageSource === "pre") {
+                getPreImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        this.imageNameOption = response.data.images
+                        this.imageNameTotal = response.data.totalSize;
+                    }
+                });
+            }
+            if (this.ruleForm.imageSource === "common") {
+                getPublicImage({
+                    pageIndex: this.imageNameCount,
+                    pageSize: 10,
+                    imageStatus: 3,
+                    imageType: 1,
+                }).then(response => {
+                    if (response.data.images.length !== 0) {
+                        this.imageNameOption = response.data.images
+                        this.imageNameTotal = response.data.totalSize;
+                    }
+                });
+            }
         },
         // 远程请求数据集名称
         remoteDataSet(searchKey) {
@@ -691,10 +741,47 @@ export default {
             this.getDataSetNameList(this.dataSetTemp);
         },
         getDataSetItem() {
-            this.dataSetNameOption = []
             this.dataSetTemp = ''
             this.dataSetNameCount = 1
-            this.getDataSetNameList();
+            if (this.ruleForm.dataSetSource === "my") {
+                getMyDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets === null) {
+                            response.data.datasets = []
+                        } else {
+                            this.dataSetNameOption = response.data.datasets;
+                            this.dataSetNameTotal = response.data.totalSize;
+                        }
+                });
+            }
+            if (this.ruleForm.dataSetSource === "pre") {
+                getPresetDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets !== null) {
+                            this.dataSetNameOption = response.data.datasets
+                            this.dataSetNameTotal = response.data.totalSize;
+                        } else {
+                            response.data.datasets = [];
+                        }
+                });
+            }
+            if (this.ruleForm.dataSetSource === "common") {
+                getPublicDatasetList({
+                    pageIndex: this.dataSetNameCount,
+                    pageSize: 10,
+                }).then(response => {
+                        if (response.data.datasets !== null) {
+                            this.dataSetNameOption = response.data.datasets
+                            this.dataSetNameTotal = response.data.totalSize;
+                        } else {
+                            response.data.datasets = [];
+                        }
+                });
+            }
         }
     }
 };

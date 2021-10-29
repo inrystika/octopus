@@ -1,13 +1,10 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" class="searchForm" :blur-name="'镜像名称/标签/描述 搜索'" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="'镜像名称/标签/描述 搜索'"
+            @searchData="getSearchData" />
         <el-button v-if="!flag" type="primary" class="create" @click="create">创建</el-button>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="镜像名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.imageName }}</span>
@@ -43,14 +40,9 @@
                     <span>{{ scope.row.imageType===1?'NoteBook类型':'训练类型' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="上传类型" align="center">
+            <el-table-column label="镜像来源" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="创建时间" align="center">
@@ -58,35 +50,32 @@
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="状态" align="center">
+                <template slot-scope="scope">
+                    <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ imageStatus(scope.row.imageStatus)
+                        }}</span>
+                    <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+                    <el-progress :percentage="parseInt(scope.row.progress-1)"
+                        v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
+                </template>
+            </el-table-column>
             <el-table-column v-if="!flag" label="操作" align="center" width="250">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.imageStatus!==3" type="text" @click="handleEdit(scope.row)">重新上传
+                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
+                        @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
-                    <el-button type="text" @click="open2(scope.row)">删除</el-button>
+                    <el-button type="text" @click="open2(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                     <el-button type="text" @click="open(scope.row)">修改描述</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 镜像对话框 -->
-        <dialogForm
-            v-if="FormVisible"
-            :flag="Logo"
-            :row="row"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-        />
+        <dialogForm v-if="FormVisible" :flag="Logo" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
     </div>
 </template>
 <script>
@@ -96,6 +85,7 @@
     import searchForm from '@/components/search/index.vue'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import store from '@/store'
     export default {
         name: "PreImage",
         components: {
@@ -137,14 +127,30 @@
         },
         created() {
             this.getImage(this.searchData)
+            // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             if (this.imageTabType !== 1) {
                 this.flag = false
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             } else {
                 this.searchForm.push(
                     { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
                     { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
                 )
+                // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             }
+        },
+        mounted() {
+            window.addEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            });
+
+        },
+        destroyed() {
+            window.removeEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            })
+            clearInterval(this.timer)
+            this.timer = null
         },
         methods: {
             // 错误码
@@ -171,7 +177,13 @@
                         if (response.success) {
                             if (response.data !== null) {
                                 this.total = parseInt(response.data.totalSize)
-                                this.tableData = response.data.images
+                                this.tableData = response.data.images,
+                                    this.tableData.forEach(item => {
+                                        if (sessionStorage.getItem(JSON.stringify(item.id))) {
+                                            item.progress = sessionStorage.getItem(JSON.stringify(item.id))
+                                        }
+
+                                    })
                             }
                         } else {
                             this.$message({
@@ -186,6 +198,7 @@
                 this.row = row
                 this.FormVisible = true
                 this.Logo = false
+                store.commit('user/SET_PROGRESSID', row.id)
             },
             handleDelete(row) {
                 deletePreImage(row.id).then(response => {
@@ -240,7 +253,7 @@
             imageStatus(value) {
                 switch (value) {
                     case 1:
-                        return '未制作'
+                        return '未上传'
                     case 2:
                         return '制作中'
                     case 3:

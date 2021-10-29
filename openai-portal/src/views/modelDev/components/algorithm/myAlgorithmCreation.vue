@@ -2,10 +2,11 @@
   <div>
     <el-dialog
       title="创建我的算法"
-      width="35%"
+      width="650px"
       :visible.sync="CreateFormVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
+      :show-close="close"
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
@@ -38,6 +39,7 @@
             :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
+            @upload="isCloseX"
           />
         </el-form-item>
       </el-form>
@@ -107,7 +109,8 @@ export default {
         ]
       },
       CreateFormVisible: true,
-      formLabelWidth: "120px"
+      formLabelWidth: "120px",
+      close:true
     };
   },
   methods: {
@@ -188,7 +191,10 @@ export default {
           this.$message.error("请填写数据");
         }
       })
-    }
+    },
+    isCloseX(val) {
+        this.close = val
+      }
   }
 };
 </script>

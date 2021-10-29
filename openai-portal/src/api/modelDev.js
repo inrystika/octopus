@@ -25,10 +25,11 @@ export async function getNotebookList(payload) {
   return res
 }
 
-export async function getNotebookInfo(id) {
+export async function getNotebookInfo(params) {
   const res = await request({
-    url: `/v1/developmanage/notebook/${id}`,
-    method: 'get'
+    url: `/v1/developmanage/notebookevent`,
+    method: 'get',
+    params
   })
   return res
 }

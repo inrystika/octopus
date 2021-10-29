@@ -9,31 +9,42 @@
 </template>
 
 <script>
-import notebookList from "./components/notebook/notebookList.vue";
-export default {
-  components: {
-    notebookList
-  },
-  data() {
-    return {
-      activeName: "myNoteBook",
-      notebook: false
-    }
-  },
-  created() {
-    if (this.$route.query.data === undefined) {
-      this.notebook = false
-    } else if (this.$route.query.data.notebook) {
-      this.notebook = true
-    }
+  import notebookList from "./components/notebook/notebookList.vue";
+  export default {
+    components: {
+      notebookList
+    },
+    data() {
+      return {
+        activeName: "myNoteBook",
+        notebook: false
+      }
+    },
+    created() {
+      if (this.$route.query.data === undefined) {
+        this.notebook = false
+      } else if (this.$route.query.data.notebook) {
+        this.notebook = true
+      }
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
   }
-}
 </script>
 
 <style lang="scss" scoped>
-.Wrapper {
-    margin: 20px!important;
-    background-color:#fff;
+  .Wrapper {
+    margin: 15px !important;
+    background-color: #fff;
     padding: 20px;
     min-height: 900px;
   }

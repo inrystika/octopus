@@ -28,6 +28,18 @@
         }
       }
     },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+
+    },
     methods: {
       handleTabClick(tab) {
         this.activeName = tab.name
@@ -57,7 +69,7 @@
 </script>
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 20px !important;
+    margin: 15px !important;
     background-color: #fff;
     padding: 20px;
     min-height: 900px;

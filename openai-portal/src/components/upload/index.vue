@@ -1,34 +1,22 @@
 <template>
   <div>
-    <el-upload
-      v-if="showUpload"
-      class="upload-demo"
-      action="#"
-      :on-change="upload"
-      :file-list="fileList"
-      :http-request="httpRequest"
-      multiple
-      :accept="accept"
-    >
-      <el-button size="small" type="primary" :disabled="loadingShow" :loading="loadingShow">点击上传</el-button>
+    <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
+      :http-request="httpRequest" multiple :accept="accept" :before-upload="beforeUpload"
+      :disabled="show||progress>0&&progress<100">
+      <el-button size="small" type="primary" :disabled="show||progress>0&&progress<100">点击上传
+      </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
     <el-button v-if="!showUpload" :loading="loadingShow" size="small" type="primary">上传中</el-button>
-    <el-progress
-      v-if="!showUpload"
-      :text-inside="true"
-      :stroke-width="18"
-      :percentage="progress"
-      class="progress"
-    />
-    <div v-if="show" slot="footer" class="dialog-footer">
-      <el-button @click="cancel">取 消</el-button>
-      <el-button type="primary" @click="confirm">确 定</el-button>
-    </div>
+    <el-tooltip class="item" effect="dark" :content="message" placement="top-start" v-if="!showUpload">
+      <i class="el-icon-warning-outline"></i>
+    </el-tooltip>
+    <el-progress :text-inside="true" :stroke-width="18" :percentage="progress-1" class="progress"
+      v-if="progress>0&&progress<=100" />
   </div>
 </template>
 <script>
-  import { uploadImage, finishUpload, uploadMiniIO } from '@/api/imageManager.js'
+  import { uploadImage, finishUpload } from '@/api/imageManager.js'
   import { uploadMyDataset, myDatasetFinishUpload, uploadNewVersion, newVersionFinishUpload } from "@/api/datasetManager.js"
   import { uploadMyAlgorithm, myAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { minIO } from '@/utils/minIO'
@@ -53,7 +41,8 @@
         accept: "application/zip",
         tipText: '上传文件格式为 zip',
         progress: undefined,
-        timer:undefined
+        timer: undefined,
+        message:'上传过程中，关闭或者刷新页面将会导致文件上传失败'
       }
     },
     computed: {
@@ -61,34 +50,48 @@
         'progressId',
       ])
     },
-    watch: {
-      progress(newValue, oldValue) {
-        if (newValue == 100) {
-          clearInterval(this.timer)
-        }
-      }
-    },
-    created() { 
+    created() {
       this.timer = setInterval(() => {
-        if (store.state.user.progressId) {
+        if (this.showProgress()) {
           if (parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))) {
             this.progress = parseInt(sessionStorage.getItem(JSON.stringify(store.state.user.progressId)))
+            this.$emit('upload', true)
           }
         }
-      }, 1000)
+      }, 100)
 
       if (this.uploadData.type === "imageManager") {
         this.accept = "application/zip,.tar"
         this.tipText = '上传文件格式为 zip 或 tar'
       }
     },
+    destory() {
+      clearInterval(this.timer)
+    },
+    watch: {
+      progress(a, b) {
+        if (a == 100) {
+          this.show = true
+          this.loadingShow = false
+        }
+        if (0 < a < 100) {
+          this.loadingShow = true
+        }
+      }
+    },
     methods: {
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
+      beforeUpload() {
+        sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+      },
       upload(file, fileList) {
         // if (this.uploadData.type = "镜像模块") {
-        if (file) { this.fileList = [file] }
+        if (file) {
+          this.fileList = [file]
+          sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
+        }
         // }
       },
       httpRequest() {
@@ -97,18 +100,35 @@
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           if (fileForm === 'zip' || fileForm === 'tar') {
+            this.$emit('upload', false)
             uploadImage({ id: this.uploadData.data.id, fileName: this.fileList[0].name, domain: this.GLOBAL.DOMAIN }).then(response => {
-              store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
-              const param = {
-                uploadUrl: response.data.uploadUrl,
-                file: this.fileList[0].raw
+              if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.data.id)
+                const param = {
+                  uploadUrl: response.data.uploadUrl,
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.data.id
+                }
+                minIO(param).then(response => {
+                  this.$nextTick(() => {
+                    this.loadingShow = false
+                    this.show = true
+                    this.showUpload = true
+                    this.confirm()
+                  })
+
+                })
               }
-              uploadMiniIO(param).then(response => {
-                this.loadingShow = false
-                this.show = true
-                this.showUpload = true
-              })
+              else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+              }
+
+
             })
           } else {
             this.loadingShow = false
@@ -122,6 +142,7 @@
         } else if (this.uploadData.type === "myDatasetCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -129,16 +150,20 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadMyDataset(param).then(response => {
               if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true
                   this.showUpload = true
+                  this.confirm()
                 })
               } else {
                 this.$message({
@@ -163,6 +188,7 @@
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             algorithmId: this.uploadData.AlgorithmId,
             FileName: this.fileList[0].name,
@@ -170,26 +196,30 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadMyAlgorithm(param).then(response => {
               if (response.success) {
+                store.commit('user/SET_PROGRESSID', this.uploadData.AlgorithmId + this.uploadData.Version)
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.AlgorithmId + this.uploadData.Version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true
-                  this.showUpload = true
+                  this.showUpload = true,
+                    this.confirm()
                 })
               } else {
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
-                this.loadingShow = false
-                this.show = true
-                this.showUpload = true
-                this.fileList = []
+                // this.loadingShow = false
+                // this.show = true
+                // this.showUpload = true
+                // this.fileList = []
               }
             })
           } else {
@@ -204,6 +234,7 @@
         } else if (this.uploadData.type === "newDatasetVersionCreation") {
           this.loadingShow = true
           this.showUpload = false
+          this.show = false
           const param = {
             id: this.uploadData.id,
             fileName: this.fileList[0].name,
@@ -211,16 +242,20 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
+            this.$emit('upload', false)
             uploadNewVersion(param).then(response => {
+              store.commit('user/SET_PROGRESSID', this.uploadData.id + this.uploadData.version)
               if (response.success) {
                 const param = {
                   uploadUrl: response.data.uploadUrl,
-                  file: this.fileList[0].raw
+                  file: this.fileList[0].raw,
+                  id: this.uploadData.id + this.uploadData.version,
                 }
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true
-                  this.showUpload = true
+                  this.showUpload = true,
+                    this.confirm()
                 })
               } else {
                 this.$message({
@@ -248,12 +283,24 @@
         if (this.uploadData.type === "imageManager") {
           finishUpload(this.uploadData.data.id).then(
             response => {
-              this.$message({
-                message: '创建成功',
-                type: 'success'
-              });
+              if (response.success) {
+                this.$message({
+                  message: '上传成功',
+                  type: 'success'
+                });
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0),
+                  this.$emit('confirm', false)
+              } else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+                sessionStorage.setItem(JSON.stringify(this.uploadData.data.id), 0)
+              }
+
             },
-            this.$emit('confirm', false)
+
+
           )
         } else if (this.uploadData.type === "myDatasetCreation") {
           const payload = {
@@ -263,14 +310,19 @@
           }
           myDatasetFinishUpload(payload).then(response => {
             if (response.success) {
-              this.$message.success("上传我的数据集成功");
+              // store.commit('user/SET_PROGRESSID', this.uploadData.id)
+              this.$message.success("上传数据集成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0),
+                this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0)
+
             }
-          }, this.$emit('confirm', false))
+          })
         } else if (this.uploadData.type === 'myAlgorithmCreation') {
           const payload = {
             algorithmId: this.uploadData.AlgorithmId,
@@ -280,11 +332,13 @@
           myAlgorithmFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传我的算法成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId + this.uploadData.Version), 0);
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.AlgorithmId + this.uploadData.Version), 0)
             }
           }, this.$emit('confirm', false))
         } else if (this.uploadData.type === 'newDatasetVersionCreation') {
@@ -296,13 +350,16 @@
           newVersionFinishUpload(payload).then(response => {
             if (response.success) {
               this.$message.success("上传数据集新版本成功");
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0),
+                this.$emit('confirm', false)
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               });
+              sessionStorage.setItem(JSON.stringify(this.uploadData.id + this.uploadData.version), 0)
             }
-          }, this.$emit('confirm', false))
+          })
         }
       },
       cancel() {
@@ -318,6 +375,23 @@
             message: '已中断取消操作'
           });
         })
+      },
+      // 显示进度条
+      showProgress() {
+        if (store.state.user.progressId) {
+          if (store.state.user.progressId == this.uploadData.data.id) {
+            return true
+          }
+          if (store.state.user.progressId == this.uploadData.id + this.uploadData.version) {
+            return true
+          }
+          if (store.state.user.progressId == this.uploadData.AlgorithmId + this.uploadData.Version) {
+            return true
+          }
+          else { return false }
+        }
+        else { return false }
+
       }
 
     }
@@ -341,4 +415,5 @@
   .dialog-footer {
     margin-top: 10px;
   }
+  .item{margin-left: 5px;font-size: 16px;color:#409EFF;}
 </style>

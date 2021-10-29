@@ -3,9 +3,10 @@
         <el-dialog
             :title="flag?'创建预置模型':'创建模型列表'"
             :visible.sync="dialogFormVisible"
-            width="25%"
+            width="650px"
             :before-close="handleDialogClose"
             :close-on-click-modal="false"
+            :show-close="close"
         >
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmId">
@@ -18,7 +19,7 @@
                     >
                         <el-option
                             v-for="item in algorithmNameOption"
-                            :key="item.algorithmId"
+                            :key="item.algorithmId+item.algorithmVersion"
                             :label="item.algorithmName"
                             :value="item.algorithmId"
                         />
@@ -28,7 +29,7 @@
                     <el-select v-model="ruleForm.algorithmVersion" placeholder="请选择" :disabled="!flag">
                         <el-option
                             v-for="item in algorithmVersionOption"
-                            :key="item.algorithmId"
+                            :key="item.algorithmId+item.algorithmVersion"
                             :label="item.AlgorithmVersion"
                             :value="item.algorithmVersion"
                         />
@@ -38,7 +39,7 @@
                     <el-input v-model="ruleForm.modelDescript" autocomplete="off" :disabled="showUpload" />
                 </el-form-item>
                 <el-form-item v-if="showUpload" label="模型上传" :label-width="formLabelWidth">
-                    <upload :upload-data="uploadData" @confirm="confirm" @cancel="cancel" />
+                    <upload :upload-data="uploadData" @confirm="confirm" @cancel="cancel" @upload="isCloseX"/>
                 </el-form-item>
             </el-form>
             <div v-if="createSuccess" slot="footer" class="dialog-footer">
@@ -110,7 +111,8 @@
                 showUpload: false,
                 uploadData: {},
                 id: undefined,
-                createSuccess: true
+                createSuccess: true,
+                close: true
             }
         },
         created() {
@@ -214,6 +216,9 @@
             cancel(val) { this.$emit('cancel', val) },
             handleDialogClose() {
                 this.$emit('close', false)
+            },
+            isCloseX(val) {
+                this.close = val
             }
 
         }
