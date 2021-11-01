@@ -4,12 +4,8 @@
             <searchForm :search-form="searchForm" :blur-name="'名称/描述 搜索'" @searchData="getSearchData" />
         </div>
         <div class="index">
-            <el-table
-                :data="tableData"
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}"
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
                 <el-table-column prop="modelName" label="模型名称" align="center" />
                 <el-table-column v-if="modelTabType===2" prop="userName" label="提供者" align="center" />
                 <el-table-column prop="algorithmName" label="算法名称" align="center" />
@@ -24,31 +20,19 @@
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
                         <el-button v-if="type===1" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="type===3" type="text" @click="deploy(scope.row)">部署</el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50,80]"
-                :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="total"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50,80]"
+                :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 版本列表对话框 -->
-        <versionList
-            v-if="FormVisible"
-            :model-id="modelId"
-            :model-type="type"
-            :model-name="modelName"
-            @close="close"
-            @cancel="cancel"
-            @confirm="confirm"
-        />
+        <versionList v-if="FormVisible" :model-id="modelId" :model-type="type" :model-name="modelName" @close="close"
+            @cancel="cancel" @confirm="confirm" />
     </div>
 </template>
 
@@ -212,6 +196,10 @@
                         message: '已取消删除'
                     });
                 });
+            },
+            // 预制模型部署
+            deploy(val) {
+                this.$router.push({ name: 'modelDeploy', params: { data: val } })
             }
 
         }
