@@ -986,7 +986,7 @@ func (h *algorithmHandle) AddMyAlgorithmVersionHandle(ctx context.Context, req *
 		AlgorithmId:       req.AlgorithmId,
 		Version:           common.VersionStrBuild(latestVersion + 1),
 		AlgorithmDescript: req.AlgorithmDescript,
-		FileStatus:        FILESTATUS_INIT,
+		FileStatus:        FILESTATUS_UPLOGADING,
 	})
 	if err != nil {
 		return nil, err
@@ -1495,7 +1495,7 @@ func (h *algorithmHandle) CopyAlgorithmVersionHandle(ctx context.Context, req *a
 				Id:                algorithmVersionId,
 				Version:           algorithmVersion,
 				AlgorithmDescript: req.AlgorithmDescript,
-				FileStatus:        FILESTATUS_INIT,
+				FileStatus:        FILESTATUS_UPLOGADING,
 			},
 		},
 	})
