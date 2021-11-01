@@ -32,6 +32,11 @@ service Workspace {
       get: "/v1/usermanage/workspace"
     };
   };
+  rpc ListWorkspaces (ListWorkspacesRequest) returns (ListWorkspacesReply) {
+    option (google.api.http) = {
+      get: "/v1/usermanage/workspaces"
+    };
+  };
   rpc GetWorkspace (GetWorkspaceRequest) returns (GetWorkspaceReply) {
     option (google.api.http) = {
       get: "/v1/usermanage/workspace/{workspaceId}"
@@ -93,6 +98,13 @@ message ListWorkspaceRequest {
 
 message ListWorkspaceReply {
   int64 totalSize = 1;
+  repeated WorkspaceItem workspaces = 2;
+}
+
+message ListWorkspacesRequest {
+}
+
+message ListWorkspacesReply {
   repeated WorkspaceItem workspaces = 2;
 }
 
