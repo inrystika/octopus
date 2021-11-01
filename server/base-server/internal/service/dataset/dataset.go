@@ -667,7 +667,7 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 		return nil, err
 	}
 
-	// 新增数据类型引用
+	// 减小数据类型引用
 	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, dataset.TypeId)
 	if err == nil {
 		if datasetType.ReferTImes > 0 {
