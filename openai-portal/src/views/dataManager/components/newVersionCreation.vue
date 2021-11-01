@@ -2,10 +2,11 @@
   <div>
     <el-dialog
       title="创建新版本"
-      width="35%"
+      width="650px"
       :visible.sync="CreateFormVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
+      :show-close="close"
     >
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
@@ -32,6 +33,7 @@
             :upload-data="uploadData"
             @confirm="confirm"
             @cancel="cancel"
+            @upload="isCloseX"
           />
         </el-form-item>
       </el-form>
@@ -71,7 +73,8 @@ export default {
         ]
       },
       CreateFormVisible: true,
-      formLabelWidth: "120px"
+      formLabelWidth: "120px",
+      close: true
     }
   },
   created() {
@@ -115,7 +118,10 @@ export default {
     },
     confirm(val) {
       this.$emit("confirm", val);
-    }
+    },
+    isCloseX(val) {
+        this.close = val
+      }
   }
 }
 </script>

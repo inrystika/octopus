@@ -18,13 +18,13 @@
       <el-col :span="12">
         <div>
           选用算法:
-          <span>{{ profileInfo.algorithmName }}</span>
+          <span>{{ profileInfo.algorithmName + ":" + profileInfo.algorithmVersion }}</span>
         </div>
       </el-col>
       <el-col :span="12">
         <div>
           镜像选择:
-          <span>{{ profileInfo.imageName }}</span>
+          <span>{{ profileInfo.imageName + ":" + profileInfo.imageVersion }}</span>
         </div>
       </el-col>
     </el-row>
@@ -32,7 +32,7 @@
       <el-col :span="12">
         <div>
           选用数据集:
-          <span>{{ profileInfo.datasetName }}</span>
+          <span>{{ profileInfo.datasetShow }}</span>
         </div>
       </el-col>
       <el-col :span="12">
@@ -82,7 +82,13 @@ export default {
   },
   created() {
     this.profileInfo = this.notebookData
+    if(!this.profileInfo.datasetName) {
+      this.profileInfo.datasetShow = ''
+      return
+    }
+    this.profileInfo.datasetShow = this.profileInfo.datasetName + ":" + this.profileInfo.datasetVersion
   }
+
 }
 </script>
 <style lang="scss" scoped>

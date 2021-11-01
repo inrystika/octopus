@@ -10,7 +10,7 @@
       :close-on-click-modal="false"
     >
       <el-tabs>
-        <el-tab-pane label="运行简况">
+        <el-tab-pane label="任务简况">
           <notebookProfile :notebook-data="notebookData" />
         </el-tab-pane>
         <el-tab-pane label="运行信息">

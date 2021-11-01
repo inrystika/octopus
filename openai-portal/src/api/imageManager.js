@@ -91,6 +91,7 @@ export function uploadMiniIO(params) {
       sessionStorage.setItem(JSON.stringify(params.id), JSON.stringify(parseInt(((progress.loaded / progress.total) * 100))));
     }
   })
+
 }
 
 // 完成镜像上传

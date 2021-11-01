@@ -89,7 +89,7 @@ taskset:
 
 # base-server
 baseserver:
-  replicas: 3
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -125,7 +125,7 @@ baseserver:
 
 # openai-server
 openaiserver:
-  replicas: 3
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -141,7 +141,7 @@ openaiserver:
 
 # admin-server
 adminserver:
-  replicas: 3
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -156,7 +156,7 @@ adminserver:
 
 # openaiportal
 openaiportal:
-  replicas: 3
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -166,7 +166,7 @@ openaiportal:
 
 # adminportal
 adminportal:
-  replicas: 3
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""

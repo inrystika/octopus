@@ -11,51 +11,62 @@
   </div>
 </template>
 <script>
-import userList from "./userList.vue";
-import templateList from "./templateList.vue";
-export default {
-  components: {
-    userList,
-    templateList
-  },
-  data() {
-    return {
-      activeName: 'userDataset',
-      tabRefresh: {
-        userMenu: true,
-        templateMenu: false
-      }
-    };
-  },
-  methods: {
-    handleClick(tab, event) {
-      this.activeName = tab.name
-      switch (this.activeName) {
-        case 'userDataset':
-          this.switchTab('userMenu')
-          break
-        default:
-          this.switchTab('templateMenu')
-      }
+  import userList from "./userList.vue";
+  import templateList from "./templateList.vue";
+  export default {
+    components: {
+      userList,
+      templateList
     },
-    switchTab(tab) {
-      for (const key in this.tabRefresh) {
-        if (key === tab) {
-          this.tabRefresh[key] = true
-        } else {
-          this.tabRefresh[key] = false
+    data() {
+      return {
+        activeName: 'userDataset',
+        tabRefresh: {
+          userMenu: true,
+          templateMenu: false
+        }
+      };
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
+    methods: {
+      handleClick(tab, event) {
+        this.activeName = tab.name
+        switch (this.activeName) {
+          case 'userDataset':
+            this.switchTab('userMenu')
+            break
+          default:
+            this.switchTab('templateMenu')
+        }
+      },
+      switchTab(tab) {
+        for (const key in this.tabRefresh) {
+          if (key === tab) {
+            this.tabRefresh[key] = true
+          } else {
+            this.tabRefresh[key] = false
+          }
         }
       }
     }
-  }
-};
+  };
 </script>
 
 <style lang="scss" scoped>
-.Wrapper {
-  margin: 15px!important;
-  background-color:#fff;
-  padding: 20px;
-  min-height: 800px;
-}
+  .Wrapper {
+    margin: 15px !important;
+    background-color: #fff;
+    padding: 20px;
+    min-height: 800px;
+  }
 </style>
