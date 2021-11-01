@@ -58,10 +58,12 @@ message TrainJobRequest {
   string desc = 2[(validate.rules).string = {max_len: 300}];
   //镜像信息
   Image image = 3;
+  //输出路径信息
+  Output output = 4;
   //数据集信息
-  repeated Dataset datasets = 4;
+  repeated Dataset datasets = 5;
   //子任务信息
-  repeated Task tasks = 5;
+  repeated Task tasks = 6;
 }
 
 message Image {
@@ -78,6 +80,15 @@ message Dataset {
   string name = 3[(validate.rules).string = {max_len: 300}];
   //数据集容器内路径
   string path = 4[(validate.rules).string = {max_len: 300}];;
+}
+
+message Output {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //存储子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //容器内输出路径
+  string path = 3[(validate.rules).string = {max_len: 300}];
 }
 
 message Task {

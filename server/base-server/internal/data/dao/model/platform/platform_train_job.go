@@ -19,6 +19,7 @@ type PlatformTrainJob struct {
 	PlatformId   string     `gorm:"type:varchar(100);not null;index;uniqueIndex:platformId_name,priority:2;comment:'用户Id'"`
 	Name         string     `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_name,priority:1;comment:'名称'"`
 	Desc         string     `gorm:"type:varchar(1024);not null;default:'';comment:'描述'"`
+	Output       Output     `gorm:"type:json;comment:'output信息'"`
 	Datasets     Datasets   `gorm:"type:json;comment:'dataset信息'"`
 	ImageName    string     `gorm:"type:varchar(200);comment:'镜像名称'"`
 	ImageVersion string     `gorm:"type:varchar(100);comment:'镜像版本'"`
@@ -38,6 +39,12 @@ func (PlatformTrainJob) TableName() string {
 type Dataset struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
+	Addr              string `json:"addr"`
+	Path              string `json:"path"`
+	StorageConfigName string `json:"storageConfigName"`
+}
+
+type Output struct {
 	Addr              string `json:"addr"`
 	Path              string `json:"path"`
 	StorageConfigName string `json:"storageConfigName"`
@@ -83,6 +90,19 @@ func (r Datasets) Value() (driver.Value, error) {
 }
 
 func (r *Datasets) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
+}
+
+func (r Output) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *Output) Scan(input interface{}) error {
 	switch v := input.(type) {
 	case []byte:
 		return json.Unmarshal(input.([]byte), r)

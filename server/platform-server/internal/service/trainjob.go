@@ -43,7 +43,6 @@ func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	}
 	innerReq.PlatformId = platformId
 	innerReq.ResourcePool = resourcePool
-
 	innerReply, err := s.data.PlatformTrainJobClient.TrainJob(ctx, innerReq)
 	if err != nil {
 		return nil, err

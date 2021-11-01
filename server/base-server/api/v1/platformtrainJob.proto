@@ -35,11 +35,23 @@ message PlatformTrainJobRequest {
   string resourcePool = 4;
   //镜像信息
   PlatformImage image = 5;
+  //输出信息
+  PlatformOutput output = 6;
   //数据集信息
-  repeated PlatformDataset datasets = 6;
+  repeated PlatformDataset datasets = 7;
   //子任务信息
-  repeated PlatformTask tasks = 7;
+  repeated PlatformTask tasks = 8;
 }
+
+message PlatformOutput {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //存储子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //容器内输出路径
+  string path = 3[(validate.rules).string = {max_len: 300}];
+}
+
 
 message PlatformImage {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 300}];
