@@ -176,6 +176,8 @@ const (
 	ErrorPlatformStorageConfigNameRepeat = 20002 // 平台存储配置名称重复
 	ErrorPlatformBatchGetPlatform        = 20003 // 批量获取平台信息错误
 
+	/* 21001-22000 云际错误*/
+	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
 )
 
 type codeMsg struct {
@@ -352,4 +354,7 @@ var codeMsgMap = map[int]codeMsg{
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},
 	ErrorPlatformStorageConfigNameRepeat: {codeType: AlreadyExists, msg: "platform storage config existed"},
+
+	/* 21001-22000 云际请求错误*/
+	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},
 }
