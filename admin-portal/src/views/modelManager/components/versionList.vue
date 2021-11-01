@@ -13,20 +13,19 @@
                         <span>{{ scope.row.descript }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="状态">
-                    <template slot-scope="scope">
-                        {{ fileStatus(scope.row.fileStatus) }}</span>
-                    </template>
-                </el-table-column>
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
                         {{ parseTime(scope.row.createdAt) }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="上传进度" v-if="modelType == 3">
+
+                <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-                            scope.row.progress+'%' }}</span>
+                        <span v-if="!(scope.row.progress&&scope.row.progress!=0)"> {{
+                            fileStatus(scope.row.fileStatus)}}</span>
+                        <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+                        <el-progress :percentage="parseInt(scope.row.progress-1)"
+                            v-if="scope.row.progress&&scope.row.progress!=0"></el-progress>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作">
@@ -34,7 +33,7 @@
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
                             预览
                         </el-button>
-                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载
                         </el-button>
@@ -87,6 +86,7 @@
             }
         },
         created() {
+            this.getList()
             this.timer = setInterval(() => { this.getList() }, 1000)
 
         },
@@ -94,7 +94,6 @@
             clearInterval(this.timer)
             this.timer = null
         },
-
         methods: {
             // 错误码
             getErrorMsg(code) {
@@ -227,14 +226,15 @@
             fileStatus(val) {
                 switch (val) {
                     case 0:
-                        return '初始态'
+                        return '未上传'
                         break;
                     case 1:
-                        return '上传中'
+                        return '制作中'
                         break;
                     case 2:
-                        return '已上传'
+                        return '制作完成'
                         break;
+                    case 3: '制作失败'
                     default:
                         return '上传失败'
                 }

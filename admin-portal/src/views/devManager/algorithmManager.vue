@@ -12,51 +12,62 @@
 </template>
 
 <script>
-import userList from "./components/algorithm/userList.vue";
-import templateList from "./components/algorithm/templateList.vue";
-export default {
-  components: {
-    userList,
-    templateList
-  },
-  data() {
-    return {
-      activeName: "userAlgorithm",
-      tabRefresh: {
-        userMenu: true,
-        templateMenu: false
-      }
-    }
-  },
-  methods: {
-    handleClick(tab, event) {
-      this.activeName = tab.name
-      switch (this.activeName) {
-        case 'userAlgorithm':
-          this.switchTab('userMenu')
-          break
-        default:
-          this.switchTab('templateMenu')
+  import userList from "./components/algorithm/userList.vue";
+  import templateList from "./components/algorithm/templateList.vue";
+  export default {
+    components: {
+      userList,
+      templateList
+    },
+    data() {
+      return {
+        activeName: "userAlgorithm",
+        tabRefresh: {
+          userMenu: true,
+          templateMenu: false
+        }
       }
     },
-    switchTab(tab) {
-      for (const key in this.tabRefresh) {
-        if (key === tab) {
-          this.tabRefresh[key] = true
-        } else {
-          this.tabRefresh[key] = false
+    mounted() {
+            window.addEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            });
+
+        },
+        destroyed() {
+            window.removeEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            })
+        },
+    methods: {
+      handleClick(tab, event) {
+        this.activeName = tab.name
+        switch (this.activeName) {
+          case 'userAlgorithm':
+            this.switchTab('userMenu')
+            break
+          default:
+            this.switchTab('templateMenu')
+        }
+      },
+      switchTab(tab) {
+        for (const key in this.tabRefresh) {
+          if (key === tab) {
+            this.tabRefresh[key] = true
+          } else {
+            this.tabRefresh[key] = false
+          }
         }
       }
     }
   }
-}
 </script>
 
 <style scoped>
-.Wrapper {
-  margin: 15px!important;
-    background-color:#fff;
+  .Wrapper {
+    margin: 15px !important;
+    background-color: #fff;
     padding: 20px;
     min-height: 800px;
-}
+  }
 </style>

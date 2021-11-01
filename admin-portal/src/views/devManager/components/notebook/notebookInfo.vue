@@ -63,7 +63,7 @@ export default {
     this.getNotebookInfo()
   },
   methods: {
-    getNotebookInfo() {
+    getNotebookInfo(){
       const param = {
         id: this.notebookInfo.notebookJobId,
         pageIndex: this.pageIndex,
@@ -112,7 +112,7 @@ export default {
       this.pageIndex = val
       this.getNotebookInfo()
     }
-  }
+  },
 }
 </script>
 

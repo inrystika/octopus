@@ -19,21 +19,18 @@
             <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据集状态" props="status">
+        <el-table-column label="状态">
           <template slot-scope="scope">
-            <span>{{ getDatasetStatus(scope.row.status) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="上传进度" v-if="versionListType===2">
-          <template slot-scope="scope">
-            <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-              scope.row.progress+'%' }}</span>
+            <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getDatasetStatus(scope.row.status) }}</span>
+            <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+            <el-progress :percentage="parseInt(scope.row.progress-1)" v-if="scope.row.progress&&scope.row.progress!=0">
+            </el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
             <el-button v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false"
-              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)">
+              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="scope.row.status === 3 ? false : true"
@@ -41,7 +38,7 @@
               预览
             </el-button>
             <el-button v-if="versionListType === 1 ? false : true" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>
@@ -97,15 +94,13 @@
       }
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
     destroyed() {
       clearInterval(this.timer)
       this.timer = null
-    },
-    destroyed() {
-      clearInterval(this.timer)
     },
     methods: {
       getErrorMsg(code) {
@@ -185,7 +180,7 @@
       getDatasetStatus(value) {
         switch (value) {
           case 1:
-            return "等待解压中"
+            return "未上传"
           case 2:
             return "解压中"
           case 3:

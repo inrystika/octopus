@@ -10,9 +10,11 @@ import (
 )
 
 type AdminUserDao interface {
-	List(ctx context.Context, query model.AdminUserQuery) ([]*model.AdminUser, error)
+	List(ctx context.Context, query model.AdminUserList) ([]*model.AdminUser, error)
 	Find(ctx context.Context, adminUser model.AdminUser) (*model.AdminUser, error)
 	Add(ctx context.Context, adminUser *model.AdminUser) error
+	Count(ctx context.Context, adminUser model.AdminUserQuery) (int64, error)
+	Delete(ctx context.Context, adminUser model.AdminUserQuery) error
 }
 
 type adminUserDao struct {
@@ -27,7 +29,27 @@ func NewAdminUserDao(db *gorm.DB, logger log.Logger) AdminUserDao {
 	}
 }
 
-func (d *adminUserDao) List(ctx context.Context, query model.AdminUserQuery) ([]*model.AdminUser, error) {
+func (d *adminUserDao) Delete(ctx context.Context, condition model.AdminUserQuery) error {
+	db := d.db.Unscoped()
+
+	condition.Where(db)
+	result := db.Delete(model.AdminUser{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (d *adminUserDao) Count(ctx context.Context, condition model.AdminUserQuery) (int64, error) {
+	db := d.db
+	var count int64
+	condition.Where(db)
+
+	db.Model(&model.AdminUser{}).Count(&count)
+	return count, nil
+}
+
+func (d *adminUserDao) List(ctx context.Context, query model.AdminUserList) ([]*model.AdminUser, error) {
 	db := d.db
 	users := make([]*model.AdminUser, 0)
 	if query.PageIndex != 0 {

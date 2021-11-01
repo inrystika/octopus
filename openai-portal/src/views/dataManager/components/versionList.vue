@@ -19,22 +19,28 @@
             <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据集状态" props="status">
+        <!-- <el-table-column label="数据集状态" props="status">
           <template slot-scope="scope">
             <span>{{ getDatasetStatus(scope.row.status) }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="上传进度" v-if="typeChange===1">
-          <template slot-scope="scope">
+        </el-table-column> -->
+        <el-table-column label="数据集状态" v-if="typeChange===1">
+          <!-- <template slot-scope="scope">
             <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
               scope.row.progress+'%' }}</span>
+          </template> -->
+          <template slot-scope="scope">
+            <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getDatasetStatus(scope.row.status) }}</span>
+            <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+            <el-progress :percentage="parseInt(scope.row.progress-1)" v-if="scope.row.progress&&scope.row.progress!=0">
+            </el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
             <el-button v-show="typeChange === 1 ? true : false"
               v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false" type="text"
-              @click="reupload(scope.row)">重新上传
+              @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="scope.row.status === 3 ? false : true"
               @click="handlePreview(scope.row)">
@@ -45,7 +51,7 @@
               {{ scope.row.shared ? "取消分享":"分享" }}
             </el-button>
             <el-button v-show="typeChange === 1 ? true : false" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>
@@ -118,6 +124,7 @@
       };
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
@@ -132,7 +139,7 @@
       reupload(row) {
         this.myDatasetVisible = true
         this.versionData = row,
-        store.commit('user/SET_PROGRESSID', row.datasetId+row.version)
+          store.commit('user/SET_PROGRESSID', row.datasetId + row.version)
       },
       handlePreview(row) {
         this.preVisible = true
@@ -227,7 +234,7 @@
       getDatasetStatus(value) {
         switch (value) {
           case 1:
-            return "等待上传中"
+            return "未上传"
           case 2:
             return "解压中"
           case 3:

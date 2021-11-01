@@ -105,3 +105,25 @@ func (s *DevelopService) assignValue(ctx context.Context, notebooks []*api.Noteb
 
 	return nil
 }
+
+// Notebook事件列表
+func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.NotebookEventListRequest) (*api.NotebookEventListReply, error) {
+
+	innerReq := &innerapi.NotebookEventListRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DevelopClient.GetNotebookEventList(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.NotebookEventListReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

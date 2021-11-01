@@ -23,15 +23,24 @@
             <span>{{ scope.row.userName }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="算法状态" props="status">
+        <!-- <el-table-column label="算法状态" props="status">
           <template slot-scope="scope">
             <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
           </template>
-        </el-table-column>
-        <el-table-column label="上传进度" v-if="algorithmTabType == 1">
+        </el-table-column> -->
+        <!-- <el-table-column label="上传进度" v-if="algorithmTabType == 1">
           <template slot-scope="scope">
             <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
               scope.row.progress+'%' }}</span>
+          </template>
+        </el-table-column> -->
+        <el-table-column label="算法状态">
+          <template slot-scope="scope">
+            <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getAlgorithmStatus(scope.row.fileStatus)
+              }}</span>
+            <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
+            <el-progress :percentage="parseInt(scope.row.progress-1)" v-if="scope.row.progress&&scope.row.progress!=0">
+            </el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -39,7 +48,7 @@
             <!-- <el-button type="text">预览</el-button> -->
             <el-button v-show="algorithmTabType === 1 ? true :false"
               v-if="(scope.row.fileStatus === 1 ) || (scope.row.fileStatus === 4 ) ? true : false" type="text"
-              @click="reupload(scope.row)">重新上传
+              @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
             </el-button>
             <el-button type="text" style="padding-right:10px" :disabled="(scope.row.fileStatus === 3)? false : true"
               @click="createTask(scope.row)">
@@ -54,7 +63,7 @@
               {{ scope.row.isShared?"取消分享":"分享" }}
             </el-button>
             <el-button v-if="algorithmTabType === 1 ? true :false" slot="reference" type="text"
-              @click="confirmDelete(scope.row)">
+              @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
             </el-button>
           </template>
@@ -68,7 +77,8 @@
       <div slot="footer">
       </div>
     </el-dialog>
-    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel" @confirm="confirm" />
+    <reuploadAlgorithm v-if="myAlgorithmVisible" :reupload-data="reuploadData" @close="close" @cancel="cancel"
+      @confirm="confirm" />
   </div>
 </template>
 
@@ -107,6 +117,7 @@
       }
     },
     created() {
+      this.getVersionList()
       this.timer = setInterval(() => { this.getVersionList() }, 1000)
 
     },
@@ -119,7 +130,7 @@
         return getErrorMsg(code)
       },
       reupload(row) {
-        store.commit('user/SET_PROGRESSID', row.algorithmId+row.algorithmVersion)
+        store.commit('user/SET_PROGRESSID', row.algorithmId + row.algorithmVersion)
         this.myAlgorithmVisible = true
         this.reuploadData = row
       },
@@ -160,7 +171,7 @@
               })
               this.versionList = newArr
               this.versionList.forEach(item => {
-                if (sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))) {          
+                if (sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))) {
                   item.progress = sessionStorage.getItem(JSON.stringify(item.algorithmId + item.algorithmVersion))
                 }
 
@@ -308,13 +319,13 @@
       getAlgorithmStatus(value) {
         switch (value) {
           case 1:
-            return "等待上传中"
+            return "未上传"
           case 2:
             return "上传中"
           case 3:
-            return "上传完成"
+            return "解压完成"
           case 4:
-            return "上传失败"
+            return "解压失败"
         }
       },
       cancel(val) {

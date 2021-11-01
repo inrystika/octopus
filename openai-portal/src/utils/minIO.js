@@ -1,4 +1,5 @@
 import requestMinIO from '@/utils/requestMinIO'
+import { Message } from 'element-ui'
 export async function minIO(payload) {
   const res = await requestMinIO({
     url: payload.uploadUrl,
@@ -11,6 +12,8 @@ export async function minIO(payload) {
   if (res && res.success) {
     return res
   } else {
+    console.log("OPPO")
+    sessionStorage.setItem(JSON.stringify(payload.id), 0)
     return {
       success: false
     }

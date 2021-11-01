@@ -2,10 +2,11 @@
     <div>
         <el-dialog
             :title="flag?'创建镜像':'编辑镜像'"
-            width="35%"
+            width="750px"
             :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose"
             :close-on-click-modal="false"
+            :show-close="close"
         >
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
@@ -28,7 +29,7 @@
                         <el-option label="文件上传" :value="1" />
                         <el-option label="远程镜像" :value="2" />
                     </el-select>
-                    <upload v-if="showUpload" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" />
+                    <upload v-if="showUpload" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" @upload="isCloseX"/>
                 </el-form-item>
                 <el-form-item
                     v-if="ruleForm.sourceType===2"
@@ -115,7 +116,8 @@
 
                     ]
                 },
-                formLabelWidth: '120px'
+                formLabelWidth: '120px',
+                close: true
             }
         },
         watch: {
@@ -246,6 +248,9 @@
             confirm(val) { this.$emit('confirm', val) },
             cancel() {
                 this.$emit('cancel', false)
+            },
+            isCloseX(val) {
+                this.close = val
             }
         }
     }

@@ -9,25 +9,37 @@
 </template>
 
 <script>
-import notebookList from "./components/notebook/notebookList.vue";
-export default {
-  components: {
-    notebookList
-  },
-  data() {
-    return {
-      activeName: "notebookList"
-    }
-  },
-  methods: {
+  import notebookList from "./components/notebook/notebookList.vue";
+  export default {
+    components: {
+      notebookList
+    },
+    data() {
+      return {
+        activeName: "notebookList"
+      }
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
 
-  }}
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
+    methods: {
+
+    }
+  }
 </script>
 
 <style scoped>
   .Wrapper {
-    margin: 15px!important;
-    background-color:#fff;
+    margin: 15px !important;
+    background-color: #fff;
     padding: 20px;
     min-height: 800px;
   }
