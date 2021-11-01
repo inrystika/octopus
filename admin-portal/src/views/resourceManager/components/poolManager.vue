@@ -3,13 +3,8 @@
         <div class="function">
             <el-button type="primary" @click="add">添加资源池</el-button>
         </div>
-        <el-table
-            v-loading="isLoading"
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table v-loading="isLoading" :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="资源池名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
@@ -27,7 +22,7 @@
             </el-table-column>
             <el-table-column label="节点列表" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <span v-for="item in scope.row.bindingNodes" :key="item.index">{{ item + '、' }}</span>
+                    <span>{{  nodeList(scope.row.bindingNodes) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="资源规格" align="center">
@@ -47,19 +42,22 @@
             <div class="wrapper">
                 <div>NoteBook资源规格</div>
                 <div>
-                    <el-tag v-for="item in mapResourceSpecIdList.debug" :key="item.index" class="item">{{ item }}</el-tag>
+                    <el-tag v-for="item in mapResourceSpecIdList.debug" :key="item.index" class="item">{{ item }}
+                    </el-tag>
                 </div>
             </div>
             <div class="wrapper">
                 <div>训练资源规格</div>
                 <div>
-                    <el-tag v-for="item in mapResourceSpecIdList.train" :key="item.index" class="item">{{ item }}</el-tag>
+                    <el-tag v-for="item in mapResourceSpecIdList.train" :key="item.index" class="item">{{ item }}
+                    </el-tag>
                 </div>
             </div>
             <div class="wrapper">
                 <div>部署资源规格</div>
                 <div>
-                    <el-tag v-for="item in mapResourceSpecIdList.deploy" :key="item.index" class="item">{{ item }}</el-tag>
+                    <el-tag v-for="item in mapResourceSpecIdList.deploy" :key="item.index" class="item">{{ item }}
+                    </el-tag>
                 </div>
             </div>
             <span slot="footer" class="dialog-footer">
@@ -127,7 +125,7 @@
                 formLabelWidth: '220px',
                 flag: false,
                 mapResourceSpecIdList: { debug: [], train: [], deploy: [] },
-                ruleForm: { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] }},
+                ruleForm: { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] } },
                 rules: {
                     name: [
                         { required: true, message: '请输入资源池名称', trigger: 'blur' },
@@ -209,7 +207,7 @@
                 }
             },
             add() {
-                this.ruleForm = { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] }}
+                this.ruleForm = { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] } }
                 this.flag = true
                 this.editeDialog = true
                 this.disabled = false
@@ -253,7 +251,7 @@
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        const data = { name: '', desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: { resourceSpecIds: [] }, train: { resourceSpecIds: [] }, deploy: { resourceSpecIds: [] }}}
+                        const data = { name: '', desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: { resourceSpecIds: [] }, train: { resourceSpecIds: [] }, deploy: { resourceSpecIds: [] } } }
                         data.name = this.ruleForm.name
                         data.desc = this.ruleForm.desc
                         data.bindingNodes = this.ruleForm.bindingNodes
@@ -333,6 +331,7 @@
                             type: 'warning'
                         });
                     }
+                  
                 })
             },
             getNodeList() {
@@ -381,6 +380,14 @@
                         message: '已取消删除'
                     });
                 });
+            },
+            nodeList(val){
+              if(val){
+                  return val.toString()
+              }
+              else{
+                  return ''
+              }
             }
 
         }
