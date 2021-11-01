@@ -18,6 +18,17 @@
         activeName: 'first'
       }
     },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
     methods: {
       handleClick(tab, event) {
 

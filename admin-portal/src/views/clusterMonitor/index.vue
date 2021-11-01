@@ -1,12 +1,6 @@
 <template>
   <div class="wrapper">
-    <iframe
-      :src="grafanaUri"
-      :height="iFrameHeight"
-      frameBorder="0"
-      scrolling="no"
-      class="clusterDashboard"
-    >
+    <iframe :src="grafanaUri" :height="iFrameHeight" frameBorder="0" scrolling="no" class="clusterDashboard">
     </iframe>
   </div>
 </template>
@@ -29,7 +23,21 @@
       var parent = window.parent.document.documentElement;
       var scrollHeight = parent.scrollHeight;
       this.iFrameHeight = scrollHeight + "px"
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
     },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
+    // mounted() {
+    //   var parent = window.parent.document.documentElement;
+    //   var scrollHeight = parent.scrollHeight;
+    //   this.iFrameHeight = scrollHeight + "px"
+    // },
     methods: {
       handleClick(tab, event) {
       }
