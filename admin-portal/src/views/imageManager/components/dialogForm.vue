@@ -33,7 +33,7 @@
             </el-form>
             <div v-if="ruleForm.sourceType===2" slot="footer" class="dialog-footer">
                 <el-button @click="handleDialogClose">取 消</el-button>
-                <el-button type="primary" @click="submitAdd('ruleForm')">确 定</el-button>
+                <el-button type="primary" @click="submitAdd('ruleForm')" v-preventReClick>确 定</el-button>
             </div>
             <div v-if="ruleForm.sourceType===1&&!showUpload" slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
