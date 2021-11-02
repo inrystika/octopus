@@ -152,6 +152,7 @@ const (
 	ErrorWorkSpaceExisted          = 16023 // 空间已存在
 	ErrorWorkSpaceNotExist         = 16024 // 空间不存在
 	ErrorUserWorkSpaceNoPermission = 16025 // 用户无空间权限
+	ErrorWorkSpaceResourcePoolBound = 16026 // 空间与资源池已绑定
 
 	/* 17001~18000 计费管理错误*/
 	ErrorBillingObtainLockFailed = 17001 //获取锁失败
@@ -324,6 +325,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorWorkSpaceExisted:          {codeType: AlreadyExists, msg: "workspace existed"},
 	ErrorWorkSpaceNotExist:         {codeType: NotFound, msg: "workspace not existed"},
 	ErrorUserWorkSpaceNoPermission: {codeType: PermissionDenied, msg: "user workspace permission deny"},
+	ErrorWorkSpaceResourcePoolBound: {codeType: ResourceExhausted, msg: "workspace and resource pool had bind"},
 
 	/* 17001~18000 机时管理错误*/
 	ErrorBillingObtainLockFailed: {codeType: Internal, msg: "billing obtain lock failed"},
