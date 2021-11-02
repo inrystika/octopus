@@ -62,6 +62,13 @@ service ImageService {
       body: "*"
     };
   };
+  // 取消分享镜像
+  rpc CloseShareImage (CloseShareImageRequest) returns (CloseShareImageReply) {
+    option (google.api.http) = {
+      post: "/v1/imagemanage/image/{imageId}/closeshare"
+      body: "*"
+    };
+  };
   // 完成镜像上传
   rpc ConfirmUploadImage (ConfirmUploadImageRequest) returns (ConfirmUploadImageReply) {
     option (google.api.http) = {
@@ -207,6 +214,14 @@ message ShareImageRequest {
 
 message ShareImageReply {
   int64 sharedAt = 1;
+}
+
+message CloseShareImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message CloseShareImageReply {
+  int64 closeSharedAt = 1;
 }
 
 message ConfirmUploadImageRequest {
