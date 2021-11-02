@@ -86,6 +86,7 @@ message Data {
   Minio minio = 4;
   Harbor harbor = 5;
   Redis redis = 6;
+  JointCloud jointCloud = 7;
 }
 
 message Develop {
@@ -131,7 +132,6 @@ message Service {
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
   Platform platform = 10;
-  JointCloud jointCloud = 11;
 }
 
 message Administrator {

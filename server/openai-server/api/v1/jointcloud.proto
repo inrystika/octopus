@@ -5,8 +5,48 @@ package openaiserver.api.v1;
 option go_package = "server/openai-server/api/v1;v1";
 
 
-
+import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service JointCloudService {
+  // 查询数据集列表
+  rpc ListJointCloudDataset (ListJointCloudDatasetRequest) returns (ListJointCloudDatasetReply) {
+    option (google.api.http) = {
+      get: "/v1/jointcloudmanage/dataset"
+    };
+  }
+  // 查询数据集版本列表
+  rpc ListJointCloudDatasetVersion (ListJointCloudDatasetVersionRequest) returns (ListJointCloudDatasetVersionReply) {
+    option (google.api.http) = {
+      get: "/v1/jointcloudmanage/dataset/{dataSetCode}/version"
+    };
+  }
+}
+
+message ListJointCloudDatasetRequest {
+  int32 pageIndex = 1;
+  int32 pageSize = 2;
+}
+
+message ListJointCloudDatasetReply {
+  message DataSet {
+    string dataSetCode = 1;
+    string name = 2;
+    string remark = 3;
+  }
+  repeated DataSet dataSets = 1;
+}
+
+message ListJointCloudDatasetVersionRequest {
+  int32 pageIndex = 1;
+  int32 pageSize = 2;
+  string dataSetCode = 3;
+}
+
+message ListJointCloudDatasetVersionReply {
+  message DataSetVersion {
+    string version = 1;
+    string remark = 2;
+  }
+  repeated DataSetVersion versions = 1;
 }
