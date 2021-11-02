@@ -41,7 +41,7 @@ type Data struct {
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
 	PlatformDao         platformDao.PlatformDao
-	jointCloud          jointcloud.JointCloud
+	JointCloud          jointcloud.JointCloud
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
