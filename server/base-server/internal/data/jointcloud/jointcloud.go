@@ -66,7 +66,25 @@ func (j *jointCloud) ListDataSet(query *DataSetQuery) (*ListDataSetReply, error)
 }
 
 func (j *jointCloud) ListDataSetVersion(query *DataSetVersionQuery) (*ListDataSetVersionReply, error) {
-	panic("implement me")
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		SetQueryParams(map[string]string{"query": "{}", "pager": getPager(query.PageIndex, query.PageSize)}).
+		Get(fmt.Sprintf("%s/api/v1/dataSet/%s/version", j.baseUrl, query.DataSetCode))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListDataSetVersionReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
 }
 
 func (j *jointCloud) login() (*LoginReply, error) {

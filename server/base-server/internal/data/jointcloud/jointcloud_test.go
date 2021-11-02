@@ -28,8 +28,3 @@ func TestJointCloud_ListDataSet(t *testing.T) {
 	}
 	fmt.Println(reply)
 }
-
-type Test struct {
-	FirstName  string
-	SecondName string
-}
