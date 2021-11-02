@@ -6,7 +6,7 @@
             <el-button type="primary" @click="create">创建</el-button>
         </div>
         <el-table 
-          :data="tableData" 
+          :data="platformList" 
           style="width: 100%;font-size: 15px;"
           :header-cell-style="{'text-align':'left','color':'black'}" 
           :cell-style="{'text-align':'left'}"
@@ -18,26 +18,37 @@
           </el-table-column>
           <el-table-column label="联系人" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.person }}</span>
+              <span>{{ scope.row.contactName }}</span>
             </template>
           </el-table-column>
           <el-table-column label="联系方式" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.connect }}</span>
+              <span>{{ scope.row.contactInfo }}</span>
             </template>
           </el-table-column>
           <el-table-column label="创建时间" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.created }}</span>
+              <span>{{ parseTime(scope.row.createdAt) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="text" @click="detail">详情</el-button>
-              <el-button type="text" @click="edit">编辑</el-button>
+              <el-button type="text" @click="detail(scope.row)">详情</el-button>
+              <el-button type="text" @click="edit(scope.row)">编辑</el-button>
             </template>
           </el-table-column>
         </el-table>
+        <div class="block">
+          <el-pagination
+            :current-page="searchData.pageIndex" 
+            :page-sizes="[10, 20, 50, 80]" 
+            :page-size="searchData.pageSize"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper" 
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
       </el-tab-pane>
     </el-tabs>
 
@@ -50,6 +61,7 @@
 
     <detailsDialog
       v-if="detailsVisible"
+      :platform-detail="platformDetail"
       @cancel="cancel" 
       @confirm="confirm" 
       @close="close"
@@ -57,6 +69,7 @@
 
     <editDialog
       v-if="editVisible"
+      :platform-detail="platformDetail"
       @cancel="cancel" 
       @confirm="confirm" 
       @close="close"
@@ -68,6 +81,8 @@ import searchForm from '@/components/search/index.vue'
 import createDialog from "./components/createDialog.vue"
 import detailsDialog from "./components/detailsDialog.vue"
 import editDialog from "./components/editDialog.vue"
+import { getPlatformList } from "@/api/platformManager"
+import { parseTime } from '@/utils/index'
 export default {
   name: "platform",
   components: {
@@ -80,47 +95,73 @@ export default {
       createVisible: false,
       detailsVisible: false,
       editVisible: false,
-      tableData: [
-        {
-          name: "test1",
-          person: "Jack1",
-          connect: "123@163.com",
-          created: "2021-03-25 12:23:12"
-        },
-        {
-          name: "test2",
-          person: "Jack2",
-          connect: "123@163.com",
-          created: "2021-03-25 12:23:12"
-        },
-      ]
+      platformList: [],
+      platformDetail: {},
+      total: 0,
+      searchData: {
+        pageIndex: 1,
+        pageSize: 10,
+      }
     }
   },
+  created() {
+    this.getPlatformList(this.searchData);
+  },
   methods: {
+    getPlatformList(param){
+      getPlatformList(param).then(response => {
+          if(response.success){
+            this.platformList = response.data.platforms;
+            this.total = response.data.totalSize
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }    
+        })
+    },
+    handleSizeChange(val){
+      this.searchData.pageSize = val
+      this.getPlatformList(this.searchData)
+    },
+    handleCurrentChange(val) {
+      this.searchData.pageIndex = val
+      this.getPlatformList(this.searchData)
+    },
     cancel(val) {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.getPlatformList(this.searchData);
     },
     confirm(val) {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.getPlatformList(this.searchData);
     },
     close(val) {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.getPlatformList(this.searchData);
     },
     create() {
       this.createVisible = true
     },
-    detail() {
+    detail(row) {
       this.detailsVisible = true
+      this.platformDetail = row
     },
-    edit() {
+    edit(row) {
       this.editVisible = true
+      this.platformDetail = row
     },
+    //时间戳转换日期
+    parseTime(val) {
+      return parseTime(val)
+    }
   }
 }
 </script>
@@ -133,5 +174,9 @@ export default {
   }
   .create {
     float: right;
+  }
+  .block {
+    float: right;
+    margin: 20px;
   }
 </style>
