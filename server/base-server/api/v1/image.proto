@@ -208,6 +208,9 @@ message AddImageReply {
 
 message DeleteImageRequest {
   string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+  string spaceId = 2[(validate.rules).string = {max_len: 36}];
+  string userId = 3[(validate.rules).string = {max_len: 36}];
+  ImageIsPrefab isPrefab = 4[(validate.rules).enum = {in: [1,2]}];
 }
 
 message DeleteImageReply {

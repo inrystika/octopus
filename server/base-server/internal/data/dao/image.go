@@ -181,7 +181,6 @@ func (d *imageDao) FindImageAccess(ctx context.Context, iaq *model.ImageAccessQu
 	db := d.db
 	var ia model.ImageAccess
 	result := db.Where(&model.ImageAccess{
-		Id:      iaq.Id,
 		ImageId: iaq.ImageId,
 		UserId:  iaq.UserId,
 		SpaceId: iaq.SpaceId,
@@ -198,7 +197,6 @@ func (d *imageDao) FindImageAccess(ctx context.Context, iaq *model.ImageAccessQu
 
 func (d *imageDao) DeleteImageAccess(ctx context.Context, iad *model.ImageAccessDel) (*model.ImageAccess, error) {
 	if ia, err := d.FindImageAccess(ctx, &model.ImageAccessQuery{
-		Id:      iad.Id,
 		ImageId: iad.ImageId,
 		UserId:  iad.UserId,
 		SpaceId: iad.SpaceId,
