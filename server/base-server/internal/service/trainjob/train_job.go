@@ -1010,7 +1010,8 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
+	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
+		strings.EqualFold(info.Job.State, pipeline.FAILED){
 		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
 			SpaceId:          trainJob.WorkspaceId,
 			UserId:           trainJob.UserId,

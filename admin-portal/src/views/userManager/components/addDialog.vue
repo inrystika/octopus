@@ -1,12 +1,7 @@
 <template>
     <div>
-        <el-dialog
-            :title="flag==='user'?'添加用户':'添加群组'"
-            width="35%"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="flag==='user'?'添加用户':'添加群组'" width="35%" :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item v-if="user" label="用户邮箱" :label-width="formLabelWidth" prop="email">
                     <el-input v-model="ruleForm.email" />
@@ -26,12 +21,8 @@
                 </el-form-item>
                 <el-form-item v-if="group" label="用户列表" :label-width="formLabelWidth" prop="userIds">
                     <el-select v-model="ruleForm.userIds" v-loadmore="loadUser" placeholder="请选择用户列表" multiple>
-                        <el-option
-                            v-for="item in userOptions"
-                            :key="item.id"
-                            :label="item.fullName + ' ' + item.email"
-                            :value="item.id"
-                        />
+                        <el-option v-for="item in userOptions" :key="item.id" :label="item.fullName + ' ' + item.email"
+                            :value="item.id" />
                     </el-select>
                 </el-form-item>
                 <el-form-item v-if="group" label="资源池" :label-width="formLabelWidth" prop="resourcePoolId">
@@ -53,15 +44,15 @@
 
 <script>
     import { createUser, createGroup, getUserList } from '@/api/userManager.js'
-    import { getResourcePool } from '@/api/resourceManager.js'
+    import { getResourcePool, getGroupResourcePool } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "CreateDialog",
         directives: {
             loadmore: {
-                inserted: function(el, binding) {
+                inserted: function (el, binding) {
                     const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
-                    SELECTWRAP_DOM.addEventListener('scroll', function() {
+                    SELECTWRAP_DOM.addEventListener('scroll', function () {
                         const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
                         if (CONDITION) {
                             binding.value();
@@ -177,8 +168,43 @@
                 getResourcePool().then(response => {
                     if (response.success) {
                         if (response.data !== null && response.data.resourcePools !== null) {
-                            this.resourceOptions = response.data.resourcePools
+                            this.resourceOptions = response.data.resourcePools.filter(item => {
+                                if (!item.default) {
+                                    return item
+                                }
+                            })
                         }
+                        getGroupResourcePool().then(response => {
+                            if (response.success) {
+                                if (response.data.workspaces && response.data.workspaces.length != 0) {
+                                    this.resourceOptions.forEach(
+                                        item => {
+                                            response.data.workspaces.forEach(
+                                                Item => {
+                                                    if (item.id == Item.resourcePoolId) {
+                                                        item.flag = true
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    )
+                                    this.resourceOptions = this.resourceOptions.filter(
+                                        item => {
+                                            if (!item.flag) {
+                                                return item
+                                            }
+                                        }
+                                    )
+                                }
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+
+                        })
+
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
