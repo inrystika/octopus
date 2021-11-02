@@ -81,6 +81,13 @@ export function shareImage(params) {
     method: 'post'
   })
 }
+// 取消分享我的镜像
+export function cancelImage(params) {
+  return request({
+    url: `/v1/imagemanage/image/${params}/closeshare`,
+    method: 'post'
+  })
+}
 // 上传miniIO
 export function uploadMiniIO(params) {
   return requestMinIO({
