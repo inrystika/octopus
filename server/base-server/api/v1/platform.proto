@@ -130,7 +130,7 @@ message ListPlatformStorageConfigReply {
 message CreatePlatformStorageConfigRequest {
   string platformId = 1[(validate.rules).string = {min_len: 1}];
   string name = 2[(validate.rules).string = {min_len: 1, not_contains: "/"}];
-  string type = 3[(validate.rules).string = {min_len: 1}];
+  string type = 3[(validate.rules).string = {in: ["juicefs"]}];
   StorageOptions options = 4;
 }
 

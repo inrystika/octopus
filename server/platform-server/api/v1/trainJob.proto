@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-package thirdserver.api.v1;
+package platformserver.api.v1;
 
-option go_package = "server/third-server/api/v1;v1";
+option go_package = "server/platform-server/api/v1;v1";
 
 
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "google/protobuf/empty.proto";
 
 service TrainJobService {
     // 创建训练任务
@@ -43,7 +44,7 @@ service TrainJobService {
        };
     };
     //获取集群资源信息
-    rpc PlatformResources(PlatformResourcesRequest) returns (PlatformResourcesReply){
+    rpc PlatformResources(google.protobuf.Empty) returns (PlatformResourcesReply){
       option (google.api.http) = {
         get: "/v1/platform/resource"
       };
@@ -57,10 +58,12 @@ message TrainJobRequest {
   string desc = 2[(validate.rules).string = {max_len: 300}];
   //镜像信息
   Image image = 3;
+  //输出路径信息
+  Output output = 4;
   //数据集信息
-  Dataset dataset = 4;
+  repeated Dataset datasets = 5;
   //子任务信息
-  repeated Task tasks = 5;
+  repeated Task tasks = 6;
 }
 
 message Image {
@@ -70,11 +73,22 @@ message Image {
 
 message Dataset {
   //存储配置名称，必填
-  string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  //数据集地址，必填
-  string addr = 2[(validate.rules).string = {min_len: 1, max_len: 300}];
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //数据集子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
   //数据集名称，必填
-  string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
+  string name = 3[(validate.rules).string = {max_len: 300}];
+  //数据集容器内路径
+  string path = 4[(validate.rules).string = {max_len: 300}];;
+}
+
+message Output {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //存储子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //容器内输出路径
+  string path = 3[(validate.rules).string = {max_len: 300}];
 }
 
 message Task {
@@ -159,7 +173,7 @@ message TrainJob{
   //job描述
   string desc = 3;
   //数据集
-  Dataset dataset = 4;
+  repeated Dataset datasets = 4;
   //镜像
   Image image = 5;
   //子任务配置信息
@@ -218,10 +232,6 @@ message Node {
   string status = 3;
   map<string,string> capacity = 4;
   map<string,string> allocated = 5;
-}
-
-message PlatformResourcesRequest {
-
 }
 
 message PlatformResourcesReply {

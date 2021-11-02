@@ -61,7 +61,7 @@ func (d *platformTrainJobDao) GetTrainJob(ctx context.Context, id string) (*mode
 
 func (d *platformTrainJobDao) GetTrainJobByName(ctx context.Context, jobName string, platformId string) (*model.PlatformTrainJob, error) {
 	trainJob := &model.PlatformTrainJob{}
-	db := d.db.Where("1=1 and name = ? and platformId_id = ? and deleted_at = 0 ", jobName, platformId).Find(&trainJob)
+	db := d.db.Where("1=1 and name = ? and platform_id = ? and deleted_at = 0 ", jobName, platformId).Find(&trainJob)
 	var totalSize int64
 	res := db.Model(&model.PlatformTrainJob{}).Count(&totalSize)
 	if res.Error != nil {
@@ -215,8 +215,9 @@ func (d *platformTrainJobDao) TrainJobStastics(ctx context.Context, query *model
 	stoppedParams = append(baseParams, "stopped")
 	runningQuerySql := baseQuerySql + " and status = ? "
 	runningParams = append(baseParams, "running")
-	waitingQuerySql := baseQuerySql + " and status = ? "
+	waitingQuerySql := baseQuerySql + " and status = ? or status = ?"
 	waitingParams = append(baseParams, "pending")
+	waitingParams = append(waitingParams, "preparing")
 
 	res := db.Where(baseQuerySql, baseParams...).Model(&m.TrainJob{}).Count(&size)
 	if res.Error != nil {

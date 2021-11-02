@@ -69,6 +69,10 @@ service:
     configKeys:
     - key: testKey
       keyDesc: testKey描述
+  jointcloud:
+    baseUrl: http://192.168.207.141:8709
+    username: test
+    password: 6c7c824d3b7342a9dcc9b931f5662b18
 administrator:
   username: "admin"
   password: "123456"

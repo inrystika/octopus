@@ -35,11 +35,23 @@ message PlatformTrainJobRequest {
   string resourcePool = 4;
   //镜像信息
   PlatformImage image = 5;
+  //输出信息
+  PlatformOutput output = 6;
   //数据集信息
-  PlatformDataset dataset = 6;
+  repeated PlatformDataset datasets = 7;
   //子任务信息
-  repeated PlatformTask tasks = 7;
+  repeated PlatformTask tasks = 8;
 }
+
+message PlatformOutput {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //存储子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //容器内输出路径
+  string path = 3[(validate.rules).string = {max_len: 300}];
+}
+
 
 message PlatformImage {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 300}];
@@ -47,12 +59,14 @@ message PlatformImage {
 }
 
 message PlatformDataset {
-  //存储配置名称，必填
-  string storageConfigName = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  //数据集地址，必填
-  string addr = 2[(validate.rules).string = {min_len: 1, max_len: 300}];
-  //数据集名称，必填
-  string name = 3[(validate.rules).string = {min_len: 1, max_len: 300}];
+    //存储配置名称，必填
+    string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+    //数据集子目录
+    string addr = 2[(validate.rules).string = {max_len: 300}];
+    //数据集名称，必填
+    string name = 3[(validate.rules).string = {max_len: 300}];
+    //数据集容器内路径
+    string path = 4[(validate.rules).string = {max_len: 300}];;
 }
 
 message PlatformTask {
@@ -92,7 +106,8 @@ message PlatformTrainJobReply {
 
 message  PlatformStopJobRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
-  string operation = 2;
+  string platformId = 2;
+  string operation = 3;
 }
 
 message PlatformStopJobReply {
@@ -135,7 +150,7 @@ message PlatformTrainJob{
   //job描述
   string desc = 4;
   //数据集
-  PlatformDataset dataset = 5;
+  repeated PlatformDataset datasets = 5;
   //镜像
   PlatformImage image = 6;
   //子任务配置信息

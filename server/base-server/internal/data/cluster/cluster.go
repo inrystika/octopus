@@ -32,4 +32,7 @@ type Cluster interface {
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
 	CreateSecret(ctx context.Context, secret *v1.Secret) (*v1.Secret, error)
+	DeletePersistentVolume(ctx context.Context, name string) error
+	DeletePersistentVolumeClaim(ctx context.Context, namespace string, name string) error
+	DeleteSecret(ctx context.Context, namespace string, name string) error
 }

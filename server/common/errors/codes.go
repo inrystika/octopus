@@ -50,6 +50,9 @@ const (
 	ErrorK8sDeleteServiceFailed = 10071 // k8s删除service失败
 	ErrorK8sCreateIngressFailed = 10072 // k8s创建ingress失败
 	ErrorK8sDeleteIngressFailed = 10073 // k8s删除ingress失败
+	ErrorK8sDeletePVFailed      = 10074 // k8s删除PV失败
+	ErrorK8sDeletePVCFailed     = 10075 // k8s删除PVC失败
+	ErrorK8sDeleteSecretFailed  = 10076 // k8s删除Secret失败
 	// Harbor操作相关错误
 	ErrorHarborProjectExists       = 10080 // harbor项目已存在
 	ErrorHarborCreateProjectFailed = 10081 // harbor创建项目失败
@@ -173,6 +176,8 @@ const (
 	ErrorPlatformStorageConfigNameRepeat = 20002 // 平台存储配置名称重复
 	ErrorPlatformBatchGetPlatform        = 20003 // 批量获取平台信息错误
 
+	/* 21001-22000 云际错误*/
+	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
 )
 
 type codeMsg struct {
@@ -349,4 +354,7 @@ var codeMsgMap = map[int]codeMsg{
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},
 	ErrorPlatformStorageConfigNameRepeat: {codeType: AlreadyExists, msg: "platform storage config existed"},
+
+	/* 21001-22000 云际请求错误*/
+	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},
 }

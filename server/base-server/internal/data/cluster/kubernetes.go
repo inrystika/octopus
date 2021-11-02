@@ -410,3 +410,27 @@ func (kc *kubernetesCluster) CreateSecret(ctx context.Context, secret *v1.Secret
 	}
 	return p, nil
 }
+
+func (kc *kubernetesCluster) DeletePersistentVolume(ctx context.Context, name string) error {
+	err := kc.kubeclient.CoreV1().PersistentVolumes().Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorK8sDeletePVFailed)
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeletePersistentVolumeClaim(ctx context.Context, namespace string, name string) error {
+	err := kc.kubeclient.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorK8sDeletePVCFailed)
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteSecret(ctx context.Context, namespace string, name string) error {
+	err := kc.kubeclient.CoreV1().Secrets(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorK8sDeleteSecretFailed)
+	}
+	return nil
+}

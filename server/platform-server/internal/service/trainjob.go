@@ -9,6 +9,7 @@ import (
 	"server/platform-server/internal/conf"
 	"server/platform-server/internal/data"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jinzhu/copier"
 )
 
@@ -42,7 +43,6 @@ func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	}
 	innerReq.PlatformId = platformId
 	innerReq.ResourcePool = resourcePool
-
 	innerReply, err := s.data.PlatformTrainJobClient.TrainJob(ctx, innerReq)
 	if err != nil {
 		return nil, err
@@ -65,8 +65,9 @@ func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 	innerReq := &innerapi.PlatformStopJobRequest{
-		Id:        req.Id,
-		Operation: "user stop job",
+		Id:         req.Id,
+		PlatformId: platformId,
+		Operation:  "user stop job",
 	}
 	reply, err := s.data.PlatformTrainJobClient.StopJob(ctx, innerReq)
 	if err != nil {
@@ -164,7 +165,7 @@ func (s *TrainJobService) TrainJobStastics(ctx context.Context, req *api.TrainJo
 }
 
 //获取集群资源信息
-func (s *TrainJobService) PlatformResources(ctx context.Context, req *api.PlatformResourcesRequest) (*api.PlatformResourcesReply, error) {
+func (s *TrainJobService) PlatformResources(ctx context.Context, req *empty.Empty) (*api.PlatformResourcesReply, error) {
 	platformId, err := s.getPlatformId(ctx)
 	if err != nil {
 		return nil, err

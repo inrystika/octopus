@@ -115,6 +115,12 @@ message Platform {
   repeated ConfigKey configKeys = 1;
 }
 
+message JointCloud {
+  string baseUrl = 1;
+  string username = 2;
+  string password = 3;
+}
+
 message Service {
   string baseServerAddr = 2;
   string dockerDatasetPath = 3;
@@ -125,6 +131,7 @@ message Service {
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
   Platform platform = 10;
+  JointCloud jointCloud = 11;
 }
 
 message Administrator {

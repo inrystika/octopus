@@ -1,5 +1,5 @@
 syntax = "proto3";
-package thirdserver.internal.conf;
+package platformserver.internal.conf;
 
 option go_package = "internal/conf;conf";
 
