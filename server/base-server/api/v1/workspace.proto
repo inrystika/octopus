@@ -17,6 +17,7 @@ service Workspace {
   rpc GetWorkspace (GetWorkspaceRequest) returns (GetWorkspaceReply);
   rpc ListUserWorkspaces (ListUserWorkspacesRequest) returns (ListUserWorkspacesReply);
   rpc ListWorkspaceInCond (ListWorkspaceInCondRequest) returns (ListWorkspaceInCondReply);
+  rpc ListWorkspaces (ListWorkspacesRequest) returns (ListWorkspacesReply);
 }
 
 message WorkspaceItem {
@@ -73,6 +74,13 @@ message ListWorkspaceRequest {
 
 message ListWorkspaceReply {
   int64 totalSize = 1;
+  repeated WorkspaceItem workspaces = 2;
+}
+
+message ListWorkspacesRequest {
+}
+
+message ListWorkspacesReply {
   repeated WorkspaceItem workspaces = 2;
 }
 
