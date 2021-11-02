@@ -39,9 +39,13 @@ data:
     apiVersion: v1.0
     useSSL: false
   redis:
-    addr: 192.168.202.73:32185
+    addr: 192.168.202.73:32289
     username:
     password: abcde
+  jointcloud:
+    baseUrl: http://192.168.207.141:8709
+    username: test
+    password: 6c7c824d3b7342a9dcc9b931f5662b18
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset
@@ -69,10 +73,6 @@ service:
     configKeys:
     - key: jobStatusCallbackAddr
       keyDesc: 任务状态回调地址
-  jointcloud:
-    baseUrl: http://192.168.207.141:8709
-    username: test
-    password: 6c7c824d3b7342a9dcc9b931f5662b18
 administrator:
   username: "admin"
   password: "123456"
