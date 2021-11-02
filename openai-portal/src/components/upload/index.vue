@@ -216,10 +216,6 @@
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
                 });
-                // this.loadingShow = false
-                // this.show = true
-                // this.showUpload = true
-                // this.fileList = []
               }
             })
           } else {
