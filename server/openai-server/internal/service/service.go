@@ -19,6 +19,7 @@ type Service struct {
 	DatasetService      api.DatasetServiceServer
 	ResourceSpecService api.ResourceSpecServiceServer
 	BillingService      api.BillingServiceServer
+	JointCloudService   api.JointCloudServiceServer
 }
 
 func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Service {

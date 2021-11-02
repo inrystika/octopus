@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service JointCloudService {
+}
