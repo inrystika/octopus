@@ -226,11 +226,13 @@ func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId strin
 
 	items := make([]*model.PlatformConfig, 0)
 	for k, v := range config {
-		items = append(items, &model.PlatformConfig{
-			PlatformId: platformId,
-			Key:        k,
-			Value:      v,
-		})
+		if v != "" {
+			items = append(items, &model.PlatformConfig{
+				PlatformId: platformId,
+				Key:        k,
+				Value:      v,
+			})
+		}
 	}
 
 	res = db.Create(&items)
