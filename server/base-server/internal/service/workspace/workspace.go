@@ -183,7 +183,7 @@ func (s *WorkspaceService) CreateWorkspace(ctx context.Context, req *api.CreateW
 		return nil, err
 	}
 	if existed > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceExisted)
+		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceResourcePoolBound)
 	}
 
 	wa := model.WorkspaceAdd{
