@@ -67,8 +67,8 @@ service:
   platform:
     # 数组内字段为key和keyDesc
     configKeys:
-    - key: testKey
-      keyDesc: testKey描述
+    - key: jobStatusCallbackAddr
+      keyDesc: 任务状态回调地址
   jointcloud:
     baseUrl: http://192.168.207.141:8709
     username: test
