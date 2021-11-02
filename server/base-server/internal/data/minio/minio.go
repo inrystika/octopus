@@ -146,6 +146,7 @@ func (m *minio) PresignedUploadObject(bucketName string, objectName string, doma
 	}
 	uri.Path = path.Join(m.conf.Minio.Base.ProxyPath, uri.Path)
 	uri.Host = domainUrl.Host
+	uri.Scheme = domainUrl.Scheme
 	m.log.Infof(ctx, "successfully PresignedPutObject change domain, bucketName=%s|url=%s", bucketName, uri)
 	return uri, nil
 }
@@ -178,6 +179,7 @@ func (m *minio) PresignedDownloadObject(bucketName string, objectName string, do
 	}
 	uri.Path = path.Join(m.conf.Minio.Base.ProxyPath, uri.Path)
 	uri.Host = domainUrl.Host
+	uri.Scheme = domainUrl.Scheme
 	m.log.Infof(ctx, "successfully PresignedGetObject change domain, bucketName=%s|url=%s", bucketName, uri)
 	return uri, nil
 }
