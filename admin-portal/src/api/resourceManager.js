@@ -98,3 +98,11 @@ export function deleteResource(params) {
 
     })
 }
+// 获取群组绑定资源池
+export function getGroupResourcePool() {
+    return request({
+        url: '/v1/usermanage/workspaces',
+        method: 'get'
+
+    })
+}
