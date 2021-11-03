@@ -195,6 +195,8 @@
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
+                            clearInterval(this.timer)
+                            this.timer = null
                         }
                     })
                 }
@@ -406,7 +408,7 @@
                 });
             },
             cancelShare(val) {
-                cancelImage(val.id).then(response => {                
+                cancelImage(val.id).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '取消分享成功',
