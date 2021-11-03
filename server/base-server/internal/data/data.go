@@ -9,6 +9,7 @@ import (
 	"server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
 	platformDao "server/base-server/internal/data/dao/platform"
+	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/data/redis"
@@ -40,6 +41,7 @@ type Data struct {
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
 	PlatformDao         platformDao.PlatformDao
+	JointCloud          jointcloud.JointCloud
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
@@ -73,6 +75,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	}
 	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
+	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password)
 
 	return d, func() {
 		redis.Close()

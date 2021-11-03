@@ -10,6 +10,7 @@ import (
 	"server/base-server/internal/service/dataset"
 	"server/base-server/internal/service/develop"
 	"server/base-server/internal/service/image"
+	"server/base-server/internal/service/jointcloud"
 	"server/base-server/internal/service/model"
 	"server/base-server/internal/service/platform"
 	"server/base-server/internal/service/resources"
@@ -37,6 +38,7 @@ type Service struct {
 	BillingService          api.BillingServiceServer
 	PlatformService         api.PlatformServiceServer
 	PlatformTrainJobService api.PlatformTrainJobServiceServer
+	JointCloudService       api.JointCloudServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -75,6 +77,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	if err != nil {
 		return nil, err
 	}
+	service.JointCloudService = jointcloud.NewJointCloudService(conf, data)
 
 	return service, nil
 }

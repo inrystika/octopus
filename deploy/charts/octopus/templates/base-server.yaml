@@ -157,6 +157,8 @@ data:
       platform:
         # 数组, 数组内字段为key和keyDesc
         configKeys:
+        - key: jobStatusCallbackAddr
+          keyDesc: 任务状态回调地址
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"

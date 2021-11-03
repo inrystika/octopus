@@ -1,6 +1,7 @@
 package jointcloud
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -12,8 +13,8 @@ import (
 )
 
 type JointCloud interface {
-	ListDataSet(query *DataSetQuery) (*ListDataSetReply, error)
-	ListDataSetVersion(query *DataSetVersionQuery) (*ListDataSetVersionReply, error)
+	ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error)
+	ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error)
 }
 
 func NewJointCloud(baseUrl, username, password string) JointCloud {
@@ -45,7 +46,7 @@ func getPager(page, pageSize int) string {
 	return fmt.Sprintf(`{"page":%v,"size":%v}`, page, pageSize)
 }
 
-func (j *jointCloud) ListDataSet(query *DataSetQuery) (*ListDataSetReply, error) {
+func (j *jointCloud) ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error) {
 	err := j.checkLogin()
 	if err != nil {
 		return nil, err
@@ -65,8 +66,26 @@ func (j *jointCloud) ListDataSet(query *DataSetQuery) (*ListDataSetReply, error)
 	return reply, nil
 }
 
-func (j *jointCloud) ListDataSetVersion(query *DataSetVersionQuery) (*ListDataSetVersionReply, error) {
-	panic("implement me")
+func (j *jointCloud) ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		SetQueryParams(map[string]string{"query": "{}", "pager": getPager(query.PageIndex, query.PageSize)}).
+		Get(fmt.Sprintf("%s/api/v1/dataSet/%s/version", j.baseUrl, query.DataSetCode))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListDataSetVersionReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
 }
 
 func (j *jointCloud) login() (*LoginReply, error) {
