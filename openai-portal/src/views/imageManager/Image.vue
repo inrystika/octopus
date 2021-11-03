@@ -147,7 +147,7 @@
 
             }
             if (this.imageTabType == 1) {
-                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             }
             if (this.image) {
                 this.FormVisible = true
