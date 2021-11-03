@@ -5,5 +5,8 @@ const (
 )
 
 const (
-	StorageTypeJuicefs string = "juicefs"
+	StorageTypeJuicefs    string = "juicefs"
+	ConfigKeyTypeInput    string = "input"
+	ConfigKeyTypeRadio    string = "radio"
+	ConfigKeyTypeCheckBox string = "checkbox"
 )

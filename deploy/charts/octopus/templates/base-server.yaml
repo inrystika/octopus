@@ -155,10 +155,10 @@ data:
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
       platform:
-        # 数组, 数组内字段为key和keyDesc
         configKeys:
         - key: jobStatusCallbackAddr
-          keyDesc: 任务状态回调地址
+          title: 任务状态回调地址
+          type: input
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"
