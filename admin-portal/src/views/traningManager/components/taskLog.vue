@@ -13,12 +13,8 @@
                 <div>
                     子任务名:
                     <el-select v-model="value" placeholder="请选择" class="select" @change="selectLog">
-                        <el-option
-                            v-for="item in options"
-                            :key="item.value + item.label"
-                            :label="item.label"
-                            :value="item.value"
-                        />
+                        <el-option v-for="item in options" :key="item.value + item.label" :label="item.label"
+                            :value="item.value" />
                     </el-select>
                 </div>
             </el-col>
@@ -28,12 +24,8 @@
                 <el-col v-if="showLog" :span="6">
                     <div>
                         任务日志:
-                        <a
-                            :href="href + '/log/user/trainjob/' + data.id + '/' + subName + '/index.log'"
-                            download="日志.text"
-                            class="download"
-                            target="_blank"
-                        >
+                        <a :href="href + '/log/user/trainjob/' + data.id + '/' + subName + '/index.log'"
+                            download="日志.text" class="download" target="_blank">
                             下载
                         </a>
                     </div>
@@ -81,7 +73,7 @@
             }
         },
         computed: {
-            show: function() {
+            show: function () {
                 if (this.data.isDistributed === true) {
                     return true
                 } else {
@@ -91,7 +83,7 @@
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
-            this.href = window.location.protocol + '//' + window.location.host
+            this.href = this.GLOBAL.DOMAIN
             if (!this.data.isDistributed) {
                 this.subName = 'task0/0'
                 this.getState()

@@ -72,7 +72,7 @@
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="confirm">确认</el-button>
+                <el-button type="primary" @click="confirm" v-preventReClick>确认</el-button>
                 <el-button @click="cancel">取消</el-button>
             </div>
         </el-dialog>
