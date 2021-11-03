@@ -131,6 +131,10 @@ data:
         addr: {{ include "redis.serviceAddr" . }}
         username: {{ .Values.baseserver.data.redis.username }}
         password: {{ .Values.baseserver.data.redis.password }}
+      jointCloud:
+        baseUrl: {{ .Values.baseserver.data.jointCloud.baseUrl }}
+        username: {{ .Values.baseserver.data.jointCloud.username }}
+        password: {{ .Values.baseserver.data.jointCloud.password }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
