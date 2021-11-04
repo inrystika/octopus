@@ -39,7 +39,7 @@
                             </el-form-item>
                         </el-form>
                     </div>
-                    <div class="note">Powered by Openl Octopus V2.1</div>
+                    <div class="note">Powered by Openl Octopus V4.0.1</div>
                     <div class="octopus"></div>
                 </div>
             </div>
