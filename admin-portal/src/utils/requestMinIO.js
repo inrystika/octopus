@@ -81,10 +81,12 @@ service.interceptors.response.use(
   error => {
     console.log('err' + error) // for debug
     Message({
-      message: error.message,
+      message: '上传失败',
       type: 'error',
       duration: 5 * 1000
     })
+    setTimeout(function() { location.reload() }, 1000)
+    // location.reload();
     return Promise.reject(error)
   }
 )

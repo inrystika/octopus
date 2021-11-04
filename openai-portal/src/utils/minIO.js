@@ -12,7 +12,6 @@ export async function minIO(payload) {
   if (res && res.success) {
     return res
   } else {
-    console.log("OPPO")
     sessionStorage.setItem(JSON.stringify(payload.id), 0)
     return {
       success: false

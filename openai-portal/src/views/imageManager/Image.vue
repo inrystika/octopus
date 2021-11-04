@@ -147,7 +147,7 @@
 
             }
             if (this.imageTabType == 1) {
-                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             }
             if (this.image) {
                 this.FormVisible = true
@@ -195,6 +195,8 @@
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
+                            clearInterval(this.timer)
+                            this.timer = null
                         }
                     })
                 }
@@ -406,7 +408,7 @@
                 });
             },
             cancelShare(val) {
-                cancelImage(val.id).then(response => {                
+                cancelImage(val.id).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '取消分享成功',

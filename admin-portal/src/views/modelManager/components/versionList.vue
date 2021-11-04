@@ -87,7 +87,7 @@
         },
         created() {
             this.getList()
-            this.timer = setInterval(() => { this.getList() }, 1000)
+            this.timer = setInterval(() => { this.getList() }, 2000)
 
         },
         destroyed() {
