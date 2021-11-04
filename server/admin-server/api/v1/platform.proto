@@ -205,7 +205,7 @@ message GetPlatformConfigReply {
 }
 
 message UpdatePlatformConfigRequest {
-  string platformId = 1;
+  string platformId = 1[(validate.rules).string = {min_len: 1}];
   map<string, string> config = 2;
 }
 

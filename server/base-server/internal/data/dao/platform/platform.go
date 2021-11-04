@@ -219,25 +219,63 @@ func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId strin
 	if platformId == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("platform_id = ?", platformId).Delete(&model.PlatformConfig{})
-	if res.Error != nil {
-		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
+
+	configDb, err := d.GetPlatformConfig(ctx, platformId)
+	if err != nil {
+		return err
 	}
 
-	items := make([]*model.PlatformConfig, 0)
-	for k, v := range config {
-		if v != "" {
-			items = append(items, &model.PlatformConfig{
-				PlatformId: platformId,
-				Key:        k,
-				Value:      v,
-			})
+	deleteKeys := make([]string, 0)
+	for k, _ := range configDb {
+		_, ok := config[k]
+		if !ok {
+			deleteKeys = append(deleteKeys, k)
 		}
 	}
 
-	res = db.Create(&items)
-	if res.Error != nil {
-		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
+	if len(deleteKeys) > 0 {
+		res := db.Where("platform_id = ? and key in ?", platformId, deleteKeys).Delete(&model.PlatformConfig{})
+		if res.Error != nil {
+			return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
+		}
+	}
+
+	insertKeys := make([]string, 0)
+	updateKeys := make([]string, 0)
+	for k, v := range config {
+		vdb, ok := configDb[k]
+		if ok && v != vdb {
+			updateKeys = append(updateKeys, k)
+			continue
+		}
+		if !ok && v != "" {
+			insertKeys = append(insertKeys, k)
+			continue
+		}
+	}
+
+	if len(insertKeys) > 0 {
+		items := make([]*model.PlatformConfig, 0)
+		for _, k := range insertKeys {
+			items = append(items, &model.PlatformConfig{
+				PlatformId: platformId,
+				Key:        k,
+				Value:      config[k],
+			})
+		}
+		res := db.Create(&items)
+		if res.Error != nil {
+			return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
+		}
+	}
+
+	if len(updateKeys) > 0 {
+		for _, k := range updateKeys {
+			res := db.Model(&model.PlatformConfig{}).Where("platform_id = ? and `key` = ?", platformId, k).Limit(1).Update("value", config[k])
+			if res.Error != nil {
+				return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+			}
+		}
 	}
 
 	return nil

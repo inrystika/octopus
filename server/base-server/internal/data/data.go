@@ -244,5 +244,9 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	db.AutoMigrate(&model.UserConfig{})
+	if err != nil {
+		return nil, err
+	}
 	return db, err
 }

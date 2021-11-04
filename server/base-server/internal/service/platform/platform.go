@@ -2,15 +2,12 @@ package platform
 
 import (
 	"context"
-	"regexp"
 	api "server/base-server/api/v1"
-	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	model "server/base-server/internal/data/dao/model/platform"
 	"server/common/errors"
 	"server/common/utils"
-	"strings"
 
 	"github.com/jinzhu/copier"
 )
@@ -237,20 +234,9 @@ func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.Upd
 		for _, i := range s.conf.Service.Platform.ConfigKeys {
 			if k == i.Key {
 				in = true
-				if (i.Type == common.ConfigKeyTypeRadio || i.Type == common.ConfigKeyTypeCheckBox) &&
-					!utils.StringSliceContainsValue(strings.Split(i.Options, ","), v) {
-					return nil, errors.Errorf(nil, errors.ErrorPlatformConfigValueWrong)
-				}
-
-				if i.Required && v == "" {
-					return nil, errors.Errorf(nil, errors.ErrorPlatformConfigValueWrong)
-				}
-
-				if i.Regexp != "" {
-					matched, err := regexp.MatchString(i.Regexp, v)
-					if err != nil || !matched {
-						return nil, errors.Errorf(nil, errors.ErrorPlatformConfigValueWrong)
-					}
+				err := i.ValidateValue(v)
+				if err != nil {
+					return nil, err
 				}
 				break
 			}

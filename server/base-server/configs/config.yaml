@@ -81,6 +81,13 @@ service:
     - key: jobStatusCallbackAddr
       title: 任务状态回调地址
       type: input
+  user:
+    # 参考平台配置
+    configKeys:
+    - key: jointCloudPermission
+      title: 云际权限
+      type: radio
+      options: yes,no
 administrator:
   username: "admin"
   password: "123456"

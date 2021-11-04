@@ -163,6 +163,12 @@ data:
         - key: jobStatusCallbackAddr
           title: 任务状态回调地址
           type: input
+      user:
+        configKeys:
+        - key: jointCloudPermission
+          title: 云际权限
+          type: radio
+          options: yes,no
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"
