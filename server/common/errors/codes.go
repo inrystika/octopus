@@ -2,18 +2,19 @@ package errors
 
 const (
 	/* 10000~11000 基础错误*/
-	ErrorUnknown                 = 10001 // 未知错误
-	ErrorStructCopy              = 10002 // 结构体拷贝失败
-	ErrorInvalidRequestParameter = 10003 // 参数错误
-	ErrorVersionInvalid          = 10004 // 版本字符串非法
-	ErrorZipFailed               = 10005 // 压缩失败
-	ErrorUnzipFailed             = 10006 // 解压失败
-	ErrorUrlParseFailed          = 10007 // url解析失败
-	ErrorParseDurationFailed     = 10008 // 时间解析失败
-	ErrorEncryptPasswordFailed   = 10009 // 密码加密失败
-	ErrorDirNotExisted           = 10010 // 文件夹不存在
-	ErrorOperateDirFailed        = 10011 // 操作文件夹失败
-	ErrorOperateFileFailed       = 10012 // 操作文件失败
+	ErrorUnknown                   = 10001 // 未知错误
+	ErrorStructCopy                = 10002 // 结构体拷贝失败
+	ErrorInvalidRequestParameter   = 10003 // 参数错误
+	ErrorVersionInvalid            = 10004 // 版本字符串非法
+	ErrorZipFailed                 = 10005 // 压缩失败
+	ErrorUnzipFailed               = 10006 // 解压失败
+	ErrorUrlParseFailed            = 10007 // url解析失败
+	ErrorParseDurationFailed       = 10008 // 时间解析失败
+	ErrorEncryptPasswordFailed     = 10009 // 密码加密失败
+	ErrorDirNotExisted             = 10010 // 文件夹不存在
+	ErrorOperateDirFailed          = 10011 // 操作文件夹失败
+	ErrorOperateFileFailed         = 10012 // 操作文件失败
+	ErrorConfigValueValidateFailed = 10013 // 校验配置值失败
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -151,6 +152,7 @@ const (
 	ErrorWorkSpaceExisted          = 16023 // 空间已存在
 	ErrorWorkSpaceNotExist         = 16024 // 空间不存在
 	ErrorUserWorkSpaceNoPermission = 16025 // 用户无空间权限
+	ErrorUserConfigKeyNotExist     = 16026 // 配置项不存在
 
 	/* 17001~18000 计费管理错误*/
 	ErrorBillingObtainLockFailed = 17001 //获取锁失败
@@ -175,6 +177,8 @@ const (
 	ErrorPlatformNameRepeat              = 20001 // 平台名称重复
 	ErrorPlatformStorageConfigNameRepeat = 20002 // 平台存储配置名称重复
 	ErrorPlatformBatchGetPlatform        = 20003 // 批量获取平台信息错误
+	ErrorPlatformConfigValueWrong        = 20004 // 配置值不正确
+	ErrorPlatformConfigKeyNotExist       = 20005 // 配置项不存在
 
 	/* 21001-22000 云际错误*/
 	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
@@ -187,18 +191,19 @@ type codeMsg struct {
 
 var codeMsgMap = map[int]codeMsg{
 	/* 10000~11000 基础错误*/
-	ErrorUnknown:                 {codeType: Unknown, msg: "unknown"},
-	ErrorStructCopy:              {codeType: DataLoss, msg: "struct copy failed"},
-	ErrorInvalidRequestParameter: {codeType: InvalidArgument, msg: "invalid request parameter"},
-	ErrorVersionInvalid:          {codeType: InvalidArgument, msg: "version invalid"},
-	ErrorZipFailed:               {codeType: DataLoss, msg: "zip failed"},
-	ErrorUnzipFailed:             {codeType: DataLoss, msg: "unzip failed"},
-	ErrorUrlParseFailed:          {codeType: InvalidArgument, msg: "domain or url parase failed"},
-	ErrorParseDurationFailed:     {codeType: Internal, msg: "time.Duration parse failed"},
-	ErrorEncryptPasswordFailed:   {codeType: Internal, msg: "password encrypt failed"},
-	ErrorDirNotExisted:           {codeType: Internal, msg: "dir not existed"},
-	ErrorOperateDirFailed:        {codeType: Internal, msg: "dir operate failed"},
-	ErrorOperateFileFailed:       {codeType: Internal, msg: "file operate failed"},
+	ErrorUnknown:                   {codeType: Unknown, msg: "unknown"},
+	ErrorStructCopy:                {codeType: DataLoss, msg: "struct copy failed"},
+	ErrorInvalidRequestParameter:   {codeType: InvalidArgument, msg: "invalid request parameter"},
+	ErrorVersionInvalid:            {codeType: InvalidArgument, msg: "version invalid"},
+	ErrorZipFailed:                 {codeType: DataLoss, msg: "zip failed"},
+	ErrorUnzipFailed:               {codeType: DataLoss, msg: "unzip failed"},
+	ErrorUrlParseFailed:            {codeType: InvalidArgument, msg: "domain or url parase failed"},
+	ErrorParseDurationFailed:       {codeType: Internal, msg: "time.Duration parse failed"},
+	ErrorEncryptPasswordFailed:     {codeType: Internal, msg: "password encrypt failed"},
+	ErrorDirNotExisted:             {codeType: Internal, msg: "dir not existed"},
+	ErrorOperateDirFailed:          {codeType: Internal, msg: "dir operate failed"},
+	ErrorOperateFileFailed:         {codeType: Internal, msg: "file operate failed"},
+	ErrorConfigValueValidateFailed: {codeType: Internal, msg: "config value validate failed"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},
@@ -331,6 +336,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorWorkSpaceExisted:          {codeType: AlreadyExists, msg: "workspace existed"},
 	ErrorWorkSpaceNotExist:         {codeType: NotFound, msg: "workspace not existed"},
 	ErrorUserWorkSpaceNoPermission: {codeType: PermissionDenied, msg: "user workspace permission deny"},
+	ErrorUserConfigKeyNotExist:     {codeType: InvalidArgument, msg: "user config key not exist"},
 
 	/* 17001~18000 机时管理错误*/
 	ErrorBillingObtainLockFailed: {codeType: Internal, msg: "billing obtain lock failed"},
@@ -354,6 +360,8 @@ var codeMsgMap = map[int]codeMsg{
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},
 	ErrorPlatformStorageConfigNameRepeat: {codeType: AlreadyExists, msg: "platform storage config existed"},
+	ErrorPlatformConfigValueWrong:        {codeType: InvalidArgument, msg: "platform config value wrong"},
+	ErrorPlatformConfigKeyNotExist:       {codeType: InvalidArgument, msg: "platform config key not exist"},
 
 	/* 21001-22000 云际请求错误*/
 	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},

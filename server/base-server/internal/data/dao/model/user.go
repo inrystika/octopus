@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"server/common/dao"
 
+	"gorm.io/plugin/soft_delete"
+
 	"gorm.io/gorm"
 )
 
@@ -144,4 +146,16 @@ type UserUpdateCond struct {
 
 type UserListIn struct {
 	Ids []string
+}
+
+type UserConfig struct {
+	dao.Model
+	UserId    string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:userId_key_deleteAt,priority:1;comment:用户id"`
+	Key       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:userId_key_deleteAt,priority:2;comment:key"`
+	Value     string                `gorm:"type:text;comment:value"`
+	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:userId_key_deleteAt,priority:3"`
+}
+
+func (UserConfig) TableName() string {
+	return "user_config"
 }

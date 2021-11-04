@@ -123,10 +123,12 @@ func (s *platformService) UpdatePlatform(ctx context.Context, req *api.UpdatePla
 func (s *platformService) ListPlatformConfigKey(ctx context.Context, req *api.ListPlatformConfigKeyRequest) (*api.ListPlatformConfigKeyReply, error) {
 	reply := &api.ListPlatformConfigKeyReply{}
 	for _, i := range s.conf.Service.Platform.ConfigKeys {
-		reply.ConfigKeys = append(reply.ConfigKeys, &api.ListPlatformConfigKeyReply_ConfigKey{
-			Key:     i.Key,
-			KeyDesc: i.KeyDesc,
-		})
+		k := &api.ListPlatformConfigKeyReply_ConfigKey{}
+		err := copier.Copy(k, i)
+		if err != nil {
+			return nil, err
+		}
+		reply.ConfigKeys = append(reply.ConfigKeys, k)
 	}
 	return reply, nil
 }
@@ -225,7 +227,26 @@ func (s *platformService) GetPlatformConfig(ctx context.Context, req *api.GetPla
 		Config: config,
 	}, nil
 }
+
 func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.UpdatePlatformConfigRequest) (*api.UpdatePlatformConfigReply, error) {
+	for k, v := range req.Config {
+		in := false
+		for _, i := range s.conf.Service.Platform.ConfigKeys {
+			if k == i.Key {
+				in = true
+				err := i.ValidateValue(v)
+				if err != nil {
+					return nil, err
+				}
+				break
+			}
+		}
+
+		if !in {
+			return nil, errors.Errorf(nil, errors.ErrorPlatformConfigKeyNotExist)
+		}
+	}
+
 	err := s.data.PlatformDao.UpdatePlatformConfig(ctx, req.PlatformId, req.Config)
 	if err != nil {
 		return nil, err

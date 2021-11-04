@@ -15,6 +15,7 @@ import (
 type JointCloud interface {
 	ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error)
 	ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error)
+	SubmitJob(ctx context.Context, params *SubmitJobParam) (*SubmitJobReply, error)
 }
 
 func NewJointCloud(baseUrl, username, password string) JointCloud {
@@ -115,4 +116,27 @@ func (j *jointCloud) checkLogin() error {
 
 	j.client.SetCookie(&http.Cookie{Name: "SESSION", Value: base64.StdEncoding.EncodeToString([]byte(reply.SessionId))})
 	return nil
+}
+
+func (j *jointCloud) SubmitJob(ctx context.Context, params *SubmitJobParam) (*SubmitJobReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+	r := &Reply{}
+	paraBytes, err := json.Marshal(params)
+	_, err = j.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(paraBytes).SetResult(r).
+		Post(fmt.Sprintf("%s/api/v1/jointcloud/task/create", j.baseUrl))
+
+	if err != nil {
+		return nil, err
+	}
+	reply := &SubmitJobReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
 }

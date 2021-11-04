@@ -5,28 +5,30 @@ import (
 	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
+
 	"server/base-server/internal/data/jointcloud"
+	"server/base-server/internal/data/pipeline"
 	"server/common/errors"
+	"strings"
 
 	"github.com/jinzhu/copier"
 )
 
-type jointCloudService struct {
+type JointCloudService struct {
 	api.UnimplementedJointCloudServiceServer
 	conf *conf.Bootstrap
 	data *data.Data
 }
 
 func NewJointCloudService(conf *conf.Bootstrap, data *data.Data) api.JointCloudServiceServer {
-	s := &jointCloudService{
+	s := &JointCloudService{
 		conf: conf,
 		data: data,
 	}
-
 	return s
 }
 
-func (s *jointCloudService) ListJointCloudDataset(ctx context.Context, req *api.ListJointCloudDatasetRequest) (*api.ListJointCloudDatasetReply, error) {
+func (s *JointCloudService) ListJointCloudDataset(ctx context.Context, req *api.ListJointCloudDatasetRequest) (*api.ListJointCloudDatasetReply, error) {
 	reply, err := s.data.JointCloud.ListDataSet(ctx, &jointcloud.DataSetQuery{
 		PageIndex: int(req.PageIndex),
 		PageSize:  int(req.PageSize),
@@ -47,7 +49,7 @@ func (s *jointCloudService) ListJointCloudDataset(ctx context.Context, req *api.
 	return &api.ListJointCloudDatasetReply{DataSets: dataSets}, nil
 }
 
-func (s *jointCloudService) ListJointCloudDatasetVersion(ctx context.Context, req *api.ListJointCloudDatasetVersionRequest) (*api.ListJointCloudDatasetVersionReply, error) {
+func (s *JointCloudService) ListJointCloudDatasetVersion(ctx context.Context, req *api.ListJointCloudDatasetVersionRequest) (*api.ListJointCloudDatasetVersionReply, error) {
 	reply, err := s.data.JointCloud.ListDataSetVersion(ctx, &jointcloud.DataSetVersionQuery{
 		PageIndex:   int(req.PageIndex),
 		PageSize:    int(req.PageSize),
@@ -67,4 +69,67 @@ func (s *jointCloudService) ListJointCloudDatasetVersion(ctx context.Context, re
 	}
 
 	return &api.ListJointCloudDatasetVersionReply{Versions: versions}, nil
+}
+
+func (s *JointCloudService) checkPermForJob(ctx context.Context, job *jointcloud.SubmitJobParam) error {
+
+	for _, dataset := range job.DataSetVersionVoList {
+		if !strings.HasPrefix(dataset.Path, "/") {
+			return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		}
+	}
+
+	if job.OutputPath != "" && !strings.HasPrefix(job.OutputPath, "/") {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+
+	if len(job.DataSetVersionVoList) == 0 {
+		job.DataSetVersionVoList = []*jointcloud.DataSetVersionVo{}
+	}
+	if len(job.Params) == 0 {
+		job.Params = []*jointcloud.Param{}
+	}
+	if len(job.ResourceParams) == 0 {
+		job.ResourceParams = []*jointcloud.ResourceParam{}
+	}
+
+	return nil
+}
+
+func (s *JointCloudService) TrainJob(ctx context.Context, req *api.JointCloudTrainJobRequest) (*api.JointCloudTrainJobReply, error) {
+	//check 任务是否重名，联合索引。同名且未软删除，则报错。
+	_, err := s.data.TrainJobDao.GetTrainJobByName(ctx, req.TaskName, req.UserId, req.WorkspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	trainJob := &jointcloud.TrainJob{}
+	submitPara := &jointcloud.SubmitJobParam{}
+	err = copier.Copy(trainJob, req)
+	if err != nil {
+		return nil, err
+	}
+	err = copier.Copy(submitPara, req)
+	if err != nil {
+		return nil, err
+	}
+	trainJob.Status = pipeline.PREPARING
+	//各类参数校验
+	err = s.checkPermForJob(ctx, submitPara)
+	if err != nil {
+		return nil, err
+	}
+	//submit job
+	reply, err := s.data.JointCloud.SubmitJob(ctx, submitPara)
+	if err != nil {
+		return nil, err
+	}
+	trainJob.Id = reply.TaskId
+	//create recorde
+	err = s.data.JointCloudDao.CreateTrainJob(ctx, trainJob)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.JointCloudTrainJobReply{JobId: reply.TaskId}, nil
 }

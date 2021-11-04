@@ -43,6 +43,26 @@ service User {
         post: "/v1/usermanage/user/{userId}/thaw"
       };
     };
+    // 查询配置key列表
+    rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply) {
+      option (google.api.http) = {
+        get: "/v1/usermanage/userconfigkey"
+      };
+    }
+    // 查询用户配置
+    rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply) {
+      option (google.api.http) = {
+        get: "/v1/usermanage/user/{userId}/config"
+      };
+    };
+
+    // 更新用户配置
+    rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/config"
+        body: "*"
+      };
+    };
 }
 
 message UserItem {
@@ -123,4 +143,38 @@ message ThawUserRequest {
 
 message ThawUserReply {
   int64 thawedAt = 1;
+}
+
+message ListUserConfigKeyRequest {
+
+}
+
+message ListUserConfigKeyReply {
+  message ConfigKey {
+    string key = 1;     // 键值，必填，保存配置时传入
+    string title = 2;   // 标题，必填
+    string desc = 3;    // 描述，选填
+    string type = 4;    // 类型，选填，input、radio、checkbox，默认为input
+    string options = 5; // 选项，选填，radio、checkbox时必填，逗号分隔
+    string regexp = 6;  // 正则，选填
+    bool required = 7; // 选填，默认为false
+  }
+  repeated ConfigKey configKeys = 1;
+}
+
+message GetUserConfigRequest {
+  string userId = 1;
+}
+
+message GetUserConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdateUserConfigRequest {
+  string userId = 1[(validate.rules).string = {min_len: 1}];
+  map<string, string> config = 2;
+}
+
+message UpdateUserConfigReply {
+
 }

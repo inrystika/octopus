@@ -131,6 +131,10 @@ data:
         addr: {{ include "redis.serviceAddr" . }}
         username: {{ .Values.baseserver.data.redis.username }}
         password: {{ .Values.baseserver.data.redis.password }}
+      jointCloud:
+        baseUrl: {{ .Values.baseserver.data.jointCloud.baseUrl }}
+        username: {{ .Values.baseserver.data.jointCloud.username }}
+        password: {{ .Values.baseserver.data.jointCloud.password }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
@@ -155,10 +159,16 @@ data:
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
       platform:
-        # 数组, 数组内字段为key和keyDesc
         configKeys:
         - key: jobStatusCallbackAddr
-          keyDesc: 任务状态回调地址
+          title: 任务状态回调地址
+          type: input
+      user:
+        configKeys:
+        - key: jointCloudPermission
+          title: 云际权限
+          type: radio
+          options: yes,no
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"
