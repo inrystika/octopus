@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	nethttp "net/http"
 	innterapi "server/base-server/api/v1"
+	"server/common/constant/userconfig"
 	comCtx "server/common/context"
 	"server/common/errors"
 	comHttp "server/common/http"
@@ -14,6 +16,7 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/service"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -65,6 +68,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				logging.Server(),
 				jwt.Server(jwtOpts...),
 				session.Server(sessionOpts...),
+				checkJointCloudPerm(service),
 				validate.Server(),
 			),
 		),
@@ -86,4 +90,29 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/billingmanage", api.NewBillingServiceHandler(service.BillingService, options...))
 	srv.HandlePrefix("/v1/jointcloudmanage", api.NewJointCloudServiceHandler(service.JointCloudService, options...))
 	return srv
+}
+
+func checkJointCloudPerm(service *service.Service) middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			var request *nethttp.Request
+			if info, ok := http.FromServerContext(ctx); ok {
+				request = info.Request
+			} else {
+				return handler(ctx, req)
+			}
+
+			if strings.Contains(request.RequestURI, "/v1/jointcloudmanage") {
+				config, err := service.UserService.GetUserConfig(ctx, &api.GetUserConfigRequest{})
+				if err != nil {
+					return nil, err
+				}
+				if config.Config == nil || !strings.EqualFold(config.Config[userconfig.JointCloudPermission], userconfig.JointCloudPermissionYes) {
+					return nil, errors.Errorf(nil, errors.ErrorJointCloudNoPermission)
+				}
+			}
+
+			return handler(ctx, req)
+		}
+	}
 }
