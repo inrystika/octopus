@@ -360,12 +360,13 @@ influxdb:
     enabled: true
     existingClaim: "octopus-influxdb-pvc"
   volumes:
-    - name: influxdb-initdb
-      configMap:
-        name: influxdb-initdb-config
+  - name: influxdb-initdb
+    configMap:
+      name: influxdb-initdb-config
   mountPoints:
-    - name: influxdb-initdb
-      mountPath: /docker-entrypoint-initdb.d
+  - name: influxdb-initdb
+    mountPath: /docker-entrypoint-initdb.d
+    readOnly: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
