@@ -23,3 +23,17 @@ export function updatePlatform(params) {
     params
   })
 }
+
+export function getPlatformConfigKey() {
+  return request({
+    url: `/v1/platformmanage/platformconfigkey`,
+    method: 'get'
+  })
+}
+
+export function getPlatformConfigValue(platformId) {
+  return request({
+    url: `/v1/platformmanage/platform/${platformId}/config`,
+    method: 'get'
+  })
+}

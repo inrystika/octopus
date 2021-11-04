@@ -35,6 +35,7 @@
             <template slot-scope="scope">
               <el-button type="text" @click="detail(scope.row)">详情</el-button>
               <el-button type="text" @click="edit(scope.row)">编辑</el-button>
+              <el-button type="text" @click="getPlatformConfig(scope.row)">平台配置</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -74,6 +75,14 @@
       @confirm="confirm" 
       @close="close"
     />
+
+    <platformConfig
+      v-if="platformConfigVisible"
+      :platform-detail="platformDetail"
+      @cancel="cancel" 
+      @confirm="confirm" 
+      @close="close"
+    />
   </div>
 </template>
 <script>
@@ -81,20 +90,24 @@ import searchForm from '@/components/search/index.vue'
 import createDialog from "./components/createDialog.vue"
 import detailsDialog from "./components/detailsDialog.vue"
 import editDialog from "./components/editDialog.vue"
+import platformConfig from "./components/platformConfig.vue"
 import { getPlatformList } from "@/api/platformManager"
 import { parseTime } from '@/utils/index'
+import { getErrorMsg } from '@/error/index'
 export default {
   name: "platform",
   components: {
     createDialog,
     detailsDialog,
-    editDialog
+    editDialog,
+    platformConfig
   },
   data() {
     return {
       createVisible: false,
       detailsVisible: false,
       editVisible: false,
+      platformConfigVisible: false,
       platformList: [],
       platformDetail: {},
       total: 0,
@@ -108,6 +121,9 @@ export default {
     this.getPlatformList(this.searchData);
   },
   methods: {
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
     getPlatformList(param){
       getPlatformList(param).then(response => {
           if(response.success){
@@ -133,18 +149,21 @@ export default {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.platformConfigVisible = val
       this.getPlatformList(this.searchData);
     },
     confirm(val) {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.platformConfigVisible = val
       this.getPlatformList(this.searchData);
     },
     close(val) {
       this.createVisible = val
       this.detailsVisible = val
       this.editVisible = val
+      this.platformConfigVisible = val
       this.getPlatformList(this.searchData);
     },
     create() {
@@ -156,6 +175,10 @@ export default {
     },
     edit(row) {
       this.editVisible = true
+      this.platformDetail = row
+    },
+    getPlatformConfig(row) {
+      this.platformConfigVisible = true
       this.platformDetail = row
     },
     //时间戳转换日期

@@ -44,6 +44,7 @@
 <script>
 import { updatePlatform } from "@/api/platformManager"
 import { getResourcePool } from '@/api/resourceManager.js'
+import { getErrorMsg } from '@/error/index'
 export default {
   name: "editDialog",
   props: {
@@ -79,6 +80,9 @@ export default {
     this.getResourcePool();
   },
   methods: {
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
     getResourcePool() {
       getResourcePool().then(response => {
         if (response.success) {
