@@ -42,7 +42,7 @@
         tipText: '上传文件格式为 zip',
         progress: undefined,
         timer: undefined,
-        message:'上传过程中，本上传页面关闭，不影响上传，但是关闭或者刷新浏览器，上传会被停止'
+        message: '上传过程中，本上传页面关闭，不影响上传，但是关闭或者刷新浏览器，上传会被停止'
       }
     },
     computed: {
@@ -111,15 +111,17 @@
                   file: this.fileList[0].raw,
                   id: this.uploadData.data.id
                 }
-                minIO(param).then(response => {
-                  this.$nextTick(() => {
-                    this.loadingShow = false
-                    this.show = true
-                    this.showUpload = true
-                    this.confirm()
-                  })
+                  minIO(param).then(response => {
+                    this.$nextTick(() => {
+                      this.loadingShow = false
+                      this.show = true
+                      this.showUpload = true
+                      this.confirm()
+                    })
 
-                })
+                  })
+              
+
               }
               else {
                 this.$message({
@@ -411,5 +413,10 @@
   .dialog-footer {
     margin-top: 10px;
   }
-  .item{margin-left: 5px;font-size: 16px;color:#409EFF;}
+
+  .item {
+    margin-left: 5px;
+    font-size: 16px;
+    color: #409EFF;
+  }
 </style>
