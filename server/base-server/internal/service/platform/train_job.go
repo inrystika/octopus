@@ -321,7 +321,6 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 			_ = resFunc(ctx)
 		}
 	}()
-	fmt.Println("xxxxxxxxxxxxxxxx", job.Output)
 	param := &pipeline.SubmitJobParam{
 		UserID:       job.PlatformId,
 		JobKind:      "platform_train_job",
