@@ -361,6 +361,13 @@ influxdb:
   persistence:
     enabled: true
     existingClaim: "octopus-influxdb-pvc"
+  volumes:
+    - name: influxdb-initdb
+      configMap:
+        name: influxdb-initdb-config
+  mountPoints:
+    - name: influxdb-initdb
+      mountPath: /docker-entrypoint-initdb.d
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
