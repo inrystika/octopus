@@ -304,7 +304,10 @@ func (d *algorithmDao) ListAlgorithmAccessVersion(ctx context.Context, req *mode
 		db = db.Order(orderSql)
 	}
 	if req.AlgorithmVersionOrder {
-		orderSql := fmt.Sprintf("algorithm_version %s", req.AlgorithmVersionSort)
+		// left(algorithm_version ,1) DESC , CAST(MID(algorithm_version,2) AS UNSIGNED)
+		orderSql := fmt.Sprintf("left(algorithm_version ,1) %s", req.AlgorithmVersionSort)
+		db = db.Order(orderSql)
+		orderSql = fmt.Sprintf("CAST(MID(algorithm_version,2) AS UNSIGNED) %s", req.AlgorithmVersionSort)
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {

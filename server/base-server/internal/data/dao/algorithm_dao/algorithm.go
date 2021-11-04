@@ -297,7 +297,10 @@ func (d *algorithmDao) ListAlgorithmVersion(ctx context.Context, req *model.Algo
 
 	// orderby语句拼接
 	if req.VersionOrder {
-		orderSql := fmt.Sprintf("version %s", req.VersionSort)
+		// left(version ,1) DESC , CAST(MID(version,2) AS UNSIGNED)
+		orderSql := fmt.Sprintf("left(version ,1) %s", req.VersionSort)
+		db = db.Order(orderSql)
+		orderSql = fmt.Sprintf("CAST(MID(version,2) AS UNSIGNED) %s", req.VersionSort)
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {

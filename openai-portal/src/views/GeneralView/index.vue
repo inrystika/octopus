@@ -392,10 +392,18 @@
             if (response.success) {
               this.billAmount = response.data.billingUser.amount
             } else {
-              this.$message({
-                message: this.getErrorMsg(response.error.subcode),
-                type: 'warning'
-              });
+              if (response.error.subcode == 10054) {
+                this.$message({
+                  message: '请求资源未找到',
+                  type: 'success'
+                });
+              }
+              else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+              }
             }
           })
         } else {
