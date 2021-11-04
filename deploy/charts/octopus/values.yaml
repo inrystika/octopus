@@ -312,6 +312,8 @@ redis:
 # nginx-ingress-controller
 nginx-ingress-controller:
   hostNetwork: true
+  updateStrategy:
+    type: "Recreate"
   replicaCount: 1
   nodeSelector:
     nginx-ingress: "yes"
