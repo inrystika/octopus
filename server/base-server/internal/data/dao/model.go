@@ -284,8 +284,11 @@ func (d *modelDao) ListModelVersion(ctx context.Context, req *model.ModelVersion
 	}
 
 	// orderby语句拼接
+	// left(version ,1) DESC , CAST(MID(version,2) AS UNSIGNED)
 	if req.VersionOrder {
-		orderSql := fmt.Sprintf("version %s", req.VersionSort)
+		orderSql := fmt.Sprintf("left(version ,1) %s", req.VersionSort)
+		db = db.Order(orderSql)
+		orderSql = fmt.Sprintf("CAST(MID(version,2) AS UNSIGNED) %s", req.VersionSort)
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
@@ -590,7 +593,10 @@ func (d *modelDao) ListModelVersionAccess(ctx context.Context, req *model.ModelV
 		db = db.Order(orderSql)
 	}
 	if req.ModelVersionOrder {
-		orderSql := fmt.Sprintf("model_version %s", req.ModelVersionSort)
+		// left(model_version ,1) DESC , CAST(MID(model_version,2) AS UNSIGNED)
+		orderSql := fmt.Sprintf("left(model_version ,1) %s", req.ModelVersionSort)
+		db = db.Order(orderSql)
+		orderSql = fmt.Sprintf("CAST(MID(model_version,2) AS UNSIGNED) %s", req.ModelVersionSort)
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
