@@ -352,8 +352,6 @@ nginx-ingress-controller:
 # influxdb
 influxdb:
   replicaCount: 1
-  initScripts:
-    enabled: true
   setDefaultUser:
     user:
       username: "octopus"
