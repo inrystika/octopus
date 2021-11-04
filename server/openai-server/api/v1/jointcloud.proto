@@ -5,8 +5,8 @@ package openaiserver.api.v1;
 option go_package = "server/openai-server/api/v1;v1";
 
 
-import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "google/api/annotations.proto";
 
 service JointCloudService {
   // 查询数据集列表
@@ -21,6 +21,13 @@ service JointCloudService {
       get: "/v1/jointcloudmanage/dataset/{dataSetCode}/version"
     };
   }
+  // 创建训练任务
+  rpc JointCloudTrainJob (JointCloudTrainJobRequest) returns (JointCloudTrainJobReply) {
+    option (google.api.http) = {
+      post: "/v1/jointcloudmanage/jointcloudtrainjob"
+      body: "*"
+    };
+};
 }
 
 message ListJointCloudDatasetRequest {
@@ -49,4 +56,37 @@ message ListJointCloudDatasetVersionReply {
     string remark = 2;
   }
   repeated DataSetVersion versions = 1;
+}
+
+message JointCloudTrainJobRequest {
+    string taskName = 1[(validate.rules).string = {min_len: 1, max_len: 150}];
+    string execCommand = 2[(validate.rules).string = {max_len: 300}];
+    string interpreter = 3;
+    string framework = 4;
+    string outputPath = 5;
+    repeated JointCloudDataSetVersionVo dataSetVersionVoList = 6;
+    repeated JointCloudParam params = 7;
+    repeated JointCloudResourceParam resourceParams = 8;
+    string remark = 9;
+}
+
+message JointCloudTrainJobReply {
+    string jobId = 1;
+}
+
+message JointCloudDataSetVersionVo {
+	string dataSetName  = 1;
+	string dataSetCode = 2;
+	string version = 3;
+	string path = 4;
+}
+
+message JointCloudParam {
+	string key = 1;
+	string value = 2;
+}
+
+message JointCloudResourceParam {
+	string name = 1;
+	string size = 2;
 }

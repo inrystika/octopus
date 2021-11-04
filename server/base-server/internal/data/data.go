@@ -41,6 +41,7 @@ type Data struct {
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
 	PlatformDao         platformDao.PlatformDao
+	JointCloudDao       jointcloud.JointcloudDao
 	JointCloud          jointcloud.JointCloud
 }
 
@@ -75,6 +76,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	}
 	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
+	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password)
 
 	return d, func() {
@@ -239,14 +241,20 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&platform.PlatformConfig{})
+	err = db.AutoMigrate(&platform.PlatformConfig{})
 	if err != nil {
 		return nil, err
 	}
 
-	db.AutoMigrate(&model.UserConfig{})
+	err = db.AutoMigrate(&model.UserConfig{})
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&jointcloud.TrainJob{})
+	if err != nil {
+		return nil, err
+	}
+
 	return db, err
 }

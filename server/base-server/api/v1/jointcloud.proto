@@ -13,6 +13,8 @@ service JointCloudService {
   rpc ListJointCloudDataset (ListJointCloudDatasetRequest) returns (ListJointCloudDatasetReply);
   // 查询数据集版本列表
   rpc ListJointCloudDatasetVersion (ListJointCloudDatasetVersionRequest) returns (ListJointCloudDatasetVersionReply);
+  //创建训练任务
+  rpc TrainJob (JointCloudTrainJobRequest) returns (JointCloudTrainJobReply);
 }
 
 message ListJointCloudDatasetRequest {
@@ -43,3 +45,37 @@ message ListJointCloudDatasetVersionReply {
   repeated DataSetVersion versions = 1;
 }
 
+message JointCloudTrainJobRequest {
+    string taskName = 1[(validate.rules).string = {min_len: 1, max_len: 150}];
+    string execCommand = 2[(validate.rules).string = {max_len: 300}];
+    string interpreter = 3;
+    string framework = 4;
+    string outputPath = 5;
+    repeated JointCloudDataSetVersionVo dataSetVersionVoList = 6;
+    repeated JointCloudParam params = 7;
+    repeated JointCloudResourceParam resourceParams = 8;
+    string remark = 9;
+    string userId = 10;
+    string workspaceId = 11;
+}
+
+message JointCloudTrainJobReply {
+    string jobId = 1;
+}
+
+message JointCloudDataSetVersionVo {
+	string dataSetName  = 1;
+	string dataSetCode = 2;
+	string version = 3;
+	string path = 4;
+}
+
+message JointCloudParam {
+	string key = 1;
+	string value = 2;
+}
+
+message JointCloudResourceParam {
+	string name = 1;
+	string size = 2;
+}
