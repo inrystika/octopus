@@ -41,7 +41,7 @@ type PlatformStorageConfig struct {
 	PlatformId string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_name_deleteAt,priority:1;comment:平台id"`
 	Name       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_name_deleteAt,priority:2;comment:名称"`
 	Type       string                `gorm:"type:varchar(100);not null;default:'';comment:存储类型"`
-	Options    *StorageOptions       `gorm:"type:json;comment:'存储配置'"`
+	Options    *StorageOptions       `gorm:"type:json;comment:存储配置"`
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:platformId_name_deleteAt,priority:3"`
 }
 
