@@ -15,7 +15,8 @@ import (
 type JointCloud interface {
 	ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error)
 	ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error)
-	SubmitJob(ctx context.Context, params *SubmitJobParam) (*SubmitJobReply, error)
+	SubmitJob(ctx context.Context, params *JointcloudJobParam) (*SubmitJobReply, error)
+	ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error)
 }
 
 func NewJointCloud(baseUrl, username, password string) JointCloud {
@@ -118,7 +119,7 @@ func (j *jointCloud) checkLogin() error {
 	return nil
 }
 
-func (j *jointCloud) SubmitJob(ctx context.Context, params *SubmitJobParam) (*SubmitJobReply, error) {
+func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) (*SubmitJobReply, error) {
 	err := j.checkLogin()
 	if err != nil {
 		return nil, err
@@ -134,6 +135,28 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *SubmitJobParam) (*Su
 		return nil, err
 	}
 	reply := &SubmitJobReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	IdsQuery := fmt.Sprintf(`{"query": {"jobIds":%v}}`, query.Ids)
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": IdsQuery, "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/api/v1/jointcloud/getTaskListByJobIds")
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListJobReply{}
 	err = parseBody(r, reply)
 	if err != nil {
 		return nil, err

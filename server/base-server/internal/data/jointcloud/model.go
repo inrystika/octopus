@@ -64,7 +64,7 @@ type ListDataSetVersionReply struct {
 	} `json:"list"`
 }
 
-type SubmitJobParam struct {
+type JointcloudJobParam struct {
 	TaskName             string            `json:"taskName"`
 	ExecCommand          string            `json:"execCommand"`
 	Interpreter          string            `json:"interpreter"`
@@ -133,7 +133,37 @@ type TrainJobListQuery struct {
 	SearchKey    string
 	UserId       string
 	WorkspaceId  string
-	Ids          []string
+	Ids          string
+}
+
+type ListJobReply struct {
+	List []*struct {
+		taskId             string                   `json:"taskId"`
+		taskName           string                   `json:"taskName"`
+		interpreter        string                   `json:"interpreter"`
+		framework          string                   `json:"framework"`
+		cloudVendorId      string                   `json:"cloudVendorId"`
+		execCommand        string                   `json:"execCommand"`
+		outputPath         string                   `json:"outputPath"`
+		status             string                   `json:"status"`
+		remark             string                   `json:"remark"`
+		dataSetVersionList []*ReplyDataSetVersionVo `json:"dataSetVersionList"`
+		params             []*Param                 `json:"params"`
+		resourceParams     []*ResourceParam         `json:"resourceParams"`
+	} `json:"list"`
+}
+
+type JobQuery struct {
+	PageIndex int
+	PageSize  int
+	Ids       string
+}
+
+type ReplyDataSetVersionVo struct {
+	Category    string `json:"category"`
+	DataSetCode string `json:"dataSetCode"`
+	Version     string `json:"version"`
+	Remark      string `json:"remark"`
 }
 
 func (TrainJob) TableName() string {

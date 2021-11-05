@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/session"
+	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -90,4 +92,49 @@ func (s *JointCloudService) JointCloudTrainJob(ctx context.Context, req *api.Joi
 	}
 
 	return &api.JointCloudTrainJobReply{JobId: innerReply.JobId}, nil
+}
+
+func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.ListJointCloudJobRequest) (*api.ListJointCloudJobReply, error) {
+	innerReq := &innerapi.ListJointCloudJobRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	innerReq.UserId = userId
+	innerReq.SpaceId = spaceId
+
+	innerReply, err := s.data.JointCloudClient.ListJointCloudJob(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListJointCloudJobReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *JointCloudService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
+	userId := commctx.UserIdFromContext(ctx)
+	if userId == "" {
+		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		return "", "", err
+	}
+
+	session := ss.SessionFromContext(ctx)
+	if session == nil {
+		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+		return "", "", err
+	}
+
+	return userId, session.GetWorkspace(), nil
 }

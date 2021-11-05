@@ -71,7 +71,7 @@ func (s *JointCloudService) ListJointCloudDatasetVersion(ctx context.Context, re
 	return &api.ListJointCloudDatasetVersionReply{Versions: versions}, nil
 }
 
-func (s *JointCloudService) checkPermForJob(ctx context.Context, job *jointcloud.SubmitJobParam) error {
+func (s *JointCloudService) checkPermForJob(ctx context.Context, job *jointcloud.JointcloudJobParam) error {
 
 	for _, dataset := range job.DataSetVersionVoList {
 		if !strings.HasPrefix(dataset.Path, "/") {
@@ -104,7 +104,7 @@ func (s *JointCloudService) TrainJob(ctx context.Context, req *api.JointCloudTra
 	}
 
 	trainJob := &jointcloud.TrainJob{}
-	submitPara := &jointcloud.SubmitJobParam{}
+	submitPara := &jointcloud.JointcloudJobParam{}
 	err = copier.Copy(trainJob, req)
 	if err != nil {
 		return nil, err
@@ -132,4 +132,35 @@ func (s *JointCloudService) TrainJob(ctx context.Context, req *api.JointCloudTra
 	}
 
 	return &api.JointCloudTrainJobReply{JobId: reply.TaskId}, nil
+}
+
+func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.ListJointCloudJobRequest) (*api.ListJointCloudJobReply, error) {
+	reply, err := s.data.JointCloud.ListJob(ctx, &jointcloud.JobQuery{
+		PageIndex: int(req.PageIndex),
+		PageSize:  int(req.PageSize),
+		Ids:       req.Ids,
+	})
+	if err != nil {
+		return nil, err
+	}
+	jobList := make([]*api.JointCloudJReplyJob, 0)
+	for _, n := range reply.List {
+		job := &api.JointCloudJReplyJob{}
+		err := copier.Copy(job, n)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		if req.UserId != "" && req.SpaceId != "" {
+			j, err := s.data.JointCloudDao.GetTrainJob(ctx, job.TaskId)
+			if err != nil {
+				continue
+			}
+			if j.UserId != req.UserId || j.WorkspaceId != req.SpaceId {
+				continue
+			}
+		}
+		jobList = append(jobList, job)
+	}
+
+	return &api.ListJointCloudJobReply{List: jobList}, nil
 }
