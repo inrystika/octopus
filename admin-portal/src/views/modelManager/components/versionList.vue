@@ -30,10 +30,14 @@
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
+                        <el-button v-if="scope.row.fileStatus==0||scope.row.fileStatus==3&&modelType==3" type="text"
+                            @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
+                        </el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">
                             预览
                         </el-button>
-                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
+                        <el-button v-if="modelType===3" type="text" @click="open(scope.row)"
+                            :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载
                         </el-button>
@@ -50,6 +54,9 @@
         </el-dialog>
         <!-- 预览对话框 -->
         <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog" />
+        <!-- 创建对话框 -->
+        <reupload v-if="CreateVisible" :row="row" :is-list="isList" @close="close" @cancel="cancel"
+            @confirm="confirm" />
     </div>
 </template>
 
@@ -59,10 +66,12 @@
     import { getModelList, downloadModel, deletePreModelVersion } from '@/api/modelManager.js'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
+    import reupload from './reupload.vue'
+    import store from '@/store'
     export default {
         name: "VersionList",
         components: {
-
+            reupload,
             previewDialog
         },
         props: {
@@ -81,7 +90,9 @@
                 tableData: [],
                 row: { flag: undefined, data: undefined },
                 data: { modelId: undefined, version: undefined },
-                timer: null
+                timer: null,
+                CreateVisible: false,
+                isList: true
 
             }
         },
@@ -238,7 +249,26 @@
                     default:
                         return '上传失败'
                 }
-            }
+            },
+            // 重新上传
+            handleEdit(val) {
+                this.isList = true
+                this.CreateVisible = true
+                this.row = val
+                store.commit('user/SET_PROGRESSID', val.modelId)
+            },
+            cancel(val) {
+                this.CreateVisible=val         
+                this.getList()
+            },
+            confirm(val) {
+                this.CreateVisible=val           
+                this.getList()
+            },
+            close(val) {
+                this.CreateVisible=val
+                this.getList()
+            },
         }
 
     }
