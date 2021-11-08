@@ -138,18 +138,18 @@ type TrainJobListQuery struct {
 
 type ListJobReply struct {
 	List []*struct {
-		taskId             string                   `json:"taskId"`
-		taskName           string                   `json:"taskName"`
-		interpreter        string                   `json:"interpreter"`
-		framework          string                   `json:"framework"`
-		cloudVendorId      string                   `json:"cloudVendorId"`
-		execCommand        string                   `json:"execCommand"`
-		outputPath         string                   `json:"outputPath"`
-		status             string                   `json:"status"`
-		remark             string                   `json:"remark"`
-		dataSetVersionList []*ReplyDataSetVersionVo `json:"dataSetVersionList"`
-		params             []*Param                 `json:"params"`
-		resourceParams     []*ResourceParam         `json:"resourceParams"`
+		TaskId             string                   `json:"taskId"`
+		TaskName           string                   `json:"taskName"`
+		Interpreter        string                   `json:"interpreter"`
+		Framework          string                   `json:"framework"`
+		CloudVendorId      string                   `json:"cloudVendorId"`
+		ExecCommand        string                   `json:"execCommand"`
+		OutputPath         string                   `json:"outputPath"`
+		Status             string                   `json:"status"`
+		Remark             string                   `json:"remark"`
+		DataSetVersionList []*ReplyDataSetVersionVo `json:"dataSetVersionList"`
+		Params             []*Param                 `json:"params"`
+		ResourceParams     []*ResourceParam         `json:"resourceParams"`
 	} `json:"list"`
 }
 

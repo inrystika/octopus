@@ -179,6 +179,7 @@ const (
 	ErrorPlatformBatchGetPlatform        = 20003 // 批量获取平台信息错误
 	ErrorPlatformConfigValueWrong        = 20004 // 配置值不正确
 	ErrorPlatformConfigKeyNotExist       = 20005 // 配置项不存在
+	ErrorPlatformRequestFail             = 20006 // http请求失败
 
 	/* 21001-22000 云际错误*/
 	ErrorJointCloudRequestFailed = 21001 // 云际请求失败

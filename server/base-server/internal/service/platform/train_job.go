@@ -10,6 +10,7 @@ import (
 	"server/base-server/internal/data"
 	model "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/pipeline"
+	"server/base-server/internal/data/platform"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
@@ -27,9 +28,10 @@ import (
 )
 
 const (
-	k8sTaskNamePrefix   = "task"
-	NoDistributedJobNum = 1
-	shmResource         = "shm"
+	k8sTaskNamePrefix     = "task"
+	NoDistributedJobNum   = 1
+	shmResource           = "shm"
+	jobStatusCallbackAddr = "jobStatusCallbackAddr"
 )
 
 type platformTrainJobService struct {
@@ -646,6 +648,12 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		s.deleteOutputStorageResource(ctx, trainJob.Output, trainJob.PlatformId, trainJob.Id)
 	}
 
+	s.updatePlatfromJobStatus(ctx, trainJob.PlatformId, &platform.JobStatusInfo{
+		JobId:  trainJob.Id,
+		Status: info.Job.State,
+		Time:   time.Now(),
+	})
+
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)
 	if err != nil {
 		return common.PipeLineCallbackRE
@@ -1041,5 +1049,22 @@ func (s *platformTrainJobService) deleteOutputStorageResource(ctx context.Contex
 		return err
 	}
 
+	return nil
+}
+
+func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, platformId string, info *platform.JobStatusInfo) error {
+
+	reply, err := s.platformService.GetPlatformConfig(ctx, &api.GetPlatformConfigRequest{
+		PlatformId: platformId,
+	})
+	if err != nil {
+		return err
+	}
+	if url, ok := reply.Config[jobStatusCallbackAddr]; ok {
+		err = s.data.Platform.UpdateJobStatus(ctx, url, info)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

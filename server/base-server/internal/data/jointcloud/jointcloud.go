@@ -129,7 +129,7 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) 
 	_, err = j.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(paraBytes).SetResult(r).
-		Post(fmt.Sprintf("%s/api/v1/jointcloud/task/create", j.baseUrl))
+		Post(fmt.Sprintf("%s/v1/jointcloud/task/create", j.baseUrl))
 
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 	IdsQuery := fmt.Sprintf(`{"query": {"jobIds":%v}}`, query.Ids)
 
 	r := &Reply{}
-	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": IdsQuery, "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/api/v1/jointcloud/getTaskListByJobIds")
+	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": IdsQuery, "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/v1/jointcloud/getTaskListByJobIds")
 	if err != nil {
 		return nil, err
 	}

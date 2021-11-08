@@ -6,12 +6,13 @@ import (
 	"server/base-server/internal/data/dao"
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/dao/model/platform"
+	platformModel "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
 	platformDao "server/base-server/internal/data/dao/platform"
 	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
+	platform "server/base-server/internal/data/platform"
 	"server/base-server/internal/data/redis"
 	"server/base-server/internal/data/registry"
 
@@ -41,6 +42,7 @@ type Data struct {
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
 	PlatformDao         platformDao.PlatformDao
+	Platform            platform.Platform
 	JointCloudDao       jointcloud.JointcloudDao
 	JointCloud          jointcloud.JointCloud
 }
@@ -76,6 +78,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	}
 	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
+	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password)
 
@@ -226,22 +229,22 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&platform.Platform{})
+	err = db.AutoMigrate(&platformModel.Platform{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&platform.PlatformTrainJob{})
+	err = db.AutoMigrate(&platformModel.PlatformTrainJob{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&platform.PlatformStorageConfig{})
+	err = db.AutoMigrate(&platformModel.PlatformStorageConfig{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&platform.PlatformConfig{})
+	err = db.AutoMigrate(&platformModel.PlatformConfig{})
 	if err != nil {
 		return nil, err
 	}
