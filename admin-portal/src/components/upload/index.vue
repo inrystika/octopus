@@ -2,7 +2,7 @@
   <div>
     <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
       :http-request="httpRequest" multiple :accept="accept" :disabled="show||progress>=0&&progress<=100">
-      <el-button size="small" type="primary" :disabled="show||progress>=0&&progress<=100">点击上传
+      <el-button size="small" type="primary" :disabled="show||progress>=0&&progress<=100" >点击上传
       </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
