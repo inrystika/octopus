@@ -36,18 +36,11 @@ const (
 
 type platformTrainJobService struct {
 	api.UnimplementedPlatformTrainJobServiceServer
-	conf                *conf.Bootstrap
-	log                 *log.Helper
-	data                *data.Data
-	workspaceService    api.WorkspaceServer
-	algorithmService    api.AlgorithmServer
-	imageService        api.ImageServer
-	datasetService      api.DatasetServiceServer
-	modelService        api.ModelServer
-	resourceSpecService api.ResourceSpecServiceServer
-	resourceService     api.ResourceServiceServer
-	resourcePoolService api.ResourcePoolServiceServer
-	platformService     api.PlatformServiceServer
+	conf            *conf.Bootstrap
+	log             *log.Helper
+	data            *data.Data
+	resourceService api.ResourceServiceServer
+	platformService api.PlatformServiceServer
 }
 
 type PlatformTrainJobService interface {
@@ -55,34 +48,24 @@ type PlatformTrainJobService interface {
 	common.PipelineCallback
 }
 
-func NewPlatformTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
-	workspaceService api.WorkspaceServer, algorithmService api.AlgorithmServer,
-	imageService api.ImageServer, datasetService api.DatasetServiceServer, modelService api.ModelServer,
-	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer, platformService api.PlatformServiceServer) (PlatformTrainJobService, error) {
+func NewPlatformTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, resourceService api.ResourceServiceServer,
+	platformService api.PlatformServiceServer) (PlatformTrainJobService, error) {
 	log := log.NewHelper("PlatformTrainJobService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
 	if err != nil {
 		if conf.App.IsDev {
-			log.Error(context.Background(), err) //todo 先只打印日志方便有些开发不启动taskset 后续修改为报错
+			log.Error(context.Background(), err)
 		} else {
 			return nil, err
 		}
 	}
 	s := &platformTrainJobService{
-		conf:                conf,
-		log:                 log,
-		data:                data,
-		workspaceService:    workspaceService,
-		algorithmService:    algorithmService,
-		imageService:        imageService,
-		datasetService:      datasetService,
-		modelService:        modelService,
-		resourceSpecService: resourceSpecService,
-		resourceService:     resourceService,
-		resourcePoolService: resourcePoolService,
-		platformService:     platformService,
+		conf:            conf,
+		log:             log,
+		data:            data,
+		resourceService: resourceService,
+		platformService: platformService,
 	}
 
 	return s, nil
@@ -181,10 +164,6 @@ func (s *platformTrainJobService) buildCmd(task *model.Task) []string {
 }
 
 type closeFunc func(ctx context.Context) error
-
-//func (s *platformTrainJobService) getModelSubPath(job *model.TrainJob) string {
-//	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioTrainJobObject(job.WorkspaceId, job.UserId, job.Id))
-//}
 
 type startJobInfoSpec struct {
 	resources     map[v1.ResourceName]resource.Quantity
@@ -659,17 +638,6 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		return common.PipeLineCallbackRE
 	}
 
-	/*if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
-		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-			SpaceId:          trainJob.WorkspaceId,
-			UserId:           trainJob.UserId,
-			AlgorithmId:      trainJob.AlgorithmId,
-			AlgorithmVersion: trainJob.AlgorithmVersion,
-			FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
-		})
-		s.log.Error(ctx, err)
-	}*/
-
 	return common.PipeLineCallbackOK
 }
 
@@ -1061,7 +1029,16 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		return err
 	}
 	if url, ok := reply.Config[jobStatusCallbackAddr]; ok {
-		err = s.data.Platform.UpdateJobStatus(ctx, url, info)
+
+		platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
+		if err != nil {
+			return err
+		}
+		if len(platformReply.Platforms) <= 0 {
+			return errors.Errorf(err, errors.ErrorDBFindEmpty)
+		}
+		platform := platformReply.Platforms[0]
+		err = s.data.Platform.UpdateJobStatus(ctx, url, platform.ClientSecret, info)
 		if err != nil {
 			return err
 		}

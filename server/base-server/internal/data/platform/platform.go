@@ -14,7 +14,7 @@ import (
 )
 
 type Platform interface {
-	UpdateJobStatus(ctx context.Context, url string, req *JobStatusInfo) error
+	UpdateJobStatus(ctx context.Context, url, clientSecret string, req *JobStatusInfo) error
 }
 
 type platform struct {
@@ -32,24 +32,24 @@ func getMd5String(s string) string {
 	return fmt.Sprintf("%x", md5.Sum(b))
 }
 
-func getSign(t int64) string {
-	newKey := fmt.Sprintf("%s|%s", secretkey, t)
+func getSign(clientSecret, time string) string {
+	newKey := fmt.Sprintf("%s|%s", clientSecret, time)
 	return getMd5String(newKey)
 }
 
-func (p *platform) UpdateJobStatus(ctx context.Context, url string, req *JobStatusInfo) error {
+func (p *platform) UpdateJobStatus(ctx context.Context, url, clientSecret string, req *JobStatusInfo) error {
 	r := &Reply{}
 	paraBytes, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
 
-	now := time.Now().Unix()
-	sign := getSign(now)
+	now := strconv.FormatInt(time.Now().Unix(), 10)
+	sign := getSign(clientSecret, now)
 
 	_, err = p.httpClient.R().
 		SetHeader("Content-Type", "application/json").
-		SetHeader("time", strconv.FormatInt(now, 10)).
+		SetHeader("time", now).
 		SetHeader("sign", sign).
 		SetBody(paraBytes).SetResult(r).
 		Post(url)
