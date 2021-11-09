@@ -6,8 +6,7 @@ import (
 )
 
 const (
-	success   = "0"
-	secretkey = "asdfasddsasfas01df0712sdfs"
+	success = "0"
 )
 
 type Reply struct {

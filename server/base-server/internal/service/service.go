@@ -72,8 +72,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	}
 	service.PlatformService = platform.NewPlatformService(conf, data)
 	service.PlatformTrainJobService, err = platform.NewPlatformTrainJobService(conf, logger, data,
-		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
-		service.ModelService, service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.PlatformService)
+		service.ResourceService, service.PlatformService)
 	if err != nil {
 		return nil, err
 	}
