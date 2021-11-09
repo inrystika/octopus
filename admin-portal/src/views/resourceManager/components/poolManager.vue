@@ -22,7 +22,7 @@
             </el-table-column>
             <el-table-column label="节点列表" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <span>{{ nodeList(scope.row.bindingNodes) }}</span>
+                    <span>{{  nodeList(scope.row.bindingNodes) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="资源规格" align="center">
@@ -331,6 +331,7 @@
                             type: 'warning'
                         });
                     }
+                  
                 })
             },
             getNodeList() {
@@ -380,13 +381,13 @@
                     });
                 });
             },
-            nodeList(val) {
-                if (val) {
-                    return val.toString()
-                }
-                else {
-                    return ''
-                }
+            nodeList(val){
+              if(val){
+                  return val.toString()
+              }
+              else{
+                  return ''
+              }
             }
 
         }
