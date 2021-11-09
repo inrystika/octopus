@@ -189,10 +189,11 @@ string	cloudVendorId = 5;
 string	execCommand = 6;                   
 string	outputPath = 7;                     
 string	status = 8;                       
-string	remark = 9;                           
-repeated JointCloudReplyDataSetVersionVo	dataSetVersionList = 10;
-repeated JointCloudParam	params = 11;
-repeated JointCloudResourceParam	resourceParams = 12;
+string	remark = 9;
+int64 createdAt = 10;                           
+repeated JointCloudReplyDataSetVersionVo	dataSetVersionList = 11;
+repeated JointCloudParam	params = 12;
+repeated JointCloudResourceParam	resourceParams = 13;
 }
 
 message JointCloudReplyDataSetVersionVo {
