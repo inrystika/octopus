@@ -13,6 +13,14 @@ service JointCloudService {
   rpc ListJointCloudDataset (ListJointCloudDatasetRequest) returns (ListJointCloudDatasetReply);
   // 查询数据集版本列表
   rpc ListJointCloudDatasetVersion (ListJointCloudDatasetVersionRequest) returns (ListJointCloudDatasetVersionReply);
+  // 查询训练框架
+  rpc ListJointCloudFramework (ListJointCloudFrameworkRequest) returns (ListJointCloudFrameworkReply);
+  // 查询训练框架版本
+  rpc ListJointCloudFrameworkVersion (ListJointCloudFrameworkVersionRequest) returns (ListJointCloudFrameworkVersionReply);
+  // 查询训练解释器
+  rpc ListJointCloudInterpreter (ListJointCloudInterpreterRequest) returns (ListJointCloudInterpreterReply);
+  // 查询训练解释器版本
+  rpc ListJointCloudInterpreterVersion (ListJointCloudInterpreterVersionRequest) returns (ListJointCloudInterpreterVersionReply);
   //创建训练任务
   rpc TrainJob (JointCloudTrainJobRequest) returns (JointCloudTrainJobReply);
   // 查询任务列表
@@ -45,6 +53,54 @@ message ListJointCloudDatasetVersionReply {
     string remark = 2;
   }
   repeated DataSetVersion versions = 1;
+}
+
+message ListJointCloudFrameworkRequest {
+
+}
+
+message ListJointCloudFrameworkReply {
+  message Framework {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Framework frameworks = 1;
+}
+
+message ListJointCloudFrameworkVersionRequest {
+  string key = 1;
+}
+
+message ListJointCloudFrameworkVersionReply {
+  message Version {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Version versions = 1;
+}
+
+message ListJointCloudInterpreterRequest {
+
+}
+
+message ListJointCloudInterpreterReply {
+  message Interpreter {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Interpreter interpreters = 1;
+}
+
+message ListJointCloudInterpreterVersionRequest {
+  string key = 1;
+}
+
+message ListJointCloudInterpreterVersionReply {
+  message Version {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Version versions = 1;
 }
 
 message JointCloudTrainJobRequest {

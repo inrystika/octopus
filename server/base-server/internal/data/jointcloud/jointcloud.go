@@ -16,6 +16,10 @@ type JointCloud interface {
 	ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error)
 	ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error)
 	SubmitJob(ctx context.Context, params *JointcloudJobParam) (*SubmitJobReply, error)
+	ListFramework(ctx context.Context) (*ListFrameworkReply, error)
+	ListFrameworkVersion(ctx context.Context, key string) (*ListFrameworkVersionReply, error)
+	ListInterpreter(ctx context.Context) (*ListInterpreterReply, error)
+	ListInterpreterVersion(ctx context.Context, key string) (*ListInterpreterVersionReply, error)
 	ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error)
 }
 
@@ -55,7 +59,7 @@ func (j *jointCloud) ListDataSet(ctx context.Context, query *DataSetQuery) (*Lis
 	}
 
 	r := &Reply{}
-	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": "{}", "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/api/v1/dataSet")
+	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": "{}", "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/v1/dataSet")
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +81,96 @@ func (j *jointCloud) ListDataSetVersion(ctx context.Context, query *DataSetVersi
 	r := &Reply{}
 	_, err = j.client.R().SetResult(r).
 		SetQueryParams(map[string]string{"query": "{}", "pager": getPager(query.PageIndex, query.PageSize)}).
-		Get(fmt.Sprintf("%s/api/v1/dataSet/%s/version", j.baseUrl, query.DataSetCode))
+		Get(fmt.Sprintf("%s/v1/dataSet/%s/version", j.baseUrl, query.DataSetCode))
 	if err != nil {
 		return nil, err
 	}
 
 	reply := &ListDataSetVersionReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (j *jointCloud) ListFramework(ctx context.Context) (*ListFrameworkReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		Get(fmt.Sprintf("%s/v1/jointcloud/framework/type", j.baseUrl))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListFrameworkReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (j *jointCloud) ListFrameworkVersion(ctx context.Context, key string) (*ListFrameworkVersionReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		Get(fmt.Sprintf("%s/v1/jointcloud/framework/%s/version", j.baseUrl, key))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListFrameworkVersionReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (j *jointCloud) ListInterpreter(ctx context.Context) (*ListInterpreterReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		Get(fmt.Sprintf("%s/v1/jointcloud/interpreter/type", j.baseUrl))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListInterpreterReply{}
+	err = parseBody(r, reply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (j *jointCloud) ListInterpreterVersion(ctx context.Context, key string) (*ListInterpreterVersionReply, error) {
+	err := j.checkLogin()
+	if err != nil {
+		return nil, err
+	}
+
+	r := &Reply{}
+	_, err = j.client.R().SetResult(r).
+		Get(fmt.Sprintf("%s/v1/jointcloud/interpreter/%s/version", j.baseUrl, key))
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &ListInterpreterVersionReply{}
 	err = parseBody(r, reply)
 	if err != nil {
 		return nil, err
