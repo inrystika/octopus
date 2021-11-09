@@ -64,6 +64,34 @@ type ListDataSetVersionReply struct {
 	} `json:"list"`
 }
 
+type ListFrameworkReply struct {
+	List []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	} `json:"list"`
+}
+
+type ListFrameworkVersionReply struct {
+	List []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	} `json:"list"`
+}
+
+type ListInterpreterReply struct {
+	List []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	} `json:"list"`
+}
+
+type ListInterpreterVersionReply struct {
+	List []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	} `json:"list"`
+}
+
 type JointcloudJobParam struct {
 	TaskName             string            `json:"taskName"`
 	ExecCommand          string            `json:"execCommand"`

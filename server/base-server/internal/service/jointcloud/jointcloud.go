@@ -71,6 +71,75 @@ func (s *JointCloudService) ListJointCloudDatasetVersion(ctx context.Context, re
 	return &api.ListJointCloudDatasetVersionReply{Versions: versions}, nil
 }
 
+func (s *JointCloudService) ListJointCloudFramework(ctx context.Context, req *api.ListJointCloudFrameworkRequest) (*api.ListJointCloudFrameworkReply, error) {
+	reply, err := s.data.JointCloud.ListFramework(ctx)
+	if err != nil {
+		return nil, err
+	}
+	frameworks := make([]*api.ListJointCloudFrameworkReply_Framework, 0)
+	for _, n := range reply.List {
+		framework := &api.ListJointCloudFrameworkReply_Framework{}
+		err := copier.Copy(framework, n)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		frameworks = append(frameworks, framework)
+	}
+
+	return &api.ListJointCloudFrameworkReply{Frameworks: frameworks}, nil
+}
+func (s *JointCloudService) ListJointCloudFrameworkVersion(ctx context.Context, req *api.ListJointCloudFrameworkVersionRequest) (*api.ListJointCloudFrameworkVersionReply, error) {
+	reply, err := s.data.JointCloud.ListFrameworkVersion(ctx, req.Key)
+	if err != nil {
+		return nil, err
+	}
+	versions := make([]*api.ListJointCloudFrameworkVersionReply_Version, 0)
+	for _, n := range reply.List {
+		version := &api.ListJointCloudFrameworkVersionReply_Version{}
+		err := copier.Copy(version, n)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		versions = append(versions, version)
+	}
+
+	return &api.ListJointCloudFrameworkVersionReply{Versions: versions}, nil
+}
+func (s *JointCloudService) ListJointCloudInterpreter(ctx context.Context, req *api.ListJointCloudInterpreterRequest) (*api.ListJointCloudInterpreterReply, error) {
+	reply, err := s.data.JointCloud.ListInterpreter(ctx)
+	if err != nil {
+		return nil, err
+	}
+	interpreters := make([]*api.ListJointCloudInterpreterReply_Interpreter, 0)
+	for _, n := range reply.List {
+		interpreter := &api.ListJointCloudInterpreterReply_Interpreter{}
+		err := copier.Copy(interpreter, n)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		interpreters = append(interpreters, interpreter)
+	}
+
+	return &api.ListJointCloudInterpreterReply{Interpreters: interpreters}, nil
+}
+func (s *JointCloudService) ListJointCloudInterpreterVersion(ctx context.Context, req *api.ListJointCloudInterpreterVersionRequest) (*api.ListJointCloudInterpreterVersionReply, error) {
+	reply, err := s.data.JointCloud.ListInterpreterVersion(ctx, req.Key)
+	if err != nil {
+		return nil, err
+	}
+	versions := make([]*api.ListJointCloudInterpreterVersionReply_Version, 0)
+	for _, n := range reply.List {
+		version := &api.ListJointCloudInterpreterVersionReply_Version{}
+		err := copier.Copy(version, n)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		versions = append(versions, version)
+	}
+
+	return &api.ListJointCloudInterpreterVersionReply{Versions: versions}, nil
+}
+
 func (s *JointCloudService) checkPermForJob(ctx context.Context, job *jointcloud.JointcloudJobParam) error {
 
 	for _, dataset := range job.DataSetVersionVoList {
