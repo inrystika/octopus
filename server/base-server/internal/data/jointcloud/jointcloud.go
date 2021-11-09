@@ -143,6 +143,7 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) 
 }
 
 func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error) {
+
 	err := j.checkLogin()
 	if err != nil {
 		return nil, err

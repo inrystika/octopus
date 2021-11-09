@@ -33,7 +33,8 @@ message ListJointCloudJobRequest {
 }
   
 message ListJointCloudJobReply {
-  repeated JointCloudJReplyJob list = 1;
+  int32  totalSize = 1;
+  repeated JointCloudJReplyJob list = 2;
 }
   
 message JointCloudJReplyJob {

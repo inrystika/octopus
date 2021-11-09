@@ -135,10 +135,34 @@ func (s *JointCloudService) TrainJob(ctx context.Context, req *api.JointCloudTra
 }
 
 func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.ListJointCloudJobRequest) (*api.ListJointCloudJobReply, error) {
+
+	var totalSize int64
+	ids := req.Ids
+
+	if ids == "" {
+		jobs, size, err := s.data.JointCloudDao.GetTrainJobList(ctx, &jointcloud.TrainJobListQuery{
+			PageIndex:   int(req.PageIndex),
+			PageSize:    int(req.PageSize),
+			UserId:      req.UserId,
+			WorkspaceId: req.SpaceId,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		for i, job := range jobs {
+			ids = ids + job.Id
+			if i < len(jobs)-1 {
+				ids = ids + ","
+			}
+		}
+		totalSize = size
+	}
+
 	reply, err := s.data.JointCloud.ListJob(ctx, &jointcloud.JobQuery{
 		PageIndex: int(req.PageIndex),
 		PageSize:  int(req.PageSize),
-		Ids:       req.Ids,
+		Ids:       ids,
 	})
 	if err != nil {
 		return nil, err
@@ -150,17 +174,11 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorStructCopy)
 		}
-		if req.UserId != "" && req.SpaceId != "" {
-			j, err := s.data.JointCloudDao.GetTrainJob(ctx, job.TaskId)
-			if err != nil {
-				continue
-			}
-			if j.UserId != req.UserId || j.WorkspaceId != req.SpaceId {
-				continue
-			}
-		}
 		jobList = append(jobList, job)
 	}
 
-	return &api.ListJointCloudJobReply{List: jobList}, nil
+	return &api.ListJointCloudJobReply{
+		TotalSize: int32(totalSize),
+		List:      jobList,
+	}, nil
 }
