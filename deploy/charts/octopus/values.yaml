@@ -312,6 +312,8 @@ redis:
 # nginx-ingress-controller
 nginx-ingress-controller:
   hostNetwork: true
+  updateStrategy:
+    type: "Recreate"
   replicaCount: 1
   nodeSelector:
     nginx-ingress: "yes"
@@ -350,8 +352,6 @@ nginx-ingress-controller:
 # influxdb
 influxdb:
   replicaCount: 1
-  initScripts:
-    enabled: true
   setDefaultUser:
     user:
       username: "octopus"
@@ -359,6 +359,14 @@ influxdb:
   persistence:
     enabled: true
     existingClaim: "octopus-influxdb-pvc"
+  volumes:
+  - name: influxdb-initdb
+    configMap:
+      name: influxdb-initdb-config
+  mountPoints:
+  - name: influxdb-initdb
+    mountPath: /docker-entrypoint-initdb.d
+    readOnly: true
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
