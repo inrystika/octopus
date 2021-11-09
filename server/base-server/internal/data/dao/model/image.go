@@ -237,14 +237,12 @@ type ImageAccessAdd struct {
 }
 
 type ImageAccessQuery struct {
-	Id      string
 	ImageId string
 	SpaceId string
 	UserId  string
 }
 
 type ImageAccessDel struct {
-	Id      string
 	ImageId string
 	SpaceId string
 	UserId  string

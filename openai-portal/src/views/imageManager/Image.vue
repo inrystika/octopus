@@ -65,12 +65,15 @@
                     <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
                         @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
-                    <el-button type="text" @click="open2(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
+                    <el-button type="text" @click="open2(scope.row)"
+                        :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
                     <el-button v-if="!scope.row.isShared&&scope.row.imageStatus===3" type="text"
                         @click="open3(scope.row)">分享
                     </el-button>
-                    <!-- <el-button @click="handleShare(scope.row)" type="text">分享</el-button> -->
+                    <el-button v-if="scope.row.isShared&&scope.row.imageStatus===3" type="text"
+                        @click="open4(scope.row)">取消分享
+                    </el-button>
                     <el-button type="text" :close-on-click-modal="false" @click="open(scope.row)">修改描述</el-button>
                 </template>
             </el-table-column>
@@ -89,7 +92,7 @@
 <script>
     import searchForm from '@/components/search/index.vue'
     import dialogForm from "./components/dialogForm.vue";
-    import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage } from '@/api/imageManager.js'
+    import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage, cancelImage } from '@/api/imageManager.js'
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     import store from '@/store'
@@ -144,7 +147,7 @@
 
             }
             if (this.imageTabType == 1) {
-                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             }
             if (this.image) {
                 this.FormVisible = true
@@ -192,6 +195,8 @@
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
+                            clearInterval(this.timer)
+                            this.timer = null
                         }
                     })
                 }
@@ -385,6 +390,39 @@
                         message: '已取消分享'
                     });
                 });
+            },
+            // 取消分享
+            open4(val) {
+                this.$confirm('此操作将取消镜像分享, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    this.cancelShare(val)
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消分享'
+                    });
+                });
+            },
+            cancelShare(val) {
+                cancelImage(val.id).then(response => {
+                    if (response.success) {
+                        this.$message({
+                            message: '取消分享成功',
+                            type: 'success'
+                        });
+                        this.getImage(this.searchData)
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+
             }
 
         }

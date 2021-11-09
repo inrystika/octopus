@@ -88,7 +88,7 @@
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
-            this.href = window.location.protocol + '//' + window.location.host
+            this.href = this.GLOBAL.DOMAIN
             if (!this.data.isDistributed) {
                 // this.logName = this.data.config[0].name
                 this.subName = 'task0/0'

@@ -36,7 +36,7 @@ func NewAdminUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 }
 
 func (s *AdminUserService) ListUser(ctx context.Context, req *api.ListAdminUserRequest) (*api.ListAdminUserReply, error) {
-	usersTbl, err := s.data.AdminUserDao.List(ctx, model.AdminUserQuery{
+	usersTbl, err := s.data.AdminUserDao.List(ctx, model.AdminUserList{
 		PageIndex: int(req.PageIndex),
 		PageSize:  int(req.PageSize),
 		Username:  req.UserName,
@@ -91,14 +91,24 @@ func (s *AdminUserService) AddDefaultAdminUser(ctx context.Context) (*api.AdminU
 		Email:    s.conf.Administrator.Email,
 		Phone:    s.conf.Administrator.Phone,
 	}
-	result, err := s.data.AdminUserDao.Find(ctx, model.AdminUser{
-		Username: defaultAdminUser.Username + "aaa",
+	adminCount, err := s.data.AdminUserDao.Count(ctx, model.AdminUserQuery{
+		Username: defaultAdminUser.Username,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if result != nil {
+	if adminCount == 1 {
 		return nil, nil
+	} else if adminCount > 1 {
+		// fixed https://git.openi.org.cn/OpenI/octopus/issues/121
+		// rm origin admin to re generate from config
+		err = s.data.AdminUserDao.Delete(ctx, model.AdminUserQuery{
+			Username: defaultAdminUser.Username,
+		})
+		if err != nil {
+			s.log.Error(ctx, err)
+			return nil,nil
+		}
 	}
 
 	err = s.data.AdminUserDao.Add(ctx, &defaultAdminUser)

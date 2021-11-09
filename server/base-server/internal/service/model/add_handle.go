@@ -45,7 +45,7 @@ func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 }
 
 const (
-	CREATE_MIN_TIME_INTERVAL int64 = 30 // 创建的最短时间间隔，用于防止重复创建
+	CREATE_MIN_TIME_INTERVAL int64 = 3 // 创建的最短时间间隔，用于防止重复创建
 )
 
 // 新增我的模型

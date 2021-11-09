@@ -112,6 +112,26 @@ func (s *WorkspaceService) ListWorkspace(ctx context.Context, req *pb.ListWorksp
 	}, nil
 }
 
+func (s *WorkspaceService) ListWorkspaces(ctx context.Context, req *pb.ListWorkspacesRequest) (*pb.ListWorkspacesReply, error) {
+	result, err := s.data.WorkspaceClient.ListWorkspaces(ctx, &innterapi.ListWorkspacesRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	workspaces := []*pb.WorkspaceItem{}
+	for _, w := range result.Workspaces {
+		workspaces = append(workspaces, &pb.WorkspaceItem{
+			Id:             w.Id,
+			Name:           w.Name,
+			ResourcePoolId: w.ResourcePoolId,
+		})
+	}
+
+	return &pb.ListWorkspacesReply{
+		Workspaces: workspaces,
+	}, nil
+}
+
 func (s *WorkspaceService) GetWorkspace(ctx context.Context, req *pb.GetWorkspaceRequest) (*pb.GetWorkspaceReply, error) {
 	result, err := s.data.WorkspaceClient.GetWorkspace(ctx, &innterapi.GetWorkspaceRequest{
 		WorkspaceId: req.WorkspaceId,

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"gorm.io/gorm"
 	"server/common/dao"
 )
 
@@ -17,8 +18,24 @@ func (AdminUser) TableName() string {
 	return "admin_user"
 }
 
-type AdminUserQuery struct {
+type AdminUserList struct {
 	PageIndex int
 	PageSize  int
 	Username  string
+}
+
+type AdminUserQuery struct {
+	Username  string
+}
+
+func (u AdminUserQuery) Where(db *gorm.DB) *gorm.DB {
+	querySql := "1 = 1"
+	params := make([]interface{}, 0)
+
+	if u.Username != "" {
+		querySql += " and username = ? "
+		params = append(params, u.Username)
+	}
+
+	return db.Where(querySql, params...)
 }

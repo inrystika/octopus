@@ -108,6 +108,29 @@ func (s *WorkspaceService) ListWorkspace(ctx context.Context, req *api.ListWorks
 	}, nil
 }
 
+func (s *WorkspaceService) ListWorkspaces(ctx context.Context, req *api.ListWorkspacesRequest) (*api.ListWorkspacesReply, error) {
+	workspaceModels, err := s.data.WorkspaceDao.List(ctx, &model.WorkspaceList{})
+	if err != nil {
+		return nil, err
+	}
+
+	workspaces := make([]*api.WorkspaceItem, 0)
+	for _, ws := range workspaceModels {
+		item := &api.WorkspaceItem{
+			Id:             ws.Id,
+			Name:           ws.Name,
+			ResourcePoolId: ws.RPoolId,
+			CreatedAt:      ws.CreatedAt.Unix(),
+			UpdatedAt:      ws.UpdatedAt.Unix(),
+		}
+		workspaces = append(workspaces, item)
+	}
+
+	return &api.ListWorkspacesReply{
+		Workspaces: workspaces,
+	}, nil
+}
+
 func (s *WorkspaceService) GetWorkspace(ctx context.Context, req *api.GetWorkspaceRequest) (*api.GetWorkspaceReply, error) {
 	workspaceModel, err := s.data.WorkspaceDao.Find(ctx, &model.WorkspaceQuery{
 		Id: req.WorkspaceId,
@@ -160,7 +183,7 @@ func (s *WorkspaceService) CreateWorkspace(ctx context.Context, req *api.CreateW
 		return nil, err
 	}
 	if existed > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceExisted)
+		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceResourcePoolBound)
 	}
 
 	wa := model.WorkspaceAdd{
