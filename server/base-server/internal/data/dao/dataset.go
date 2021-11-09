@@ -78,10 +78,8 @@ func (d *datasetDao) AddDatasetType(ctx context.Context, datasetType *model.Data
 }
 
 func (d *datasetDao) ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DataSetType, int64, error) {
-	db := d.db(ctx)
+	db := d.db(ctx).Model(&model.DataSetType{})
 	datasetTypes := make([]*model.DataSetType, 0)
-
-	db = db.Model(&model.DataSetType{})
 
 	var totalSize int64
 	res := db.Count(&totalSize)
