@@ -34,9 +34,10 @@ const (
 )
 
 type Pager struct {
-	Page  int   `json:"page"`
-	Size  int   `json:"size"`
-	Total int64 `json:"total"`
+	Page       int   `json:"page"`
+	Size       int   `json:"size"`
+	TotalPages int64 `json:"totalPages"`
+	Total      int64 `json:"total"`
 }
 
 type ListDataSetReply struct {
@@ -171,13 +172,6 @@ type TrainJobListQuery struct {
 	UserId       string
 	WorkspaceId  string
 	Ids          string
-}
-
-type Pager struct {
-	Page       int `json:"page"`
-	Size       int `json:"size"`
-	TotalPages int `json:"totalPages"`
-	Total      int `json:"total"`
 }
 
 type ListJobReply struct {
