@@ -1,16 +1,18 @@
 package jointcloud
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
 
 func newJointCloud() JointCloud {
-	return NewJointCloud("http://192.168.207.141:8709", "test", "6c7c824d3b7342a9dcc9b931f5662b18")
+	return NewJointCloud("http://192.168.207.141:8709", "test", "7ee15bc8fee766cad1bd70ccf5f4dc14", 30)
 }
 func TestJointCloud_ListDataSet(t *testing.T) {
 	j := newJointCloud()
-	reply, err := j.ListDataSet(&DataSetQuery{
+	ctx := context.TODO()
+	reply, err := j.ListDataSet(ctx, &DataSetQuery{
 		PageIndex: 1,
 		PageSize:  10,
 	})
@@ -19,12 +21,13 @@ func TestJointCloud_ListDataSet(t *testing.T) {
 	}
 	fmt.Println(reply)
 
-	reply, err = j.ListDataSet(&DataSetQuery{
+	reply, err = j.ListDataSet(ctx, &DataSetQuery{
 		PageIndex: 1,
 		PageSize:  10,
 	})
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Println(reply)
 }
