@@ -65,7 +65,7 @@ func (d *algorithmDao) QueryAlgorithmFramework(ctx context.Context, FrameworkDes
 	db := d.db
 
 	nb := &model.AlgorithmFramework{}
-	res := db.First(nb, "desc = ?", FrameworkDesc)
+	res := db.First(nb, "`desc` = ?", FrameworkDesc)
 
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
