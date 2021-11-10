@@ -237,14 +237,14 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 		return nil, err
 	}
 
-	IdsQuery := fmt.Sprintf(`{"query": {"jobIds":%v}}`, query.Ids)
+	IdsQuery := fmt.Sprintf(`{"query": {"jobIds":"%v"}}`, query.Ids)
 
 	r := &Reply{}
-	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{"query": IdsQuery, "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/v1/jointcloud/getTaskListByJobIds")
+	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{
+		"query": IdsQuery, "pager": getPager(query.PageIndex, query.PageSize)}).Get(j.baseUrl + "/v1/jointcloud/task")
 	if err != nil {
 		return nil, err
 	}
-
 	reply := &ListJobReply{}
 	err = parseBody(r, reply)
 	if err != nil {

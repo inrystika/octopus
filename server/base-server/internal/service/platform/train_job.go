@@ -735,7 +735,6 @@ func (s *platformTrainJobService) getNodesByResourcePool(ctx context.Context, re
 	nodeMap := make(map[string]v1.Node)
 	rPoolBindingNodeLabelKeyFormat := s.conf.Service.Resource.PoolBindingNodeLabelKeyFormat
 	rPoolBindingNodeLabelKey := fmt.Sprintf(rPoolBindingNodeLabelKeyFormat, resourcePool)
-
 	nodeListBytes, err := s.data.Cluster.ListNode(ctx, rPoolBindingNodeLabelKey)
 	if err != nil {
 		return nodeMap, errors.Errorf(err, errors.ErrorListResourcePool)

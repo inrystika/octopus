@@ -97,6 +97,7 @@ type JointcloudJobParam struct {
 	ExecCommand          string            `json:"execCommand"`
 	Interpreter          string            `json:"interpreter"`
 	Framework            string            `json:"framework"`
+	Type                 string            `json:"type"`
 	OutputPath           string            `json:"outputPath"`
 	DataSetVersionVoList DataSetVersionVos `json:"dataSetVersionVoList"`
 	Params               Parameters        `json:"params"`
@@ -138,6 +139,7 @@ type TrainJob struct {
 	ExecCommand          string            `gorm:"type:varchar(1024);not null;default:'';comment:'执行命令'"`
 	Interpreter          string            `gorm:"type:varchar(1024);not null;default:'';comment:'Interpreter'"`
 	Framework            string            `gorm:"type:varchar(1024);not null;default:'';comment:'Framework'"`
+	Type                 string            `gorm:"type:varchar(1024);not null;default:'';comment:'Type'"`
 	OutputPath           string            `gorm:"type:varchar(1024);not null;default:'';comment:'容器输出路径'"`
 	Operation            string            `gorm:"type:varchar(100);not null;default:''"`
 	Status               string            `gorm:"type:varchar(100);not null;comment:'preparing/pending/running/stopped/succeeded/failed'"`
@@ -164,21 +166,37 @@ type TrainJobListQuery struct {
 	Ids          string
 }
 
+type Pager struct {
+	Page       int `json:"page"`
+	Size       int `json:"size"`
+	TotalPages int `json:"totalPages"`
+	Total      int `json:"total"`
+}
+
 type ListJobReply struct {
-	List []*struct {
-		TaskId             string                   `json:"taskId"`
-		TaskName           string                   `json:"taskName"`
-		Interpreter        string                   `json:"interpreter"`
-		Framework          string                   `json:"framework"`
-		CloudVendorId      string                   `json:"cloudVendorId"`
-		ExecCommand        string                   `json:"execCommand"`
-		OutputPath         string                   `json:"outputPath"`
-		Status             string                   `json:"status"`
-		Remark             string                   `json:"remark"`
-		DataSetVersionList []*ReplyDataSetVersionVo `json:"dataSetVersionList"`
-		Params             []*Param                 `json:"params"`
-		ResourceParams     []*ResourceParam         `json:"resourceParams"`
-	} `json:"list"`
+	Pager *Pager      `json:"pager"`
+	List  []*JobReply `json:"list"`
+}
+
+type JobReply struct {
+	TaskId          string                   `json:"taskId"`
+	TaskName        string                   `json:"taskName"`
+	Interpreter     string                   `json:"interpreter"`
+	Framework       string                   `json:"framework"`
+	Type            string                   `json:"type"`
+	CloudVendorId   int                      `json:"cloudVendorId"`
+	CloudVendorName string                   `json:"cloudVendorName"`
+	ImageUrl        string                   `json:"imageUrl"`
+	ExecCommand     string                   `json:"execCommand"`
+	OutputPath      string                   `json:"outputPath"`
+	Status          int                      `json:"status"`
+	Remark          string                   `json:"remark"`
+	DataSetList     []*ReplyDataSetVersionVo `json:"dataSetList"`
+	TaskParams      []*Param                 `json:"taskParams"`
+	ResourceParams  []*ResourceParam         `json:"resourceParams"`
+	CreateTime      string                   `json:"createTime"`
+	Creator         int                      `json:"creator"`
+	CreatorName     *time.Time               `json:"creatorName"`
 }
 
 type JobQuery struct {
@@ -188,10 +206,16 @@ type JobQuery struct {
 }
 
 type ReplyDataSetVersionVo struct {
-	Category    string `json:"category"`
-	DataSetCode string `json:"dataSetCode"`
-	Version     string `json:"version"`
-	Remark      string `json:"remark"`
+	Category        string `json:"category"`
+	DataSetCode     string `json:"dataSetCode"`
+	Name            string `json:"name"`
+	Remark          string `json:"remark"`
+	CloudVendorId   int    `json:"cloudVendorId"`
+	CloudVendorName string `json:"cloudVendorName"`
+	VersionNumber   int    `json:"versionNumber"`
+	Label           string `json:"label"`
+	Creator         int    `json:"creator"`
+	CreateTime      string `json:"createTime"`
 }
 
 func (TrainJob) TableName() string {

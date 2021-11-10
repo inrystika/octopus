@@ -5,6 +5,7 @@ import (
 	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
+	"time"
 
 	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/pipeline"
@@ -229,7 +230,7 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 	}
 
 	reply, err := s.data.JointCloud.ListJob(ctx, &jointcloud.JobQuery{
-		PageIndex: int(req.PageIndex),
+		PageIndex: 1,
 		PageSize:  int(req.PageSize),
 		Ids:       ids,
 	})
@@ -242,6 +243,10 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		err := copier.Copy(job, n)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		}
+		createTime, err := time.Parse("2006-01-02 15:04:05", n.CreateTime)
+		if err == nil {
+			job.CreateTime = createTime.Unix()
 		}
 		jobList = append(jobList, job)
 	}

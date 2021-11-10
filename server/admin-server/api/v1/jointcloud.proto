@@ -40,22 +40,34 @@ message ListJointCloudJobReply {
 message JointCloudJReplyJob {
   string  taskId = 1;  
   string	taskName  = 2;                           
-  string	interpreter   = 3;                      
-  string	framework = 4;                  
-  string	cloudVendorId = 5;                        
-  string	execCommand = 6;                   
-  string	outputPath = 7;                     
-  string	status = 8;                       
-  string	remark = 9;
-  int64 createdAt = 10;                              
-  repeated JointCloudReplyDataSetVersionVo	dataSetVersionList = 11;
-  repeated JointCloudParam	params = 12;
-  repeated JointCloudResourceParam	resourceParams = 13;
+	string	interpreter   = 3;                      
+	string	framework = 4;                  
+	int64	cloudVendorId = 5;    
+  string cloudVendorName = 6;   
+  string imageUrl = 7;    
+  int64 creator = 8;    
+  string creatorName = 9;                      
+	string	execCommand = 10;
+  string  type = 11;            
+	string	outputPath = 12;                     
+	int64	status = 13;                       
+	string	remark = 14;     
+  int64 createTime = 15;                        
+	repeated JointCloudReplyDataSetVersionVo dataSetList = 16;
+	repeated JointCloudParam	taskParams = 17;
+	repeated JointCloudResourceParam	resourceParams = 18;
 }
-  
+
 message JointCloudReplyDataSetVersionVo {
-  string category = 1;   
-  string dataSetCode = 2;
+	string category = 1;   
+	string dataSetCode = 2;
   string version = 3; 
-  string remark = 4;
+	string remark = 4;
+  string name = 5;
+  int64 cloudVendorId = 6;
+  string cloudVendorName = 7;
+  int64 versionNumber = 8;
+  string label = 9;
+  int64 creator = 10;
+  int64 createTime = 11;
 }
