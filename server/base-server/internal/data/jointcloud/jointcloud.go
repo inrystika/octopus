@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"server/common/errors"
+	"server/common/log"
+	"server/common/utils"
 	"strings"
+	"time"
 
 	"gopkg.in/resty.v1"
 )
@@ -23,17 +26,25 @@ type JointCloud interface {
 	ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error)
 }
 
-func NewJointCloud(baseUrl, username, password string) JointCloud {
+func NewJointCloud(baseUrl, username, password string, sessionExpirySec int32) JointCloud {
 	j := &jointCloud{
 		baseUrl:  baseUrl,
 		username: username,
 		password: password,
 		client:   resty.New(),
 	}
+
+	ticker := time.NewTicker(time.Second * time.Duration(sessionExpirySec))
+	go utils.HandlePanic(context.TODO(), func(i ...interface{}) {
+		for range ticker.C {
+			j.client.Cookies = nil
+		}
+	})()
 	return j
 }
 
-func parseBody(reply *Reply, body interface{}) error {
+func parseBody(ctx context.Context, reply *Reply, body interface{}) error {
+	log.Info(ctx, "reply:", reply)
 	if !strings.EqualFold(reply.Code, success) {
 		return errors.Errorf(nil, errors.ErrorJointCloudRequestFailed)
 	}
@@ -53,7 +64,7 @@ func getPager(page, pageSize int) string {
 }
 
 func (j *jointCloud) ListDataSet(ctx context.Context, query *DataSetQuery) (*ListDataSetReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +76,7 @@ func (j *jointCloud) ListDataSet(ctx context.Context, query *DataSetQuery) (*Lis
 	}
 
 	reply := &ListDataSetReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +84,7 @@ func (j *jointCloud) ListDataSet(ctx context.Context, query *DataSetQuery) (*Lis
 }
 
 func (j *jointCloud) ListDataSetVersion(ctx context.Context, query *DataSetVersionQuery) (*ListDataSetVersionReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +98,7 @@ func (j *jointCloud) ListDataSetVersion(ctx context.Context, query *DataSetVersi
 	}
 
 	reply := &ListDataSetVersionReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +106,7 @@ func (j *jointCloud) ListDataSetVersion(ctx context.Context, query *DataSetVersi
 }
 
 func (j *jointCloud) ListFramework(ctx context.Context) (*ListFrameworkReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +119,7 @@ func (j *jointCloud) ListFramework(ctx context.Context) (*ListFrameworkReply, er
 	}
 
 	reply := &ListFrameworkReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +127,7 @@ func (j *jointCloud) ListFramework(ctx context.Context) (*ListFrameworkReply, er
 }
 
 func (j *jointCloud) ListFrameworkVersion(ctx context.Context, key string) (*ListFrameworkVersionReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +140,7 @@ func (j *jointCloud) ListFrameworkVersion(ctx context.Context, key string) (*Lis
 	}
 
 	reply := &ListFrameworkVersionReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +148,7 @@ func (j *jointCloud) ListFrameworkVersion(ctx context.Context, key string) (*Lis
 }
 
 func (j *jointCloud) ListInterpreter(ctx context.Context) (*ListInterpreterReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +161,7 @@ func (j *jointCloud) ListInterpreter(ctx context.Context) (*ListInterpreterReply
 	}
 
 	reply := &ListInterpreterReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +169,7 @@ func (j *jointCloud) ListInterpreter(ctx context.Context) (*ListInterpreterReply
 }
 
 func (j *jointCloud) ListInterpreterVersion(ctx context.Context, key string) (*ListInterpreterVersionReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -171,34 +182,22 @@ func (j *jointCloud) ListInterpreterVersion(ctx context.Context, key string) (*L
 	}
 
 	reply := &ListInterpreterVersionReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
 	return reply, nil
 }
 
-func (j *jointCloud) login() (*LoginReply, error) {
+func (j *jointCloud) login(ctx context.Context) error {
 	r := &Reply{}
 	_, err := j.client.R().SetResult(r).SetQueryParams(map[string]string{"username": j.username, "password": j.password}).Post(j.baseUrl + "/auth/login")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	reply := &LoginReply{}
-	err = parseBody(r, reply)
-	if err != nil {
-		return nil, err
-	}
-	return reply, nil
-}
-
-func (j *jointCloud) checkLogin() error {
-	if len(j.client.Cookies) > 0 {
-		return nil
-	}
-
-	reply, err := j.login()
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return err
 	}
@@ -207,8 +206,21 @@ func (j *jointCloud) checkLogin() error {
 	return nil
 }
 
+func (j *jointCloud) checkLogin(ctx context.Context) error {
+	if len(j.client.Cookies) > 0 {
+		return nil
+	}
+
+	err := j.login(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) (*SubmitJobReply, error) {
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +235,7 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) 
 		return nil, err
 	}
 	reply := &SubmitJobReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +244,7 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) 
 
 func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error) {
 
-	err := j.checkLogin()
+	err := j.checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +258,7 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 		return nil, err
 	}
 	reply := &ListJobReply{}
-	err = parseBody(r, reply)
+	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err
 	}

@@ -38,7 +38,8 @@ message ListJointCloudDatasetReply {
       string name = 2;
       string remark = 3;
   }
-  repeated DataSet dataSets = 1;
+  int64 totalSize = 1;
+  repeated DataSet dataSets = 2;
 }
 
 message ListJointCloudDatasetVersionRequest {
@@ -52,7 +53,8 @@ message ListJointCloudDatasetVersionReply {
     string version = 1;
     string remark = 2;
   }
-  repeated DataSetVersion versions = 1;
+  int64 totalSize = 1;
+  repeated DataSetVersion versions = 2;
 }
 
 message ListJointCloudFrameworkRequest {

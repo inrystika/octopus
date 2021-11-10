@@ -25,17 +25,23 @@ type Reply struct {
 	Data    json.RawMessage `json:"data"`
 }
 
+func (r Reply) String() string {
+	return fmt.Sprintf("code:%v, message:%v, data:%v", r.Code, r.Message, string(r.Data))
+}
+
 const (
 	success = "0"
 )
 
-type pager struct {
-	Page string `json:"page"`
-	Size string `json:"size"`
+type Pager struct {
+	Page  int   `json:"page"`
+	Size  int   `json:"size"`
+	Total int64 `json:"total"`
 }
 
 type ListDataSetReply struct {
-	List []*struct {
+	Pager *Pager `json:"pager"`
+	List  []*struct {
 		DataSetCode string `json:"dataSetCode"`
 		Name        string `json:"name"`
 		Remark      string `json:"remark"`
@@ -58,7 +64,8 @@ type DataSetVersionQuery struct {
 }
 
 type ListDataSetVersionReply struct {
-	List []*struct {
+	Pager *Pager `json:"pager"`
+	List  []*struct {
 		Version string `json:"version"`
 		Remark  string `json:"remark"`
 	} `json:"list"`

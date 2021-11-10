@@ -80,7 +80,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d.PlatformDao = platformDao.NewPlatformDao(db)
 	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
-	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password)
+	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
 
 	return d, func() {
 		redis.Close()

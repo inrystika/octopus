@@ -130,6 +130,7 @@ message JointCloud {
   string baseUrl = 1;
   string username = 2;
   string password = 3;
+  int32 sessionExpirySec = 4;
 }
 
 message Service {

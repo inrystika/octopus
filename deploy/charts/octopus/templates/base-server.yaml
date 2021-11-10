@@ -135,6 +135,7 @@ data:
         baseUrl: {{ .Values.baseserver.data.jointCloud.baseUrl }}
         username: {{ .Values.baseserver.data.jointCloud.username }}
         password: {{ .Values.baseserver.data.jointCloud.password }}
+        sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}

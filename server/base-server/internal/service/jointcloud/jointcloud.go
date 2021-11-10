@@ -47,7 +47,10 @@ func (s *JointCloudService) ListJointCloudDataset(ctx context.Context, req *api.
 		dataSets = append(dataSets, dataSet)
 	}
 
-	return &api.ListJointCloudDatasetReply{DataSets: dataSets}, nil
+	return &api.ListJointCloudDatasetReply{
+		TotalSize: reply.Pager.Total,
+		DataSets:  dataSets,
+	}, nil
 }
 
 func (s *JointCloudService) ListJointCloudDatasetVersion(ctx context.Context, req *api.ListJointCloudDatasetVersionRequest) (*api.ListJointCloudDatasetVersionReply, error) {
@@ -69,7 +72,10 @@ func (s *JointCloudService) ListJointCloudDatasetVersion(ctx context.Context, re
 		versions = append(versions, version)
 	}
 
-	return &api.ListJointCloudDatasetVersionReply{Versions: versions}, nil
+	return &api.ListJointCloudDatasetVersionReply{
+		TotalSize: reply.Pager.Total,
+		Versions:  versions,
+	}, nil
 }
 
 func (s *JointCloudService) ListJointCloudFramework(ctx context.Context, req *api.ListJointCloudFrameworkRequest) (*api.ListJointCloudFrameworkReply, error) {
