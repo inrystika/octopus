@@ -106,8 +106,8 @@ message AddAlgorithmTypeReply {
 }
 
 message ListAlgorithmTypeRequest {
-  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 
 message ListAlgorithmTypeReply {
@@ -155,8 +155,8 @@ message AddAlgorithmFrameworkReply {
 }
 
 message ListAlgorithmFrameworkRequest {
-  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 
 message ListAlgorithmFrameworkReply {

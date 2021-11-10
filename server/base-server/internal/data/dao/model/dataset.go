@@ -6,7 +6,7 @@ import (
 	"gorm.io/plugin/soft_delete"
 )
 
-type DataSetType struct {
+type DatasetType struct {
 	dao.Model
 	Id         string                `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:Id"`
 	Desc       string                `gorm:"type:varchar(256);not null;default:'';uniqueIndex:desc_deletedAt;comment:类型描述"`
@@ -14,7 +14,7 @@ type DataSetType struct {
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:desc_deletedAt"`
 }
 
-func (DataSetType) TableName() string {
+func (DatasetType) TableName() string {
 	return "dataset_type"
 }
 

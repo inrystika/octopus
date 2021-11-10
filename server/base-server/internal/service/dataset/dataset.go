@@ -58,7 +58,7 @@ func (s *datasetService) AddDatasetType(ctx context.Context, req *api.AddDataset
 		return nil, err
 	}
 
-	datasetType := &model.DataSetType{}
+	datasetType := &model.DatasetType{}
 	datasetType.Id = utils.GetUUIDWithoutSeparator()
 	datasetType.Desc = req.TypeDesc
 

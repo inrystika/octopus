@@ -18,12 +18,12 @@ import (
 type DatasetDao interface {
 	Transaction(ctx context.Context, fc func(ctx context.Context) error) error
 
-	AddDatasetType(ctx context.Context, datasetType *model.DataSetType) error
-	ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DataSetType, int64, error)
-	GetDatasetType(ctx context.Context, id string) (*model.DataSetType, error)
-	QueryDatasetType(ctx context.Context, typeDesc string) (*model.DataSetType, error)
+	AddDatasetType(ctx context.Context, datasetType *model.DatasetType) error
+	ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DatasetType, int64, error)
+	GetDatasetType(ctx context.Context, id string) (*model.DatasetType, error)
+	QueryDatasetType(ctx context.Context, typeDesc string) (*model.DatasetType, error)
 	DeleteDatasetType(ctx context.Context, id string) error
-	UpdateDatasetType(ctx context.Context, datasetType *model.DataSetType) error
+	UpdateDatasetType(ctx context.Context, datasetType *model.DatasetType) error
 
 	CreateDataset(ctx context.Context, dataset *model.Dataset) error
 	ListDataset(ctx context.Context, query *model.DatasetQuery) ([]*model.Dataset, int64, error)
@@ -69,7 +69,7 @@ func (d *datasetDao) Transaction(ctx context.Context, fc func(ctx context.Contex
 	return transaction.Transaction(ctx, d.db(ctx), fc)
 }
 
-func (d *datasetDao) AddDatasetType(ctx context.Context, datasetType *model.DataSetType) error {
+func (d *datasetDao) AddDatasetType(ctx context.Context, datasetType *model.DatasetType) error {
 	res := d.db(ctx).Create(datasetType)
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
@@ -77,9 +77,9 @@ func (d *datasetDao) AddDatasetType(ctx context.Context, datasetType *model.Data
 	return nil
 }
 
-func (d *datasetDao) ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DataSetType, int64, error) {
-	db := d.db(ctx).Model(&model.DataSetType{})
-	datasetTypes := make([]*model.DataSetType, 0)
+func (d *datasetDao) ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DatasetType, int64, error) {
+	db := d.db(ctx).Model(&model.DatasetType{})
+	datasetTypes := make([]*model.DatasetType, 0)
 
 	var totalSize int64
 	res := db.Count(&totalSize)
@@ -99,10 +99,10 @@ func (d *datasetDao) ListDatasetType(ctx context.Context, query *model.DatasetTy
 	return datasetTypes, totalSize, nil
 }
 
-func (d *datasetDao) GetDatasetType(ctx context.Context, id string) (*model.DataSetType, error) {
+func (d *datasetDao) GetDatasetType(ctx context.Context, id string) (*model.DatasetType, error) {
 	db := d.db(ctx)
 
-	nb := &model.DataSetType{}
+	nb := &model.DatasetType{}
 	res := db.First(nb, "id = ?", id)
 
 	if res.Error != nil {
@@ -115,10 +115,10 @@ func (d *datasetDao) GetDatasetType(ctx context.Context, id string) (*model.Data
 	return nb, nil
 }
 
-func (d *datasetDao) QueryDatasetType(ctx context.Context, typeDesc string) (*model.DataSetType, error) {
+func (d *datasetDao) QueryDatasetType(ctx context.Context, typeDesc string) (*model.DatasetType, error) {
 	db := d.db(ctx)
 
-	nb := &model.DataSetType{}
+	nb := &model.DatasetType{}
 	res := db.First(nb, "desc = ?", typeDesc)
 
 	if res.Error != nil {
@@ -138,7 +138,7 @@ func (d *datasetDao) DeleteDatasetType(ctx context.Context, id string) error {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	res := db.Where("id = ? ", id).Delete(&model.DataSetType{})
+	res := db.Where("id = ? ", id).Delete(&model.DatasetType{})
 	if res.Error != nil {
 		return errors.Errorf(nil, errors.ErrorDBDeleteFailed)
 	}
@@ -146,7 +146,7 @@ func (d *datasetDao) DeleteDatasetType(ctx context.Context, id string) error {
 	return nil
 }
 
-func (d *datasetDao) UpdateDatasetType(ctx context.Context, datasetType *model.DataSetType) error {
+func (d *datasetDao) UpdateDatasetType(ctx context.Context, datasetType *model.DatasetType) error {
 	db := d.db(ctx)
 	if datasetType.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
