@@ -170,10 +170,9 @@ func (h *algorithmHandle) ListAlgorithmType(ctx context.Context, req *api.ListAl
 
 	algorithmTypes := make([]*api.AlgorithmType, 0)
 	for _, n := range algorithmTypebl {
-		algorithmType := &api.AlgorithmType{}
-		err := copier.Copy(algorithmType, n)
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		algorithmType := &api.AlgorithmType{
+			Id:       n.Id,
+			TypeDesc: n.Desc,
 		}
 		algorithmTypes = append(algorithmTypes, algorithmType)
 	}
@@ -284,10 +283,9 @@ func (h *algorithmHandle) ListAlgorithmFramework(ctx context.Context, req *api.L
 
 	algorithmFrameworks := make([]*api.AlgorithmFramework, 0)
 	for _, n := range algorithmFrameworkbl {
-		algorithmFramework := &api.AlgorithmFramework{}
-		err := copier.Copy(algorithmFramework, n)
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		algorithmFramework := &api.AlgorithmFramework{
+			Id:            n.Id,
+			FrameworkDesc: n.Desc,
 		}
 		algorithmFrameworks = append(algorithmFrameworks, algorithmFramework)
 	}
