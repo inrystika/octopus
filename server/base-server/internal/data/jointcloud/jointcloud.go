@@ -37,10 +37,7 @@ func NewJointCloud(baseUrl, username, password string, sessionExpirySec int32) J
 	ticker := time.NewTicker(time.Second * time.Duration(sessionExpirySec))
 	go utils.HandlePanic(context.TODO(), func(i ...interface{}) {
 		for range ticker.C {
-			err := j.login(context.TODO())
-			if err != nil {
-				j.client.Cookies = nil
-			}
+			j.client.Cookies = nil
 		}
 	})()
 	return j
