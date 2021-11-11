@@ -89,10 +89,9 @@ func (s *datasetService) ListDatasetType(ctx context.Context, req *api.ListDatas
 
 	datasetTypes := make([]*api.DatasetType, 0)
 	for _, n := range datasetTypebl {
-		datasetType := &api.DatasetType{}
-		err := copier.Copy(datasetType, n)
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		datasetType := &api.DatasetType{
+			Id:       n.Id,
+			TypeDesc: n.Desc,
 		}
 		datasetTypes = append(datasetTypes, datasetType)
 	}

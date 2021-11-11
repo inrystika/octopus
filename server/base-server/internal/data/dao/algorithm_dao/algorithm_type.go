@@ -65,7 +65,7 @@ func (d *algorithmDao) QueryAlgorithmType(ctx context.Context, typeDesc string) 
 	db := d.db
 
 	nb := &model.AlgorithmType{}
-	res := db.First(nb, "desc = ?", typeDesc)
+	res := db.First(nb, "`desc` = ?", typeDesc)
 
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {

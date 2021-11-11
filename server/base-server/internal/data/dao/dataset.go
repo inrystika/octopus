@@ -119,7 +119,7 @@ func (d *datasetDao) QueryDatasetType(ctx context.Context, typeDesc string) (*mo
 	db := d.db(ctx)
 
 	nb := &model.DatasetType{}
-	res := db.First(nb, "desc = ?", typeDesc)
+	res := db.First(nb, "`desc` = ?", typeDesc)
 
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
