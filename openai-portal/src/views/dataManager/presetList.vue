@@ -22,7 +22,7 @@
         </el-table-column>
         <el-table-column label="类型">
           <template slot-scope="scope">
-            <span>{{ scope.row.type }}</span>
+            <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">

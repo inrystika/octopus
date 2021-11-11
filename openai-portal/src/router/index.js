@@ -123,18 +123,18 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/modelDeploy',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'modelDeploy',
-        component: () => import('@/views/modelDeploy/index'),
-        meta: { title: '模型部署', icon: 'deploy' }
-      }
-    ]
-  },
+  // {
+  //   path: '/modelDeploy',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'modelDeploy',
+  //       component: () => import('@/views/modelDeploy/index'),
+  //       meta: { title: '模型部署', icon: 'deploy' }
+  //     }
+  //   ]
+  // },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

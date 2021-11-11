@@ -218,3 +218,19 @@ export async function myAlgorithmFinishUpload(payload) {
   })
   return res
 }
+export async function algorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function algorithmFrame(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "get",
+    params: params
+  })
+  return res
+}
