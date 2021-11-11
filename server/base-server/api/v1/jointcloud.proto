@@ -110,14 +110,13 @@ message JointCloudTrainJobRequest {
     string execCommand = 2[(validate.rules).string = {max_len: 300}];
     string interpreter = 3;
     string framework = 4;
-    string type = 5;
-    string outputPath = 6;
-    repeated JointCloudDataSetVersionVo dataSetVersionVoList = 7;
-    repeated JointCloudParam params = 8;
-    repeated JointCloudResourceParam resourceParams = 9;
-    string remark = 10;
-    string userId = 11;
-    string workspaceId = 12;
+    string outputPath = 5;
+    repeated JointCloudDataSetVersionVo dataSetVersionVoList = 6;
+    repeated JointCloudParam params = 7;
+    repeated JointCloudResourceParam resourceParams = 8;
+    string remark = 9;
+    string userId = 10;
+    string workspaceId = 11;
 }
 
 message JointCloudTrainJobReply {
@@ -139,6 +138,7 @@ message JointCloudParam {
 message JointCloudResourceParam {
 	string name = 1;
 	string size = 2;
+  string type = 3;
 }
 
 message ListJointCloudJobRequest {
@@ -164,15 +164,14 @@ message JointCloudJReplyJob {
   string imageUrl = 7;    
   int64 creator = 8;    
   string creatorName = 9;                      
-	string	execCommand = 10;
-  string  type = 11;            
-	string	outputPath = 12;                     
-	int64	status = 13;                       
-	string	remark = 14;     
-  int64 createTime = 15;                        
-	repeated JointCloudReplyDataSetVersionVo dataSetList = 16;
-	repeated JointCloudParam	taskParams = 17;
-	repeated JointCloudResourceParam	resourceParams = 18;
+	string	execCommand = 10;           
+	string	outputPath = 11;                     
+	int64	status = 12;                       
+	string	remark = 13;     
+  int64 createTime = 14;                        
+	repeated JointCloudReplyDataSetVersionVo dataSetList = 15;
+	repeated JointCloudParam	taskParams = 16;
+	repeated JointCloudResourceParam	resourceParams = 17;
 }
 
 message JointCloudReplyDataSetVersionVo {

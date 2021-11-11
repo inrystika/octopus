@@ -24,6 +24,7 @@ message JointCloudParam {
 message JointCloudResourceParam {
 	string name = 1;
 	string size = 2;
+  string type = 3;
 }
 
 message ListJointCloudJobRequest {
@@ -47,15 +48,14 @@ message JointCloudJReplyJob {
   string imageUrl = 7;    
   int64 creator = 8;    
   string creatorName = 9;                      
-	string	execCommand = 10;
-  string  type = 11;            
-	string	outputPath = 12;                     
-	int64	status = 13;                       
-	string	remark = 14;     
-  int64 createTime = 15;                        
-	repeated JointCloudReplyDataSetVersionVo dataSetList = 16;
-	repeated JointCloudParam	taskParams = 17;
-	repeated JointCloudResourceParam	resourceParams = 18;
+	string	execCommand = 10;     
+	string	outputPath = 11;                     
+	int64	status = 12;                       
+	string	remark = 13;     
+  int64 createTime = 14;                        
+	repeated JointCloudReplyDataSetVersionVo dataSetList = 15;
+	repeated JointCloudParam	taskParams = 16;
+	repeated JointCloudResourceParam	resourceParams = 17;
 }
 
 message JointCloudReplyDataSetVersionVo {
