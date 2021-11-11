@@ -93,10 +93,22 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.AutoMigrate(&model.AdminUser{})
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&model.AlgorithmType{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.AlgorithmFramework{})
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.AutoMigrate(&model.Algorithm{})
 	if err != nil {
 		return nil, err
@@ -130,18 +142,22 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.SetupJoinTable(&model.Workspace{}, "Users", &model.WorkspaceUser{})
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.AutoMigrate(&model.Image{})
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.AutoMigrate(&model.ImageAccess{})
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.AutoMigrate(&resources.ResourceSpec{})
 	if err != nil {
 		return nil, err
@@ -183,6 +199,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.NotebookJob{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.DatasetType{})
 	if err != nil {
 		return nil, err
 	}

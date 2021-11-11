@@ -10,6 +10,20 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service Algorithm {
+    // 查询算法类型列表
+    rpc ListAlgorithmType (ListAlgorithmTypeRequest) returns (ListAlgorithmTypeReply) {
+      option (google.api.http) = {
+        get: "/v1/algorithmmanage/algorithmtype"
+      }; 
+    }
+
+        // 查询算法框架列表
+    rpc ListAlgorithmFramework (ListAlgorithmFrameworkRequest) returns (ListAlgorithmFrameworkReply) {
+      option (google.api.http) = {
+        get: "/v1/algorithmmanage/algorithmframework"
+      }; 
+    }
+
     // 查询预置算法列表
     rpc ListPreAlgorithm (ListPreAlgorithmRequest) returns (ListPreAlgorithmReply) {
         option (google.api.http) = {
@@ -140,6 +154,36 @@ service Algorithm {
     }
 }
 
+message AlgorithmType {
+  string id = 1;
+  string typeDesc = 2;
+}
+
+message ListAlgorithmTypeRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+}
+
+message ListAlgorithmTypeReply {
+  int64 totalSize = 1;
+  repeated AlgorithmType algorithmTypes = 2;
+}
+
+message AlgorithmFramework {
+  string id = 1;
+  string frameworkDesc = 2;
+}
+
+message ListAlgorithmFrameworkRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+}
+
+message ListAlgorithmFrameworkReply {
+  int64 totalSize = 1;
+  repeated AlgorithmFramework algorithmFrameworks = 2;
+}
+
 message AlgorithmDetail {
   string algorithmId = 1;
   string algorithmVersion = 2;
@@ -155,6 +199,10 @@ message AlgorithmDetail {
   string path = 12;
   bool isPrefab = 13;
   int64 createdAt = 14;
+  string typeId = 15;
+  string typeName = 16;
+	string frameworkId = 17;
+  string frameworkName = 18;
 }
 
 message MyAlgorithmDetail {
@@ -292,6 +340,8 @@ message CopyAlgorithmVersionRequest {
   string newAlgorithmName = 3[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 4[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 5;
+  string typeId = 6;
+  string frameworkId = 7;
 }
 message CopyAlgorithmVersionReply {
   string newAlgorithmId = 1;
@@ -307,6 +357,8 @@ message AddMyAlgorithmRequest {
   string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7;
+  string typeId = 8;
+  string frameworkId = 9;
 }
 message AddMyAlgorithmReply {
   string algorithmId = 1;

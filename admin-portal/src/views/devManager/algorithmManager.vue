@@ -7,6 +7,9 @@
       <el-tab-pane label="预置算法" name="preAlgorithm">
         <templateList v-if="tabRefresh.templateMenu" :algorithm-tab-type="2" />
       </el-tab-pane>
+      <el-tab-pane label="算法配置" name="algorithmConfig">
+        <algorithmConfig v-if="tabRefresh.algorithmConfig" :data-tab-type="3" />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -14,31 +17,35 @@
 <script>
   import userList from "./components/algorithm/userList.vue";
   import templateList from "./components/algorithm/templateList.vue";
+  import algorithmConfig from "./components/algorithm/algorithmConfig.vue";
   export default {
     components: {
       userList,
-      templateList
+      templateList,
+      algorithmConfig
+
     },
     data() {
       return {
         activeName: "userAlgorithm",
         tabRefresh: {
           userMenu: true,
-          templateMenu: false
+          templateMenu: false,
+          algorithmConfig: false
         }
       }
     },
     mounted() {
-            window.addEventListener('beforeunload', e => {
-                sessionStorage.clear()
-            });
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
 
-        },
-        destroyed() {
-            window.removeEventListener('beforeunload', e => {
-                sessionStorage.clear()
-            })
-        },
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
+    },
     methods: {
       handleClick(tab, event) {
         this.activeName = tab.name
@@ -46,8 +53,11 @@
           case 'userAlgorithm':
             this.switchTab('userMenu')
             break
-          default:
+          case 'preAlgorithm':
             this.switchTab('templateMenu')
+            break
+          default:
+            this.switchTab('algorithmConfig')
         }
       },
       switchTab(tab) {

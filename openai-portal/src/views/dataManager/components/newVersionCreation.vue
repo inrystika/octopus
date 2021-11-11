@@ -12,9 +12,6 @@
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
             <el-input v-model="ruleForm.name" :disabled="true" />
         </el-form-item>
-        <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-            <el-input v-model="ruleForm.type" :disabled="true" />
-        </el-form-item>
         <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
           <el-input
             v-model="ruleForm.desc"
