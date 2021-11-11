@@ -585,6 +585,10 @@ func (s *AlgorithmService) algorithmTransfer(ctx context.Context, algorithm *inn
 		FileStatus:        algorithm.FileStatus,
 		IsPrefab:          algorithm.IsPrefab,
 		CreatedAt:         algorithm.CreatedAt,
+		TypeId:            algorithm.TypeId,
+		TypeName:          algorithm.TypeName,
+		FrameworkId:       algorithm.FrameworkId,
+		FrameworkName:     algorithm.FrameworkName,
 	}
 
 	if algorithm.UserId != "" {
