@@ -6,6 +6,18 @@
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
           <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
+        <el-form-item label="算法类型" :label-width="formLabelWidth" prop="typeId">
+          <el-select v-model="ruleForm.typeId" placeholder="请选择">
+            <el-option v-for="item in optionType" :key="item.id" :label="item.typeDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="算法框架" :label-width="formLabelWidth" prop="frameworkId">
+          <el-select v-model="ruleForm.frameworkId" placeholder="请选择">
+            <el-option v-for="item in optionFrame" :key="item.id" :label="item.frameworkDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
           <el-input v-model="ruleForm.desc" :autosize="{ minRows: 2, maxRows: 4}" :disabled="disabled"
             placeholder="请输入算法描述" maxlength="300" show-word-limit />
@@ -17,7 +29,8 @@
           <el-button v-show="!showUpload" type="text" @click="nextStep('ruleForm')">下一步</el-button>
         </el-form-item>
         <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
-          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel" @upload="isCloseX" />
+          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel"
+            @upload="isCloseX" />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -26,7 +39,7 @@
 
 <script>
   import upload from '@/components/upload/index.vue'
-  import { addPreAlgorithm } from "@/api/modelDev";
+  import { addPreAlgorithm, algorithmType, frameType } from "@/api/modelDev";
   import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreAlgorithmCreation",
@@ -47,7 +60,9 @@
           algorithmName: '',
           path: '',
           modelName: '',
-          desc: ''
+          desc: '',
+          typeId: '',
+          frameworkId: ''
         },
         uploadData: { data: {}, type: undefined },
         rules: {
@@ -83,19 +98,27 @@
               message: "长度在 4 到 30 个字符",
               trigger: "blur"
             }
-          ]
+          ],
+          typeId: [{ required: true, message: '请选择算法类型', trigger: 'change' }],
+          frameworkId: [{ required: true, message: '请选择算法框架', trigger: 'change' }]
         },
         CreateFormVisible: true,
         formLabelWidth: "120px",
-        close: true
+        close: true,
+        optionType: [],
+        optionFrame: []
       };
+    },
+    created() {
+      this.algorithmType()
+      this.algorithmFrame()
     },
     methods: {
       getErrorMsg(code) {
         return getErrorMsg(code)
       },
-      handleDialogClose() {    
-          this.$emit('close', false)
+      handleDialogClose() {
+        this.$emit('close', false)
       },
       nextStep(formName) {
         this.$refs[formName].validate((valid) => {
@@ -107,7 +130,9 @@
               algorithmName: this.ruleForm.algorithmName,
               algorithmDescript: this.ruleForm.desc,
               modelname: this.ruleForm.modelName,
-              isEmpty: false
+              isEmpty: false,
+              frameworkId: this.ruleForm.frameworkId,
+              typeId: this.ruleForm.typeId
             }
             addPreAlgorithm(param).then(response => {
               if (response.success) {
@@ -137,6 +162,34 @@
       },
       isCloseX(val) {
         this.close = val
+      },
+      // 获取算法类型
+      algorithmType() {
+        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.optionType = response.data.algorithmTypes
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
+      },
+      // 获取算法框架
+      algorithmFrame() {
+        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.optionFrame = response.data.algorithmFrameworks
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
       }
     }
   };
