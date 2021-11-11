@@ -28,12 +28,12 @@
           </el-table-column>
           <el-table-column label="状态">
             <template slot-scope="scope">
-              <span>{{ scope.row.status }}</span>
+              <span>{{ statusText[scope.row.status] }}</span>
             </template>
           </el-table-column>
           <el-table-column label="创建时间">
             <template slot-scope="scope">
-              <!-- <span>{{ parseTime(scope.row.taskName) }}</span> -->
+              <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作">
@@ -71,6 +71,12 @@ export default {
       },
       trainJobList: [],
       total: undefined,
+      statusText: {
+        0: '初始化',
+        1: '已分派',
+        2: '分中心处理中',
+        7: '重新分派',
+      }
     }
   },
   created(){

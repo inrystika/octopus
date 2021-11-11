@@ -4,13 +4,17 @@ export function createCloudTrainJob(params) {
   return request({
     url: `/v1/jointcloudmanage/jointcloudtrainjob`,
     method: 'post',
-    params
+    data: params
   })
 }
 
 export function getCloudTrainJobList(params) {
+  let conditions = []
+  conditions.push(`pageIndex=` + params.pageIndex);
+  conditions.push(`pageSize=` + params.pageSize);
+  params.ids?conditions.push(`ids=` + params.ids):null;
   return request({
-    url: `/v1/jointcloudmanage/job?pageIndex=${params.pageIndex}&pageSize=${params.pageSize}&ids=${params.ids}`,
+    url: `/v1/jointcloudmanage/job?` + conditions.join("&"),
     method: 'get',
   })
 }
@@ -29,7 +33,7 @@ export function getCloudDatasetVersionList(params) {
   })
 }
 
-export function getCloudFrameworkList(params) {
+export function getCloudFrameworkList() {
   return request({
     url: `/v1/jointcloudmanage/framework`,
     method: 'get',
@@ -52,7 +56,7 @@ export function getCloudInterpreterList() {
 
 export function getCloudInterpreterVersionList(key) {
   return request({
-    url: `/v1/jointcloudmanage/framework/${key}/version`,
+    url: `/v1/jointcloudmanage/interpreter/${key}/version`,
     method: 'get',
   })
 }

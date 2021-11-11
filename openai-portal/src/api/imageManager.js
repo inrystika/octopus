@@ -7,8 +7,8 @@ export function judgeParam(params) {
   params.imageStatus?conditions.push(`imageStatus=`+params.imageStatus):null;
   params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
   params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.pageSize?conditions.push(`pageSize=`+params.pageSize):null;
-  params.pageIndex?conditions.push(`pageIndex=`+params.pageIndex):null;
+  conditions.push(`pageSize=`+params.pageSize);
+  conditions.push(`pageIndex=`+params.pageIndex);
   params.imageAddrLike?conditions.push(`imageAddrLike=`+params.imageAddrLike):null;
   params.imageNameLike?conditions.push(`imageNameLike=`+params.imageNameLike):null;
   params.userId?conditions.push(`userId=`+params.userId):null;

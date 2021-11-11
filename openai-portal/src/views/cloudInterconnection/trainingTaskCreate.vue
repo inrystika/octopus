@@ -26,17 +26,83 @@
             v-model="ruleForm.remark"
           />
         </el-form-item>
-        <!-- <el-form-item label="训练引擎框架" prop="frameworkLanguage" style="display:inline-block;">
-          <el-select v-model="ruleForm.frameworkLanguage" placeholder="请选择训练引擎" v-loadmore='loadAlgorithmName'
-            @change="changeAlgorithmName">
-            <el-option v-for="item in algorithmNameOption" :key="item.algorithmId+item.algorithmName"
-              :label="item.algorithmName" :value='item.algorithmId'>
-            </el-option>
-          </el-select>
-        </el-form-item> -->
+        <!-- 框架 -->
+        <div>
+          <el-form-item label="训练引擎框架" prop="framework" :class="{inline:frameworkVersionVisible}">
+            <el-select
+              v-model="ruleForm.framework"
+              placeholder="请选择训练引擎框架"
+              @change="changeFramework"
+            >
+              <el-option
+                v-for="item in frameworkOption"
+                :key="item.key"
+                :label="item.value"
+                :value='item.key'
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="框架版本"
+            prop="frameworkVersion"
+            v-if="frameworkVersionVisible"
+            style="display: inline-block;"
+          >
+            <el-select
+              v-model="ruleForm.frameworkVersion"
+              placeholder="请选择框架版本"
+            >
+              <el-option
+                v-for="item in frameworkVersionOption"
+                :key="item.key"
+                :label="item.value"
+                :value='item.key'
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+        <!-- 解释器 -->
+        <div>
+          <el-form-item label="训练引擎解释器" prop="interpreter" :class="{inline:interpreterVersionVisible}">
+            <el-select
+              v-model="ruleForm.interpreter"
+              placeholder="请选择训练引擎解释器"
+              @change="changeInterpreter"
+            >
+              <el-option
+                v-for="item in interpreterOption"
+                :key="item.key"
+                :label="item.value"
+                :value='item.key'
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="解释器版本"
+            prop="interpreterVersion"
+            v-if="interpreterVersionVisible"
+            style="display: inline-block;"
+          >
+            <el-select
+              v-model="ruleForm.interpreterVersion"
+              placeholder="请选择解释器版本"
+            >
+              <el-option
+                v-for="item in interpreterVersionOption"
+                :key="item.key"
+                :label="item.value"
+                :value='item.key'
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
         <!-- 数据集 -->
         <div>
-          <el-form-item label="训练数据集" prop="dataSet">
+          <el-form-item label="训练数据集" prop="dataSet" :class="{inline:dataSetVersionVisible}">
             <el-select
               value-key="dataSetCode"
               v-model="ruleForm.dataSet"
@@ -53,15 +119,81 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item label="数据集版本" prop="dataSetVersion" v-if="dataSetVersion"
-            style="display: inline-block;">
-            <el-select v-model="ruleForm.dataSetVersion" placeholder="请选择数据集版本"
-              v-loadmore='loadDataSetVersion'>
-              <el-option v-for="item in dataSetVersionOption" :key="item.datasetId+item.version"
-                :label="item.version" :value='item.version'>
+          <el-form-item
+            label="数据集版本"
+            prop="dataSetVersion"
+            v-if="dataSetVersionVisible"
+            style="display: inline-block;"
+          >
+            <el-select
+              v-model="ruleForm.dataSetVersion"
+              placeholder="请选择数据集版本"
+              v-loadmore="loadDataSetVersion"
+              @change="changeMountPath"
+            >
+              <el-option
+                v-for="item in dataSetVersionOption"
+                :key="item.version"
+                :label="item.version"
+                :value='item.version'
+              >
               </el-option>
             </el-select>
-          </el-form-item> -->
+          </el-form-item>
+          <el-form-item
+            v-if="mountPathVisible"
+            label="挂载目录"
+            prop="mountPath"
+            style="display: inline-block;"
+          >
+            <el-input v-model="ruleForm.mountPath" placeholder="请输入挂载目录"></el-input>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="运行命令" prop="execCommand">
+            <el-input type="textarea" v-model="ruleForm.execCommand"></el-input>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item
+            label="模型输出位置"
+            prop="outputPath"
+            style="display: inline-block;"
+          >
+            <el-input v-model="ruleForm.outputPath" placeholder="请输入模型输出目录"></el-input>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="内存大小" prop="memorySize" style="display: inline-block;">
+            <el-input v-model="ruleForm.memorySize" placeholder="请填写内存大小">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="内存类型" prop="memoryUnits" style="display: inline-block;">
+            <el-select v-model="ruleForm.memoryUnits">
+              <el-option label="Gi" value="Gi"></el-option>
+              <el-option label="Mi" value="Mi"></el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="GPU个数" prop="gpuSize" style="display: inline-block;">
+            <el-input v-model="ruleForm.gpuSize" placeholder="请填写GPU个数">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="GPU类型" prop="gpuUnits" style="display: inline-block;">
+            <el-select v-model="ruleForm.gpuUnits">
+              <el-option label="nvidia.com/gpu" value="nvidia.com/gpu"></el-option>
+              <el-option label="npu.huawei.com/NPU" value="npu.huawei.com/NPU"></el-option>
+              <el-option label="cambricon.com/mlu" value="cambricon.com/mlu"></el-option>
+              <el-option label="不限" value="default"></el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="CPU个数" prop="cpuSize" style="display: inline-block;">
+            <el-input v-model="ruleForm.cpuSize" placeholder="请填写CPU个数">
+            </el-input>
+          </el-form-item>
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -87,23 +219,24 @@ export default {
   data() {
     return {
       CreateFormVisible: true,
-      formLabelWidth: "120px",
+      formLabelWidth: "130px",
       ruleForm: {
         taskName: '',
         remark: '',
-        frameworkLanguage: '',
+        framework: '',
         frameworkVersion: '',
-        interpreterLanguage: '',
+        interpreter: '',
         interpreterVersion: '',
         dataSet: "",
         dataSetVersion: '',
-        dataSetPath: '',
+        mountPath: '/dataset ',
         execCommand: '',
-        outputPath: "",
-        cpuSize: "",
-        cpuMemory: "",
-        gpuSize: "",
-        gpuMemory: "",
+        outputPath: "/model",
+        memorySize: "1",
+        memoryUnits: "",
+        cpuSize: "1",
+        gpuSize: "1",
+        gpuUnits: "",
         parameters: [{
           key: "",
           value: ""
@@ -113,13 +246,13 @@ export default {
         taskName: [
           { required: true, message: '请输入任务名称', trigger: 'blur' },
         ],
-        frameworkLanguage: [
+        framework: [
           { required: true, message: '请选择引擎框架', trigger: 'blur' },
         ],
         frameworkVersion: [
           { required: true, message: '请选择引擎版本', trigger: 'blur' },
         ],
-        interpreterLanguage: [
+        interpreter: [
           { required: true, message: '请选择引擎解释器', trigger: 'blur' },
         ],
         interpreterVersion: [
@@ -131,7 +264,7 @@ export default {
         dataSetVersion: [
           { required: true, message: '请选择训练数据集版本', trigger: 'blur' },
         ],
-        dataSetPath: [
+        mountPath: [
           { required: true, message: '请选择挂载目录', trigger: 'blur' },
         ],
         execCommand: [
@@ -140,36 +273,45 @@ export default {
         outputPath: [
           { required: true, message: '请填写模型输出路径', trigger: 'blur' },
         ],
-        cpuMemory: [
-          { required: true, message: '请选择CPU大小', trigger: 'blur' },
+        memorySize:[
+          { required: true, message: '请填写内存大小', trigger: 'blur' }
+        ],
+        memoryUnits: [
+          { required: true, message: '请选择内存类型', trigger: 'blur' },
         ],
         cpuSize: [
-          { required: true, message: '请选择CPU个数', trigger: 'blur' },
+          { required: true, message: '请填写CPU个数', trigger: 'blur' },
         ],
-        gpuMemory: [
-          { required: true, message: '请选择GPU大小', trigger: 'blur' },
+        gpuUnits: [
+          { required: true, message: '请选择GPU类型', trigger: 'blur' },
         ],
         gpuSize: [
-          { required: true, message: '请选择GPU个数', trigger: 'blur' },
-        ],
+          { required: true, message: '请填写GPU个数', trigger: 'blur' },
+        ],               
       },
+      // 引擎框架
+      frameworkOption: [],
+      frameworkVersionVisible: false,
+      frameworkVersionOption: [],
+      // 解释器
+      interpreterOption: [],
+      interpreterVersionVisible: false,
+      interpreterVersionOption: [],
       // 数据集
       dataSetNameOption: [],
       dataSetNameCount: 1,
       dataSetNameTotal: undefined,
-      dataSetVersion: false,
+      dataSetVersionVisible: false,
       dataSetVersionCount: 1,
       dataSetVersionOption: [],
       dataSetVersionTotal: undefined,
+      mountPathVisible: false
     }
   },
   created(){
+    this.getCloudFrameworkList()
     this.getCloudDatasetList()
-    // this.getCloudDatasetVersionList()
-    // this.getCloudFrameworkList()
-    // this.getCloudFrameworkVersionList()
-    // this.getCloudInterpreterList()
-    // this.getCloudInterpreterVersionList()
+    this.getCloudInterpreterList()
   },
   directives: {
     loadmore: {
@@ -185,6 +327,70 @@ export default {
     }
   },
   methods: {
+    // 训练框架
+    getCloudFrameworkList(){
+      getCloudFrameworkList().then(response => {
+        if(response.data !== null && response.data.frameworks !== null) {
+          this.frameworkOption = response.data.frameworks
+        } else {
+          this.$message({
+            message: '获取训练训练引擎框架失败',
+            type: 'warning'
+          })
+        }
+      })
+    },
+    changeFramework() {
+      this.frameworkVersionVisible = true
+      this.frameworkVersionOption = [],
+      this.ruleForm.frameworkVersion = '',
+      this.getCloudFrameworkVersionList()
+    },
+    getCloudFrameworkVersionList() {
+      const key = this.ruleForm.framework
+      getCloudFrameworkVersionList(key).then(response => {
+        if (response.data !== null && response.data.versions !== null) { 
+          this.frameworkVersionOption = response.data.versions
+        } else {
+          this.$message({
+            message: '获取训练训练引擎框架版本失败',
+            type: 'warning'
+          })
+        }
+      })
+    },
+    // 解释器
+    getCloudInterpreterList(){
+      getCloudInterpreterList().then(response => {
+        if(response.data !== null && response.data.interpreters !== null) {
+          this.interpreterOption = response.data.interpreters
+        } else {
+          this.$message({
+            message: '获取训练训练解释器失败',
+            type: 'warning'
+          })
+        }
+      })
+    },
+    changeInterpreter() {
+      this.interpreterVersionVisible = true
+      this.frameworkVersionOption = [],
+      this.ruleForm.interpreterVersion = '',
+      this.getCloudInterpreterVersionList()
+    },
+    getCloudInterpreterVersionList() {
+      const key = this.ruleForm.interpreter
+      getCloudInterpreterVersionList(key).then(response => {
+        if (response.data !== null && response.data.versions !== null) { 
+          this.interpreterVersionOption = response.data.versions
+        } else {
+          this.$message({
+            message: '获取训练训练引擎框架版本失败',
+            type: 'warning'
+          })
+        }
+      })
+    },
     // 数据集
     getCloudDatasetList(){
       const param = {
@@ -192,8 +398,9 @@ export default {
         pageSize: 10
       }
       getCloudDatasetList(param).then(response => {
-        if(response.data !== null) {
+        if(response.data !== null && response.data.dataSets !== null) {
           this.dataSetNameOption = this.dataSetNameOption.concat(response.data.dataSets)
+          this.dataSetNameTotal = response.data.totalSize
         } else {
           this.$message({
             message: '获取训练数据集失败',
@@ -209,7 +416,7 @@ export default {
       }
     },
     changeDataSetName() {
-      this.dataSetVersion = true
+      this.dataSetVersionVisible = true
       this.dataSetVersionCount = 1
       this.dataSetVersionOption = [],
       this.ruleForm.dataSetVersion = '',
@@ -221,11 +428,25 @@ export default {
       data.pageIndex = this.dataSetVersionCount
       data.pageSize = 10
       getCloudDatasetVersionList(data).then(response => {
-        if (response.data.versions !== null) { 
+        if (response.data !== null && response.data.versions !== null) { 
           this.dataSetVersionOption = this.dataSetVersionOption.concat(response.data.versions) 
           this.dataSetVersionTotal = response.data.totalSize
+        } else {
+          this.$message({
+            message: '获取训练数据集版本失败',
+            type: 'warning'
+          })
         }
       })
+    },
+    loadDataSetVersion() {
+      this.dataSetVersionCount = this.dataSetVersionCount + 1
+      if (this.dataSetVersionOption.length < this.dataSetVersionTotal) {
+        this.getDataSetVersionList()
+      }
+    },
+    changeMountPath(){
+      this.mountPathVisible = true
     },
     getErrorMsg(code) {
       return getErrorMsg(code)
@@ -237,7 +458,54 @@ export default {
       console.log("this.ruleForm",this.ruleForm)
       this.$refs[formName].validate((valid) => {
         if (valid) {
-
+          const params = {
+            taskName: this.ruleForm.taskName,
+            remark: this.ruleForm.remark,
+            framework: this.ruleForm.framework + "-" + this.ruleForm.frameworkVersion,
+            interpreter: this.ruleForm.interpreter + "-" + this.ruleForm.interpreterVersion,
+            dataSetVersionVoList: [{
+              dataSetCode:this.ruleForm.dataSet.dataSetCode,
+              dataSetName:this.ruleForm.dataSet.name,
+              path:this.ruleForm.mountPath,
+              version:this.ruleForm.dataSetVersion,
+            }],
+            execCommand: this.ruleForm.execCommand,
+            outputPath: this.ruleForm.outputPath,
+            resourceParams: [
+              {
+                name: "memory",
+                size: this.ruleForm.memorySize,
+                type: "memory",
+                unit: this.ruleForm.memoryUnits
+              },
+              {
+                name: this.ruleForm.gpuUnits,
+                size: this.ruleForm.gpuSize,
+                type: "gpu",
+                unit: "个"
+              },
+              {
+                name: "cpu",
+                size: this.ruleForm.cpuSize,
+                type: "cpu",
+                unit: "个"
+              },
+            ]
+          }
+          console.log("params",params)
+          createCloudTrainJob(params).then(response => {
+            if(response.success) {            
+              this.$message.success("创建成功");
+              this.$emit('confirm', false)
+            } else {
+              this.$message({
+                message: this.getErrorMsg(response.error.subcode),
+                type: 'warning'
+              });
+            }
+          })
+        } else {
+          return false;
         }
       })
     },

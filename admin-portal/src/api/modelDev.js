@@ -2,8 +2,8 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   let conditions = []
-  params.pageSize?conditions.push(`pageSize=` + params.pageSize):null;
-  params.pageIndex?conditions.push(`pageIndex=` + params.pageIndex):null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy?conditions.push(`orderBy=` + params.orderBy):null;
   params.sortBy?conditions.push(`sortBy=` + params.sortBy):null;
   params.searchKey?conditions.push(`searchKey=` + params.searchKey):null;
