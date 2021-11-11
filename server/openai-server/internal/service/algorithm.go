@@ -460,6 +460,8 @@ func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlg
 		AlgorithmName:     req.AlgorithmName,
 		ModelName:         req.ModelName,
 		AlgorithmDescript: req.AlgorithmDescript,
+		TypeId:            req.TypeId,
+		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
