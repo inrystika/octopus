@@ -7,23 +7,29 @@
       <el-tab-pane label="预置数据集" name="preDataset">
         <templateList v-if="tabRefresh.templateMenu" :data-tab-type="2" />
       </el-tab-pane>
+      <el-tab-pane label="数据集配置" name="datasetConfig">
+        <datasetConfig  v-if="tabRefresh.datasetConfig" :data-tab-type="3" />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 <script>
   import userList from "./userList.vue";
   import templateList from "./templateList.vue";
+  import datasetConfig from "./datasetConfig.vue";
   export default {
     components: {
       userList,
-      templateList
+      templateList,
+      datasetConfig
     },
     data() {
       return {
         activeName: 'userDataset',
         tabRefresh: {
           userMenu: true,
-          templateMenu: false
+          templateMenu: false,
+          datasetConfig: false
         }
       };
     },
@@ -45,8 +51,11 @@
           case 'userDataset':
             this.switchTab('userMenu')
             break
-          default:
+          case 'preDataset':
             this.switchTab('templateMenu')
+            break
+          default:
+            this.switchTab('datasetConfig')
         }
       },
       switchTab(tab) {

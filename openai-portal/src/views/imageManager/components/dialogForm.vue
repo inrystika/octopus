@@ -77,7 +77,7 @@
                 if (regName.test(value)) {
                     return callback();
                 }
-                callback(new Error("请输入合法的标签名称:首字母为大小写字母，其他大小写字母数字或者-"));
+                callback(new Error("请输入合法的镜像名称:首字母为大小写字母，其他大小写字母数字或者-"));
             };
             var checkLabel = (rule, value, callback) => {
                 const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;

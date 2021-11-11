@@ -158,3 +158,12 @@ export async function previewDataset(payload) {
   })
   return res
 }
+
+export async function datasetType(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
