@@ -89,7 +89,7 @@ func upsertFeature(data *data.Data, baseServerAddr string) error {
 			{
 				Key:         "bindlifehook",
 				PluginType:  "LifeHook",
-				CallAddress: baseServerAddr + "/v1/trainmanage/pipelinecallback",
+				CallAddress: baseServerAddr + "/v1/platform/pipelinecallback",
 				Description: "platform_train_job life hook to update status and time",
 				JobSelector: &pipeline.JobSelector{
 					States: []string{"*"},

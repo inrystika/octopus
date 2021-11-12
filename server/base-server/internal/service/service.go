@@ -37,7 +37,7 @@ type Service struct {
 	ImageService            api.ImageServer
 	BillingService          api.BillingServiceServer
 	PlatformService         api.PlatformServiceServer
-	PlatformTrainJobService api.PlatformTrainJobServiceServer
+	PlatformTrainJobService platform.PlatformTrainJobService
 	JointCloudService       api.JointCloudServiceServer
 }
 
