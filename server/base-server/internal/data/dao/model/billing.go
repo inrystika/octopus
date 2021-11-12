@@ -60,22 +60,26 @@ type BillingOwnerKey struct {
 }
 
 type BillingPayRecordQuery struct {
-	PageIndex int
-	PageSize  int
-	SortBy    string
-	OrderBy   string
-	OwnerId   string
-	OwnerType api.BillingOwnerType
-	SearchKey string
+	PageIndex    int
+	PageSize     int
+	SortBy       string
+	OrderBy      string
+	OwnerId      string
+	OwnerType    api.BillingOwnerType
+	SearchKey    string
+	StartedAtGte int64
+	StartedAtLt  int64
 }
 
 type BillingRechargeRecordQuery struct {
-	PageIndex int
-	PageSize  int
-	SortBy    string
-	OrderBy   string
-	OwnerId   string
-	OwnerType api.BillingOwnerType
+	PageIndex    int
+	PageSize     int
+	SortBy       string
+	OrderBy      string
+	OwnerId      string
+	OwnerType    api.BillingOwnerType
+	CreatedAtGte int64
+	CreatedAtLt  int64
 }
 
 type BillingOwnerQuery struct {

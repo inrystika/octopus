@@ -1,27 +1,33 @@
+
 <template>
     <div>
         <div class="title">算法类型</div>
         <div>
-            <el-tag :key="tag.id" v-for="tag in typeTags" closable :disable-transitions="false"
-                @close="handleClose(tag,'type')" @click="changeValue(tag,'type')">
-                {{tag.typeDesc }}
+            <el-tag v-for="(tag,index) in dynamicType" :key="index" closable :disable-transitions="false"
+                @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
+                <span v-if="index!=typeNum"> {{tag.typeDesc }}</span>
+                <input class="custom_input" type="text" v-model="typeValue" v-if="index==typeNum" ref="editeTypeInput"
+                    @keyup.enter.native="handleInput(tag,'TYPE')" @blur="handleInput(tag,'TYPE')">
             </el-tag>
-            <el-input class="input-new-tag" v-if="inputVisibleType" v-model="inputTypeValue" ref="saveTypeInput"
-                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm('type')">
+            <el-input class="input-new-tag" v-if="inputTypeVisible" v-model="typeValue" ref="saveTypeInput" size="small"
+                @keyup.enter.native="handleInputConfirm('TYPE')" @blur="handleInputConfirm('TYPE')">
             </el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput('type')">+ 新增类型</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput('TYPE')">{{'+ 新标签'}}</el-button>
         </div>
         <el-divider></el-divider>
         <div class="title">算法框架</div>
         <div>
-            <el-tag :key="tag.id" v-for="tag in frameTags" closable :disable-transitions="false"
-                @close="handleClose(tag,'frame')" @click="changeValue(tag,'frame')">
-                {{tag.frameworkDesc }}
+            <el-tag v-for="(tag,index) in dynamicFrame" :key="index" closable :disable-transitions="false"
+                @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
+                <span v-if="index!=frameNum"> {{tag.frameworkDesc }}</span>
+                <input class="custom_input" type="text" v-model="frameValue" v-if="index==frameNum"
+                    ref="editeFrameInput" @keyup.enter.native="handleInput(tag,'FRAME')"
+                    @blur="handleInput(tag,'FRAME')">
             </el-tag>
-            <el-input class="input-new-tag" v-if="inputVisibleFrame" v-model="inputFrameValue" ref="saveFrameInput"
-                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm('frame')">
+            <el-input class="input-new-tag" v-if="inputFrameVisible" v-model="frameValue" ref="saveFrameInput"
+                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
             </el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput('frame')">+ 新增类型</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">{{'+ 新标签'}}</el-button>
         </div>
     </div>
 </template>
@@ -29,37 +35,34 @@
     import { algorithmType, addAlgorithmType, deleteAlgorithmType, updateAlgorithmType, frameType, addFrameType, deleteFrameType, updateFrameType } from "@/api/modelDev"
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: 'datasetConfig',
+        name: 'star-input-tag',
+        created() {
+            this.algorithmType();
+            this.frameType()
+        },
         data() {
             return {
-                typeTags: [],
-                frameTags: [],
-                inputVisibleType: false,
-                inputVisibleFrame: false,
-                inputTypeValue: '',
-                tempType: '',
-                // 是否改变原来的值
-                isTypeChange: false,
-                tempTypeId: '',
-                inputFrameValue: false,
-                tempFrame: "",
-                tempFrameId: '',
-                isFrameChange: false
-            };
+                //算法类型
+                inputTypeVisible: false,
+                typeValue: '',
+                typeId: '',
+                typeNum: -1,
+                dynamicType: [],
+                //算法框架
+                inputFrameVisible: false,
+                frameValue: '',
+                frameId: '',
+                frameNum: -1,
+                dynamicFrame: []
+            }
         },
-        created() {
-            this.getType();
-            this.getFrameType()
-        },
+
         methods: {
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleClose(tag, val) {
-                if (val === 'type') {
+                if (val === 'TYPE') {
                     deleteAlgorithmType(tag.id).then(response => {
                         if (response.success) {
-                            this.getType()
+                            this.algorithmType()
                         }
                         else {
                             this.$message({
@@ -72,7 +75,7 @@
                 else {
                     deleteFrameType(tag.id).then(response => {
                         if (response.success) {
-                            this.getFrameType()
+                            this.frameType()
                         }
                         else {
                             this.$message({
@@ -84,56 +87,34 @@
                 }
 
             },
+
             showInput(val) {
-                if (val === 'type') {
-                    this.tempType = ''
-                    this.inputVisibleType = true;
-                    this.inputTypeValue = ''
-                    this.isTypeChange = false
+                if (val === 'TYPE') {
+                    this.inputTypeVisible = true;
                     this.$nextTick(_ => {
                         this.$refs.saveTypeInput.$refs.input.focus();
                     });
                 }
                 else {
-
-                    this.tempFrame = ''
-                    this.inputVisibleFrame = true;
-                    this.inputFrameValue = ''
-                    this.isFrameChange = false
+                    this.inputFrameVisible = true;
                     this.$nextTick(_ => {
                         this.$refs.saveFrameInput.$refs.input.focus();
                     });
-
                 }
 
 
             },
-            handleInputConfirm(val) {
-                if (val === 'type') {
-                    let inputTypeValue = this.inputTypeValue;
-                    inputTypeValue = inputTypeValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
-                    if (this.isTypeChange) {
-                        updateAlgorithmType({ id: this.tempTypeId, typeDesc: inputTypeValue }).then(
-                            response => {
-                                if (response.success) {
-                                    this.getType()
-                                }
-                                else {
-                                    this.$message({
-                                        message: this.getErrorMsg(response.error.subcode),
-                                        type: 'warning'
-                                    });
-                                }
-                            }
-                        )
 
-                    }
+            handleInputConfirm(val) {
+                if (val === 'TYPE') {
+                    let typeValue = this.typeValue;
+                    typeValue = typeValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
                     // 点击添加时，追加
-                    if (inputTypeValue) {
-                        if (inputTypeValue) {
-                            addAlgorithmType(inputTypeValue).then(response => {
+                    if (typeValue) {
+                        if (typeValue) {
+                            addAlgorithmType(typeValue).then(response => {
                                 if (response.success) {
-                                    this.getType()
+                                    this.algorithmType()
                                 }
                                 else {
                                     this.$message({
@@ -145,34 +126,18 @@
 
                         }
                     }
-                    this.inputVisibleType = false;
-                    this.inputTypeValue = '';
+                    this.inputTypeVisible = false;
+                    this.typeValue = '';
                 }
                 else {
-                    let inputFrameValue = this.inputFrameValue;
-                    inputFrameValue = inputFrameValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
-                    if (this.isFrameChange) {
-                        updateFrameType({ id: this.tempFrameId, frameworkDesc: inputFrameValue }).then(
-                            response => {
-                                if (response.success) {
-                                    this.getFrameType()
-                                }
-                                else {
-                                    this.$message({
-                                        message: this.getErrorMsg(response.error.subcode),
-                                        type: 'warning'
-                                    });
-                                }
-                            }
-                        )
-
-                    }
+                    let frameValue = this.frameValue;
+                    frameValue = frameValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
                     // 点击添加时，追加
-                    if (inputFrameValue) {
-                        if (inputFrameValue) {
-                            addFrameType(inputFrameValue).then(response => {
+                    if (frameValue) {
+                        if (frameValue) {
+                            addFrameType(frameValue).then(response => {
                                 if (response.success) {
-                                    this.getFrameType()
+                                    this.frameType()
                                 }
                                 else {
                                     this.$message({
@@ -184,19 +149,77 @@
 
                         }
                     }
-                    this.inputVisibleFrame = false;
-                    this.inputFrameValue = '';
+                    this.inputFrameVisible = false;
+                    this.frameValue = '';
+                }
+            },
+            editTag(tag, index, val) {
+                if (val === 'TYPE') {
+                    this.typeNum = index;
+                    this.$nextTick(_ => {
+                        this.$refs.editeTypeInput[0].focus();
+                    });
+                    this.typeValue = tag.typeDesc;
+                    this.typeId = tag.id
+                }
+                else {
+                    this.frameNum = index;
+                    this.$nextTick(_ => {
+                        this.$refs.editeFrameInput[0].focus();
+                    });
+                    this.frameValue = tag.frameworkDesc;
+                    this.frameId = tag.id
+                }
+            },
+            handleInput(tag, val) {
+                if (val === 'TYPE') {
+                    updateAlgorithmType({ id: this.typeId, typeDesc: this.typeValue }).then(
+                        response => {
+                            if (response.success) {
+                                this.algorithmType()
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                            this.typeValue = '';
+                            this.typeNum = -1;
+                        }
+                    )
+                }
+                else {
+                    updateFrameType({ id: this.frameId, frameworkDesc: this.frameValue }).then(
+                        response => {
+                            if (response.success) {
+                               this.frameType()
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                            this.frameValue = '';
+                            this.frameNum = -1;
+                        }
+                    )
                 }
 
             },
-            getType() {
+            getErrorMsg(code) {
+                return getErrorMsg(code)
+            },
+            algorithmType() {
                 algorithmType({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.typeTags = response.data.algorithmTypes
-                            if (this.typeTags == null) {
-                                this.typeTags = []
+                            this.dynamicType = response.data.algorithmTypes
+                            if (this.dynamicType == null) {
+                                this.dynamicType = []
                             }
+
                         }
                         else {
                             this.$message({
@@ -207,13 +230,13 @@
                     }
                 )
             },
-            getFrameType() {
+            frameType() {
                 frameType({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.frameTags = response.data.algorithmFrameworks
-                            if (this.frameTags == null) {
-                                this.frameTags = []
+                            this.dynamicFrame = response.data.algorithmFrameworks
+                            if (this.dynamicFrame == null) {
+                                this.dynamicFrame = []
                             }
                         }
                         else {
@@ -225,40 +248,16 @@
                     }
                 )
             },
-            changeValue(tag, val) {
-                if (val === 'type') {
-                    this.inputVisibleType = true
-                    this.$nextTick(_ => {
-                        this.$refs.saveTypeInput.$refs.input.focus();
-                    });
-                    this.inputTypeValue = tag.typeDesc
-                    this.tempType = tag.typeDesc
-                    this.tempTypeId = tag.id
-                    this.isTypeChange = true
-                }
-                else {
-                    this.inputVisibleFrame = true
-                    this.$nextTick(_ => {
-                        this.$refs.saveFrameInput.$refs.input.focus();
-                    });
-                    this.inputFrameValue = tag.frameworkDesc
-                    this.tempFrame = tag.frameworkDesc
-                    this.tempFrameId = tag.id
-                    this.isFrameChange = true
-                }
-
-            }
         }
     }
 </script>
-<style>
-    .title{margin-bottom: 20px;font-size: 16px;font-weight: 800;}
+<style scoped lang="scss">
     .el-tag+.el-tag {
-        margin-left: 25px;
+        margin-left: 15px;
     }
 
     .button-new-tag {
-        margin-left: 25px;
+        margin-left: 15px;
         height: 32px;
         line-height: 30px;
         padding-top: 0;
@@ -269,5 +268,21 @@
         width: 90px;
         margin-left: 10px;
         vertical-align: bottom;
+    }
+
+    .custom_input {
+        width: 80px;
+        height: 16px;
+        outline: none;
+        border: transparent;
+        background-color: transparent;
+        font-size: 12px;
+        color: #B59059;
+    }
+
+    .title {
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 800;
     }
 </style>

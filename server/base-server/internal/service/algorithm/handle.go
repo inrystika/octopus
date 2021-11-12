@@ -125,17 +125,8 @@ func NewAlgorithmHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 // 新增算法类型
 func (h *algorithmHandle) AddAlgorithmType(ctx context.Context, req *api.AddAlgorithmTypeRequest) (*api.AddAlgorithmTypeReply, error) {
 	item, err := h.data.AlgorithmDao.QueryAlgorithmType(ctx, req.TypeDesc)
-	if err == nil {
-		return &api.AddAlgorithmTypeReply{
-			AlgorithmType: &api.AlgorithmType{
-				Id:       item.Id,
-				TypeDesc: item.Desc,
-			},
-		}, nil
-	}
-
-	if !errors.IsError(errors.ErrorDBFindEmpty, err) {
-		return nil, err
+	if item != nil {
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmTypeRepeated)
 	}
 
 	algorithmType := &model.AlgorithmType{}
@@ -204,7 +195,7 @@ func (h *algorithmHandle) DeleteAlgorithmType(ctx context.Context, req *api.Dele
 	}
 
 	if algorithmType.ReferTImes != 0 {
-		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRefered)
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmTypeRefered)
 	}
 
 	err = h.data.AlgorithmDao.DeleteAlgorithmType(ctx, req.Id)
@@ -219,6 +210,11 @@ func (h *algorithmHandle) DeleteAlgorithmType(ctx context.Context, req *api.Dele
 
 // 修改算法类型描述
 func (h *algorithmHandle) UpdateAlgorithmType(ctx context.Context, req *api.UpdateAlgorithmTypeRequest) (*api.UpdateAlgorithmTypeReply, error) {
+	item, err := h.data.AlgorithmDao.QueryAlgorithmType(ctx, req.TypeDesc)
+	if item != nil && item.Id != req.Id {
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmTypeRepeated)
+	}
+
 	algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, req.Id)
 	if err != nil {
 		return nil, err
@@ -238,17 +234,8 @@ func (h *algorithmHandle) UpdateAlgorithmType(ctx context.Context, req *api.Upda
 // 新增算法框架
 func (h *algorithmHandle) AddAlgorithmFramework(ctx context.Context, req *api.AddAlgorithmFrameworkRequest) (*api.AddAlgorithmFrameworkReply, error) {
 	item, err := h.data.AlgorithmDao.QueryAlgorithmFramework(ctx, req.FrameworkDesc)
-	if err == nil {
-		return &api.AddAlgorithmFrameworkReply{
-			AlgorithmFramework: &api.AlgorithmFramework{
-				Id:            item.Id,
-				FrameworkDesc: item.Desc,
-			},
-		}, nil
-	}
-
-	if !errors.IsError(errors.ErrorDBFindEmpty, err) {
-		return nil, err
+	if item != nil {
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmFrameworkRepeated)
 	}
 
 	algorithmFramework := &model.AlgorithmFramework{}
@@ -317,7 +304,7 @@ func (h *algorithmHandle) DeleteAlgorithmFramework(ctx context.Context, req *api
 	}
 
 	if algorithmFramework.ReferTImes != 0 {
-		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRefered)
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmFrameworkRefered)
 	}
 
 	err = h.data.AlgorithmDao.DeleteAlgorithmFramework(ctx, req.Id)
@@ -332,6 +319,11 @@ func (h *algorithmHandle) DeleteAlgorithmFramework(ctx context.Context, req *api
 
 // 修改算法框架描述
 func (h *algorithmHandle) UpdateAlgorithmFramework(ctx context.Context, req *api.UpdateAlgorithmFrameworkRequest) (*api.UpdateAlgorithmFrameworkReply, error) {
+	item, err := h.data.AlgorithmDao.QueryAlgorithmFramework(ctx, req.FrameworkDesc)
+	if item != nil && item.Id != req.Id {
+		return nil, errors.Errorf(err, errors.ErrorAlgorithmFrameworkRepeated)
+	}
+
 	algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, req.Id)
 	if err != nil {
 		return nil, err

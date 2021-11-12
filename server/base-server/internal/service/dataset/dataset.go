@@ -45,17 +45,8 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 
 func (s *datasetService) AddDatasetType(ctx context.Context, req *api.AddDatasetTypeRequest) (*api.AddDatasetTypeReply, error) {
 	item, err := s.data.DatasetDao.QueryDatasetType(ctx, req.TypeDesc)
-	if err == nil {
-		return &api.AddDatasetTypeReply{
-			DatasetType: &api.DatasetType{
-				Id:       item.Id,
-				TypeDesc: item.Desc,
-			},
-		}, nil
-	}
-
-	if !errors.IsError(errors.ErrorDBFindEmpty, err) {
-		return nil, err
+	if item != nil {
+		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRepeated)
 	}
 
 	datasetType := &model.DatasetType{}
@@ -135,6 +126,11 @@ func (s *datasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteD
 }
 
 func (s *datasetService) UpdateDatasetType(ctx context.Context, req *api.UpdateDatasetTypeRequest) (*api.UpdateDatasetTypeReply, error) {
+	item, err := s.data.DatasetDao.QueryDatasetType(ctx, req.TypeDesc)
+	if item != nil && item.Id != req.Id {
+		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRepeated)
+	}
+
 	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, req.Id)
 	if err != nil {
 		return nil, err
