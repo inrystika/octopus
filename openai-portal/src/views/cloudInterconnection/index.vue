@@ -28,7 +28,8 @@
           </el-table-column>
           <el-table-column label="状态">
             <template slot-scope="scope">
-              <span>{{ statusText[scope.row.status] }}</span>
+              <span :class="statusOption[scope.row.status][0]"></span>
+              <span>{{ statusOption[scope.row.status][1] }}</span>
             </template>
           </el-table-column>
           <el-table-column label="创建时间">
@@ -37,7 +38,7 @@
             </template>
           </el-table-column>
           <el-table-column label="操作">
-            <el-button>停止</el-button>
+            <el-button type="text">停止</el-button>
           </el-table-column>
 
         </el-table>
@@ -71,11 +72,13 @@ export default {
       },
       trainJobList: [],
       total: undefined,
-      statusText: {
-        0: '初始化',
-        1: '已分派',
-        2: '分中心处理中',
-        7: '重新分派',
+      statusOption: {
+        '0': ['status-ready', '初始中'],
+        '1': ['status-agent', '已分派'],
+        '2': ['status-running', '分中心处理中'],
+        '-1': ['status-danger', '失败'],
+        '3': ['status-success', '成功'],
+        '7': ['status-reassign', '重分派'],
       }
     }
   },
