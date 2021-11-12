@@ -277,7 +277,7 @@
         border: transparent;
         background-color: transparent;
         font-size: 12px;
-        color: #B59059;
+        color: #E6A23C;
     }
 
     .title {

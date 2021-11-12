@@ -1,19 +1,19 @@
 <template>
   <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
-    <el-tab-pane label="用户机时列表" name="menu1">
-      <Time v-if="tabRefresh.menu1" :time-tab-type="1" />
+    <el-tab-pane label="用户消费记录" name="menu1">
+      <Consumption v-if="tabRefresh.menu1" :time-tab-type="1" />
     </el-tab-pane>
-    <el-tab-pane label="群组机时列表" name="menu2">
-      <Time v-if="tabRefresh.menu2" :time-tab-type="2" />
+    <el-tab-pane label="群组消费记录" name="menu2">
+      <Consumption v-if="tabRefresh.menu2" :time-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>
 <script>
-  import Time from "./time.vue";
+  import  Consumption from "./component/consumption.vue";
 
   export default {
     components: {
-      Time
+      Consumption
 
     },
     data() {
@@ -21,8 +21,7 @@
         activeName: 'menu1',
         tabRefresh: {
           menu1: true,
-          menu2: false,
-          menu3: false
+          menu2: false
 
         }
       }
