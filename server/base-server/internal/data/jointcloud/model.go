@@ -132,6 +132,8 @@ type Param struct {
 type ResourceParam struct {
 	Name string `json:"name"`
 	Size string `json:"size"`
+	Type string `json:"type"`
+	Unit string `json:"unit"`
 }
 
 type DataSetVersionVos []*DataSetVersionVo

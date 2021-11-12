@@ -25,6 +25,8 @@ service JointCloudService {
   rpc TrainJob (JointCloudTrainJobRequest) returns (JointCloudTrainJobReply);
   // 查询任务列表
   rpc ListJointCloudJob (ListJointCloudJobRequest) returns (ListJointCloudJobReply);
+  //停止训练任务
+  //rpc StopJob (JointCloudStopJobRequest) returns (JointCloudStopJobReply);
 }
 
 message ListJointCloudDatasetRequest {
@@ -139,6 +141,7 @@ message JointCloudResourceParam {
 	string name = 1;
 	string size = 2;
   string type = 3;
+  string unit = 4;
 }
 
 message ListJointCloudJobRequest {
@@ -186,4 +189,14 @@ message JointCloudReplyDataSetVersionVo {
   string label = 9;
   int64 creator = 10;
   int64 createTime = 11;
+}
+
+message JointCloudStopJobRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string platformId = 2;
+  string operation = 3;
+}
+
+message JointCloudStopJobReply {
+  int64 stoppedAt = 1;
 }
