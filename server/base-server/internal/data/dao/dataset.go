@@ -151,8 +151,7 @@ func (d *datasetDao) UpdateDatasetType(ctx context.Context, datasetType *model.D
 	if datasetType.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Updates(map[string]interface{}{
-		"id":          datasetType.Id,
+	res := db.Model(&model.DatasetType{}).Where("id = ? ", datasetType.Id).Updates(map[string]interface{}{
 		"desc":        datasetType.Desc,
 		"refer_times": datasetType.ReferTimes,
 	})
