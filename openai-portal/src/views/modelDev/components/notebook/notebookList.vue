@@ -106,14 +106,6 @@
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
           {
             type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
-            options: [
-              { label: '运行中', value: 'running' },
-              { label: '等待中', value: 'pending' },
-              { label: '已停止', value: 'stopped' },
-              { label: '成功', value: 'succeeded' },
-              { label: '失败', value: 'failed' },
-              { label: '初始中', value: 'preparing' }
-            ]
           }
         ],
         searchData: {
