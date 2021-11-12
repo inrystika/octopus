@@ -263,9 +263,9 @@
           case 2:
             return "制作中"
           case 3:
-            return "制作完成"
+            return "解压完成"
           default:
-            return "制作失败"
+            return "解压失败"
         }
       },
       cancel(val) {

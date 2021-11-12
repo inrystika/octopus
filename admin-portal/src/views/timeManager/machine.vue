@@ -9,7 +9,7 @@
   </el-tabs>
 </template>
 <script>
-  import Time from "./time.vue";
+  import Time from "./component/time.vue";
 
   export default {
     components: {
@@ -21,8 +21,7 @@
         activeName: 'menu1',
         tabRefresh: {
           menu1: true,
-          menu2: false,
-          menu3: false
+          menu2: false
 
         }
       }
