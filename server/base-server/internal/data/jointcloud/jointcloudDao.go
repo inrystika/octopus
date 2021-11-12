@@ -15,13 +15,13 @@ type JointcloudDao interface {
 	//网关层生成任务信息
 	CreateTrainJob(ctx context.Context, trainJob *TrainJob) error
 	//网关层查询任务信息
-	GetTrainJob(ctx context.Context, id string) (*TrainJob, error)
+	GetTrainJob(ctx context.Context, taskId string) (*TrainJob, error)
 	//网关层查询训练任务名称是否重复
 	GetTrainJobByName(ctx context.Context, jobName, userId, workspaceId string) (*TrainJob, error)
 	//网关层查询任务列表
 	GetTrainJobList(ctx context.Context, query *TrainJobListQuery) ([]*TrainJob, int64, error)
 	//网关层更新user对任务的操作记录
-	UpdateTrainJobOperation(jobId string, operation string) error
+	UpdateTrainJobOperation(taskId string, operation string) error
 }
 
 type jointcloudDao struct {
@@ -42,18 +42,18 @@ func (d *jointcloudDao) CreateTrainJob(ctx context.Context, trainJob *TrainJob) 
 	return nil
 }
 
-func (d *jointcloudDao) UpdateTrainJobOperation(jobId string, operation string) error {
+func (d *jointcloudDao) UpdateTrainJobOperation(taskId string, operation string) error {
 	var trainJob TrainJob
 	trainJob.Operation = operation
-	if err := d.db.Model(trainJob).Where("id = ? ", jobId).Updates(trainJob).Error; err != nil {
+	if err := d.db.Model(trainJob).Where("task_id = ? ", taskId).Updates(trainJob).Error; err != nil {
 		return errors.Errorf(err, errors.ErrorDBUpdateFailed)
 	}
 	return nil
 }
 
-func (d *jointcloudDao) GetTrainJob(ctx context.Context, id string) (*TrainJob, error) {
+func (d *jointcloudDao) GetTrainJob(ctx context.Context, taskId string) (*TrainJob, error) {
 	trainJob := &TrainJob{}
-	res := d.db.First(trainJob, "id = ?", id)
+	res := d.db.First(trainJob, "task_id = ?", taskId)
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.Errorf(res.Error, errors.ErrorDBFindEmpty)
@@ -115,7 +115,7 @@ func (d *jointcloudDao) GetTrainJobList(ctx context.Context, query *TrainJobList
 	}
 
 	if len(query.Ids) != 0 {
-		querySql += " and id in ? "
+		querySql += " and task_id in ? "
 		params = append(params, query.Ids)
 	}
 

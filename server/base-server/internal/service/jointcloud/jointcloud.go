@@ -200,14 +200,15 @@ func (s *JointCloudService) TrainJob(ctx context.Context, req *api.JointCloudTra
 	if err != nil {
 		return nil, err
 	}
-	trainJob.Id = reply.TaskId
+	trainJob.TaskId = reply.TaskId
+	trainJob.JobId = reply.JobId
 	//create recorde
 	err = s.data.JointCloudDao.CreateTrainJob(ctx, trainJob)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.JointCloudTrainJobReply{JobId: reply.TaskId}, nil
+	return &api.JointCloudTrainJobReply{JobId: reply.JobId, TaskId: reply.TaskId}, nil
 }
 
 func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.ListJointCloudJobRequest) (*api.ListJointCloudJobReply, error) {
@@ -227,7 +228,7 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 			return nil, err
 		}
 		for i, job := range jobs {
-			ids = ids + job.Id
+			ids = ids + job.TaskId
 			if i < len(jobs)-1 {
 				ids = ids + ","
 			}

@@ -115,6 +115,7 @@ type JointcloudJobParam struct {
 
 type SubmitJobReply struct {
 	TaskId string `json:"taskId"`
+	JobId  string `json:"jobId"`
 }
 
 type DataSetVersionVo struct {
@@ -141,7 +142,8 @@ type Parameters []*Param
 type Resources []*ResourceParam
 
 type TrainJob struct {
-	Id                   string            `gorm:"primaryKey;type:varchar(100);not null;comment:'Id'"`
+	TaskId               string            `gorm:"primaryKey;type:varchar(100);not null;comment:'TaskId'"`
+	JobId                string            `gorm:"primaryKey;type:varchar(100);not null;comment:'JobId'"`
 	UserId               string            `gorm:"type:varchar(100);not null;index;uniqueIndex:taskName_userId_spaceId,priority:2;comment:'用户Id'"`
 	WorkspaceId          string            `gorm:"type:varchar(100);not null;default:'';uniqueIndex:taskName_userId_spaceId,priority:3;;comment:'群组Id'"`
 	TaskName             string            `gorm:"type:varchar(100);not null;default:'';uniqueIndex:taskName_userId_spaceId,priority:1;comment:'名称'"`

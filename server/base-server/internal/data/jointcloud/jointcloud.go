@@ -249,7 +249,7 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 		return nil, err
 	}
 
-	IdsQuery := fmt.Sprintf(`{"query": {"jobIds":"%v"}}`, query.Ids)
+	IdsQuery := fmt.Sprintf(`{"taskIds": ["%v"]}`, query.Ids)
 
 	r := &Reply{}
 	_, err = j.client.R().SetResult(r).SetQueryParams(map[string]string{
