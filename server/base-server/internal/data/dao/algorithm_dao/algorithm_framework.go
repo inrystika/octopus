@@ -99,8 +99,7 @@ func (d *algorithmDao) UpdateAlgorithmFramework(ctx context.Context, req *model.
 	if req.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Model(&model.AlgorithmFramework{}).Updates(map[string]interface{}{
-		"id":          req.Id,
+	res := db.Model(&model.AlgorithmFramework{}).Where("id = ? ", req.Id).Updates(map[string]interface{}{
 		"desc":        req.Desc,
 		"refer_times": req.ReferTimes,
 	})
