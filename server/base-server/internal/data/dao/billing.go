@@ -9,6 +9,7 @@ import (
 	"server/common/log"
 	"server/common/transaction"
 	"server/common/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -186,6 +187,16 @@ func (d *billingDao) ListBillingPayRecord(ctx context.Context, query *model.Bill
 		params = append(params, query.OwnerType)
 	}
 
+	if query.StartedAtGte != 0 {
+		querySql += " and started_at >= ? "
+		params = append(params, time.Unix(query.StartedAtGte, 0))
+	}
+
+	if query.StartedAtLt != 0 {
+		querySql += " and started_at < ? "
+		params = append(params, time.Unix(query.StartedAtLt, 0))
+	}
+
 	db = db.Where(querySql, params...)
 
 	var totalSize int64
@@ -242,6 +253,16 @@ func (d *billingDao) ListBillingRechargeRecord(ctx context.Context, query *model
 	if query.OwnerType != 0 {
 		querySql += " and owner_type = ? "
 		params = append(params, query.OwnerType)
+	}
+
+	if query.CreatedAtGte != 0 {
+		querySql += " and created_at >= ? "
+		params = append(params, time.Unix(query.CreatedAtGte, 0))
+	}
+
+	if query.CreatedAtLt != 0 {
+		querySql += " and created_at < ? "
+		params = append(params, time.Unix(query.CreatedAtLt, 0))
 	}
 
 	db = db.Where(querySql, params...)
