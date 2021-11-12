@@ -10,7 +10,7 @@ type DatasetType struct {
 	dao.Model
 	Id         string                `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:Id"`
 	Desc       string                `gorm:"type:varchar(256);not null;default:'';uniqueIndex:desc_deletedAt;comment:类型描述"`
-	ReferTImes int                   `gorm:"type:int;not null;default:0;comment:类型引用次数"`
+	ReferTimes int                   `gorm:"type:int;not null;default:0;comment:类型引用次数"`
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:desc_deletedAt"`
 }
 
