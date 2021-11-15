@@ -41,6 +41,7 @@ type BillingRechargeRecord struct {
 	OwnerId   string               `gorm:"type:varchar(100);not null;index:ownerId;comment:归属用户id"`
 	OwnerType api.BillingOwnerType `gorm:"type:tinyint;not null;default:0;comment:归属用户类型1space 2user"`
 	Amount    float64              `gorm:"type:decimal(10,2);not null;default:0;comment:充值机时"`
+	Title     string               `gorm:"type:varchar(100);not null;default:'';comment:标题"`
 }
 
 func (BillingRechargeRecord) TableName() string {
@@ -80,6 +81,7 @@ type BillingRechargeRecordQuery struct {
 	OwnerType    api.BillingOwnerType
 	CreatedAtGte int64
 	CreatedAtLt  int64
+	SearchKey    string
 }
 
 type BillingOwnerQuery struct {
