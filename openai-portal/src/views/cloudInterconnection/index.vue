@@ -16,12 +16,12 @@
               <span>{{ scope.row.taskName }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="训练引擎框架">
+          <el-table-column label="学习框架">
             <template slot-scope="scope">
               <span>{{ scope.row.framework }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="训练引擎解释器">
+          <el-table-column label="解释器">
             <template slot-scope="scope">
               <span>{{ scope.row.interpreter }}</span>
             </template>
