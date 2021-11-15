@@ -28,10 +28,10 @@
         </el-form-item>
         <!-- 框架 -->
         <div>
-          <el-form-item label="训练引擎框架" prop="framework" :class="{inline:frameworkVersionVisible}">
+          <el-form-item label="学习框架" prop="framework" :class="{inline:frameworkVersionVisible}">
             <el-select
               v-model="ruleForm.framework"
-              placeholder="请选择训练引擎框架"
+              placeholder="请选择学习框架"
               @change="changeFramework"
             >
               <el-option
@@ -65,10 +65,10 @@
         </div>
         <!-- 解释器 -->
         <div>
-          <el-form-item label="训练引擎解释器" prop="interpreter" :class="{inline:interpreterVersionVisible}">
+          <el-form-item label="解释器" prop="interpreter" :class="{inline:interpreterVersionVisible}">
             <el-select
               v-model="ruleForm.interpreter"
-              placeholder="请选择训练引擎解释器"
+              placeholder="请选择解释器"
               @change="changeInterpreter"
             >
               <el-option
@@ -102,11 +102,11 @@
         </div>
         <!-- 数据集 -->
         <div>
-          <el-form-item label="训练数据集" prop="dataSet" :class="{inline:dataSetVersionVisible}">
+          <el-form-item label="数据集" prop="dataSet" :class="{inline:dataSetVersionVisible}">
             <el-select
               value-key="dataSetCode"
               v-model="ruleForm.dataSet"
-              placeholder="请选择训练数据集"
+              placeholder="请选择数据集"
               v-loadmore='loadDataSetName'
               @change="changeDataSetName"
             >
@@ -163,12 +163,35 @@
             <el-input v-model="ruleForm.outputPath" placeholder="请输入模型输出目录"></el-input>
           </el-form-item>
         </div>
+
+        <!-- <div>
+          <el-row >
+            <el-col :span="6">
+              <el-form-item label="内存" prop="memorySize">
+                <el-input v-model="ruleForm.memorySize" placeholder="请填写内存大小">
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="内存"  prop="memoryUnits">
+                <el-select v-model="ruleForm.memoryUnits">
+                  <el-option label="Gi" value="Gi"></el-option>
+                  <el-option label="Mi" value="Mi"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6"></el-col>
+            <el-col :span="6"></el-col>
+          </el-row>
+        </div> -->
+
+
         <div>
           <el-form-item label="内存大小" prop="memorySize" style="display: inline-block;">
             <el-input v-model="ruleForm.memorySize" placeholder="请填写内存大小">
             </el-input>
           </el-form-item>
-          <el-form-item label="内存类型" prop="memoryUnits" style="display: inline-block;">
+          <el-form-item label="内存单位" prop="memoryUnits" style="display: inline-block;">
             <el-select v-model="ruleForm.memoryUnits">
               <el-option label="Gi" value="Gi"></el-option>
               <el-option label="Mi" value="Mi"></el-option>
@@ -259,10 +282,10 @@ export default {
           { required: true, message: '请选择引擎解释器版本', trigger: 'blur' },
         ],
         dataSet: [
-          { required: true, message: '请选择训练数据集', trigger: 'blur' },
+          { required: true, message: '请选择数据集', trigger: 'blur' },
         ],
         dataSetVersion: [
-          { required: true, message: '请选择训练数据集版本', trigger: 'blur' },
+          { required: true, message: '请选择数据集版本', trigger: 'blur' },
         ],
         mountPath: [
           { required: true, message: '请选择挂载目录', trigger: 'blur' },
@@ -334,7 +357,7 @@ export default {
           this.frameworkOption = response.data.frameworks
         } else {
           this.$message({
-            message: '获取训练训练引擎框架失败',
+            message: '获取训练学习框架失败',
             type: 'warning'
           })
         }
@@ -353,7 +376,7 @@ export default {
           this.frameworkVersionOption = response.data.versions
         } else {
           this.$message({
-            message: '获取训练训练引擎框架版本失败',
+            message: '获取训练学习框架版本失败',
             type: 'warning'
           })
         }
@@ -385,7 +408,7 @@ export default {
           this.interpreterVersionOption = response.data.versions
         } else {
           this.$message({
-            message: '获取训练训练引擎框架版本失败',
+            message: '获取训练学习框架版本失败',
             type: 'warning'
           })
         }
@@ -403,7 +426,7 @@ export default {
           this.dataSetNameTotal = response.data.totalSize
         } else {
           this.$message({
-            message: '获取训练数据集失败',
+            message: '获取数据集失败',
             type: 'warning'
           })
         }
@@ -433,7 +456,7 @@ export default {
           this.dataSetVersionTotal = response.data.totalSize
         } else {
           this.$message({
-            message: '获取训练数据集版本失败',
+            message: '获取数据集版本失败',
             type: 'warning'
           })
         }
@@ -461,8 +484,8 @@ export default {
           const params = {
             taskName: this.ruleForm.taskName,
             remark: this.ruleForm.remark,
-            framework: this.ruleForm.framework + "-" + this.ruleForm.frameworkVersion,
-            interpreter: this.ruleForm.interpreter + "-" + this.ruleForm.interpreterVersion,
+            framework: this.ruleForm.framework + this.ruleForm.frameworkVersion,
+            interpreter: this.ruleForm.interpreter + this.ruleForm.interpreterVersion,
             dataSetVersionVoList: [{
               dataSetCode:this.ruleForm.dataSet.dataSetCode,
               dataSetName:this.ruleForm.dataSet.name,
