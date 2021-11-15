@@ -266,22 +266,20 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 	}, nil
 }
 
-/*
 func (s *JointCloudService) StopJob(ctx context.Context, req *api.JointCloudStopJobRequest) (*api.JointCloudStopJobReply, error) {
 	_, err := s.data.JointCloudDao.GetTrainJob(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: req.Id, Reason: req.Operation})
+	err = s.data.JointCloud.StopJob(ctx, &jointcloud.StopJobRequest{TaskId: req.Id})
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now()
-	err = s.data.TrainJobDao.UpdateTrainJob(ctx, &model.TrainJob{
-		Id:          req.Id,
+	err = s.data.JointCloudDao.UpdateTrainJob(ctx, &jointcloud.TrainJob{
+		TaskId:      req.Id,
 		Operation:   req.Operation,
 		Status:      pipeline.STOPPED,
 		CompletedAt: &now,
@@ -290,6 +288,5 @@ func (s *JointCloudService) StopJob(ctx context.Context, req *api.JointCloudStop
 		return nil, err
 	}
 
-	return &api.StopJobReply{StoppedAt: time.Now().Unix()}, nil
+	return &api.JointCloudStopJobReply{StoppedAt: time.Now().Unix()}, nil
 }
-*/

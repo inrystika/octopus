@@ -186,6 +186,31 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 	return reply, nil
 }
 
+// 停止训练任务
+func (s *JointCloudService) StopJob(ctx context.Context, req *api.JointCloudStopJobRequest) (*api.JointCloudStopJobReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+	//trainJob, err := s.data.JointCloudClient.GetTrainJobInfo(ctx, &innerapi.TrainJobInfoRequest{Id: req.Id})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if trainJob.TrainJob.UserId != session.UserId {
+	//	return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
+	//}
+	innerReq := &innerapi.JointCloudStopJobRequest{
+		Id:        req.Id,
+		Operation: "user stop job",
+	}
+	reply, err := s.data.JointCloudClient.StopJob(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+	return &api.JointCloudStopJobReply{StoppedAt: reply.StoppedAt}, nil
+}
+
 func (s *JointCloudService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
 	userId := commctx.UserIdFromContext(ctx)
 	if userId == "" {

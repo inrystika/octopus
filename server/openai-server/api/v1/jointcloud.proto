@@ -58,6 +58,13 @@ service JointCloudService {
       get: "/v1/jointcloudmanage/job"
     };
   }
+   //停止训练任务
+   rpc StopJob (JointCloudStopJobRequest) returns (JointCloudStopJobReply) {
+    option (google.api.http) = {
+        post: "/v1/jointcloudmanage/trainjob/{id}/stop"
+        body: "*"
+    };
+ };
 }
 
 message ListJointCloudDatasetRequest {
@@ -217,4 +224,12 @@ message JointCloudReplyDataSetVersionVo {
   string label = 9;
   int64 creator = 10;
   int64 createTime = 11;
+}
+
+message JointCloudStopJobRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message JointCloudStopJobReply {
+  int64 stoppedAt = 1;
 }

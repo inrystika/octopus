@@ -24,6 +24,7 @@ type JointCloud interface {
 	ListInterpreter(ctx context.Context) (*ListInterpreterReply, error)
 	ListInterpreterVersion(ctx context.Context, key string) (*ListInterpreterVersionReply, error)
 	ListJob(ctx context.Context, query *JobQuery) (*ListJobReply, error)
+	StopJob(ctx context.Context, req *StopJobRequest) error
 }
 
 func NewJointCloud(baseUrl, username, password string, sessionExpirySec int32) JointCloud {
@@ -265,4 +266,27 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 		return nil, err
 	}
 	return reply, nil
+}
+
+func (j *jointCloud) StopJob(ctx context.Context, req *StopJobRequest) error {
+
+	err := j.checkLogin(ctx)
+	if err != nil {
+		return err
+	}
+
+	r := &Reply{}
+	paraBytes, err := json.Marshal(req)
+	_, err = j.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(paraBytes).SetResult(r).
+		Put(fmt.Sprintf("%s/v1/jointcloud/task/stop", j.baseUrl))
+
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(r.Code, success) {
+		return errors.Errorf(nil, errors.ErrorJointCloudRequestFailed)
+	}
+	return nil
 }

@@ -64,6 +64,10 @@ type DataSetVersionQuery struct {
 	DataSetCode string
 }
 
+type StopJobRequest struct {
+	TaskId string `json:"taskId"`
+}
+
 type ListDataSetVersionReply struct {
 	Pager *Pager `json:"pager"`
 	List  []*struct {

@@ -22,6 +22,8 @@ type JointcloudDao interface {
 	GetTrainJobList(ctx context.Context, query *TrainJobListQuery) ([]*TrainJob, int64, error)
 	//网关层更新user对任务的操作记录
 	UpdateTrainJobOperation(taskId string, operation string) error
+	//网关层更新任务
+	UpdateTrainJob(ctx context.Context, trainJob *TrainJob) error
 }
 
 type jointcloudDao struct {
@@ -62,6 +64,18 @@ func (d *jointcloudDao) GetTrainJob(ctx context.Context, taskId string) (*TrainJ
 		}
 	}
 	return trainJob, nil
+}
+
+func (d *jointcloudDao) UpdateTrainJob(ctx context.Context, trainJob *TrainJob) error {
+	if trainJob.TaskId == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := d.db.Where("task_id = ?", trainJob.TaskId).Updates(trainJob)
+
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
 }
 
 func (d *jointcloudDao) GetTrainJobByName(ctx context.Context, jobName, userId, workspaceId string) (*TrainJob, error) {
