@@ -26,7 +26,7 @@ service JointCloudService {
   // 查询任务列表
   rpc ListJointCloudJob (ListJointCloudJobRequest) returns (ListJointCloudJobReply);
   //停止训练任务
-  //rpc StopJob (JointCloudStopJobRequest) returns (JointCloudStopJobReply);
+  rpc StopJob (JointCloudStopJobRequest) returns (JointCloudStopJobReply);
 }
 
 message ListJointCloudDatasetRequest {
@@ -140,7 +140,7 @@ message JointCloudParam {
 
 message JointCloudResourceParam {
 	string name = 1;
-	string size = 2;
+	int32 size = 2;
   string type = 3;
   string unit = 4;
 }

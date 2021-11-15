@@ -257,7 +257,9 @@ func (j *jointCloud) ListJob(ctx context.Context, query *JobQuery) (*ListJobRepl
 	if err != nil {
 		return nil, err
 	}
+
 	reply := &ListJobReply{}
+
 	err = parseBody(ctx, r, reply)
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ message JointCloudParam {
 
 message JointCloudResourceParam {
 	string name = 1;
-	string size = 2;
+	int32 size = 2;
   string type = 3;
   string unit = 4;
 }
