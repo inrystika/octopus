@@ -256,10 +256,10 @@ export default {
         execCommand: '',
         outputPath: "/model",
         memorySize: "1",
-        memoryUnits: "",
+        memoryUnits: "Gi",
         cpuSize: "1",
         gpuSize: "1",
-        gpuUnits: "",
+        gpuUnits: "nvidia.com/gpu",
         parameters: [{
           key: "",
           value: ""
