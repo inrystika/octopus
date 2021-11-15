@@ -111,7 +111,7 @@ func (s *datasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteD
 		return nil, err
 	}
 
-	if datasetType.ReferTImes != 0 {
+	if datasetType.ReferTimes != 0 {
 		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRefered)
 	}
 
@@ -197,7 +197,7 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 	}
 
 	// 新增数据类型引用
-	datasetType.ReferTImes++
+	datasetType.ReferTimes++
 	_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
 
 	return &api.CreateDatasetReply{
@@ -665,8 +665,8 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	// 减小数据类型引用
 	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, dataset.TypeId)
 	if err == nil {
-		if datasetType.ReferTImes > 0 {
-			datasetType.ReferTImes--
+		if datasetType.ReferTimes > 0 {
+			datasetType.ReferTimes--
 		}
 
 		_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)

@@ -180,7 +180,9 @@
               AlgorithmName: this.ruleForm.algorithmName,
               AlgorithmDescript: this.ruleForm.desc,
               modelname: this.ruleForm.modelName,
-              isEmpty: this.isEmpty
+              isEmpty: this.isEmpty,
+              typeId:this.ruleForm.typeId,
+              frameworkId:this.ruleForm.frameworkId
             }
             addMyAlgorithm(param).then(response => {
               if (response.success) {
