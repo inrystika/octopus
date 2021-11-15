@@ -215,6 +215,7 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 
 	var totalSize int64
 	ids := req.Ids
+	jobList := make([]*api.JointCloudJReplyJob, 0)
 
 	if ids == "" {
 		jobs, size, err := s.data.JointCloudDao.GetTrainJobList(ctx, &jointcloud.TrainJobListQuery{
@@ -227,6 +228,14 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		if err != nil {
 			return nil, err
 		}
+
+		if len(jobs) == 0 {
+			return &api.ListJointCloudJobReply{
+				TotalSize: 0,
+				List:      jobList,
+			}, nil
+		}
+
 		ids = "["
 		for i, job := range jobs {
 			ids = ids + job.TaskId
@@ -246,7 +255,7 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 	if err != nil {
 		return nil, err
 	}
-	jobList := make([]*api.JointCloudJReplyJob, 0)
+
 	for _, n := range reply.List {
 		job := &api.JointCloudJReplyJob{}
 		err := copier.Copy(job, n)
