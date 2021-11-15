@@ -481,6 +481,31 @@ export default {
       console.log("this.ruleForm",this.ruleForm)
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          let resourceList = []
+          if(this.ruleForm.memorySize != 0){
+            let memoryParam = {}
+            memoryParam.name = "memory"
+            memoryParam.type = "memory"
+            memoryParam.unit = this.ruleForm.memoryUnits
+            memoryParam.size = this.ruleForm.memorySize
+            resourceList.push(memoryParam)
+          }
+          if(this.ruleForm.gpuSize != 0){
+            let gpuParam = {}
+            gpuParam.name = this.ruleForm.gpuUnits
+            gpuParam.type = "gpu"
+            gpuParam.unit = "个"
+            gpuParam.size = this.ruleForm.gpuSize
+            resourceList.push(gpuParam)
+          }
+          if(this.ruleForm.cpuSize != 0){
+            let cpuParam = {}
+            cpuParam.name = "cpu"
+            cpuParam.type = "cpu"
+            cpuParam.unit = "个"
+            cpuParam.size = this.ruleForm.cpuSize
+            resourceList.push(cpuParam)
+          }
           const params = {
             taskName: this.ruleForm.taskName,
             remark: this.ruleForm.remark,
@@ -494,26 +519,7 @@ export default {
             }],
             execCommand: this.ruleForm.execCommand,
             outputPath: this.ruleForm.outputPath,
-            resourceParams: [
-              {
-                name: "memory",
-                size: this.ruleForm.memorySize,
-                type: "memory",
-                unit: this.ruleForm.memoryUnits
-              },
-              {
-                name: this.ruleForm.gpuUnits,
-                size: this.ruleForm.gpuSize,
-                type: "gpu",
-                unit: "个"
-              },
-              {
-                name: "cpu",
-                size: this.ruleForm.cpuSize,
-                type: "cpu",
-                unit: "个"
-              },
-            ]
+            resourceParams: resourceList
           }
           console.log("params",params)
           createCloudTrainJob(params).then(response => {
