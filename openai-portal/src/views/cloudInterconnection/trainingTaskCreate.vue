@@ -188,7 +188,7 @@
 
         <div>
           <el-form-item label="内存大小" prop="memorySize" style="display: inline-block;">
-            <el-input v-model="ruleForm.memorySize" placeholder="请填写内存大小">
+            <el-input v-model.number="ruleForm.memorySize" placeholder="请填写内存大小">
             </el-input>
           </el-form-item>
           <el-form-item label="内存单位" prop="memoryUnits" style="display: inline-block;">
@@ -200,7 +200,7 @@
         </div>
         <div>
           <el-form-item label="GPU个数" prop="gpuSize" style="display: inline-block;">
-            <el-input v-model="ruleForm.gpuSize" placeholder="请填写GPU个数">
+            <el-input v-model.number="ruleForm.gpuSize" placeholder="请填写GPU个数">
             </el-input>
           </el-form-item>
           <el-form-item label="GPU类型" prop="gpuUnits" style="display: inline-block;">
@@ -214,7 +214,7 @@
         </div>
         <div>
           <el-form-item label="CPU个数" prop="cpuSize" style="display: inline-block;">
-            <el-input v-model="ruleForm.cpuSize" placeholder="请填写CPU个数">
+            <el-input v-model.number="ruleForm.cpuSize" placeholder="请填写CPU个数">
             </el-input>
           </el-form-item>
         </div>
@@ -255,10 +255,10 @@ export default {
         mountPath: '/dataset ',
         execCommand: '',
         outputPath: "/model",
-        memorySize: "1",
+        memorySize: 1,
         memoryUnits: "Gi",
-        cpuSize: "1",
-        gpuSize: "1",
+        cpuSize: 1,
+        gpuSize: 1,
         gpuUnits: "nvidia.com/gpu",
         parameters: [{
           key: "",
@@ -479,6 +479,9 @@ export default {
     },
     submit(formName) {
       console.log("this.ruleForm",this.ruleForm)
+          console.log("this.ruleForm.cpuSize",typeof(this.ruleForm.cpuSize))
+    console.log("this.ruleForm.memorySize",typeof(this.ruleForm.memorySize))
+    console.log("this.ruleForm.gpuSize",typeof(this.ruleForm.gpuSize))
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let resourceList = []
