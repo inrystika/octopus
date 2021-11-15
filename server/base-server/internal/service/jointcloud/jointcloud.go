@@ -227,12 +227,14 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		if err != nil {
 			return nil, err
 		}
+		ids = "["
 		for i, job := range jobs {
 			ids = ids + job.TaskId
 			if i < len(jobs)-1 {
 				ids = ids + ","
 			}
 		}
+		ids = ids + "]"
 		totalSize = size
 	}
 

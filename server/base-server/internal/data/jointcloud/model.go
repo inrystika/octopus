@@ -161,7 +161,7 @@ type TrainJob struct {
 	CompletedAt          *time.Time        `gorm:"type:datetime(3);comment:'结束运行时间'"`
 	StartedAt            *time.Time        `gorm:"type:datetime(3);comment:'开始运行时间'"`
 	dao.Model
-	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
+	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:taskName_userId_spaceId,priority:4"`
 }
 
 type TrainJobListQuery struct {
