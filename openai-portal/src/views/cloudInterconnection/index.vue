@@ -38,10 +38,31 @@
             </template>
           </el-table-column>
           <el-table-column label="操作">
-            <el-button type="text">停止</el-button>
+            <template slot-scope="scope">
+              <el-button
+                v-if="({'0':true,'1':true,'2':true,'7':true})[scope.row.status] || false"
+                type="text"
+                slot="reference"
+                @click="confirmStop(scope.row)"
+              >
+                停止
+              </el-button>
+            </template>
           </el-table-column>
-
         </el-table>
+
+          <div class="block">
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="searchData.pageIndex"
+              :page-sizes="[10, 20, 50, 80]"
+              :page-size="searchData.pageSize"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="total"
+            >
+            </el-pagination>
+          </div>
       </el-tab-pane>
     </el-tabs>
 
@@ -57,7 +78,7 @@
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 import trainingTaskCreate from './trainingTaskCreate.vue'
-import { getCloudTrainJobList } from "@/api/cloudInterconnection"
+import { getCloudTrainJobList, stopCloudTrainJob } from "@/api/cloudInterconnection"
 export default {
   name: "cloudInterconnection",
   components: {
@@ -71,13 +92,14 @@ export default {
         pageSize: 10,
       },
       trainJobList: [],
-      total: undefined,
+      total: 0,
       statusOption: {
         '0': ['status-ready', '初始中'],
         '1': ['status-agent', '已分派'],
         '2': ['status-running', '分中心处理中'],
         '-1': ['status-danger', '失败'],
         '3': ['status-success', '成功'],
+        '4': ['status-stopping', '停止'],
         '7': ['status-reassign', '重分派'],
       }
     }
@@ -98,6 +120,42 @@ export default {
             })
           }
         })
+    },
+    confirmStop(row) {
+      this.$confirm('是否停止Notebook？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(() => {
+        this.stopCloudTrainJob(row)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });
+      });
+    },
+    stopCloudTrainJob(row) {
+      stopCloudTrainJob(row.taskId).then(response => {
+        if (response.success) {
+          this.$message.success("已停止");
+          this.getCloudTrainJobList(this.searchData);
+        } else {
+          this.$message({
+            message: this.getErrorMsg(response.error.subcode),
+            type: 'warning'
+          })
+        }
+      })
+    },
+    handleSizeChange(val) {
+      this.searchData.pageSize = val
+      this.getCloudTrainJobList(this.searchData)
+    },
+    handleCurrentChange(val) {
+      this.searchData.pageIndex = val
+      this.getCloudTrainJobList(this.searchData)
     },
     create() {
       this.createVisible = true
@@ -132,5 +190,9 @@ export default {
   }
   .create {
     float: right;
+  }
+  .block {
+    float: right;
+    margin: 20px;
   }
 </style>

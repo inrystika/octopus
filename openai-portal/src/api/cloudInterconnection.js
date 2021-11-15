@@ -8,6 +8,13 @@ export function createCloudTrainJob(params) {
   })
 }
 
+export function stopCloudTrainJob(id) {
+  return request({
+    url: `/v1/jointcloudmanage/trainjob/${id}/stop`,
+    method: 'post',
+  })
+}
+
 export function getCloudTrainJobList(params) {
   let conditions = []
   conditions.push(`pageIndex=` + params.pageIndex);

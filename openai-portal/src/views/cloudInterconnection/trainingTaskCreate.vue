@@ -478,10 +478,6 @@ export default {
       this.$emit("close", false);
     },
     submit(formName) {
-      console.log("this.ruleForm",this.ruleForm)
-          console.log("this.ruleForm.cpuSize",typeof(this.ruleForm.cpuSize))
-    console.log("this.ruleForm.memorySize",typeof(this.ruleForm.memorySize))
-    console.log("this.ruleForm.gpuSize",typeof(this.ruleForm.gpuSize))
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let resourceList = []
@@ -524,7 +520,6 @@ export default {
             outputPath: this.ruleForm.outputPath,
             resourceParams: resourceList
           }
-          console.log("params",params)
           createCloudTrainJob(params).then(response => {
             if(response.success) {            
               this.$message.success("创建成功");
