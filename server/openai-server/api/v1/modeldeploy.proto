@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service ModelDeployService {
+
+  // 创建部署服务
+  rpc DeployModel (DepRequest) returns (DepReply) {
+    option (google.api.http) = {
+      post: "/v1/deploymanage/deploymodel"
+      body: "*"
+    };
+  };
+  //停止部署服务
+  rpc StopDepModel (StopDepRequest) returns (StopDepReply) {
+    option (google.api.http) = {
+      post: "/v1/deploymanage/deploymodel/{id}/stop"
+      body: "*"
+    };
+  };
+  //删除部署服务
+  rpc DeleteDepModel (DeleteDepRequest) returns (DeleteDepReply) {
+    option (google.api.http) = {
+      delete: "/v1/deploymanage/deploymodel"
+    };
+  };
+  //获取部署服务详情
+  rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply){
+    option (google.api.http) = {
+      get: "/v1/deploymanage/deploymodel/{id}"
+    };
+  };
+  //获取部署服务列表
+  rpc ListDepModel(DepListRequest) returns (DepListReply){
+    option (google.api.http) = {
+      get: "/v1/deploymanage/deploymodel"
+    };
+  };
+
+  // 获取部署服务事件
+  rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply) {
+    option (google.api.http) = {
+      get: "/v1/deploymanage/deploymodelevent"
+    };
+  };
+}
+
+message DepRequest {
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string desc = 2;
+  string serviceType = 3;
+  string modelType = 4;
+  string modelId = 5[(validate.rules).string = {min_len: 1}];
+  string modelVersion = 6[(validate.rules).string = {min_len: 1}];
+  string resourceType = 7;
+  string resourceSpecName = 9;
+}
+
+message DepReply {
+  string code = 1;
+  string message = 2;
+  string resp = 3;
+}
+
+message StopDepRequest {
+
+}
+
+message StopDepReply {
+
+}
+
+message DeleteDepRequest {
+
+}
+
+message DeleteDepReply {
+
+}
+message DepInfoRequest {
+
+}
+message DepInfoReply {
+
+}
+message DepListRequest {
+
+}
+message DepListReply {
+
+}
+
+message DepEventListRequest {
+
+}
+message DepEventListReply {
+
+}
