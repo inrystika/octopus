@@ -3,7 +3,7 @@
     <el-tab-pane label="用户充值记录" name="menu1">
       <Recharge v-if="tabRefresh.menu1" :rechange-tab-type="1" />
     </el-tab-pane>
-    <el-tab-pane label="群组消费记录" name="menu2">
+    <el-tab-pane label="群组充值记录" name="menu2">
       <Recharge v-if="tabRefresh.menu2" :rechange-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
