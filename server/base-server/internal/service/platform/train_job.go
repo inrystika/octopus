@@ -627,11 +627,15 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		s.deleteOutputStorageResource(ctx, trainJob.Output, trainJob.PlatformId, trainJob.Id)
 	}
 
-	s.updatePlatfromJobStatus(ctx, trainJob.PlatformId, &platform.JobStatusInfo{
+	err = s.updatePlatfromJobStatus(ctx, trainJob.PlatformId, &platform.JobStatusInfo{
 		JobId:  trainJob.Id,
 		Status: info.Job.State,
 		Time:   time.Now(),
 	})
+
+	if err != nil {
+		s.log.Info(ctx, fmt.Sprintf("updatePlatfromJobStatus for platformjob failed, id: %v, status: %v", req.Id, info.Job.State))
+	}
 
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)
 	if err != nil {
