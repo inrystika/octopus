@@ -103,6 +103,7 @@ message RechargeRequest {
   string ownerId = 1[(validate.rules).string = {min_len: 1}];
   BillingOwnerType ownerType = 2[(validate.rules).enum = {not_in: [0]}];
   double  amount = 3;
+  string title = 4;
 }
 
 message RechargeReply {
@@ -130,7 +131,7 @@ message BillingPayRecord {
   double amount = 6;
   BillingBizType bizType = 7;
   string bizId = 8;
-  string Title = 9;
+  string title = 9;
   int64 startedAt = 10;
   int64 endedAt = 11;
   BillingPayRecordStatus status = 12;
@@ -150,6 +151,7 @@ message ListBillingRechargeRecordRequest {
   BillingOwnerType ownerType = 6[(validate.rules).enum = {not_in: [0]}];
   int64 createdAtGte = 7;
   int64 createdAtLt = 8;
+  string searchKey = 9; //title等模糊查找
 }
 
 message BillingRechargeRecord {
@@ -159,6 +161,7 @@ message BillingRechargeRecord {
   string ownerId = 4;
   BillingOwnerType ownerType = 5;
   double amount = 6;
+  string title = 7;
 }
 
 message ListBillingRechargeRecordReply {

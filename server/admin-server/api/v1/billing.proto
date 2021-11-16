@@ -86,6 +86,7 @@ message ListBillingUserReply {
 message RechargeUserRequest {
   string userId = 1[(validate.rules).string = {min_len: 1}];
   double  amount = 2;
+  string title = 3;
 }
 
 message RechargeUserReply {
@@ -110,7 +111,7 @@ message UserPayRecord {
   double amount = 4;
   int32 bizType = 5; // 1训练任务 2notebook
   string bizId = 6;
-  string Title = 7;
+  string title = 7;
   int64 startedAt = 8;
   int64 endedAt = 9;
   int32 status = 10;  // 1计费中 2计费完成
@@ -141,6 +142,7 @@ message UserRechargeRecord {
   double amount = 6;
   string userId = 7;
   string userName = 8;
+  string title = 9;
 }
 
 message ListUserRechargeRecordReply {
@@ -172,6 +174,7 @@ message ListBillingSpaceReply {
 message RechargeSpaceRequest {
   string spaceId = 1[(validate.rules).string = {min_len: 1}];
   double  amount = 2;
+  string title = 3;
 }
 
 message RechargeSpaceReply {
@@ -196,7 +199,7 @@ message SpacePayRecord {
   double amount = 4;
   int32 bizType = 5;
   string bizId = 6;
-  string Title = 7;
+  string title = 7;
   int64 startedAt = 8;
   int64 endedAt = 9;
   int32 status = 10;
@@ -227,6 +230,7 @@ message SpaceRechargeRecord {
   double amount = 4;
   string spaceId = 5;
   string spaceName = 6;
+  string title = 7;
 }
 
 message ListSpaceRechargeRecordReply {
