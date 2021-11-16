@@ -15,6 +15,7 @@ import (
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
 	"server/base-server/internal/service/workspace"
+	"server/base-server/internal/service/modeldeploy"
 
 	"server/common/log"
 )
@@ -34,6 +35,7 @@ type Service struct {
 	DatasetService      api.DatasetServiceServer
 	ImageService        api.ImageServer
 	BillingService      api.BillingServiceServer
+	ModelDeployService  api.ModelDeployServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -62,6 +64,13 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	service.TrainJobService, err = trainjob.NewTrainJobService(conf, logger, data,
 		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
 		service.ModelService, service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService)
+	if err != nil {
+		return nil, err
+	}
+
+	service.ModelDeployService, err = modeldeploy.NewModelDeployService(conf, logger, data,
+		service.WorkspaceService, service.ModelService, service.ResourceSpecService, service.ResourceService,
+		service.ResourcePoolService, service.BillingService)
 	if err != nil {
 		return nil, err
 	}
