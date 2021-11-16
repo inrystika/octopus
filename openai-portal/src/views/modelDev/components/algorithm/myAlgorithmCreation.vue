@@ -1,26 +1,26 @@
 <template>
   <div>
-    <el-dialog
-      title="创建我的算法"
-      width="650px"
-      :visible.sync="CreateFormVisible"
-      :before-close="handleDialogClose"
-      :close-on-click-modal="false"
-      :show-close="close"
-    >
+    <el-dialog title="创建我的算法" width="650px" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
+      :close-on-click-modal="false" :show-close="close">
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
           <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
+        <el-form-item label="算法类型" :label-width="formLabelWidth" prop="typeId">
+          <el-select v-model="ruleForm.typeId" placeholder="请选择">
+            <el-option v-for="item in optionType" :key="item.id" :label="item.typeDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="算法框架" :label-width="formLabelWidth" prop="frameworkId">
+          <el-select v-model="ruleForm.frameworkId" placeholder="请选择">
+            <el-option v-for="item in optionFrame" :key="item.id" :label="item.frameworkDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="算法描述" :label-width="formLabelWidth" prop="desc">
-          <el-input
-            v-model="ruleForm.desc"
-            :disabled="disabled"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            placeholder="请输入算法描述"
-            maxlength="300"
-            show-word-limit
-          />
+          <el-input v-model="ruleForm.desc" :disabled="disabled" :autosize="{ minRows: 2, maxRows: 4}"
+            placeholder="请输入算法描述" maxlength="300" show-word-limit />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
           <el-input v-model="ruleForm.modelName" :disabled="disabled" placeholder="请输入模型名称" />
@@ -34,13 +34,8 @@
           </div>
         </el-form-item>
         <el-form-item v-if="showUpload" label="上传代码包" :label-width="formLabelWidth" prop="path">
-          <upload
-            v-model="ruleForm.path"
-            :upload-data="uploadData"
-            @confirm="confirm"
-            @cancel="cancel"
-            @upload="isCloseX"
-          />
+          <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel"
+            @upload="isCloseX" />
         </el-form-item>
       </el-form>
       <span v-show="showConfirm" slot="footer" class="dialog-footer">
@@ -52,149 +47,191 @@
 </template>
 
 <script>
-import upload from '@/components/upload/index.vue'
-import { addMyAlgorithm } from "@/api/modelDev";
-import { getErrorMsg } from '@/error/index'
-export default {
-  name: "MyAlgorithmCreation",
-  components: {
-    upload
-  },
-  props: {
-  // row: {
-  //   type: Object,
-  //   default: {}
-  // }
-  },
-  data() {
-    return {
-      isEmpty: false,
-      disabled: false,
-      showUpload: false,
-      show: true,
-      showConfirm: false,
-      ruleForm: {
-        algorithmName: "",
-        modelName: '',
-        desc: "",
-        path: ""
-      },
-      uploadData: { data: {}, type: undefined },
-      rules: {
-        algorithmName: [
-          {
-            required: true,
-            message: "请输入算法名称",
-            trigger: "blur"
-          },
-          {
-            min: 4,
-            max: 30,
-            message: "长度在 4 到 30 个字符",
-            trigger: "blur"
-          }
-        ],
-        modelName: [
-          {
-            required: true,
-            message: "请输入模型名称",
-            trigger: "blur"
-          },
-          {
-            min: 4,
-            max: 30,
-            message: "长度在 4 到 30 个字符",
-            trigger: "blur"
-          }
-        ]
-      },
-      CreateFormVisible: true,
-      formLabelWidth: "120px",
-      close:true
-    };
-  },
-  methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
+  import upload from '@/components/upload/index.vue'
+  import { addMyAlgorithm, algorithmType,algorithmFrame } from "@/api/modelDev";
+  import { getErrorMsg } from '@/error/index'
+  export default {
+    name: "MyAlgorithmCreation",
+    components: {
+      upload
     },
-    handleDialogClose() {
-      this.$emit("close", false);
+    props: {
+      // row: {
+      //   type: Object,
+      //   default: {}
+      // }
     },
-    noUpload() {
-      this.show = false;
-      this.showConfirm = true;
-      this.isEmpty = true
-    },
-    nextStep(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          const param = {
-            spaceId: '',
-            userId: null,
-            IsPrefab: false,
-            AlgorithmName: this.ruleForm.algorithmName,
-            AlgorithmDescript: this.ruleForm.desc,
-            modelname: this.ruleForm.modelName,
-            isEmpty: this.isEmpty
-          }
-          addMyAlgorithm(param).then(response => {
-            if (response.success) {
-              this.show = false
-              this.showUpload = true;
-              this.disabled = true
-              this.uploadData.AlgorithmId = response.data.algorithmId
-              this.uploadData.Version = response.data.version
-              this.uploadData.type = 'myAlgorithmCreation'
-            } else {
-              this.$message({
-                message: this.getErrorMsg(response.error.subcode),
-                type: 'warning'
-              });
+    data() {
+      return {
+        isEmpty: false,
+        disabled: false,
+        showUpload: false,
+        show: true,
+        showConfirm: false,
+        ruleForm: {
+          algorithmName: "",
+          modelName: '',
+          desc: "",
+          path: "",
+          typeId: '',
+          frameworkId:''
+        },
+        uploadData: { data: {}, type: undefined },
+        rules: {
+          algorithmName: [
+            {
+              required: true,
+              message: "请输入算法名称",
+              trigger: "blur"
+            },
+            {
+              min: 4,
+              max: 30,
+              message: "长度在 4 到 30 个字符",
+              trigger: "blur"
+            },
+          ],
+          modelName: [
+            {
+              required: true,
+              message: "请输入模型名称",
+              trigger: "blur"
+            },
+            {
+              min: 4,
+              max: 30,
+              message: "长度在 4 到 30 个字符",
+              trigger: "blur"
             }
-          })
-        } else {
-          return false;
-        }
-      });
+          ],
+          typeId: [{ required: true, message: '请选择算法类型', trigger: 'change' }],
+          frameworkId: [{ required: true, message: '请选择算法框架', trigger: 'change' }]
+        },
+        CreateFormVisible: true,
+        formLabelWidth: "120px",
+        close: true,
+        optionType: [],
+        optionFrame:[]
+      };
     },
-    cancel() {
-      this.$emit("cancel", false);
+    created() {
+      this.algorithmType()
+      this.algorithmFrame()
     },
-    confirm(val) {
-      this.$emit("confirm", val);
-    },
-    submit(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          const param = {
-            spaceId: '',
-            userId: null,
-            IsPrefab: true,
-            AlgorithmName: this.ruleForm.algorithmName,
-            AlgorithmDescript: this.ruleForm.desc,
-            modelname: this.ruleForm.modelName,
-            isEmpty: this.isEmpty
-          }
-          addMyAlgorithm(param).then(response => {
-            if (response.success) {
-              this.disabled = true
-              this.$message.success("创建成功");
-              this.$emit('confirm', false)
-            } else {
-              this.$message({
-                message: this.getErrorMsg(response.error.subcode),
-                type: 'warning'
-              });
+    methods: {
+      getErrorMsg(code) {
+        return getErrorMsg(code)
+      },
+      handleDialogClose() {
+        this.$emit("close", false);
+      },
+      noUpload() {
+        this.show = false;
+        this.showConfirm = true;
+        this.isEmpty = true
+      },
+      nextStep(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            const param = {
+              spaceId: '',
+              userId: null,
+              IsPrefab: false,
+              algorithmName: this.ruleForm.algorithmName,
+              algorithmDescript: this.ruleForm.desc,
+              modelName: this.ruleForm.modelName,
+              isEmpty: this.isEmpty,
+              typeId:this.ruleForm.typeId,
+              frameworkId:this.ruleForm.frameworkId
             }
-          })
-        } else {
-          this.$message.error("请填写数据");
-        }
-      })
-    },
-    isCloseX(val) {
+            addMyAlgorithm(param).then(response => {
+              if (response.success) {
+                this.show = false
+                this.showUpload = true;
+                this.disabled = true
+                this.uploadData.AlgorithmId = response.data.algorithmId
+                this.uploadData.Version = response.data.version
+                this.uploadData.type = 'myAlgorithmCreation'
+              } else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+              }
+            })
+          } else {
+            return false;
+          }
+        });
+      },
+      cancel() {
+        this.$emit("cancel", false);
+      },
+      confirm(val) {
+        this.$emit("confirm", val);
+      },
+      submit(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            const param = {
+              spaceId: '',
+              userId: null,
+              IsPrefab: true,
+              AlgorithmName: this.ruleForm.algorithmName,
+              AlgorithmDescript: this.ruleForm.desc,
+              modelname: this.ruleForm.modelName,
+              isEmpty: this.isEmpty,
+              typeId:this.ruleForm.typeId,
+              frameworkId:this.ruleForm.frameworkId
+            }
+            addMyAlgorithm(param).then(response => {
+              if (response.success) {
+                this.disabled = true
+                this.$message.success("创建成功");
+                this.$emit('confirm', false)
+              } else {
+                this.$message({
+                  message: this.getErrorMsg(response.error.subcode),
+                  type: 'warning'
+                });
+              }
+            })
+          } else {
+            this.$message.error("请填写数据");
+          }
+        })
+      },
+      isCloseX(val) {
         this.close = val
+      },
+      // 获取算法类型
+      algorithmType() {
+        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.optionType = response.data.algorithmTypes
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
+      },
+      // 获取算法框架
+      algorithmFrame() {
+        algorithmFrame({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.optionFrame = response.data.algorithmFrameworks
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
       }
-  }
-};
+    }
+  };
 </script>

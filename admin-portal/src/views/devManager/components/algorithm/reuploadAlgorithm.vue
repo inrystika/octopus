@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="创建预置算法" width="650px" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
+    <el-dialog title="创建预置算法版本" width="650px" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
       :close-on-click-modal="false" :show-close="close">
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">

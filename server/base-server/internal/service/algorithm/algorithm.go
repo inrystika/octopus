@@ -26,6 +26,56 @@ func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 	}
 }
 
+// 新增算法类型
+func (s *AlgorithmService) AddAlgorithmType(ctx context.Context, req *api.AddAlgorithmTypeRequest) (*api.AddAlgorithmTypeReply, error) {
+	return s.handle.AddAlgorithmType(ctx, req)
+}
+
+// 查询算法类型列表
+func (s *AlgorithmService) ListAlgorithmType(ctx context.Context, req *api.ListAlgorithmTypeRequest) (*api.ListAlgorithmTypeReply, error) {
+	return s.handle.ListAlgorithmType(ctx, req)
+}
+
+// 查询单个算法类型
+func (s *AlgorithmService) GetAlgorithmType(ctx context.Context, req *api.GetAlgorithmTypeRequest) (*api.GetAlgorithmTypeReply, error) {
+	return s.handle.GetAlgorithmType(ctx, req)
+}
+
+// 删除算法类型
+func (s *AlgorithmService) DeleteAlgorithmType(ctx context.Context, req *api.DeleteAlgorithmTypeRequest) (*api.DeleteAlgorithmTypeReply, error) {
+	return s.handle.DeleteAlgorithmType(ctx, req)
+}
+
+// 修改算法类型描述
+func (s *AlgorithmService) UpdateAlgorithmType(ctx context.Context, req *api.UpdateAlgorithmTypeRequest) (*api.UpdateAlgorithmTypeReply, error) {
+	return s.handle.UpdateAlgorithmType(ctx, req)
+}
+
+// 新增算法框架
+func (s *AlgorithmService) AddAlgorithmFramework(ctx context.Context, req *api.AddAlgorithmFrameworkRequest) (*api.AddAlgorithmFrameworkReply, error) {
+	return s.handle.AddAlgorithmFramework(ctx, req)
+}
+
+// 查询算法框架列表
+func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
+	return s.handle.ListAlgorithmFramework(ctx, req)
+}
+
+// 查询单个算法框架
+func (s *AlgorithmService) GetAlgorithmFramework(ctx context.Context, req *api.GetAlgorithmFrameworkRequest) (*api.GetAlgorithmFrameworkReply, error) {
+	return s.handle.GetAlgorithmFramework(ctx, req)
+}
+
+// 删除算法框架
+func (s *AlgorithmService) DeleteAlgorithmFramework(ctx context.Context, req *api.DeleteAlgorithmFrameworkRequest) (*api.DeleteAlgorithmFrameworkReply, error) {
+	return s.handle.DeleteAlgorithmFramework(ctx, req)
+}
+
+// 修改算法框架描述
+func (s *AlgorithmService) UpdateAlgorithmFramework(ctx context.Context, req *api.UpdateAlgorithmFrameworkRequest) (*api.UpdateAlgorithmFrameworkReply, error) {
+	return s.handle.UpdateAlgorithmFramework(ctx, req)
+}
+
 // 查询预置算法列表
 func (s *AlgorithmService) ListPreAlgorithm(ctx context.Context, req *api.ListPreAlgorithmRequest) (*api.ListPreAlgorithmReply, error) {
 	return s.handle.ListPreAlgorithmHandle(ctx, req)

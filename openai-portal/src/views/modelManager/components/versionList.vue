@@ -237,7 +237,7 @@
             fileStatus(val) {
                 switch (val) {
                     case 0:
-                        return '初始态'
+                        return '未上传'
                         break;
                     case 1:
                         return '上传中'

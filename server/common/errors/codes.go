@@ -98,6 +98,10 @@ const (
 	ErrorAlgorithmAccessVersionExisted         = 12009 // 公共算法版本已存在
 	ErrorAlgorithmVersionFileNotReady          = 12010 // 旧版本算法文件状态未就绪
 	ErrorAlgorithmVersionUploadAuth            = 12011 // 无权提交此算法版本文件
+	ErrorAlgorithmTypeRefered                  = 12012 // 算法类型被引用，不能删除
+	ErrorAlgorithmFrameworkRefered             = 12013 // 算法框架被引用，不能删除
+	ErrorAlgorithmTypeRepeated                 = 12014 // 算法类型重复
+	ErrorAlgorithmFrameworkRepeated            = 12015 // 算法框架重复
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError    = 13001 // 制作镜像状态异常
@@ -172,6 +176,8 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+	ErrorDatasetTypeRefered     = 19006 // 数据集类型被引用，不能删除
+	ErrorDatasetTypeRepeated    = 19007 // 数据集类型重复
 )
 
 type codeMsg struct {
@@ -272,6 +278,10 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAlgorithmVersionFileExisted:           {codeType: AlreadyExists, msg: "AlgorithmVersion FileExists"},
 	ErrorAlgorithmAccessVersionExisted:         {codeType: AlreadyExists, msg: "AlgorithmAccessVersion Exists"},
 	ErrorAlgorithmVersionUploadAuth:            {codeType: InvalidArgument, msg: "AlgorithmVersionUpload Auth Wrong"},
+	ErrorAlgorithmTypeRefered:                  {codeType: OutOfRange, msg: "type refered"},
+	ErrorAlgorithmFrameworkRefered:             {codeType: OutOfRange, msg: "framework refered"},
+	ErrorAlgorithmTypeRepeated:                 {codeType: OutOfRange, msg: "type repeated"},
+	ErrorAlgorithmFrameworkRepeated:            {codeType: OutOfRange, msg: "framework repeated"},
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError:    {codeType: OutOfRange, msg: "make image status error"},
@@ -345,4 +355,6 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+	ErrorDatasetTypeRefered:     {codeType: OutOfRange, msg: "type refered"},
+	ErrorDatasetTypeRepeated:    {codeType: OutOfRange, msg: "type repeated"},
 }
