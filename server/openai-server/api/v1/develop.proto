@@ -64,6 +64,7 @@ message CreateNotebookRequest {
   string resourceSpecId = 6[(validate.rules).string = {min_len: 1}];
   string datasetId = 7;
   string datasetVersion = 8;
+  int32 taskNumber = 9[(validate.rules).int32 = {gte:1}];
 }
 
 message CreateNotebookReply {

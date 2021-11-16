@@ -27,8 +27,9 @@ type Notebook struct {
 	ResourceSpecId   string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格Id"`
 	ResourceSpecName string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格名称"`
 	NotebookJobId    string                `gorm:"type:varchar(100);not null;index;comment:JobId"`
-	Url              string                `gorm:"type:varchar(100);not null;default:'';comment:jpy uri"`
+	Url              string                `gorm:"type:varchar(100);not null;default:'';comment:jpy uri"` // Deprecated
 	Status           string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
+	TaskNumber       int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
 	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
