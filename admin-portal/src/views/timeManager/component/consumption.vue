@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" blur-name="名称 搜索" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" blur-name="任务名称 搜索" @searchData="getSearchData" />
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type=='user'?'用户名':'群组名'" align="center">
@@ -9,8 +9,8 @@
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="title" label="名称"> </el-table-column>
-            <el-table-column label="充值机时(h)" align="center">
+            <el-table-column prop="title" label="任务名称"> </el-table-column>
+            <el-table-column label="消费机时(h)" align="center">
                 <template slot-scope="scope">
                     <span>{{ Math.round(scope.row.amount) }}</span>
                 </template>
@@ -56,11 +56,10 @@
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [
-                    { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
+                    // { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
+                    // { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
                 ],
                 type: ''
-                // timer: null
 
             }
         },

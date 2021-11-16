@@ -50,7 +50,7 @@
                         onkeyup="this.value = this.value.replace(/[^\d.]/g,'');" />
                     <span>小时</span>
                 </el-form-item>
-                <el-form-item label="名称" :label-width="formLabelWidth">
+                <el-form-item label="充值说明" :label-width="formLabelWidth">
                     <el-input v-model="form.title" style="width: 40%;"></el-input>
                 </el-form-item>
             </el-form>
@@ -106,12 +106,8 @@
             } else {
                 this.type = 'group'
             }
-            // this.timer = setInterval(this.getTime, 1000);
+          
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
             // 错误码
             getErrorMsg(code) {
