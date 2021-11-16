@@ -1024,7 +1024,6 @@ func (s *platformTrainJobService) deleteOutputStorageResource(ctx context.Contex
 }
 
 func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, platformId string, info *platform.JobStatusInfo) error {
-
 	reply, err := s.platformService.GetPlatformConfig(ctx, &api.GetPlatformConfigRequest{
 		PlatformId: platformId,
 	})
@@ -1032,12 +1031,12 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		return err
 	}
 	if url, ok := reply.Config[jobStatusCallbackAddr]; ok {
-
 		platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
 		if err != nil {
 			return err
 		}
 		if len(platformReply.Platforms) <= 0 {
+			s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform ClientSecret:"+info.JobId)
 			return errors.Errorf(err, errors.ErrorDBFindEmpty)
 		}
 		platform := platformReply.Platforms[0]
@@ -1045,6 +1044,8 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		if err != nil {
 			return err
 		}
+	} else {
+		s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform Config:"+info.JobId)
 	}
 	return nil
 }

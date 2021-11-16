@@ -52,8 +52,7 @@ func (p *platform) UpdateJobStatus(ctx context.Context, url, clientSecret string
 		SetHeader("time", now).
 		SetHeader("sign", sign).
 		SetBody(paraBytes).SetResult(r).
-		Post(url)
-
+		Put(url)
 	if err != nil {
 		return err
 	}
