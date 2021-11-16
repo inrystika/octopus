@@ -106,12 +106,8 @@
             } else {
                 this.type = 'group'
             }
-            // this.timer = setInterval(this.getTime, 1000);
+          
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
             // 错误码
             getErrorMsg(code) {

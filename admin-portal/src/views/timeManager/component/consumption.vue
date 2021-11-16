@@ -56,11 +56,10 @@
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [
-                    { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
+                    // { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
+                    // { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
                 ],
                 type: ''
-                // timer: null
 
             }
         },

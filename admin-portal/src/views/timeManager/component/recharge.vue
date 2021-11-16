@@ -52,7 +52,7 @@
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [
-                    // { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
+                    // { type: 'Time', label: '开始充值时间', prop: 'time', placeholder: '请选择时间段' },
                     // { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
 
                 ],
@@ -68,13 +68,8 @@
                 this.type = 'user'
             } else {
                 this.type = 'group'
-            }
-            // this.timer = setInterval(this.Recharge, 1000);
+            }       
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
             // 错误码
             getErrorMsg(code) {
