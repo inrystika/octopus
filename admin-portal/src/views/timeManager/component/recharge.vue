@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" blur-name="名称 搜索" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" blur-name="充值说明 搜索" @searchData="getSearchData" />
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type=='user'?'用户名':'群组名'" align="center">
@@ -10,8 +10,7 @@
                 </template>
             </el-table-column>
             </el-table-column>
-            <el-table-column prop="title" label="名称"> </el-table-column>
-            <el-table-column label="消费机时(h)" align="center">
+            <el-table-column label="充值机时(h)" align="center">
                 <template slot-scope="scope">
                     <span>{{ Math.round(scope.row.amount) }}</span>
                 </template>
@@ -21,6 +20,7 @@
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
+            <el-table-column prop="title" label="充值说明"> </el-table-column>
         </el-table>
         <div class="block">
             <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
@@ -68,7 +68,7 @@
                 this.type = 'user'
             } else {
                 this.type = 'group'
-            }       
+            }
         },
         methods: {
             // 错误码
