@@ -77,7 +77,7 @@ message UserPayRecord {
   double amount = 4;
   int32 bizType = 5;
   string bizId = 6;
-  string Title = 7;
+  string title = 7;
   int64 startedAt = 8;
   int64 endedAt = 9;
   int32 status = 10;
@@ -138,7 +138,7 @@ message SpacePayRecord {
   double amount = 4;
   int32 bizType = 5;
   string bizId = 6;
-  string Title = 7;
+  string title = 7;
   int64 startedAt = 8;
   int64 endedAt = 9;
   int32 status = 10;
