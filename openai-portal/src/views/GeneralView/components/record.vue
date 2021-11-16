@@ -46,14 +46,14 @@
           </el-table-column>
         </div>
         <div v-if="recordType === 2 ? true : false">
-          <el-table-column label="充值时间" align="center" prop="rechargeTime">
-            <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.updatedAt) }}</span>
-            </template>
-          </el-table-column>
           <el-table-column label="充值说明" align="center" prop="name">
             <template slot-scope="scope">
               <span>{{ scope.row.title }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="充值时间" align="center" prop="rechargeTime">
+            <template slot-scope="scope">
+              <span>{{ parseTime(scope.row.updatedAt) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="充值机时(h)" align="center" prop="rechargeHour">
