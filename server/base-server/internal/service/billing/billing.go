@@ -208,6 +208,7 @@ func (s *billingService) Recharge(ctx context.Context, req *api.RechargeRequest)
 				OwnerId:   req.OwnerId,
 				OwnerType: req.OwnerType,
 				Amount:    req.Amount,
+				Title:     req.Title,
 			})
 			if err != nil {
 				return err

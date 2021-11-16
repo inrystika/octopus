@@ -108,6 +108,7 @@ func (s *billingService) RechargeUser(ctx context.Context, req *api.RechargeUser
 		OwnerId:   req.UserId,
 		OwnerType: innerapi.BillingOwnerType_BOT_USER,
 		Amount:    req.Amount,
+		Title:     req.Title,
 	})
 
 	if err != nil {
@@ -262,6 +263,7 @@ func (s *billingService) RechargeSpace(ctx context.Context, req *api.RechargeSpa
 		OwnerId:   req.SpaceId,
 		OwnerType: innerapi.BillingOwnerType_BOT_SPACE,
 		Amount:    req.Amount,
+		Title:     req.Title,
 	})
 
 	if err != nil {

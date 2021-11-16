@@ -194,7 +194,7 @@ func (h *algorithmHandle) DeleteAlgorithmType(ctx context.Context, req *api.Dele
 		return nil, err
 	}
 
-	if algorithmType.ReferTImes != 0 {
+	if algorithmType.ReferTimes != 0 {
 		return nil, errors.Errorf(err, errors.ErrorAlgorithmTypeRefered)
 	}
 
@@ -303,7 +303,7 @@ func (h *algorithmHandle) DeleteAlgorithmFramework(ctx context.Context, req *api
 		return nil, err
 	}
 
-	if algorithmFramework.ReferTImes != 0 {
+	if algorithmFramework.ReferTimes != 0 {
 		return nil, errors.Errorf(err, errors.ErrorAlgorithmFrameworkRefered)
 	}
 
@@ -1075,11 +1075,11 @@ func (h *algorithmHandle) AddAlgorithmHandle(ctx context.Context, req *api.AddAl
 	}
 
 	// 新增算法类型引用
-	algorithmType.ReferTImes++
+	algorithmType.ReferTimes++
 	_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
 
 	// 新增算法框架引用
-	algorithmFramework.ReferTImes++
+	algorithmFramework.ReferTimes++
 	_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
 
 	return &api.AddAlgorithmReply{
@@ -1383,8 +1383,8 @@ func (h *algorithmHandle) DeleteMyAlgorithmVersionHandle(ctx context.Context, re
 		// 减小算法类型引用
 		algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, algorithmInt.TypeId)
 		if err == nil {
-			if algorithmType.ReferTImes > 0 {
-				algorithmType.ReferTImes--
+			if algorithmType.ReferTimes > 0 {
+				algorithmType.ReferTimes--
 			}
 
 			_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
@@ -1392,8 +1392,8 @@ func (h *algorithmHandle) DeleteMyAlgorithmVersionHandle(ctx context.Context, re
 		// 减小算法框架引用
 		algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, algorithmInt.FrameworkId)
 		if err == nil {
-			if algorithmFramework.ReferTImes > 0 {
-				algorithmFramework.ReferTImes--
+			if algorithmFramework.ReferTimes > 0 {
+				algorithmFramework.ReferTimes--
 			}
 
 			_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
@@ -1456,8 +1456,8 @@ func (h *algorithmHandle) DeleteMyAlgorithmHandle(ctx context.Context, req *api.
 	// 减小算法类型引用
 	algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, algorithmInt.TypeId)
 	if err == nil {
-		if algorithmType.ReferTImes > 0 {
-			algorithmType.ReferTImes--
+		if algorithmType.ReferTimes > 0 {
+			algorithmType.ReferTimes--
 		}
 
 		_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
@@ -1465,8 +1465,8 @@ func (h *algorithmHandle) DeleteMyAlgorithmHandle(ctx context.Context, req *api.
 	// 减小算法框架引用
 	algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, algorithmInt.FrameworkId)
 	if err == nil {
-		if algorithmFramework.ReferTImes > 0 {
-			algorithmFramework.ReferTImes--
+		if algorithmFramework.ReferTimes > 0 {
+			algorithmFramework.ReferTimes--
 		}
 
 		_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
@@ -1576,8 +1576,8 @@ func (h *algorithmHandle) DeletePreAlgorithmVersionHandle(ctx context.Context, r
 		// 减小算法类型引用
 		algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, preAlgorithm.TypeId)
 		if err == nil {
-			if algorithmType.ReferTImes > 0 {
-				algorithmType.ReferTImes--
+			if algorithmType.ReferTimes > 0 {
+				algorithmType.ReferTimes--
 			}
 
 			_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
@@ -1585,8 +1585,8 @@ func (h *algorithmHandle) DeletePreAlgorithmVersionHandle(ctx context.Context, r
 		// 减小算法框架引用
 		algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, preAlgorithm.FrameworkId)
 		if err == nil {
-			if algorithmFramework.ReferTImes > 0 {
-				algorithmFramework.ReferTImes--
+			if algorithmFramework.ReferTimes > 0 {
+				algorithmFramework.ReferTimes--
 			}
 
 			_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
@@ -1641,8 +1641,8 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 	// 减小算法类型引用
 	algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, preAlgorithm.TypeId)
 	if err == nil {
-		if algorithmType.ReferTImes > 0 {
-			algorithmType.ReferTImes--
+		if algorithmType.ReferTimes > 0 {
+			algorithmType.ReferTimes--
 		}
 
 		_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
@@ -1650,8 +1650,8 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 	// 减小算法框架引用
 	algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, preAlgorithm.FrameworkId)
 	if err == nil {
-		if algorithmFramework.ReferTImes > 0 {
-			algorithmFramework.ReferTImes--
+		if algorithmFramework.ReferTimes > 0 {
+			algorithmFramework.ReferTimes--
 		}
 
 		_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
@@ -1873,11 +1873,11 @@ func (h *algorithmHandle) CopyAlgorithmVersionHandle(ctx context.Context, req *a
 	}
 
 	// 新增算法类型引用
-	algorithmType.ReferTImes++
+	algorithmType.ReferTimes++
 	_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
 
 	// 新增算法框架引用
-	algorithmFramework.ReferTImes++
+	algorithmFramework.ReferTimes++
 	_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
 
 	fromBucektName := ""
