@@ -165,7 +165,7 @@
           getUserRechargeRecord(param).then(response => {
             if (response.success) {
               this.recordList = response.data.records
-              this.total = response.data.totalSize      
+              this.total = response.data.totalSize
             } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
