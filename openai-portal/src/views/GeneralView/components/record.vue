@@ -24,7 +24,7 @@
               <span>{{ changeType(scope.row.bizType) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="名称" align="center" prop="name">
+          <el-table-column label="任务名称" align="center" prop="name">
             <template slot-scope="scope">
               <span>{{ scope.row.title }}</span>
             </template>
@@ -51,7 +51,7 @@
               <span>{{ parseTime(scope.row.updatedAt) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="名称" align="center" prop="name">
+          <el-table-column label="充值说明" align="center" prop="name">
             <template slot-scope="scope">
               <span>{{ scope.row.title }}</span>
             </template>
