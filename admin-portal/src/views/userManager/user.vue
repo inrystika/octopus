@@ -1,21 +1,13 @@
 <template>
     <div>
-        <searchForm
-            :search-form="searchForm"
-            class="searchForm"
-            :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
-            @searchData="getSearchData"
-        />
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
+            @searchData="getSearchData" />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
             <el-button v-if="group" type="primary" @click="create">创建群组</el-button>
         </div>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column v-if="user" label="用户名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.fullName }}</span>
@@ -65,36 +57,18 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 新增对话框 -->
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog
-            v-if="operateVisible"
-            :row="row"
-            :user-type="change"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-        />
+        <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
+            @close="close" />
         <!-- 详情对话框 -->
-        <el-dialog
-            :title="user?'用户名' + userName:'群组名' + groupName"
-            :visible.sync="detailVisible"
-            width="30%"
-            center
-            class="title"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
+            class="title" :close-on-click-modal="false">
             <div v-if="user">
                 <el-tag v-for="item in detailData" :key="item.index" class="detailData">{{ item.name }}</el-tag>
             </div>
@@ -161,7 +135,8 @@
                     {
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '已冻结', value: 1 }, { label: '已激活', value: 2 }]
-                    }
+                    },
+                    { type: 'Input', label: '用户名', prop: 'fullName', placeholder: '请输入用户名' }
                 ]
                 this.flag = 'user'
             } else {

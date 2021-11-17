@@ -48,7 +48,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
-	influxdb, err := influxdb.NewInfluxdb(confData)
+	influxdb, _ := influxdb.NewInfluxdb(confData)
 	if err != nil {
 		return nil, nil, err
 	}

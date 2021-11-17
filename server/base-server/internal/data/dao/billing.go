@@ -265,6 +265,11 @@ func (d *billingDao) ListBillingRechargeRecord(ctx context.Context, query *model
 		params = append(params, time.Unix(query.CreatedAtLt, 0))
 	}
 
+	if query.SearchKey != "" {
+		querySql += " and title like ?"
+		params = append(params, "%"+query.SearchKey+"%")
+	}
+
 	db = db.Where(querySql, params...)
 
 	var totalSize int64
