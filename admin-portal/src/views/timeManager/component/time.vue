@@ -16,7 +16,7 @@
             </el-table-column> -->
             <el-table-column label="当前机时剩余(小时)" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ Math.round(scope.row.amount) }}</span>
+                    <span style="margin-left: 10px">{{ scope.row.amount }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
