@@ -18,41 +18,46 @@ func (s *developService) PipelineCallback(ctx context.Context, req *common.Pipel
 		return common.PipeLineCallbackOK
 	}
 
-	updateNb := &model.Notebook{
-		NotebookJobId: req.Id,
-		Status:        req.CurrentState,
-	}
-
-	updateNbJob := &model.NotebookJob{
-		Id:     req.Id,
-		Status: req.CurrentState,
-	}
-	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
-		updateNbJob.StartedAt = &req.CurrentTime
-	} else if strings.EqualFold(req.CurrentState, pipeline.FAILED) ||
-		strings.EqualFold(req.CurrentState, pipeline.SUCCEEDED) ||
-		strings.EqualFold(req.CurrentState, pipeline.STOPPED) {
-		updateNbJob.StoppedAt = &req.CurrentTime
-		updateNbJob.Status = pipeline.STOPPED //转为stopped
-		updateNb.Status = pipeline.STOPPED    //转为stopped
-
-		err = s.data.Cluster.DeleteIngress(ctx, req.UserID, req.Id)
-		if err != nil {
-			return common.PipeLineCallbackRE
-		}
-
-		err = s.data.Cluster.DeleteService(ctx, req.UserID, req.Id)
-		if err != nil {
-			return common.PipeLineCallbackRE
-		}
-	}
-
-	err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, updateNb)
+	nb, err := s.data.DevelopDao.GetNotebook(ctx, nbJob.NotebookId)
 	if err != nil {
 		return common.PipeLineCallbackRE
 	}
 
-	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, updateNbJob)
+	nbUp := &model.Notebook{
+		NotebookJobId: req.Id,
+		Status:        req.CurrentState,
+	}
+
+	nbJobUp := &model.NotebookJob{
+		Id:     req.Id,
+		Status: req.CurrentState,
+	}
+	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
+		nbJobUp.StartedAt = &req.CurrentTime
+	} else if strings.EqualFold(req.CurrentState, pipeline.FAILED) ||
+		strings.EqualFold(req.CurrentState, pipeline.SUCCEEDED) ||
+		strings.EqualFold(req.CurrentState, pipeline.STOPPED) {
+		nbJobUp.StoppedAt = &req.CurrentTime
+		nbJobUp.Status = pipeline.STOPPED //转为stopped
+		nbUp.Status = pipeline.STOPPED    //转为stopped
+
+		err = s.deleteIngress(ctx, nb, nbJob)
+		if err != nil {
+			return common.PipeLineCallbackRE
+		}
+
+		err = s.deleteService(ctx, nb, nbJob)
+		if err != nil {
+			return common.PipeLineCallbackRE
+		}
+	}
+
+	err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, nbUp)
+	if err != nil {
+		return common.PipeLineCallbackRE
+	}
+
+	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, nbJobUp)
 	if err != nil {
 		return common.PipeLineCallbackRE
 	}

@@ -12,13 +12,12 @@ import (
 	"server/common/utils/collections/set"
 	"time"
 
-	"gonum.org/v1/gonum/floats"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
 	taskPageSize = 100
-	leaseLock    = "notebookleaselock"
+	leaseLock    = "notebookleaselock1"
 )
 
 func (s *developService) getOwner(notebook *model.Notebook) (string, api.BillingOwnerType) {
@@ -86,7 +85,7 @@ func (s *developService) startNotebookTask() {
 			wait.Until(func() {
 				utils.HandlePanic(ctx, func(i ...interface{}) {
 					for pageIndex := 1; ; pageIndex++ {
-						notebookJobs, err := s.data.DevelopDao.ListNotebookJob(ctx, &model.NotebookJobQuery{
+						nbJobs, err := s.data.DevelopDao.ListNotebookJob(ctx, &model.NotebookJobQuery{
 							PageIndex: pageIndex,
 							PageSize:  taskPageSize,
 							PayStatus: api.BillingPayRecordStatus_BPRS_PAYING,
@@ -96,20 +95,20 @@ func (s *developService) startNotebookTask() {
 							break
 						}
 
-						if len(notebookJobs) == 0 {
+						if len(nbJobs) == 0 {
 							break
 						}
 
-						notebookIds := make([]string, 0)
+						nbIds := make([]string, 0)
 						jobIds := make([]string, 0)
-						for _, j := range notebookJobs {
-							notebookIds = append(notebookIds, j.NotebookId)
+						for _, j := range nbJobs {
+							nbIds = append(nbIds, j.NotebookId)
 							jobIds = append(jobIds, j.Id)
 						}
-						notebookIds = set.NewStrings(notebookIds...).Values()
+						nbIds = set.NewStrings(nbIds...).Values()
 						jobIds = set.NewStrings(jobIds...).Values()
 
-						notebooks, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: notebookIds})
+						notebooks, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: nbIds})
 						if err != nil {
 							s.log.Errorf(ctx, "ListNotebook err: %s", err)
 							continue
@@ -129,39 +128,34 @@ func (s *developService) startNotebookTask() {
 							detailMap[d.Job.ID] = d
 						}
 
-						for _, j := range notebookJobs {
+						for _, j := range nbJobs {
 							utils.HandlePanic(ctx, func(i ...interface{}) {
-								if j.StartedAt != nil {
-									notebook := notebookMap[j.NotebookId]
-									ownerId, ownerType := s.getOwner(notebook)
+								nb := notebookMap[j.NotebookId]
+								ownerId, ownerType := s.getOwner(nb)
 
-									var payEndAt int64
-									var payStatus api.BillingPayRecordStatus
-									if pipeline.IsCompletedState(j.Status) {
-										payEndAt = j.StoppedAt.Unix()
-										payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
-									} else {
-										if detailMap[j.Id].Job.FinishedAt != nil { //非用户stop且pod停止后未通知到notebook的情况
-											payEndAt = detailMap[j.Id].Job.FinishedAt.Unix()
-											payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
-										} else {
-											payEndAt = time.Now().Unix()
-											payStatus = api.BillingPayRecordStatus_BPRS_PAYING
-										}
-									}
+								var payEndAt int64
+								var payStatus api.BillingPayRecordStatus
+								if pipeline.IsCompletedState(j.Status) {
+									payEndAt = j.StoppedAt.Unix()
+									payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
+								} else {
+									payEndAt = time.Now().Unix()
+									payStatus = api.BillingPayRecordStatus_BPRS_PAYING
+								}
 
-									payAmount := floats.Round(float64(payEndAt-j.StartedAt.Unix())*float64(j.ResourceSpecPrice)/3600.0, common.BillingPrecision)
-									if payAmount <= j.PayAmount && payStatus != api.BillingPayRecordStatus_BPRS_PAY_COMPLETED {
-										s.log.Infof(ctx, "amount less than amount in db and is not completed status")
-										return
-									}
+								prices := make([]uint32, 0)
+								for i := 0; i < nb.TaskNumber; i++ {
+									prices = append(prices, j.ResourceSpecPrice)
+								}
+								payAmount := common.CalculateAmount(ctx, detailMap[j.Id], prices)
+								if payAmount > 0 {
 									_, err := s.billingService.Pay(ctx, &api.PayRequest{
 										OwnerId:   ownerId,
 										OwnerType: ownerType,
 										Amount:    payAmount,
 										BizType:   api.BillingBizType_BBT_NOTEBOOK,
 										BizId:     j.Id,
-										Title:     notebook.Name,
+										Title:     nb.Name,
 										StartedAt: j.StartedAt.Unix(),
 										EndedAt:   payEndAt,
 										Status:    payStatus,
@@ -170,30 +164,19 @@ func (s *developService) startNotebookTask() {
 										s.log.Errorf(ctx, "Pay err: %s", err)
 										return
 									}
+								}
 
-									endAt := time.Unix(payEndAt, 0)
-									err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
-										Id:           j.Id,
-										PayStatus:    payStatus,
-										PayStartedAt: j.StartedAt,
-										PayEndedAt:   &endAt,
-										PayAmount:    payAmount,
-									})
-									if err != nil {
-										s.log.Errorf(ctx, "UpdateNotebookJobSelective err: %s", err)
-										return
-									}
-								} else {
-									if pipeline.IsCompletedState(j.Status) { //还没start就停止的情况
-										err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
-											Id:        j.Id,
-											PayStatus: api.BillingPayRecordStatus_BPRS_PAY_COMPLETED,
-										})
-										if err != nil {
-											s.log.Errorf(ctx, "UpdateNotebookJobSelective err: %s", err)
-											return
-										}
-									}
+								endAt := time.Unix(payEndAt, 0)
+								err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
+									Id:           j.Id,
+									PayStatus:    payStatus,
+									PayStartedAt: j.StartedAt,
+									PayEndedAt:   &endAt,
+									PayAmount:    payAmount,
+								})
+								if err != nil {
+									s.log.Errorf(ctx, "UpdateNotebookJobSelective err: %s", err)
+									return
 								}
 							})()
 						}
