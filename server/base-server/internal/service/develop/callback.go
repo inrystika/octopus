@@ -32,6 +32,7 @@ func (s *developService) PipelineCallback(ctx context.Context, req *common.Pipel
 		Id:     req.Id,
 		Status: req.CurrentState,
 	}
+
 	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
 		nbJobUp.StartedAt = &req.CurrentTime
 	} else if strings.EqualFold(req.CurrentState, pipeline.FAILED) ||

@@ -108,14 +108,14 @@ func (s *developService) startNotebookTask() {
 						nbIds = set.NewStrings(nbIds...).Values()
 						jobIds = set.NewStrings(jobIds...).Values()
 
-						notebooks, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: nbIds})
+						nbs, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: nbIds})
 						if err != nil {
 							s.log.Errorf(ctx, "ListNotebook err: %s", err)
 							continue
 						}
-						notebookMap := map[string]*model.Notebook{}
-						for _, n := range notebooks {
-							notebookMap[n.Id] = n
+						nbMap := map[string]*model.Notebook{}
+						for _, n := range nbs {
+							nbMap[n.Id] = n
 						}
 
 						details, err := s.data.Pipeline.BatchGetJobDetail(ctx, jobIds)
@@ -130,7 +130,7 @@ func (s *developService) startNotebookTask() {
 
 						for _, j := range nbJobs {
 							utils.HandlePanic(ctx, func(i ...interface{}) {
-								nb := notebookMap[j.NotebookId]
+								nb := nbMap[j.NotebookId]
 								ownerId, ownerType := s.getOwner(nb)
 
 								var payEndAt int64
