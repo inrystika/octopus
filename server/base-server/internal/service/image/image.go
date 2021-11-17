@@ -45,7 +45,6 @@ func NewImageService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) p
 func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageRequest) (*pb.ListPreImageReply, error) {
 	imageCount, err := s.data.ImageDao.Count(ctx, &model.ImageList{
 		IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES),
-		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
@@ -66,7 +65,6 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 			SortBy:        req.SortBy,
 			IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES),
 			Status:        int32(req.ImageStatus),
-			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
 			NameVerLike:   req.NameVerLike,
@@ -81,7 +79,6 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 				Id:           image.Id,
 				ImageName:    image.ImageName,
 				ImageVersion: image.ImageVersion,
-				ImageType:    pb.ImageType(image.ImageType),
 				ImageDesc:    image.ImageDesc,
 				ImageAddr:    image.ImageAddr,
 				ImageStatus:  pb.ImageStatus(image.Status),
@@ -106,7 +103,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_NO),
 		UserId:        req.UserId,
 		SpaceId:       req.SpaceId,
-		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
 		UserNameLike:  req.UserNameLike,
@@ -130,7 +126,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 			IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_NO),
 			UserId:        req.UserId,
 			SpaceId:       req.SpaceId,
-			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
 			UserNameLike:  req.UserNameLike,
@@ -148,7 +143,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 				Id:           image.Id,
 				ImageName:    image.ImageName,
 				ImageVersion: image.ImageVersion,
-				ImageType:    pb.ImageType(image.ImageType),
 				ImageDesc:    image.ImageDesc,
 				ImageAddr:    image.ImageAddr,
 				ImageStatus:  pb.ImageStatus(image.Status),
@@ -172,7 +166,6 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 	iac, err := s.data.ImageDao.CountImageByAccess(ctx, &model.ImageAccessList{
 		IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_NO),
 		SpaceId:       req.SpaceId,
-		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
@@ -193,7 +186,6 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 			SortBy:        req.SortBy,
 			IsPrefab:      int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_NO),
 			SpaceId:       req.SpaceId,
-			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
 			NameVerLike:   req.NameVerLike,
@@ -209,7 +201,6 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 				Id:           image.Id,
 				ImageName:    image.ImageName,
 				ImageVersion: image.ImageVersion,
-				ImageType:    pb.ImageType(image.ImageType),
 				ImageDesc:    image.ImageDesc,
 				ImageAddr:    image.ImageAddr,
 				ImageStatus:  pb.ImageStatus(image.Status),
@@ -285,7 +276,6 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 		SpaceId:      req.SpaceId,
 		ImageName:    req.ImageName,
 		ImageVersion: req.ImageVersion,
-		ImageType:    int32(req.ImageType),
 	})
 	if err != nil {
 		return nil, err
@@ -299,7 +289,6 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 		IsPrefab:     int32(req.IsPrefab),
 		UserId:       req.UserId,
 		SpaceId:      req.SpaceId,
-		ImageType:    int32(req.ImageType),
 		SourceType:   int32(req.SourceType),
 		ImageName:    req.ImageName,
 		ImageVersion: req.ImageVersion,
@@ -312,7 +301,6 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 			SpaceId:      imageAdd.SpaceId,
 			UserId:       imageAdd.UserId,
 			ImageName:    imageAdd.ImageName,
-			ImageType:    imageAdd.ImageType,
 			ImageVersion: imageAdd.ImageVersion,
 			IsPrefab:     imageAdd.IsPrefab,
 		}
@@ -472,9 +460,9 @@ func (s *ImageService) generateImageRepositoryPath(image *model.Image) string {
 	}
 
 	if image.IsPrefab == int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES) {
-		return fmt.Sprintf("%s/%s/%s/%v", common.PREAB_FOLDER, image.UserId, image.ImageName, image.ImageType)
+		return fmt.Sprintf("%s/%s/%s", common.PREAB_FOLDER, image.UserId, image.ImageName)
 	} else {
-		return fmt.Sprintf("%s/%s/%s/%v", image.SpaceId, image.UserId, image.ImageName, image.ImageType)
+		return fmt.Sprintf("%s/%s/%s", image.SpaceId, image.UserId, image.ImageName)
 	}
 }
 
@@ -631,7 +619,6 @@ func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) 
 			Id:           image.Id,
 			ImageName:    image.ImageName,
 			ImageVersion: image.ImageVersion,
-			ImageType:    pb.ImageType(image.ImageType),
 			ImageDesc:    image.ImageDesc,
 			ImageAddr:    image.ImageAddr,
 			ImageStatus:  pb.ImageStatus(image.Status),
@@ -662,7 +649,6 @@ func (s *ImageService) ListImageInCond(ctx context.Context, req *pb.ListImageInC
 			Id:           image.Id,
 			ImageName:    image.ImageName,
 			ImageVersion: image.ImageVersion,
-			ImageType:    pb.ImageType(image.ImageType),
 			ImageDesc:    image.ImageDesc,
 			ImageAddr:    image.ImageAddr,
 			ImageStatus:  pb.ImageStatus(image.Status),
