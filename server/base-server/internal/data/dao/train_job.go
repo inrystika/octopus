@@ -366,7 +366,12 @@ func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*
 	ReplicaIndex := jobEventQuery.ReplicaIndex
 	events := make([]*model.TrainJobEvent, 0)
 
-	objectName := fmt.Sprintf("%s-task%d-%d", jobEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
+	objectName := ""
+	if TaskIndex > 0 && ReplicaIndex > 0 {
+		objectName = fmt.Sprintf("%s-task%d-%d", jobEventQuery.Id, TaskIndex-1, ReplicaIndex-1)
+	} else {
+		objectName = jobEventQuery.Id
+	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name = '%s'", keyMessage, objectName)
 	res, err := d.influxdb.Query(countQuery)
@@ -384,8 +389,9 @@ func (d *trainJobDao) GetTrainJobEvents(jobEventQuery *model.JobEventQuery) ([]*
 		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' and kind = 'Pod' LIMIT %d OFFSET %d",
+	query := fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' LIMIT %d OFFSET %d",
 		keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+
 	res, err = d.influxdb.Query(query)
 
 	if err != nil {
