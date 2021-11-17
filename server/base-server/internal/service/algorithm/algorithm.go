@@ -156,6 +156,11 @@ func (s *AlgorithmService) ConfirmUploadAlgorithm(ctx context.Context, req *api.
 	return s.handle.ConfirmUploadAlgorithmHandle(ctx, req)
 }
 
+// 修改算法
+func (s *AlgorithmService) UpdateAlgorithm(ctx context.Context, req *api.UpdateAlgorithmRequest) (*api.UpdateAlgorithmReply, error) {
+	return s.handle.UpdateAlgorithmHandle(ctx, req)
+}
+
 // 新增我的算法版本
 func (s *AlgorithmService) AddMyAlgorithmVersion(ctx context.Context, req *api.AddMyAlgorithmVersionRequest) (*api.AddMyAlgorithmVersionReply, error) {
 	return s.handle.AddMyAlgorithmVersionHandle(ctx, req)
@@ -184,6 +189,11 @@ func (s *AlgorithmService) DeletePreAlgorithmVersion(ctx context.Context, req *a
 // 删除预置算法
 func (s *AlgorithmService) DeletePreAlgorithm(ctx context.Context, req *api.DeletePreAlgorithmRequest) (*api.DeletePreAlgorithmReply, error) {
 	return s.handle.DeletePreAlgorithmHandle(ctx, req)
+}
+
+// 修改算法版本
+func (s *AlgorithmService) UpdateAlgorithmVersion(ctx context.Context, req *api.UpdateAlgorithmVersionRequest) (*api.UpdateAlgorithmVersionReply, error) {
+	return s.handle.UpdateAlgorithmVersionHandle(ctx, req)
 }
 
 // 压缩算法版本包

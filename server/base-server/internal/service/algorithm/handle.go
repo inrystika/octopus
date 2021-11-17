@@ -86,6 +86,8 @@ type AlgorithmHandle interface {
 	UploadAlgorithmHandle(ctx context.Context, req *api.UploadAlgorithmRequest) (*api.UploadAlgorithmReply, error)
 	// 上传算法确认
 	ConfirmUploadAlgorithmHandle(ctx context.Context, req *api.ConfirmUploadAlgorithmRequest) (*api.ConfirmUploadAlgorithmReply, error)
+	// 修改算法
+	UpdateAlgorithmHandle(ctx context.Context, req *api.UpdateAlgorithmRequest) (*api.UpdateAlgorithmReply, error)
 
 	// 复制算法版本
 	CopyAlgorithmVersionHandle(ctx context.Context, req *api.CopyAlgorithmVersionRequest) (*api.CopyAlgorithmVersionReply, error)
@@ -102,6 +104,9 @@ type AlgorithmHandle interface {
 	DeletePreAlgorithmVersionHandle(ctx context.Context, req *api.DeletePreAlgorithmVersionRequest) (*api.DeletePreAlgorithmVersionReply, error)
 	// 删除预置算法
 	DeletePreAlgorithmHandle(ctx context.Context, req *api.DeletePreAlgorithmRequest) (*api.DeletePreAlgorithmReply, error)
+	// 修改算法版本
+	UpdateAlgorithmVersionHandle(ctx context.Context, req *api.UpdateAlgorithmVersionRequest) (*api.UpdateAlgorithmVersionReply, error)
+
 	// 压缩算法版本包
 	DownloadAlgorithmVersionCompressHandle(ctx context.Context, req *api.DownloadAlgorithmVersionCompressRequest) (*api.DownloadAlgorithmVersionCompressReply, error)
 	// 下载算法版本
@@ -1223,6 +1228,63 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 	}, nil
 }
 
+// 修改算法
+func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.UpdateAlgorithmRequest) (*api.UpdateAlgorithmReply, error) {
+	algorithmDao := h.data.AlgorithmDao
+	algorithm, err := algorithmDao.QueryAlgorithm(ctx, &model.AlgorithmQuery{AlgorithmId: req.Id})
+	if err != nil {
+		return nil, err
+	}
+
+	// 减小算法类型引用
+	algorithmType, err := h.data.AlgorithmDao.GetAlgorithmType(ctx, algorithm.TypeId)
+	if err == nil {
+		if algorithmType.ReferTimes > 0 {
+			algorithmType.ReferTimes--
+		}
+
+		_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
+	}
+	// 减小算法框架引用
+	algorithmFramework, err := h.data.AlgorithmDao.GetAlgorithmFramework(ctx, algorithm.FrameworkId)
+	if err == nil {
+		if algorithmFramework.ReferTimes > 0 {
+			algorithmFramework.ReferTimes--
+		}
+
+		_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
+	}
+
+	algorithm.TypeId = req.TypeId
+	algorithm.FrameworkId = req.FrameworkId
+	algorithm.AlgorithmDescript = req.AlgorithmDescript
+	err = algorithmDao.UpdateAlgorithm(ctx, algorithm)
+	if err != nil {
+		return nil, err
+	}
+
+	// 增加新算法类型引用
+	algorithmType, err = h.data.AlgorithmDao.GetAlgorithmType(ctx, req.TypeId)
+	if err == nil {
+		if algorithmType.ReferTimes > 0 {
+			algorithmType.ReferTimes++
+		}
+
+		_ = h.data.AlgorithmDao.UpdateAlgorithmType(ctx, algorithmType)
+	}
+	// 增加新算法框架引用
+	algorithmFramework, err = h.data.AlgorithmDao.GetAlgorithmFramework(ctx, req.FrameworkId)
+	if err == nil {
+		if algorithmFramework.ReferTimes > 0 {
+			algorithmFramework.ReferTimes++
+		}
+
+		_ = h.data.AlgorithmDao.UpdateAlgorithmFramework(ctx, algorithmFramework)
+	}
+
+	return &api.UpdateAlgorithmReply{UpdatedAt: time.Now().Unix()}, nil
+}
+
 // 新增我的算法版本
 func (h *algorithmHandle) AddMyAlgorithmVersionHandle(ctx context.Context, req *api.AddMyAlgorithmVersionRequest) (*api.AddMyAlgorithmVersionReply, error) {
 
@@ -1660,6 +1722,23 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 	return &api.DeletePreAlgorithmReply{
 		DeletedAt: time.Now().Unix(),
 	}, nil
+}
+
+// 修改算法
+func (h *algorithmHandle) UpdateAlgorithmVersionHandle(ctx context.Context, req *api.UpdateAlgorithmVersionRequest) (*api.UpdateAlgorithmVersionReply, error) {
+	algorithmDao := h.data.AlgorithmDao
+	algorithmVersion, err := algorithmDao.QueryAlgorithmVersion(ctx, &model.AlgorithmVersionQuery{AlgorithmId: req.AlgorithmId, Version: req.Version})
+	if err != nil {
+		return nil, err
+	}
+
+	algorithmVersion.AlgorithmDescript = req.AlgorithmDescript
+	err = algorithmDao.UpdateAlgorithmVersion(ctx, algorithmVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateAlgorithmVersionReply{UpdatedAt: time.Now().Unix()}, nil
 }
 
 // 压缩算法版本包

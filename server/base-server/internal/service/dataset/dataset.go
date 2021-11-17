@@ -675,6 +675,40 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	return &api.DeleteDatasetReply{DeletedAt: time.Now().Unix()}, nil
 }
 
+func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatasetRequest) (*api.UpdateDatasetReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// 减小数据类型引用
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, dataset.TypeId)
+	if err == nil {
+		if datasetType.ReferTimes > 0 {
+			datasetType.ReferTimes--
+		}
+
+		_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
+	}
+
+	dataset.TypeId = req.TypeId
+	dataset.Desc = req.Desc
+	err = s.data.DatasetDao.UpdateDatasetSelective(ctx, dataset)
+	if err != nil {
+		return nil, err
+	}
+
+	// 增加数据类型引用
+	datasetType, err = s.data.DatasetDao.GetDatasetType(ctx, req.TypeId)
+	if err == nil {
+		datasetType.ReferTimes++
+
+		_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
+	}
+
+	return &api.UpdateDatasetReply{UpdatedAt: time.Now().Unix()}, nil
+}
+
 func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.UploadDatasetVersionRequest) (*api.UploadDatasetVersionReply, error) {
 	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
 	if err != nil {
@@ -769,6 +803,21 @@ func (s *datasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 	}
 
 	return reply, nil
+}
+
+func (s *datasetService) UpdateDatasetVersion(ctx context.Context, req *api.UpdateDatasetVersionRequest) (*api.UpdateDatasetVersionReply, error) {
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	version.Desc = req.Desc
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, version)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
 }
 
 func getTempMinioPath(dataset *model.Dataset, version string, fileName string) (bucketName string, objectName string) {
