@@ -132,6 +132,7 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 	closeFunc, err := s.submitJob(ctx, trainJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
 		if err != nil {
+			s.log.Info(ctx, fmt.Sprintf("submitJob error for platformjob: %v", err))
 			_ = closeFunc(ctx)
 		}
 	}()
