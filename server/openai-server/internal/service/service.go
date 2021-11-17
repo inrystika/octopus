@@ -19,6 +19,7 @@ type Service struct {
 	DatasetService      api.DatasetServiceServer
 	ResourceSpecService api.ResourceSpecServiceServer
 	BillingService      api.BillingServiceServer
+	ModelDeployService  api.ModelDeployServiceServer
 }
 
 func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Service {
@@ -34,5 +35,6 @@ func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Servi
 	service.DatasetService = NewDatasetService(conf, logger, data)
 	service.ResourceSpecService = NewResourceSpecService(conf, logger, data)
 	service.BillingService = NewBillingService(conf, logger, data)
+	service.ModelDeployService =  NewModelDeployService(conf, logger, data)
 	return service
 }

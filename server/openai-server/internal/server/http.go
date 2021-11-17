@@ -84,5 +84,6 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/resourcemanage/resourcespec", api.NewResourceSpecServiceHandler(service.ResourceSpecService, options...))
 	srv.HandlePrefix("/v1/imagemanage", api.NewImageServiceHandler(service.ImageService, options...))
 	srv.HandlePrefix("/v1/billingmanage", api.NewBillingServiceHandler(service.BillingService, options...))
+	srv.HandlePrefix("/v1/deploymanage", api.NewModelDeployServiceHandler(service.ModelDeployService, options...))
 	return srv
 }

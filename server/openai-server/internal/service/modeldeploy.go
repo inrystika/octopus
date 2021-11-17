@@ -48,7 +48,7 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 	return nil, nil
 }
 
-// 模型服务事件
+// 模型服务事件列表
 func (s *ModelDeployService) ListDepEvent(ctx context.Context, req *api.DepEventListRequest) (*api.DepEventListReply, error) {
 	return nil, nil
 }
