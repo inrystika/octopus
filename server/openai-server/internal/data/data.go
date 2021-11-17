@@ -30,6 +30,7 @@ type Data struct {
 	ResourceSpecClient api.ResourceSpecServiceClient
 	ResourcePoolClient api.ResourcePoolServiceClient
 	BillingClient      api.BillingServiceClient
+	ModelDeployClient  api.ModelDeployServiceClient
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
@@ -69,5 +70,6 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		ResourceSpecClient: api.NewResourceSpecServiceClient(conn),
 		ResourcePoolClient: api.NewResourcePoolServiceClient(conn),
 		BillingClient:      api.NewBillingServiceClient(conn),
+		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
 	}, nil
 }

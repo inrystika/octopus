@@ -30,13 +30,15 @@ message DepRequest {
   string modelId = 5[(validate.rules).string = {min_len: 1}];
   string modelVersion = 6[(validate.rules).string = {min_len: 1}];
   string resourceType = 7;
-  string resourceSpecName = 9;
+  string resourceSpecName = 8;
+  string userId = 9;
+  string workspaceId = 10;
 }
 
 message DepReply {
-  string code = 1;
-  string message = 2;
-  string resp = 3;
+  string serviceId = 1;
+  string serviceUrl = 2;
+  string message = 3;
 }
 
 message StopDepRequest {

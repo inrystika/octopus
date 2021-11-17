@@ -62,9 +62,9 @@ message DepRequest {
 }
 
 message DepReply {
-  string code = 1;
-  string message = 2;
-  string resp = 3;
+  string serviceId = 1;
+  string serviceUrl = 2;
+  string message = 3;
 }
 
 message StopDepRequest {
