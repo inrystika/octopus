@@ -112,7 +112,7 @@ func newApp(ctx context.Context, logger log.Logger, hs *http.Server, gs *grpc.Se
 
 // initApp init kratos application.
 func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*kratos.App, func(), error) {
-	data, close, err := data.NewData(bc.Data, logger)
+	data, close, err := data.NewData(bc, logger)
 	if err != nil {
 		return nil, nil, err
 	}

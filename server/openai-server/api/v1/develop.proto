@@ -114,6 +114,9 @@ message QueryNotebookReply {
 }
 
 message Notebook {
+  message Task {
+    string url = 1;
+  }
   int64 createdAt = 1;
   int64 updatedAt = 2;
   string id = 3;
@@ -136,6 +139,7 @@ message Notebook {
   uint32 resourceSpecPrice = 20;
   string notebookJobId = 21;
   string imageVersion = 22;
+  repeated Task tasks = 23;
 }
 
 message ListNotebookReply {

@@ -80,11 +80,10 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
 	if err != nil {
-		if conf.App.IsDev {
-			log.Error(context.Background(), err)
-		} else {
+		if !conf.App.IsDev {
 			return nil, err
 		}
+		log.Error(context.TODO(), err)
 	}
 
 	s := &developService{
@@ -589,7 +588,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 							VolumeMounts: VolumeMounts,
 							Env: []v1.EnvVar{{
 								Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-								Value: nb.Url,
+								Value: buildNotebookUrl(nbJob.Id, i),
 							}},
 						},
 					},
