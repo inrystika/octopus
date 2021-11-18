@@ -68,23 +68,27 @@ service Algorithm {
     rpc UploadAlgorithm(UploadAlgorithmRequest) returns (UploadAlgorithmReply);
     // 上传算法确认
     rpc ConfirmUploadAlgorithm(ConfirmUploadAlgorithmRequest) returns (ConfirmUploadAlgorithmReply);
+    // 修改算法
+    rpc UpdateAlgorithm (UpdateAlgorithmRequest) returns (UpdateAlgorithmReply);
 
     // 新增我的算法版本
     rpc AddMyAlgorithmVersion(AddMyAlgorithmVersionRequest) returns (AddMyAlgorithmVersionReply);
-
     // 复制算法版本
     rpc CopyAlgorithmVersion(CopyAlgorithmVersionRequest) returns (CopyAlgorithmVersionReply);
-
     // 删除我的算法版本
     rpc DeleteMyAlgorithmVersion (DeleteMyAlgorithmVersionRequest) returns (DeleteMyAlgorithmVersionReply);
     // 删除我的算法
     rpc DeleteMyAlgorithm (DeleteMyAlgorithmRequest) returns (DeleteMyAlgorithmReply);
+
     // 新增预置算法版本
     rpc AddPreAlgorithmVersion(AddPreAlgorithmVersionRequest) returns (AddPreAlgorithmVersionReply);
     // 删除预置算法版本
     rpc DeletePreAlgorithmVersion (DeletePreAlgorithmVersionRequest) returns (DeletePreAlgorithmVersionReply);
     // 删除预置算法
     rpc DeletePreAlgorithm (DeletePreAlgorithmRequest) returns (DeletePreAlgorithmReply);
+
+    // 修改算法版本
+    rpc UpdateAlgorithmVersion (UpdateAlgorithmVersionRequest) returns (UpdateAlgorithmVersionReply);
 
     // 压缩算法包
     rpc DownloadAlgorithmVersionCompress(DownloadAlgorithmVersionCompressRequest) returns (DownloadAlgorithmVersionCompressReply);
@@ -385,7 +389,7 @@ message AddAlgorithmRequest {
   bool isEmpty = 4;
   string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
+  string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
   string typeId = 8;
   string frameworkId = 9;
 }
@@ -415,7 +419,7 @@ message CopyAlgorithmVersionRequest {
   string version = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
   string newAlgorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
+  string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
   string typeId = 8;
   string frameworkId = 9;
 }
@@ -436,12 +440,23 @@ message ConfirmUploadAlgorithmReply {
   int64 updatedAt = 1;
 }
 
+message UpdateAlgorithmRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string typeId = 2;
+  string frameworkId = 3;
+  string algorithmDescript = 4[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
 message AddMyAlgorithmVersionRequest {
   string spaceId = 1;
   string userId = 2;
   string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
   string oriVersion = 4[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
-  string algorithmDescript = 5;
+  string algorithmDescript = 5[(validate.rules).string = {max_len: 300}];
 }
 message AddMyAlgorithmVersionReply {
   string algorithmId = 1;
@@ -453,7 +468,7 @@ message AddPreAlgorithmVersionRequest {
   string spaceId = 1;
   string userId = 2;
   string algorithmId = 3[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
-  string algorithmDescript = 4;
+  string algorithmDescript = 4[(validate.rules).string = {max_len: 300}];
 }
 message AddPreAlgorithmVersionReply {
   string algorithmId = 1;
@@ -464,7 +479,7 @@ message AddPreAlgorithmVersionReply {
 message AddPreAlgorithmRequest {
   string algorithmId = 1;
   string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript  = 3;
+  string algorithmDescript  = 3[(validate.rules).string = {max_len: 300}];
 }
 
 message AddPreAlgorithmReply {
@@ -504,6 +519,16 @@ message DeletePreAlgorithmRequest {
 }
 message DeletePreAlgorithmReply {
   int64 deletedAt = 1;
+}
+
+message UpdateAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 3[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateAlgorithmVersionReply {
+  int64 updatedAt = 1;
 }
 
 message DownloadAlgorithmVersionRequest {

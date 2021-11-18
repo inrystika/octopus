@@ -12,7 +12,7 @@
             </el-table-column>
             <el-table-column label="充值机时(h)" align="center">
                 <template slot-scope="scope">
-                    <span>{{ Math.round(scope.row.amount) }}</span>
+                    <span>{{ scope.row.amount }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="充值时间" align="center">
