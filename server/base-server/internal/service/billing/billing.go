@@ -123,18 +123,15 @@ func (s *billingService) Pay(ctx context.Context, req *api.PayRequest) (*api.Pay
 			startedAt := time.Unix(req.StartedAt, 0)
 			endedAt := time.Unix(req.EndedAt, 0)
 			if errors.IsError(errors.ErrorDBFindEmpty, err) {
-				err := s.data.BillingDao.CreateBillingPayRecord(ctx, &model.BillingPayRecord{
-					Id:        utils.GetUUIDWithoutSeparator(),
-					OwnerId:   req.OwnerId,
-					OwnerType: req.OwnerType,
-					Amount:    req.Amount,
-					BizType:   req.BizType,
-					BizId:     req.BizId,
-					Title:     req.Title,
-					StartedAt: &startedAt,
-					EndedAt:   &endedAt,
-					Status:    req.Status,
-				})
+				record := &model.BillingPayRecord{}
+				err := copier.Copy(record, req)
+				if err != nil {
+					return err
+				}
+				record.StartedAt = &startedAt
+				record.EndedAt = &endedAt
+				record.Id = utils.GetUUIDWithoutSeparator()
+				err = s.data.BillingDao.CreateBillingPayRecord(ctx, record)
 				if err != nil {
 					return err
 				}
