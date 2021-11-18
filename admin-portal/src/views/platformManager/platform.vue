@@ -36,6 +36,7 @@
               <el-button type="text" @click="detail(scope.row)">详情</el-button>
               <el-button type="text" @click="edit(scope.row)">编辑</el-button>
               <el-button type="text" @click="getPlatformConfig(scope.row)">平台配置</el-button>
+              <el-button type="text" @click="showStorageConfigList(scope.row)">存储配置</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -63,8 +64,6 @@
     <detailsDialog
       v-if="detailsVisible"
       :platform-detail="platformDetail"
-      @cancel="cancel" 
-      @confirm="confirm" 
       @close="close"
     />
 
@@ -83,6 +82,14 @@
       @confirm="confirm" 
       @close="close"
     />
+    
+    <storageConfigList
+      v-if="storageConfigListVisible"
+      :platform-detail="platformDetail"
+      @cancel="cancel" 
+      @confirm="confirm" 
+      @close="close"
+    />
   </div>
 </template>
 <script>
@@ -91,6 +98,7 @@ import createDialog from "./components/createDialog.vue"
 import detailsDialog from "./components/detailsDialog.vue"
 import editDialog from "./components/editDialog.vue"
 import platformConfig from "./components/platformConfig.vue"
+import storageConfigList from "./components/storageConfigList.vue"
 import { getPlatformList } from "@/api/platformManager"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
@@ -100,7 +108,8 @@ export default {
     createDialog,
     detailsDialog,
     editDialog,
-    platformConfig
+    platformConfig,
+    storageConfigList
   },
   data() {
     return {
@@ -110,6 +119,7 @@ export default {
       platformConfigVisible: false,
       platformList: [],
       platformDetail: {},
+      storageConfigListVisible: false,
       total: 0,
       searchData: {
         pageIndex: 1,
@@ -147,16 +157,16 @@ export default {
     },
     cancel(val) {
       this.createVisible = val
-      this.detailsVisible = val
       this.editVisible = val
       this.platformConfigVisible = val
+      this.storageConfigListVisible = val
       this.getPlatformList(this.searchData);
     },
     confirm(val) {
       this.createVisible = val
-      this.detailsVisible = val
       this.editVisible = val
       this.platformConfigVisible = val
+      this.storageConfigListVisible = val
       this.getPlatformList(this.searchData);
     },
     close(val) {
@@ -164,6 +174,7 @@ export default {
       this.detailsVisible = val
       this.editVisible = val
       this.platformConfigVisible = val
+      this.storageConfigListVisible = val
       this.getPlatformList(this.searchData);
     },
     create() {
@@ -180,6 +191,10 @@ export default {
     getPlatformConfig(row) {
       this.platformConfigVisible = true
       this.platformDetail = row
+    },
+    showStorageConfigList(row) {
+      this.platformDetail = row
+      this.storageConfigListVisible = true
     },
     //时间戳转换日期
     parseTime(val) {

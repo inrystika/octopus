@@ -11,17 +11,20 @@
         :rules="rules"
         ref="ruleForm"        
       >
-        <el-form-item prop="platformConfig">
+        <el-form-item>
           <div v-for="(item, index) in ruleForm.platformConfig" :key="index">
-            <el-form-item :label="item.title">
+            <el-form-item>
+              <strong>{{item.key+": "}}</strong>
               <el-popover
                 placement="top"
                 width="400"
                 trigger="hover"
-                :content="item.title">
-                <i class="el-icon-question" slot="reference"></i>
-              </el-popover>
-              <el-input v-if="item.type === 'input'" v-model="item[item.key]" style="width: 40%;"></el-input>
+                :content="item.desc"
+                style="margin-right:2%"
+              >
+                <i v-if="item.desc?true:false" style="color:orange" class="el-icon-question" slot="reference"></i>
+              </el-popover>             
+              <el-input v-if="item.type === 'input'" v-model="item.value" style="width: 40%;"></el-input>
               <el-radio-group v-if="item.type === 'radio'" v-model="item.options">
                 <el-radio :label="'yes'"></el-radio>
                 <el-radio :label="'no'"></el-radio>
@@ -40,7 +43,7 @@
   </div>
 </template>
 <script>
-import { getPlatformConfigKey, getPlatformConfigValue } from "@/api/platformManager"
+import { getPlatformConfigKey, getPlatformConfigValue, updatePlatformConfig } from "@/api/platformManager"
 import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformConfig",
@@ -52,7 +55,6 @@ export default {
   },
   data() {
     return {
-      formLabelWidth: '120px',
       CreateFormVisible: true,
       platformConfigKeyList: [],
       ruleForm: {
@@ -106,19 +108,51 @@ export default {
       if(obj && Object.getOwnPropertyNames(obj).length) {
         this.platformConfigKeyList.map(item => {
           if (obj[item.key]) {
-            item[item.key] = obj[item.key]
+            this.ruleForm.platformConfig.push({
+              key: item.key,
+              value: obj[item.key],
+              type: item.type,
+              options: item.options,
+              title: item.title
+            })
           }
         })
       } else {
         this.platformConfigKeyList.map(item => {
-          item[item.key] = ""
+          this.ruleForm.platformConfig.push({
+              key: item.key,
+              value: "",
+              type: item.type,
+              options: item.options,
+              title: item.title
+            })
         })
       }
-      this.ruleForm.platformConfig = this.platformConfigKeyList
       // this.ruleForm.platformConfig.push({
-      //   desc:"this is desc",key:"this.is key",options:"yes", title:"this is title",type:"radio"
+      //   key: "test1",
+      //   value: "",
+      //   type: "radio",
+      //   options: "yes",
+      //   title: "test title",
+      //   desc: "this is desc"
       // })
-      // console.log("platformConfigKeyList",this.platformConfigKeyList)
+    },
+    update(formName) {
+      const params = {}
+      this.ruleForm.platformConfig.map(item => {
+        params[item.key] = item.value?item.value:item.options
+      })
+      updatePlatformConfig(this.platformDetail.id,params).then(response => {
+        if(response.success) {            
+          this.$message.success("平台配置更新成功");
+          this.$emit('confirm', false)
+        } else {
+          this.$message({
+            message: this.getErrorMsg(response.error.subcode),
+            type: 'warning'
+          });
+        }
+      })
     },
     cancel() {
       this.$emit('cancel', false)
