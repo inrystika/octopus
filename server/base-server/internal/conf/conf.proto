@@ -100,6 +100,7 @@ message Data {
 message Develop {
   string jpyBaseUrlEnv = 1;
   int64  autoStopIntervalSec = 2;
+  string jpyCommand = 3;
 }
 
 message Resource {

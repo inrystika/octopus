@@ -294,6 +294,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		resources:     k8sResources,
 		nodeSelectors: nodeSelectors,
 		shm:           shm,
+		command:       s.conf.Service.Develop.JpyCommand,
 	}, nil
 }
 
@@ -356,6 +357,7 @@ type startJobInfo struct {
 	imageAddr     string
 	algorithmPath string
 	datasetPath   string
+	command       string
 	resources     map[v1.ResourceName]resource.Quantity
 	nodeSelectors map[string]string
 	shm           *resource.Quantity
@@ -579,6 +581,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 						{
 							Name:  taskName,
 							Image: startJobInfo.imageAddr,
+							Command: []string{"sh" ,"-c" ,startJobInfo.command},
 							Resources: v1.ResourceRequirements{
 								Requests: startJobInfo.resources,
 								Limits:   startJobInfo.resources,
