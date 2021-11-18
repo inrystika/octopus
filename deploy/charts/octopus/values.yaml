@@ -354,8 +354,8 @@ influxdb:
   replicaCount: 1
   config:
     data:
-      max_series_per_database: 0
-      max_values_per_tag: 0
+      max-series-per-database: 0
+      max-values-per-tag: 0
   setDefaultUser:
     user:
       username: "octopus"
