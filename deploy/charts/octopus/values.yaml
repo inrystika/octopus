@@ -104,10 +104,10 @@ baseserver:
     redis:
       username: ""
       password: "abcde"
-    jointCloud:
-      baseUrl: http://192.168.207.141:8709
-      username: test
-      password: 7ee15bc8fee766cad1bd70ccf5f4dc14
+    jointCloud:  #需要修改为实际的值
+      baseUrl: jointCloudBaseUrl
+      username: jointCloudUsername
+      password: jointCloudPassword
       sessionExpirySec: 540 #实际有效期为600
   service:
     billingPeriodSec: 1800
