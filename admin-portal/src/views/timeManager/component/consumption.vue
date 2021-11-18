@@ -9,7 +9,7 @@
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="fullName" label="用户名"> </el-table-column>
+            <el-table-column prop="userName" label="用户名" v-if="type=='group'"> </el-table-column>
             <el-table-column prop="title" label="任务名称"> </el-table-column>
             <el-table-column label="消费机时(h)" align="center">
                 <template slot-scope="scope">
