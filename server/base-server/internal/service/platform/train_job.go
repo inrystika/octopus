@@ -132,6 +132,7 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 	closeFunc, err := s.submitJob(ctx, trainJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
 		if err != nil {
+			s.log.Info(ctx, fmt.Sprintf("submitJob error for platformjob: %v", err))
 			_ = closeFunc(ctx)
 		}
 	}()
@@ -627,11 +628,15 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 		s.deleteOutputStorageResource(ctx, trainJob.Output, trainJob.PlatformId, trainJob.Id)
 	}
 
-	s.updatePlatfromJobStatus(ctx, trainJob.PlatformId, &platform.JobStatusInfo{
+	err = s.updatePlatfromJobStatus(ctx, trainJob.PlatformId, &platform.JobStatusInfo{
 		JobId:  trainJob.Id,
 		Status: info.Job.State,
 		Time:   time.Now(),
 	})
+
+	if err != nil {
+		s.log.Info(ctx, fmt.Sprintf("updatePlatfromJobStatus for platformjob failed, id: %v, status: %v", req.Id, info.Job.State))
+	}
 
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)
 	if err != nil {
@@ -1020,7 +1025,6 @@ func (s *platformTrainJobService) deleteOutputStorageResource(ctx context.Contex
 }
 
 func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, platformId string, info *platform.JobStatusInfo) error {
-
 	reply, err := s.platformService.GetPlatformConfig(ctx, &api.GetPlatformConfigRequest{
 		PlatformId: platformId,
 	})
@@ -1028,12 +1032,12 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		return err
 	}
 	if url, ok := reply.Config[jobStatusCallbackAddr]; ok {
-
 		platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
 		if err != nil {
 			return err
 		}
 		if len(platformReply.Platforms) <= 0 {
+			s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform ClientSecret:"+info.JobId)
 			return errors.Errorf(err, errors.ErrorDBFindEmpty)
 		}
 		platform := platformReply.Platforms[0]
@@ -1041,6 +1045,8 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		if err != nil {
 			return err
 		}
+	} else {
+		s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform Config:"+info.JobId)
 	}
 	return nil
 }
