@@ -30,6 +30,8 @@ service DatasetService {
   rpc GetDataset (GetDatasetRequest) returns (GetDatasetReply);
   // 删除数据集
   rpc DeleteDataset (DeleteDatasetRequest) returns (DeleteDatasetReply);
+  // 修改数据集
+  rpc UpdateDataset (UpdateDatasetRequest) returns (UpdateDatasetReply);
 
   // 查询版本列表
   rpc ListDatasetVersion (ListDatasetVersionRequest) returns (ListDatasetVersionReply);
@@ -47,6 +49,9 @@ service DatasetService {
   rpc DeleteDatasetVersion (DeleteDatasetVersionRequest) returns (DeleteDatasetVersionReply);
   // 预览版本
   rpc ListDatasetVersionFile (ListDatasetVersionFileRequest) returns (ListDatasetVersionFileReply);
+  // 修改数据集版本
+  rpc UpdateDatasetVersion (UpdateDatasetVersionRequest) returns (UpdateDatasetVersionReply);
+  
   // 获取上传地址
   rpc UploadDatasetVersion (UploadDatasetVersionRequest) returns (UploadDatasetVersionReply);
   // 确认上传成功
@@ -122,7 +127,7 @@ message CreateDatasetRequest {
   DatasetSourceType sourceType = 3[(validate.rules).enum = {in: [1,2]}];
   string name = 4[(validate.rules).string = {min_len: 1}];
   string typeId = 5;
-  string desc = 6;
+  string desc = 6[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetReply {
@@ -243,9 +248,19 @@ message DeleteDatasetReply {
   int64 deletedAt = 1;
 }
 
+message UpdateDatasetRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string typeId = 2;
+  string desc = 3[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateDatasetReply {
+  int64 updatedAt = 1;
+}
+
 message CreateDatasetVersionRequest {
   string datasetId = 1[(validate.rules).string = {min_len: 1}];
-  string desc = 2;
+  string desc = 2[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetVersionReply {
@@ -312,6 +327,16 @@ message ListDatasetVersionFileReply {
     string path = 3;
   }
   repeated File files = 1;
+}
+
+message UpdateDatasetVersionRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+  string desc = 3[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateDatasetVersionReply {
+  int64 updatedAt = 1;
 }
 
 message ConfirmUploadDatasetVersionRequest {

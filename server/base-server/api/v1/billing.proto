@@ -93,6 +93,7 @@ message PayRequest {
   int64 startedAt = 7;  //计费开始时间 计费多次调用传相同值
   int64 endedAt = 8;  //计费截止时间  计费多次调用值递增
   BillingPayRecordStatus status = 9;  //计费状态
+  map<string, string> ExtraInfo = 10;
 }
 
 message PayReply {
@@ -120,6 +121,7 @@ message ListBillingPayRecordRequest {
   string searchKey = 7; //title等模糊查找
   int64 startedAtGte = 8;
   int64 startedAtLt = 9;
+  map<string, string> ExtraInfo = 10;
 }
 
 message BillingPayRecord {
@@ -135,6 +137,7 @@ message BillingPayRecord {
   int64 startedAt = 10;
   int64 endedAt = 11;
   BillingPayRecordStatus status = 12;
+  map<string, string> ExtraInfo = 13;
 }
 
 message ListBillingPayRecordReply {
