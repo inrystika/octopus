@@ -1,10 +1,15 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/common/dao"
 	"time"
 )
+
+type ExtraInfo map[string]string
 
 type BillingOwner struct {
 	dao.Model
@@ -29,6 +34,20 @@ type BillingPayRecord struct {
 	StartedAt *time.Time                 `gorm:"type:datetime(3);comment:计费起始时间"`
 	EndedAt   *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	Status    api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
+	ExtraInfo ExtraInfo                  `gorm:"type:json;comment:附加信息，可作为自定义字段"`
+}
+
+func (r ExtraInfo) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *ExtraInfo) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }
 
 func (BillingPayRecord) TableName() string {
@@ -70,6 +89,7 @@ type BillingPayRecordQuery struct {
 	SearchKey    string
 	StartedAtGte int64
 	StartedAtLt  int64
+	ExtraInfo    map[string]string
 }
 
 type BillingRechargeRecordQuery struct {
