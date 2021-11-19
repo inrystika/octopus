@@ -37,6 +37,33 @@ service DatasetService {
     };
   }
 
+    // 新增数据集用途
+  rpc AddDatasetApply (AddDatasetApplyRequest) returns (AddDatasetApplyReply) {
+    option (google.api.http) = {
+      post: "/v1/datasetmanage/datasetapply"
+      body: "*"
+    };
+  }
+  // 查询数据集用途列表
+  rpc ListDatasetApply (ListDatasetApplyRequest) returns (ListDatasetApplyReply) {
+    option (google.api.http) = {
+      get: "/v1/datasetmanage/datasetapply"
+    }; 
+  }
+  // 删除数据集用途
+  rpc DeleteDatasetApply (DeleteDatasetApplyRequest) returns (DeleteDatasetApplyReply) {
+    option (google.api.http) = {
+      delete: "/v1/datasetmanage/datasetapply/{id}"
+    };
+  }
+
+  // 修改数据集用途
+  rpc UpdateDatasetApply (UpdateDatasetApplyRequest) returns (UpdateDatasetApplyReply) {
+    option (google.api.http) = {
+      put: "/v1/datasetmanage/datasetapply/{id}"
+    };
+  }
+
   // 查询预置数据集列表
   rpc ListPreDataset (ListPreDatasetRequest) returns (ListPreDatasetReply) {
     option (google.api.http) = {
@@ -103,7 +130,7 @@ service DatasetService {
   }
 }
 
-message DatasetType {
+message DatasetLable {
   string id = 1;
   string lableDesc = 2;
   int32 sourceType = 3;
@@ -114,7 +141,7 @@ message AddDatasetTypeRequest {
 }
 
 message AddDatasetTypeReply {
-  DatasetType datasetType = 1;
+  DatasetLable datasetType = 1;
 }
 
 message ListDatasetTypeRequest {
@@ -124,7 +151,7 @@ message ListDatasetTypeRequest {
 
 message ListDatasetTypeReply {
   int64 totalSize = 1;
-  repeated DatasetType datasetTypes = 2;
+  repeated DatasetLable datasetTypes = 2;
 }
 
 message DeleteDatasetTypeRequest {
@@ -144,10 +171,46 @@ message UpdateDatasetTypeReply {
   int64 updatedAt = 1;
 }
 
+message AddDatasetApplyRequest {
+  string lableDesc = 1[(validate.rules).string = {min_len: 1, max_len: 10}];
+}
+
+message AddDatasetApplyReply {
+  DatasetLable datasetApply = 1;
+}
+
+message ListDatasetApplyRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListDatasetApplyReply {
+  int64 totalSize = 1;
+  repeated DatasetLable datasetApplys = 2;
+}
+
+message DeleteDatasetApplyRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message DeleteDatasetApplyReply {
+  int64 deletedAt = 1;
+}
+
+message UpdateDatasetApplyRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string lableDesc = 2[(validate.rules).string = {min_len: 1, max_len: 10}];
+}
+
+message UpdateDatasetApplyReply {
+  int64 updatedAt = 1;
+}
+
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
   string typeId = 2[(validate.rules).string = {min_len: 1 max_len: 64}];
-  string desc = 3[(validate.rules).string = {max_len: 300}];
+  string applyId = 3[(validate.rules).string = {min_len: 1 max_len: 64}];
+  string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetReply {
@@ -165,10 +228,12 @@ message Dataset {
   string name = 7;
   string typeId = 8;
   string typeDesc = 9;
-  string desc = 10;
-  string latestVersion = 11;
-  string spaceName = 12;
-  string userName = 13;
+  string applyId = 10;
+  string applyDesc = 11;
+  string desc = 12;
+  string latestVersion = 13;
+  string spaceName = 14;
+  string userName = 15;
 }
 
 message ListPreDatasetRequest {

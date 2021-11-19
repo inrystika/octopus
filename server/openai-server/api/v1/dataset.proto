@@ -17,6 +17,13 @@ service DatasetService {
     }; 
   }
 
+  // 查询数据集用途列表
+  rpc ListDatasetApply (ListDatasetApplyRequest) returns (ListDatasetApplyReply) {
+    option (google.api.http) = {
+      get: "/v1/datasetmanage/datasetapply"
+    }; 
+  }
+
   // 创建数据集
   rpc CreateDataset (CreateDatasetRequest) returns (CreateDatasetReply) {
     option (google.api.http) = {
@@ -103,9 +110,10 @@ service DatasetService {
   }
 }
 
-message DatasetType {
+message DatasetLable {
   string id = 1;
-  string typeDesc = 2;
+  string lableDesc = 2;
+  int32 sourceType = 3;
 }
 
 message ListDatasetTypeRequest {
@@ -115,13 +123,24 @@ message ListDatasetTypeRequest {
 
 message ListDatasetTypeReply {
   int64 totalSize = 1;
-  repeated DatasetType datasetTypes = 2;
+  repeated DatasetLable datasetTypes = 2;
+}
+
+message ListDatasetApplyRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListDatasetApplyReply {
+  int64 totalSize = 1;
+  repeated DatasetLable datasetApplys = 2;
 }
 
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
   string typeId = 2[(validate.rules).string = {min_len: 1, max_len: 64}];
-  string desc = 3[(validate.rules).string = {max_len: 300}];
+  string applyId = 3[(validate.rules).string = {min_len: 1, max_len: 64}];
+  string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetReply {
@@ -137,8 +156,10 @@ message Dataset {
   string name = 7;
   string typeId = 8;
   string typeDesc = 9;
-  string desc = 10;
-  string latestVersion = 11;
+  string applyId = 10;
+  string applyDesc = 11;
+  string desc = 12;
+  string latestVersion = 13;
 }
 
 message ListPreDatasetRequest {
