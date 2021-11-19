@@ -90,8 +90,8 @@ message AlgorithmDetail {
   int64 fileStatus = 7;
   int64 latestCompressed = 8;
   string algorithmDescript = 9;
-  string typeId = 10;
-  string typeName = 11;
+  string applyId = 10;
+  string applyName = 11;
 	string frameworkId = 12;
   string frameworkName = 13;
   string path = 14;
@@ -270,7 +270,7 @@ message AddAlgorithmRequest {
   string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
-  string typeId = 8;
+  string applyId = 8;
   string frameworkId = 9;
 }
 message AddAlgorithmReply {
@@ -300,7 +300,7 @@ message CopyAlgorithmVersionRequest {
   string newAlgorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
-  string typeId = 8;
+  string applyId = 8;
   string frameworkId = 9;
 }
 message CopyAlgorithmVersionReply {
@@ -322,7 +322,7 @@ message ConfirmUploadAlgorithmReply {
 
 message UpdateAlgorithmRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
-  string typeId = 2;
+  string applyId = 2;
   string frameworkId = 3;
   string algorithmDescript = 4[(validate.rules).string = {max_len: 300}];
 }

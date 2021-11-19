@@ -192,7 +192,7 @@ func (s *lableService) DeleteLable(ctx context.Context, req *api.DeleteLableRequ
 }
 
 func (s *lableService) UpdateLable(ctx context.Context, req *api.UpdateLableRequest) (*api.UpdateLableReply, error) {
-	lable, err := s.data.LableDao.GetLable(ctx, req.Lable.Id)
+	lable, err := s.data.LableDao.GetLable(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -200,24 +200,55 @@ func (s *lableService) UpdateLable(ctx context.Context, req *api.UpdateLableRequ
 	item, err := s.data.LableDao.QueryLable(ctx, &model.LableQuery{
 		RelegationType: lable.RelegationType,
 		LableType:      lable.LableType,
-		LableDesc:      req.Lable.LableDesc,
+		LableDesc:      req.LableDesc,
 	})
-	if item != nil && item.Id != req.Lable.Id {
+	if item != nil && item.Id != req.Id {
 		return nil, errors.Errorf(err, errors.ErrorLableRepeated)
 	}
 
-	modelLable := &model.Lable{}
-	err = copier.Copy(modelLable, req)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
-	}
-
-	err = s.data.LableDao.UpdateLable(ctx, modelLable)
+	lable.LableDesc = req.LableDesc
+	err = s.data.LableDao.UpdateLable(ctx, lable)
 	if err != nil {
 		return nil, err
 	}
 
 	return &api.UpdateLableReply{
+		UpdatedAt: time.Now().Unix(),
+	}, nil
+}
+
+func (s *lableService) IncreaseLableReferTimes(ctx context.Context, req *api.IncreaseLableReferTimesRequest) (*api.IncreaseLableReferTimesReply, error) {
+	lable, err := s.data.LableDao.GetLable(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	lable.ReferTimes++
+	err = s.data.LableDao.UpdateLable(ctx, lable)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.IncreaseLableReferTimesReply{
+		UpdatedAt: time.Now().Unix(),
+	}, nil
+}
+
+func (s *lableService) ReduceLableReferTimes(ctx context.Context, req *api.ReduceLableReferTimesRequest) (*api.ReduceLableReferTimesReply, error) {
+	lable, err := s.data.LableDao.GetLable(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if lable.ReferTimes > 0 {
+		lable.ReferTimes--
+		err = s.data.LableDao.UpdateLable(ctx, lable)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &api.ReduceLableReferTimesReply{
 		UpdatedAt: time.Now().Unix(),
 	}, nil
 }

@@ -487,14 +487,14 @@ func (h *algorithmHandle) transferAlgorithmDetail(ctx context.Context, algorithm
 	algorithmVersion.AlgorithmVersion = version.Version
 	algorithmVersion.AlgorithmDescript = version.AlgorithmDescript
 	algorithmVersion.CreatedAt = algorithm.CreatedAt.Unix()
-	algorithmVersion.TypeId = algorithm.TypeId
+	algorithmVersion.ApplyId = algorithm.ApplyId
 	algorithmVersion.FrameworkId = algorithm.FrameworkId
 
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmVersion.TypeId})
+	algorithmApply, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmVersion.ApplyId})
 	if err != nil {
-		algorithmVersion.TypeName = ""
+		algorithmVersion.ApplyName = ""
 	} else {
-		algorithmVersion.TypeName = algorithmType.Lable.LableDesc
+		algorithmVersion.ApplyName = algorithmApply.Lable.LableDesc
 	}
 
 	algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmVersion.FrameworkId})
@@ -805,7 +805,7 @@ func (h *algorithmHandle) AddAlgorithmHandle(ctx context.Context, req *api.AddAl
 	}
 
 	// 检查数据类型id
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
+	algorithmApply, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
 	if err != nil {
 		return nil, err
 	}
@@ -824,7 +824,7 @@ func (h *algorithmHandle) AddAlgorithmHandle(ctx context.Context, req *api.AddAl
 		AlgorithmDescript: req.AlgorithmDescript,
 		ModelName:         req.ModelName,
 		LatestVersion:     algorithmVersion,
-		TypeId:            req.TypeId,
+		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 		AlgorithmVersions: []*model.AlgorithmVersion{
 			{
@@ -840,12 +840,9 @@ func (h *algorithmHandle) AddAlgorithmHandle(ctx context.Context, req *api.AddAl
 	}
 
 	// 新增算法类型引用
-	algorithmType.Lable.ReferTimes++
-	_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithmApply.Lable.Id})
 	// 新增算法框架引用
-	algorithmFramework.Lable.ReferTimes++
-	_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithmFramework.Lable.Id})
 
 	return &api.AddAlgorithmReply{
 		AlgorithmId: myAlgorithm.AlgorithmId,
@@ -996,26 +993,12 @@ func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.Up
 		return nil, err
 	}
 
-	// 减小算法类型引用
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithm.TypeId})
-	if err == nil {
-		if algorithmType.Lable.ReferTimes > 0 {
-			algorithmType.Lable.ReferTimes--
-		}
+	// 减少算法类型引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithm.ApplyId})
+	// 减少算法框架引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithm.FrameworkId})
 
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-	}
-	// 减小算法框架引用
-	algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithm.FrameworkId})
-	if err == nil {
-		if algorithmFramework.Lable.ReferTimes > 0 {
-			algorithmFramework.Lable.ReferTimes--
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-	}
-
-	algorithm.TypeId = req.TypeId
+	algorithm.ApplyId = req.ApplyId
 	algorithm.FrameworkId = req.FrameworkId
 	algorithm.AlgorithmDescript = req.AlgorithmDescript
 	err = algorithmDao.UpdateAlgorithm(ctx, algorithm)
@@ -1023,24 +1006,10 @@ func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.Up
 		return nil, err
 	}
 
-	// 增加新算法类型引用
-	algorithmType, err = h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
-	if err == nil {
-		if algorithmType.Lable.ReferTimes > 0 {
-			algorithmType.Lable.ReferTimes++
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-	}
-	// 增加新算法框架引用
-	algorithmFramework, err = h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.FrameworkId})
-	if err == nil {
-		if algorithmFramework.Lable.ReferTimes > 0 {
-			algorithmFramework.Lable.ReferTimes++
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-	}
+	// 增加算法类型引用
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithm.ApplyId})
+	// 增加算法框架引用
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithm.FrameworkId})
 
 	return &api.UpdateAlgorithmReply{UpdatedAt: time.Now().Unix()}, nil
 }
@@ -1202,24 +1171,10 @@ func (h *algorithmHandle) DeleteMyAlgorithmVersionHandle(ctx context.Context, re
 		if err != nil {
 			return nil, err
 		}
-		// 减小算法类型引用
-		algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmInt.TypeId})
-		if err == nil {
-			if algorithmType.Lable.ReferTimes > 0 {
-				algorithmType.Lable.ReferTimes--
-			}
-
-			_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-		}
-		// 减小算法框架引用
-		algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmInt.FrameworkId})
-		if err == nil {
-			if algorithmFramework.Lable.ReferTimes > 0 {
-				algorithmFramework.Lable.ReferTimes--
-			}
-
-			_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-		}
+		// 减少算法类型引用
+		_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.ApplyId})
+		// 减少算法框架引用
+		_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.FrameworkId})
 	} else {
 		algorithmInt.LatestVersion = maxVersion
 		err = algorithmDao.UpdateAlgorithm(ctx, algorithmInt)
@@ -1275,24 +1230,10 @@ func (h *algorithmHandle) DeleteMyAlgorithmHandle(ctx context.Context, req *api.
 		return nil, err
 	}
 
-	// 减小算法类型引用
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmInt.TypeId})
-	if err == nil {
-		if algorithmType.Lable.ReferTimes > 0 {
-			algorithmType.Lable.ReferTimes--
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-	}
-	// 减小算法框架引用
-	algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: algorithmInt.FrameworkId})
-	if err == nil {
-		if algorithmFramework.Lable.ReferTimes > 0 {
-			algorithmFramework.Lable.ReferTimes--
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-	}
+	// 减少算法类型引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.ApplyId})
+	// 减少算法框架引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.FrameworkId})
 
 	return &api.DeleteMyAlgorithmReply{
 		DeletedAt: time.Now().Unix(),
@@ -1395,24 +1336,10 @@ func (h *algorithmHandle) DeletePreAlgorithmVersionHandle(ctx context.Context, r
 			return nil, err
 		}
 
-		// 减小算法类型引用
-		algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: preAlgorithm.TypeId})
-		if err == nil {
-			if algorithmType.Lable.ReferTimes > 0 {
-				algorithmType.Lable.ReferTimes--
-			}
-
-			_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-		}
-		// 减小算法框架引用
-		algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: preAlgorithm.FrameworkId})
-		if err == nil {
-			if algorithmFramework.Lable.ReferTimes > 0 {
-				algorithmFramework.Lable.ReferTimes--
-			}
-
-			_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-		}
+		// 减少算法类型引用
+		_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.ApplyId})
+		// 减少算法框架引用
+		_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.FrameworkId})
 
 	} else {
 		// 查算法信息
@@ -1460,24 +1387,10 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 		return nil, err
 	}
 
-	// 减小算法类型引用
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: preAlgorithm.TypeId})
-	if err == nil {
-		if algorithmType.Lable.ReferTimes > 0 {
-			algorithmType.Lable.ReferTimes--
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-	}
-	// 减小算法框架引用
-	algorithmFramework, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: preAlgorithm.FrameworkId})
-	if err == nil {
-		if algorithmFramework.Lable.ReferTimes > 0 {
-			algorithmFramework.Lable.ReferTimes--
-		}
-
-		_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
-	}
+	// 减少算法类型引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.ApplyId})
+	// 减少算法框架引用
+	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.FrameworkId})
 
 	return &api.DeletePreAlgorithmReply{
 		DeletedAt: time.Now().Unix(),
@@ -1674,7 +1587,7 @@ func (h *algorithmHandle) CopyAlgorithmVersionHandle(ctx context.Context, req *a
 	}
 
 	// 检查数据类型id
-	algorithmType, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
+	algorithmApply, err := h.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
 	if err != nil {
 		return nil, err
 	}
@@ -1696,7 +1609,7 @@ func (h *algorithmHandle) CopyAlgorithmVersionHandle(ctx context.Context, req *a
 		AlgorithmDescript: req.AlgorithmDescript,
 		ModelName:         req.ModelName,
 		LatestVersion:     algorithmVersion,
-		TypeId:            req.TypeId,
+		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 		AlgorithmVersions: []*model.AlgorithmVersion{
 			{
@@ -1712,12 +1625,9 @@ func (h *algorithmHandle) CopyAlgorithmVersionHandle(ctx context.Context, req *a
 	}
 
 	// 新增算法类型引用
-	algorithmType.Lable.ReferTimes++
-	_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmType.Lable})
-
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithmApply.Lable.Id})
 	// 新增算法框架引用
-	algorithmFramework.Lable.ReferTimes++
-	_, _ = h.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: algorithmFramework.Lable})
+	_, _ = h.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: algorithmFramework.Lable.Id})
 
 	fromBucektName := ""
 	fromObjectName := ""

@@ -105,11 +105,12 @@ service DatasetService {
 
 message DatasetType {
   string id = 1;
-  string typeDesc = 2;
+  string lableDesc = 2;
+  int32 sourceType = 3;
 }
 
 message AddDatasetTypeRequest {
-  string typeDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
+  string lableDesc = 1[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
 message AddDatasetTypeReply {
@@ -117,7 +118,7 @@ message AddDatasetTypeReply {
 }
 
 message ListDatasetTypeRequest {
-  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageIndex = 1;
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
 }
 
@@ -136,7 +137,7 @@ message DeleteDatasetTypeReply {
 
 message UpdateDatasetTypeRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
-  string typeDesc = 2[(validate.rules).string = {min_len: 1, max_len: 128}];
+  string lableDesc = 2[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
 message UpdateDatasetTypeReply {

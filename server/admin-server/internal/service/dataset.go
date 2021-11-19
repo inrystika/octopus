@@ -29,30 +29,35 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 }
 
 func (s *DatasetService) AddDatasetType(ctx context.Context, req *api.AddDatasetTypeRequest) (*api.AddDatasetTypeReply, error) {
-	innerReq := &innerapi.AddDatasetTypeRequest{}
-	innerReq.TypeDesc = req.TypeDesc
+	innerReq := &innerapi.AddLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_DATASET),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_DATASET_TYPE),
+		LableDesc:      req.LableDesc,
+	}
 
-	innerReply, err := s.data.DatasetClient.AddDatasetType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.AddLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
 	return &api.AddDatasetTypeReply{
 		DatasetType: &api.DatasetType{
-			Id:       innerReply.DatasetType.Id,
-			TypeDesc: innerReply.DatasetType.TypeDesc,
+			Id:         innerReply.Lable.Id,
+			LableDesc:  innerReply.Lable.LableDesc,
+			SourceType: innerReply.Lable.SourceType,
 		},
 	}, nil
 }
 
 func (s *DatasetService) ListDatasetType(ctx context.Context, req *api.ListDatasetTypeRequest) (*api.ListDatasetTypeReply, error) {
-	innerReq := &innerapi.ListDatasetTypeRequest{}
-	err := copier.Copy(innerReq, req)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	innerReq := &innerapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_DATASET),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_DATASET_TYPE),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
 	}
 
-	innerReply, err := s.data.DatasetClient.ListDatasetType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
@@ -67,10 +72,10 @@ func (s *DatasetService) ListDatasetType(ctx context.Context, req *api.ListDatas
 }
 
 func (s *DatasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteDatasetTypeRequest) (*api.DeleteDatasetTypeReply, error) {
-	innerReq := &innerapi.DeleteDatasetTypeRequest{}
+	innerReq := &innerapi.DeleteLableRequest{}
 	innerReq.Id = req.Id
 
-	innerReply, err := s.data.DatasetClient.DeleteDatasetType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.DeleteLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
@@ -81,11 +86,12 @@ func (s *DatasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteD
 }
 
 func (s *DatasetService) UpdateDatasetType(ctx context.Context, req *api.UpdateDatasetTypeRequest) (*api.UpdateDatasetTypeReply, error) {
-	innerReq := &innerapi.UpdateDatasetTypeRequest{}
-	innerReq.Id = req.Id
-	innerReq.TypeDesc = req.TypeDesc
+	innerReq := &innerapi.UpdateLableRequest{
+		Id:        req.Id,
+		LableDesc: req.LableDesc,
+	}
 
-	innerReply, err := s.data.DatasetClient.UpdateDatasetType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.UpdateLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}

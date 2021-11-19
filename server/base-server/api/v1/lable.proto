@@ -19,6 +19,10 @@ service LableService {
   rpc DeleteLable (DeleteLableRequest) returns (DeleteLableReply);
   // 修改标签描述
   rpc UpdateLable (UpdateLableRequest) returns (UpdateLableReply);
+  // 增加标签引用次数
+  rpc IncreaseLableReferTimes (IncreaseLableReferTimesRequest) returns (IncreaseLableReferTimesReply);
+  // 减少标签引用次数
+  rpc ReduceLableReferTimes (ReduceLableReferTimesRequest) returns (ReduceLableReferTimesReply);
 }
 
 enum Relegation {
@@ -91,9 +95,26 @@ message DeleteLableReply {
 }
 
 message UpdateLableRequest {
-  Lable lable = 1;
+  string id = 1;
+  string lableDesc = 2[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
 message UpdateLableReply {
+  int64 updatedAt = 1;
+}
+
+message IncreaseLableReferTimesRequest {
+  string id = 1;
+}
+
+message IncreaseLableReferTimesReply {
+  int64 updatedAt = 1;
+}
+
+message ReduceLableReferTimesRequest {
+  string id = 1;
+}
+
+message ReduceLableReferTimesReply {
   int64 updatedAt = 1;
 }

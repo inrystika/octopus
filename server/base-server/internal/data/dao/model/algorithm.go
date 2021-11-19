@@ -19,7 +19,7 @@ type Algorithm struct {
 	LatestVersion     string `gorm:"type:varchar(100);not null;default:'';comment:'最新版本'"`
 	DataVersion       int64  `gorm:"not null;default:0;comment:'数据版本号，乐观锁'"`
 	AlgorithmDescript string `gorm:"type:varchar(1024);not null;default:'';comment:'算法描述'"`
-	TypeId            string `gorm:"type:varchar(100);not null;default:'';comment:算法类型"`
+	ApplyId           string `gorm:"type:varchar(100);not null;default:'';comment:算法类型"`
 	FrameworkId       string `gorm:"type:varchar(100);not null;default:'';comment:算法框架"`
 	dao.Model
 	DeletedAt         soft_delete.DeletedAt `gorm:"uniqueIndex:algorithmName_modelName_spaceId_userId_isPrefab_deletedAt"`

@@ -100,11 +100,9 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 	}
 
 	// 新增数据类型引用
-	datasetType.Lable.ReferTimes++
-	_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetType.Lable})
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetType.Lable.Id})
 	// 新增数据用途引用
-	datasetApply.Lable.ReferTimes++
-	_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetApply.Lable})
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetApply.Lable.Id})
 
 	return &api.CreateDatasetReply{
 		Id:      datasetId,
@@ -584,23 +582,9 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	}
 
 	// 减小数据类型引用
-	datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.TypeId})
-	if err == nil {
-		if datasetType.Lable.ReferTimes > 0 {
-			datasetType.Lable.ReferTimes--
-		}
-
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetType.Lable})
-	}
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
 	// 减小数据用途引用
-	datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.ApplyId})
-	if err == nil {
-		if datasetApply.Lable.ReferTimes > 0 {
-			datasetApply.Lable.ReferTimes--
-		}
-
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetApply.Lable})
-	}
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
 
 	return &api.DeleteDatasetReply{DeletedAt: time.Now().Unix()}, nil
 }
@@ -612,23 +596,9 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 	}
 
 	// 减小数据类型引用
-	datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.TypeId})
-	if err == nil {
-		if datasetType.Lable.ReferTimes > 0 {
-			datasetType.Lable.ReferTimes--
-		}
-
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetType.Lable})
-	}
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
 	// 减小数据用途引用
-	datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.ApplyId})
-	if err == nil {
-		if datasetApply.Lable.ReferTimes > 0 {
-			datasetApply.Lable.ReferTimes--
-		}
-
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetApply.Lable})
-	}
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
 
 	dataset.TypeId = req.TypeId
 	dataset.ApplyId = req.ApplyId
@@ -639,17 +609,9 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 	}
 
 	// 增加数据类型引用
-	datasetType, err = s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.TypeId})
-	if err == nil {
-		datasetType.Lable.ReferTimes++
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetType.Lable})
-	}
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.TypeId})
 	// 增加数据用途引用
-	datasetApply, err = s.lableService.GetLable(ctx, &api.GetLableRequest{Id: dataset.ApplyId})
-	if err == nil {
-		datasetApply.Lable.ReferTimes++
-		_, _ = s.lableService.UpdateLable(ctx, &api.UpdateLableRequest{Lable: datasetApply.Lable})
-	}
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.ApplyId})
 
 	return &api.UpdateDatasetReply{UpdatedAt: time.Now().Unix()}, nil
 }
