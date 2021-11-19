@@ -205,6 +205,8 @@ message SpacePayRecord {
   int32 status = 10;
   string spaceId = 11;
   string spaceName = 12;
+  string userId = 13;
+  string userName = 14;
 }
 
 message ListSpacePayRecordReply {
