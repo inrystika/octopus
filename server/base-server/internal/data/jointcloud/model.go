@@ -205,7 +205,7 @@ type JobReply struct {
 	ResourceParams  []*ResourceParam         `json:"resourceParams"`
 	CreateTime      string                   `json:"createTime"`
 	Creator         int                      `json:"creator"`
-	CreatorName     *time.Time               `json:"creatorName"`
+	CreatorName     string                   `json:"creatorName"`
 }
 
 type JobQuery struct {
