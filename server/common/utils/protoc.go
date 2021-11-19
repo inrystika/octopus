@@ -209,7 +209,9 @@ func GenSwagger() error {
 			return err
 		}
 
-		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), swaggerBytes, 0755)
+		swaggerStr := strings.ReplaceAll(string(swaggerBytes), `,"default":{"description":"An unexpected error response.","schema":{"$ref":"#/definitions/rpcStatus"}}`, "")
+
+		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), []byte(swaggerStr), 0755)
 		if err != nil {
 			return err
 		}
