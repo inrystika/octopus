@@ -8,30 +8,6 @@ import (
 	"gorm.io/plugin/soft_delete"
 )
 
-type AlgorithmType struct {
-	dao.Model
-	Id         string                `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:Id"`
-	Desc       string                `gorm:"type:varchar(256);not null;default:'';uniqueIndex:desc_deletedAt;comment:类型描述"`
-	ReferTimes int                   `gorm:"type:int;not null;default:0;comment:类型引用次数"`
-	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:desc_deletedAt"`
-}
-
-func (AlgorithmType) TableName() string {
-	return "algorithm_type"
-}
-
-type AlgorithmFramework struct {
-	dao.Model
-	Id         string                `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:Id"`
-	Desc       string                `gorm:"type:varchar(256);not null;default:'';uniqueIndex:desc_deletedAt;comment:类型描述"`
-	ReferTimes int                   `gorm:"type:int;not null;default:0;comment:类型引用次数"`
-	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:desc_deletedAt"`
-}
-
-func (AlgorithmFramework) TableName() string {
-	return "algorithm_framework"
-}
-
 // 算法表
 type Algorithm struct {
 	AlgorithmId       string `gorm:"type:varchar(100);not null;default:'';comment:'算法Id';primaryKey"`
@@ -107,18 +83,6 @@ func (AlgorithmAccessVersion) TableName() string {
 }
 
 /* 访问接口 */
-// AlgorithmType
-type AlgorithmTypeQuery struct {
-	PageIndex int
-	PageSize  int
-}
-
-// AlgorithmFramework
-type AlgorithmFrameworkQuery struct {
-	PageIndex int
-	PageSize  int
-}
-
 // Algorithm
 type AlgorithmList struct {
 	IsPrefab              bool

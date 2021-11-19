@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service LableService {
+  // 新增标签
+  rpc AddLable (AddLableRequest) returns (AddLableReply);
+  // 查询标签列表
+  rpc ListLable (ListLableRequest) returns (ListLableReply);
+  // 查询单个标签
+  rpc GetLable (GetLableRequest) returns (GetLableReply);
+  // 删除标签
+  rpc DeleteLable (DeleteLableRequest) returns (DeleteLableReply);
+  // 修改标签描述
+  rpc UpdateLable (UpdateLableRequest) returns (UpdateLableReply);
+}
+
+enum Relegation {
+  LABLE_RELEGATION_INIT = 0; // 占位
+	LABLE_RELEGATION_DATASET = 1; // 标签所属模块：数据集
+	LABLE_RELEGATION_ALGORITHM = 2; // 标签所属模块：算法
+}
+
+enum Source {
+  LABLE_SOURCE_INIT = 0; // 占位
+	LABLE_SOURCE_PRESET = 1; // 预置标签
+	LABLE_SOURCE_CUSTOMIZE = 2; // 自定义标签
+}
+
+enum Type {
+  LABLE_TYPE_INIT = 0; // 占位
+	LABLE_TYPE_DATASET_TYPE = 1; // 标签类型，数据集类型
+	LABLE_TYPE_DATASET_APPLY = 2; // 标签类型，数据集用途
+
+	LABLE_TYPE_ALGORITHM_APPLY = 11; // 标签类型，算法用途
+	LABLE_TYPE_ALGORITHM_FRAMEWORK = 12; // 标签类型，算法框架
+}
+
+message Lable {
+  string id = 1;
+  int32 relegationType = 2;
+  int32	sourceType = 3;
+  int32 lableType = 4;
+  string lableDesc = 5;
+  int32 referTimes = 6;
+}
+
+message AddLableRequest {
+  int32 relegationType = 1;
+  int32 lableType = 2;
+  string lableDesc = 3[(validate.rules).string = {min_len: 1, max_len: 10}];
+}
+
+message AddLableReply {
+  Lable lable = 1;
+}
+
+message ListLableRequest {
+  int32 relegationType = 1;
+  int32	sourceType = 2;
+  int32 lableType = 3;
+  int64 pageIndex = 4;
+  int64 pageSize = 5[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListLableReply {
+  int64 totalSize = 1;
+  repeated Lable lables = 2;
+}
+
+message GetLableRequest {
+  string id = 1;
+}
+
+message GetLableReply {
+  Lable lable = 1;
+}
+
+message DeleteLableRequest {
+  string id = 1;
+}
+
+message DeleteLableReply {
+  int64 deletedAt = 1;
+}
+
+message UpdateLableRequest {
+  Lable lable = 1;
+}
+
+message UpdateLableReply {
+  int64 updatedAt = 1;
+}

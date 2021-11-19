@@ -16,15 +16,6 @@ import (
 )
 
 type DatasetDao interface {
-	Transaction(ctx context.Context, fc func(ctx context.Context) error) error
-
-	AddDatasetType(ctx context.Context, datasetType *model.DatasetType) error
-	ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DatasetType, int64, error)
-	GetDatasetType(ctx context.Context, id string) (*model.DatasetType, error)
-	QueryDatasetType(ctx context.Context, typeDesc string) (*model.DatasetType, error)
-	DeleteDatasetType(ctx context.Context, id string) error
-	UpdateDatasetType(ctx context.Context, datasetType *model.DatasetType) error
-
 	CreateDataset(ctx context.Context, dataset *model.Dataset) error
 	ListDataset(ctx context.Context, query *model.DatasetQuery) ([]*model.Dataset, int64, error)
 	ListCommDataset(ctx context.Context, query *model.CommDatasetQuery) ([]*model.Dataset, int64, error)
@@ -63,103 +54,6 @@ func NewDatasetDao(db *gorm.DB, logger log.Logger) DatasetDao {
 			return transaction.GetDBFromCtx(ctx, db)
 		},
 	}
-}
-
-func (d *datasetDao) Transaction(ctx context.Context, fc func(ctx context.Context) error) error {
-	return transaction.Transaction(ctx, d.db(ctx), fc)
-}
-
-func (d *datasetDao) AddDatasetType(ctx context.Context, datasetType *model.DatasetType) error {
-	res := d.db(ctx).Create(datasetType)
-	if res.Error != nil {
-		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
-	}
-	return nil
-}
-
-func (d *datasetDao) ListDatasetType(ctx context.Context, query *model.DatasetTypeQuery) ([]*model.DatasetType, int64, error) {
-	db := d.db(ctx).Model(&model.DatasetType{})
-	datasetTypes := make([]*model.DatasetType, 0)
-
-	var totalSize int64
-	res := db.Count(&totalSize)
-	if res.Error != nil {
-		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBCountFailed)
-	}
-
-	if query.PageIndex != 0 {
-		db = db.Limit(query.PageSize).Offset((query.PageIndex - 1) * query.PageSize)
-	}
-
-	res = db.Find(&datasetTypes)
-	if res.Error != nil {
-		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
-	}
-
-	return datasetTypes, totalSize, nil
-}
-
-func (d *datasetDao) GetDatasetType(ctx context.Context, id string) (*model.DatasetType, error) {
-	db := d.db(ctx)
-
-	nb := &model.DatasetType{}
-	res := db.First(nb, "id = ?", id)
-
-	if res.Error != nil {
-		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, errors.Errorf(res.Error, errors.ErrorDBFindEmpty)
-		} else {
-			return nil, errors.Errorf(res.Error, errors.ErrorDBFirstFailed)
-		}
-	}
-	return nb, nil
-}
-
-func (d *datasetDao) QueryDatasetType(ctx context.Context, typeDesc string) (*model.DatasetType, error) {
-	db := d.db(ctx)
-
-	nb := &model.DatasetType{}
-	res := db.First(nb, "`desc` = ?", typeDesc)
-
-	if res.Error != nil {
-		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, errors.Errorf(res.Error, errors.ErrorDBFindEmpty)
-		} else {
-			return nil, errors.Errorf(res.Error, errors.ErrorDBFirstFailed)
-		}
-	}
-	return nb, nil
-}
-
-func (d *datasetDao) DeleteDatasetType(ctx context.Context, id string) error {
-	db := d.db(ctx)
-
-	if id == "" {
-		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-	}
-
-	res := db.Where("id = ? ", id).Delete(&model.DatasetType{})
-	if res.Error != nil {
-		return errors.Errorf(nil, errors.ErrorDBDeleteFailed)
-	}
-
-	return nil
-}
-
-func (d *datasetDao) UpdateDatasetType(ctx context.Context, datasetType *model.DatasetType) error {
-	db := d.db(ctx)
-	if datasetType.Id == "" {
-		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-	}
-	res := db.Model(&model.DatasetType{}).Where("id = ? ", datasetType.Id).Updates(map[string]interface{}{
-		"desc":        datasetType.Desc,
-		"refer_times": datasetType.ReferTimes,
-	})
-
-	if res.Error != nil {
-		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
-	}
-	return nil
 }
 
 func (d *datasetDao) CreateDataset(ctx context.Context, dataset *model.Dataset) error {
