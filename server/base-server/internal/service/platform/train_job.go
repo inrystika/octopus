@@ -149,7 +149,7 @@ func (s *platformTrainJobService) TrainJob(ctx context.Context, req *api.Platfor
 }
 
 func (s *platformTrainJobService) buildCmd(task *model.Task) []string {
-	cmd := fmt.Sprintf("cd %s;%s ", s.conf.Service.DockerCodePath, task.Command)
+	cmd := fmt.Sprintf("%s ", task.Command)
 	if len(task.Parameters) == 0 {
 		return []string{"sh", "-c", cmd}
 	} else {
