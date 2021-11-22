@@ -16,8 +16,6 @@ service Algorithm {
             post: "/v1/algorithmmanage/algorithmtype"
             body: "*"
       };
-    }
-
     // 查询算法类型列表
     rpc ListAlgorithmType (ListAlgorithmTypeRequest) returns (ListAlgorithmTypeReply) {
       option (google.api.http) = {
