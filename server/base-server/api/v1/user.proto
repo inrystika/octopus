@@ -8,7 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service User {
+service UserService {
   rpc ListUser (ListUserRequest) returns (ListUserReply);
   rpc FindUser (FindUserRequest) returns (FindUserReply);
   rpc AddUser (AddUserRequest) returns (AddUserReply);

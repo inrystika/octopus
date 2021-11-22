@@ -8,29 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service Algorithm {
-    // 新增算法类型
-    rpc AddAlgorithmType (AddAlgorithmTypeRequest) returns (AddAlgorithmTypeReply);
-    // 查询算法类型列表
-    rpc ListAlgorithmType (ListAlgorithmTypeRequest) returns (ListAlgorithmTypeReply);
-    // 查询单个算法类型
-    rpc GetAlgorithmType (GetAlgorithmTypeRequest) returns (GetAlgorithmTypeReply);
-    // 删除算法类型
-    rpc DeleteAlgorithmType (DeleteAlgorithmTypeRequest) returns (DeleteAlgorithmTypeReply);
-    // 修改算法类型描述
-    rpc UpdateAlgorithmType (UpdateAlgorithmTypeRequest) returns (UpdateAlgorithmTypeReply);
-
-    // 新增算法框架
-    rpc AddAlgorithmFramework (AddAlgorithmFrameworkRequest) returns (AddAlgorithmFrameworkReply);
-    // 查询算法框架列表
-    rpc ListAlgorithmFramework (ListAlgorithmFrameworkRequest) returns (ListAlgorithmFrameworkReply);
-    // 查询单个算法框架
-    rpc GetAlgorithmFramework (GetAlgorithmFrameworkRequest) returns (GetAlgorithmFrameworkReply);
-    // 删除算法框架
-    rpc DeleteAlgorithmFramework (DeleteAlgorithmFrameworkRequest) returns (DeleteAlgorithmFrameworkReply);
-    // 修改算法框架描述
-    rpc UpdateAlgorithmFramework (UpdateAlgorithmFrameworkRequest) returns (UpdateAlgorithmFrameworkReply);
-
+service AlgorithmService {
     // 查询预置算法列表
     rpc ListPreAlgorithm (ListPreAlgorithmRequest) returns (ListPreAlgorithmReply);
     // 查询我的算法列表
@@ -96,104 +74,6 @@ service Algorithm {
     rpc DownloadAlgorithmVersion (DownloadAlgorithmVersionRequest) returns (DownloadAlgorithmVersionReply);
 }
 
-message AlgorithmType {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message AddAlgorithmTypeRequest {
-  string typeDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
-}
-
-message AddAlgorithmTypeReply {
-  AlgorithmType algorithmType = 1;
-}
-
-message ListAlgorithmTypeRequest {
-  int64 pageIndex = 1;
-  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
-}
-
-message ListAlgorithmTypeReply {
-  int64 totalSize = 1;
-  repeated AlgorithmType algorithmTypes = 2;
-}
-
-message GetAlgorithmTypeRequest {
-  string id = 1;
-}
-
-message GetAlgorithmTypeReply {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message DeleteAlgorithmTypeRequest {
-  string id = 1;
-}
-
-message DeleteAlgorithmTypeReply {
-  int64 deletedAt = 1;
-}
-
-message UpdateAlgorithmTypeRequest {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message UpdateAlgorithmTypeReply {
-  int64 updatedAt = 1;
-}
-
-message AlgorithmFramework {
-  string id = 1;
-  string frameworkDesc = 2;
-}
-
-message AddAlgorithmFrameworkRequest {
-  string frameworkDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
-}
-
-message AddAlgorithmFrameworkReply {
-  AlgorithmFramework algorithmFramework = 1;
-}
-
-message ListAlgorithmFrameworkRequest {
-  int64 pageIndex = 1;
-  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
-}
-
-message ListAlgorithmFrameworkReply {
-  int64 totalSize = 1;
-  repeated AlgorithmFramework algorithmFrameworks = 2;
-}
-
-message GetAlgorithmFrameworkRequest {
-  string id = 1;
-}
-
-message GetAlgorithmFrameworkReply {
-  string id = 1;
-  string frameworkDesc = 2;
-}
-
-message DeleteAlgorithmFrameworkRequest {
-  string id = 1;
-}
-
-message DeleteAlgorithmFrameworkReply {
-  int64 deletedAt = 1;
-}
-
-message UpdateAlgorithmFrameworkRequest {
-  string id = 1;
-  string frameworkDesc = 2;
-}
-
-message UpdateAlgorithmFrameworkReply {
-  int64 updatedAt = 1;
-}
-
 message AlgorithmInfo {
   string algorithmId = 1;
   string algorithmName = 2;
@@ -210,8 +90,8 @@ message AlgorithmDetail {
   int64 fileStatus = 7;
   int64 latestCompressed = 8;
   string algorithmDescript = 9;
-  string typeId = 10;
-  string typeName = 11;
+  string applyId = 10;
+  string applyName = 11;
 	string frameworkId = 12;
   string frameworkName = 13;
   string path = 14;
@@ -390,7 +270,7 @@ message AddAlgorithmRequest {
   string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
-  string typeId = 8;
+  string applyId = 8;
   string frameworkId = 9;
 }
 message AddAlgorithmReply {
@@ -420,7 +300,7 @@ message CopyAlgorithmVersionRequest {
   string newAlgorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
-  string typeId = 8;
+  string applyId = 8;
   string frameworkId = 9;
 }
 message CopyAlgorithmVersionReply {
@@ -442,7 +322,7 @@ message ConfirmUploadAlgorithmReply {
 
 message UpdateAlgorithmRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
-  string typeId = 2;
+  string applyId = 2;
   string frameworkId = 3;
   string algorithmDescript = 4[(validate.rules).string = {max_len: 300}];
 }

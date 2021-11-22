@@ -8,7 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service Workspace {
+service WorkspaceService {
   rpc CreateWorkspace (CreateWorkspaceRequest) returns (CreateWorkspaceReply);
   rpc UpdateWorkspace (UpdateWorkspaceRequest) returns (UpdateWorkspaceReply);
   rpc DeleteWorkspace (DeleteWorkspaceRequest) returns (DeleteWorkspaceReply);
