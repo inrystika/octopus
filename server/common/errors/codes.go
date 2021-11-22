@@ -354,7 +354,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorWorkSpaceNotExist:          {codeType: NotFound, msg: "workspace not existed"},
 	ErrorUserWorkSpaceNoPermission:  {codeType: PermissionDenied, msg: "user workspace permission deny"},
 	ErrorWorkSpaceResourcePoolBound: {codeType: ResourceExhausted, msg: "workspace and resource pool had bind"},
-	ErrorUserConfigKeyNotExist:     {codeType: InvalidArgument, msg: "user config key not exist"},
+	ErrorUserConfigKeyNotExist:      {codeType: InvalidArgument, msg: "user config key not exist"},
 
 	/* 17001~18000 机时管理错误*/
 	ErrorBillingObtainLockFailed: {codeType: Internal, msg: "billing obtain lock failed"},

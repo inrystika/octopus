@@ -8,8 +8,8 @@ import (
 	"server/base-server/internal/data/dao/model"
 	platformModel "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
-	"server/base-server/internal/data/influxdb"
 	platformDao "server/base-server/internal/data/dao/platform"
+	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
@@ -42,7 +42,7 @@ type Data struct {
 	Minio               minio.Minio
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
-	Influxdb        influxdb.Influxdb
+	Influxdb            influxdb.Influxdb
 	PlatformDao         platformDao.PlatformDao
 	Platform            platform.Platform
 	JointCloudDao       jointcloud.JointcloudDao
