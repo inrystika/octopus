@@ -12,7 +12,7 @@
         ref="ruleForm"        
       >
         <el-form-item>
-          <div v-for="(item, index) in ruleForm.platformConfig" :key="index">
+          <div v-for="(item, index) in ruleForm.userConfig" :key="index">
             <el-form-item>
               <strong>{{item.key+": "}}</strong>
               <el-popover
@@ -43,46 +43,50 @@
   </div>
 </template>
 <script>
-import { getPlatformConfigKey, getPlatformConfigValue, updatePlatformConfig } from "@/api/platformManager"
+import { getUserConfigKey, getUserConfig, updateUserConfig } from '@/api/userManager.js'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "platformConfig",
+  name: "userConfig",
   props: {
-    platformDetail: {
-      type: Object,
+    row: {
+      tyep: Object,
       default: () => {}
     }
   },
   data() {
     return {
       createFormVisible: true,
-      platformConfigKeyList: [],
+      userConfigKeyList: [],
+      userConfig: {},
       ruleForm: {
-        platformConfig: []
+        userConfig: []
       },
       rules: {
-        platformConfig: {
+        userConfig: {
           required: true, message: '请选择配置信息', trigger: ['change', 'blur']
         },
       }
     }
   },
   created() {
-    this.getPlatformConfigKey()
-    this.getPlatformConfigValue()
+    this.getUserConfigKey()
+    this.getUserConfig()
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit('close', false)
     },
-    getPlatformConfigKey() {
-      getPlatformConfigKey().then(response => {
+    cancel() {
+      this.$emit('cancel', false)
+    },
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
+    getUserConfigKey() {
+      getUserConfigKey().then(response => {
         if (response.success) {
-          this.platformConfigKeyList = response.data.configKeys
-        } else {
+          this.userConfigKeyList = response.data.configKeys
+        }else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
             type: 'warning'
@@ -90,13 +94,13 @@ export default {
         }
       })
     },
-    getPlatformConfigValue() {
-      const platformId = this.platformDetail.id
-      getPlatformConfigValue(platformId).then(response => {
+    getUserConfig() {
+      getUserConfig(this.row.id).then(response => {
         if (response.success) {
+          // this.userConfig = response.data.config
           let configValue = response.data.config
           this.judgeObjectEmpty(configValue)
-        } else {
+        }else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
             type: 'warning'
@@ -106,9 +110,9 @@ export default {
     },
     judgeObjectEmpty(obj){
       if(obj && Object.getOwnPropertyNames(obj).length) {
-        this.platformConfigKeyList.map(item => {
+        this.userConfigKeyList.map(item => {
           if (obj[item.key]) {
-            this.ruleForm.platformConfig.push({
+            this.ruleForm.userConfig.push({
               key: item.key,
               value: obj[item.key],
               type: item.type,
@@ -118,8 +122,8 @@ export default {
           }
         })
       } else {
-        this.platformConfigKeyList.map(item => {
-          this.ruleForm.platformConfig.push({
+        this.userConfigKeyList.map(item => {
+          this.ruleForm.userConfig.push({
               key: item.key,
               value: "",
               type: item.type,
@@ -129,21 +133,13 @@ export default {
             })
         })
       }
-      // this.ruleForm.platformConfig.push({
-      //   key: "test1",
-      //   value: "",
-      //   type: "radio",
-      //   options: "yes",
-      //   title: "test title",
-      //   desc: "this is desc"
-      // })
     },
     update(formName) {
       const params = {}
-      this.ruleForm.platformConfig.map(item => {
+      this.ruleForm.userConfig.map(item => {
         params[item.key] = item.value?item.value:item.options
       })
-      updatePlatformConfig(this.platformDetail.id,params).then(response => {
+      updateUserConfig(this.row.id,params).then(response => {
         if(response.success) {            
           this.$message.success("平台配置更新成功");
           this.$emit('confirm', false)
@@ -154,9 +150,6 @@ export default {
           });
         }
       })
-    },
-    cancel() {
-      this.$emit('cancel', false)
     },
   }
 }

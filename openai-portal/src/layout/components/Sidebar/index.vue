@@ -23,15 +23,25 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import getUserConfig from '@/api/Home.js'
 
 export default {
   components: { SidebarItem, Logo },
+  created() {
+    this.getUserConfig()
+  },
+  methods: {
+    getUserConfig() {
+      console.log("created") 
+    }
+  },
   computed: {
     ...mapGetters([
       'sidebar'
      
     ]),
     routes() {
+      // debugger
       return this.$router.options.routes
     },
     activeMenu() {
