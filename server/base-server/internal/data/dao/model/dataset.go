@@ -6,6 +6,18 @@ import (
 	"gorm.io/plugin/soft_delete"
 )
 
+type DatasetType struct {
+	dao.Model
+	Id         string                `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:Id"`
+	Desc       string                `gorm:"type:varchar(256);not null;default:'';uniqueIndex:desc_deletedAt;comment:类型描述"`
+	ReferTimes int                   `gorm:"type:int;not null;default:0;comment:类型引用次数"`
+	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:desc_deletedAt"`
+}
+
+func (DatasetType) TableName() string {
+	return "dataset_type"
+}
+
 type Dataset struct {
 	dao.Model
 	Id         string                `gorm:"primaryKey;type:varchar(100);not null;comment:Id"`
@@ -13,7 +25,7 @@ type Dataset struct {
 	UserId     string                `gorm:"type:varchar(100);not null;default:'';index;uniqueIndex:name_userId_spaceId,priority:2;comment:归属用户Id"`
 	SourceType int                   `gorm:"type:tinyint;not null;default:0;comment:1预置数据集 2用户数据集"`
 	Name       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:名称"`
-	Type       string                `gorm:"type:varchar(100);not null;default:'';comment:类型"`
+	TypeId     string                `gorm:"type:varchar(100);not null;default:'';comment:数据类型"`
 	Desc       string                `gorm:"type:varchar(1024);not null;default:'';comment:描述"`
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
@@ -60,6 +72,11 @@ type DatasetVersionAccess struct {
 
 func (DatasetVersionAccess) TableName() string {
 	return "dataset_version_access"
+}
+
+type DatasetTypeQuery struct {
+	PageIndex int
+	PageSize  int
 }
 
 type DatasetQuery struct {

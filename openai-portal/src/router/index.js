@@ -123,6 +123,18 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/cloudInterconnection',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'cloudInterconnection',
+        component: () => import('@/views/cloudInterconnection/index'),
+        meta: { title: '云际互联', icon: 'example' }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

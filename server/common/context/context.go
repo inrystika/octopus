@@ -14,6 +14,7 @@ const (
 	CTX_REQUEST_ID_KEY CtxKey = "requestId" //请求id 存在于请求链路的各个服务
 	CTX_DB_TX_KEY      CtxKey = "dbTx"      //数据库事务 存在于common.Transaction()
 	CTX_CREATED_AT_KEY CtxKey = "createdAt"
+	CTX_PLATFORM_ID    CtxKey = "platformId" //第三方平台Id
 )
 
 func RequestIdKey() CtxKey {
@@ -46,6 +47,22 @@ func UserIdToContext(ctx context.Context, val interface{}) context.Context {
 
 func UserIdFromContext(ctx context.Context) string {
 	id, ok := ctx.Value(UserIdKey()).(string)
+	if ok {
+		return id
+	}
+	return ""
+}
+
+func PlatformIdKey() CtxKey {
+	return CTX_PLATFORM_ID
+}
+
+func PlatformIdToContext(ctx context.Context, val interface{}) context.Context {
+	return context.WithValue(ctx, PlatformIdKey(), val)
+}
+
+func PlatformIdFromContext(ctx context.Context) string {
+	id, ok := ctx.Value(PlatformIdKey()).(string)
 	if ok {
 		return id
 	}

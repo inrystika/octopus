@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package adminserver.api.v1;
+
+option go_package = "server/admin-server/api/v1;v1";
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service PlatformService {
+  // 查询第三方平台列表
+  rpc ListPlatform (ListPlatformRequest) returns (ListPlatformReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platform"
+    };
+  };
+  // 创建第三方平台
+  rpc CreatePlatform (CreatePlatformRequest) returns (CreatePlatformReply) {
+    option (google.api.http) = {
+      post: "/v1/platformmanage/platform"
+      body: "*"
+    };
+  };
+  // 更新第三方平台
+  rpc UpdatePlatform (UpdatePlatformRequest) returns (UpdatePlatformReply) {
+    option (google.api.http) = {
+      put: "/v1/platformmanage/platform"
+      body: "*"
+    };
+  };
+  // 查询存储配置列表
+  rpc ListPlatformStorageConfig (ListPlatformStorageConfigRequest) returns (ListPlatformStorageConfigReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platform/{platformId}/storageconfig"
+    };
+  };
+  // 创建存储配置
+  rpc CreatePlatformStorageConfig (CreatePlatformStorageConfigRequest) returns (CreatePlatformStorageConfigReply) {
+    option (google.api.http) = {
+      post: "/v1/platformmanage/platform/{platformId}/storageconfig"
+      body: "*"
+    };
+  };
+  // 删除存储配置
+  rpc DeletePlatformStorageConfig (DeletePlatformStorageConfigRequest) returns (DeletePlatformStorageConfigReply) {
+    option (google.api.http) = {
+      delete: "/v1/platformmanage/platform/{platformId}/storageconfig/{name}"
+    };
+  }
+  // 查询配置key列表
+  rpc ListPlatformConfigKey (ListPlatformConfigKeyRequest) returns (ListPlatformConfigKeyReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platformconfigkey"
+    };
+  }
+
+  // 查询平台配置
+  rpc GetPlatformConfig (GetPlatformConfigRequest) returns (GetPlatformConfigReply) {
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platform/{platformId}/config"
+    };
+  };
+
+  // 更新平台配置
+  rpc UpdatePlatformConfig (UpdatePlatformConfigRequest) returns (UpdatePlatformConfigReply) {
+    option (google.api.http) = {
+      put: "/v1/platformmanage/platform/{platformId}/config"
+      body: "*"
+    };
+  };
+}
+
+message ListPlatformRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string searchKey = 7;
+}
+
+message Platform {
+  int64 createdAt = 1;
+  int64 updatedAt = 2;
+  string id = 3;
+  string name = 4;
+  string clientSecret = 5;
+  string contactName = 6;
+  string contactInfo = 7;
+  string resourcePool = 8;
+}
+
+message ListPlatformReply {
+  int64 totalSize = 1;
+  repeated Platform platforms = 2;
+}
+
+message CreatePlatformRequest {
+  // 名称，必填
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  // 联系人姓名，选填
+  string contactName = 2;
+  // 联系方式，选填
+  string contactInfo = 3;
+  // 资源池，必填
+  string resourcePool = 4[(validate.rules).string = {min_len: 1}];
+}
+
+message CreatePlatformReply {
+  string id = 1;
+}
+
+message UpdatePlatformRequest {
+  string id = 1;
+  string contactName = 2;
+  string contactInfo = 3;
+  string resourcePool = 4[(validate.rules).string = {min_len: 1}];
+}
+
+message UpdatePlatformReply {
+
+}
+
+
+message StorageOptions {
+  message Juicefs {
+    string name = 1;
+    string metaUrl = 2;
+  }
+
+  Juicefs juicefs = 1;
+}
+
+message ListPlatformStorageConfigRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string searchKey = 7;
+  string platformId = 8;
+  string name = 9;
+}
+
+message PlatformStorageConfig {
+  int64 createdAt = 1;
+  int64 updatedAt = 2;
+  string platformId = 3;
+  string name = 4;
+  string type = 5;
+  StorageOptions options = 6;
+}
+
+message ListPlatformStorageConfigReply {
+  int64 totalSize = 1;
+  repeated PlatformStorageConfig platformStorageConfigs = 2;
+}
+
+message CreatePlatformStorageConfigRequest {
+  string platformId = 1[(validate.rules).string = {min_len: 1}];
+  string name = 2[(validate.rules).string = {min_len: 1, max_len: 30, not_contains: "/"}];
+  string type = 3[(validate.rules).string = {in: ["juicefs"]}];
+  StorageOptions options = 4;
+}
+
+message CreatePlatformStorageConfigReply {
+}
+
+
+message DeletePlatformStorageConfigRequest {
+  string platformId = 1;
+  string name = 2;
+}
+
+message DeletePlatformStorageConfigReply {
+
+}
+
+message ListPlatformConfigKeyRequest {
+
+}
+
+message ListPlatformConfigKeyReply {
+  message ConfigKey {
+    string key = 1;     // 键值，必填，保存配置时传入
+    string title = 2;   // 标题，必填
+    string type = 3;    // 类型，必填，input、radio、checkbox，默认为input
+    string desc = 4;    // 描述，选填
+    string options = 5; // 选项，选填，radio、checkbox时必填，逗号分隔
+    string regexp = 6;  // 正则，选填
+    bool required = 7; // 选填，默认为false
+  }
+  repeated ConfigKey configKeys = 1;
+}
+
+message GetPlatformConfigRequest {
+  string platformId = 1;
+}
+
+message GetPlatformConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdatePlatformConfigRequest {
+  string platformId = 1[(validate.rules).string = {min_len: 1}];
+  map<string, string> config = 2;
+}
+
+message UpdatePlatformConfigReply {
+
+}

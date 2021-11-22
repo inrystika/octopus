@@ -104,12 +104,28 @@ export const constantRoutes = [
   {
     path: '/timeManager',
     component: Layout,
+    meta: {
+      title: '机时管理',
+      icon: 'time'
+    },
     children: [
       {
-        path: 'index',
-        name: '/',
-        component: () => import('@/views/timeManager/index'),
-        meta: { title: '机时管理', icon: 'time' }
+        path: 'machine',
+        name: 'machine',
+        component: () => import('@/views/timeManager/machine'),
+        meta: { title: '机时', icon: 'dot' }
+      },
+      {
+        path: 'recharge',
+        name: 'recharge',
+        component: () => import('@/views/timeManager/recharge'),
+        meta: { title: '充值', icon: 'dot' }
+      },
+      {
+        path: 'consumption',
+        name: 'consumption',
+        component: () => import('@/views/timeManager/consumption'),
+        meta: { title: '消费', icon: 'dot' }
       }
     ]
   },
@@ -182,6 +198,25 @@ export const constantRoutes = [
         component: () => import('@/views/modelManager/index'),
         meta: { title: '模型管理', icon: 'model2' }
       }
+    ]
+  },
+  {
+    path: '/platformManager',
+    component: Layout,
+    redirect: '/platform',
+    name: 'platformManager',
+    meta: {
+      title: '平台管理',
+      icon: 'example'
+    },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'platform',
+        component: () => import('@/views/platformManager/platform'),
+        name: 'platform',
+        meta: { title: '平台', icon: 'dot' }
+      },
     ]
   },
 

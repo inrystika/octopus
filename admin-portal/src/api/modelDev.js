@@ -2,8 +2,8 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
@@ -143,6 +143,68 @@ export async function deletePreAlgorithm(algorithmId) {
   const res = await request({
     url: `/v1/algorithmmanage/prealgorithm/${algorithmId}`,
     method: "delete"
+  })
+  return res
+}
+export async function algorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addAlgorithmType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype`,
+    method: "post",
+    data: { typeDesc: data }
+  })
+  return res
+}
+export async function deleteAlgorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateAlgorithmType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype/${data.id}`,
+    method: "put",
+    data: data
+  })
+  return res
+}
+export async function frameType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addFrameType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "post",
+    data: { frameworkDesc: data }
+  })
+  return res
+}
+export async function deleteFrameType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateFrameType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework/${data.id}`,
+    method: "put",
+    data: data
   })
   return res
 }

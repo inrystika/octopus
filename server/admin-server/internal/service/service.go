@@ -22,6 +22,8 @@ type Service struct {
 	ResourcePoolService api.ResourcePoolServiceServer
 	DatasetService      api.DatasetServiceServer
 	BillingService      api.BillingServiceServer
+	PlatformService     api.PlatformServiceServer
+	JointCloudService   api.JointCloudServiceServer
 }
 
 func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Service {
@@ -40,6 +42,8 @@ func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Servi
 	service.ResourcePoolService = NewResourcePoolService(conf, logger, data)
 	service.DatasetService = NewDatasetService(conf, logger, data)
 	service.BillingService = NewBillingService(conf, logger, data)
+	service.PlatformService = NewPlatformService(conf, data)
+	service.JointCloudService = NewJointCloudService(conf, data)
 
 	return service
 }

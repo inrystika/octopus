@@ -10,7 +10,9 @@ import (
 	"server/base-server/internal/service/dataset"
 	"server/base-server/internal/service/develop"
 	"server/base-server/internal/service/image"
+	"server/base-server/internal/service/jointcloud"
 	"server/base-server/internal/service/model"
+	"server/base-server/internal/service/platform"
 	"server/base-server/internal/service/resources"
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
@@ -20,20 +22,23 @@ import (
 )
 
 type Service struct {
-	AlgorithmService    api.AlgorithmServer
-	UserService         api.UserServer
-	AdminUserService    api.AdminUserServer
-	ModelService        api.ModelServer
-	ResourceService     api.ResourceServiceServer
-	ResourceSpecService api.ResourceSpecServiceServer
-	ResourcePoolService api.ResourcePoolServiceServer
-	NodeService         api.NodeServiceServer
-	DevelopService      develop.DevelopService
-	TrainJobService     trainjob.TrainJobService
-	WorkspaceService    api.WorkspaceServer
-	DatasetService      api.DatasetServiceServer
-	ImageService        api.ImageServer
-	BillingService      api.BillingServiceServer
+	AlgorithmService        api.AlgorithmServer
+	UserService             api.UserServer
+	AdminUserService        api.AdminUserServer
+	ModelService            api.ModelServer
+	ResourceService         api.ResourceServiceServer
+	ResourceSpecService     api.ResourceSpecServiceServer
+	ResourcePoolService     api.ResourcePoolServiceServer
+	NodeService             api.NodeServiceServer
+	DevelopService          develop.DevelopService
+	TrainJobService         trainjob.TrainJobService
+	WorkspaceService        api.WorkspaceServer
+	DatasetService          api.DatasetServiceServer
+	ImageService            api.ImageServer
+	BillingService          api.BillingServiceServer
+	PlatformService         api.PlatformServiceServer
+	PlatformTrainJobService platform.PlatformTrainJobService
+	JointCloudService       api.JointCloudServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -65,6 +70,13 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	if err != nil {
 		return nil, err
 	}
+	service.PlatformService = platform.NewPlatformService(conf, data)
+	service.PlatformTrainJobService, err = platform.NewPlatformTrainJobService(conf, logger, data,
+		service.ResourceService, service.PlatformService)
+	if err != nil {
+		return nil, err
+	}
+	service.JointCloudService = jointcloud.NewJointCloudService(conf, data)
 
 	return service, nil
 }

@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
-  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
-  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
-  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
-  params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
-  params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
-  params.path ? conditions.push(`path=` + params.path) : null;
+  let conditions = []
+  conditions.push(`pageSize=`+params.pageSize);
+  conditions.push(`pageIndex=`+params.pageIndex);
+  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
+  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
+  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
+  params.createdAtGte?conditions.push(`createdAtGte=`+params.createdAtGte):null;
+  params.createdAtLt?conditions.push(`createdAtLt=`+params.createdAtLt):null;
+  params.path?conditions.push(`path=`+params.path):null;
   return conditions
 }
 
@@ -127,6 +127,37 @@ export async function previewDataset(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}/file?` + conditions.join("&"),
     method: "get"
+  })
+  return res
+}
+export async function datasetType(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addDatasetType(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype`,
+    method: "post",
+    data: { typeDesc: data }
+  })
+  return res
+}
+export async function deleteDatasetType(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateDatasetType(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype/${data.id}`,
+    method: "put",
+    data: data
   })
   return res
 }
