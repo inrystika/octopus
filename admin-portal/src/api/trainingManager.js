@@ -12,28 +12,36 @@ export function getTraining(params) {
 export function stopTraining(params) {
     return request({
         url: `/v1/trainmanage/trainjob/${params}/stop`,
-        method: 'post',
+        method: 'post'
     })
 }
-//获取训练任务详情
+// 获取训练任务详情
 export function trainingDetail(params) {
     return request({
         url: `/v1/trainmanage/trainjob/${params}`,
         method: 'get'
     })
 }
-//任务日志访问
+// 任务日志访问
 export function showLog(params) {
     return requestLog({
         url: `/log/user/trainjob/${params.jobId}/${params.subName}/index.log`,
         method: 'get'
     })
 }
-//下载训练任务日志
+// 下载训练任务日志
 export function downloadLog(params) {
     return requestLog({
         url: `/log/download/user/trainjob/${params.jobId}/${params.subName}/index.log`,
         method: 'get'
     })
   }
+  // 训任务运行信息
+export function getTempalteInfo(params) {
+  return request({
+    url: `/v1/trainmanage/trainjobevent`,
+    method: 'get',
+    params
+  })
+}
 

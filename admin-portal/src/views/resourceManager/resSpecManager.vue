@@ -1,7 +1,7 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
     <el-tab-pane label="资源规格列表" name="first">
-      <ResourceSpec></ResourceSpec>
+      <ResourceSpec />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -12,12 +12,22 @@
     components: {
       ResourceSpec
 
-
     },
     data() {
       return {
         activeName: 'first'
       }
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
     },
     methods: {
       handleClick(tab, event) {

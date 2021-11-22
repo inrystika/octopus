@@ -24,7 +24,23 @@ module.exports = {
     "vue/singleline-html-element-content-newline": "off",
     "vue/multiline-html-element-content-newline":"off",
     "vue/name-property-casing": ["error", "PascalCase"],
-    "vue/no-v-html": "off",
+    "vue/html-self-closing": ["error", {
+      "html": {
+        "void": "never",
+        "normal": "any",
+        "component": "always"
+      },
+      "svg": "always",
+      "math": "always"
+    }],
+    // "vue/name-property-casing": ["off", "PascalCase"],
+    // 'vue/attribute-hyphenation': 0,
+    // "vue/require-default-prop": 0,
+    // "vue/prop-name-casing": 0,
+    // "vue/this-in-template": 0,
+    // "vue/require-prop-type-constructor": 0,
+    // "vue/no-dupe-keys":0,
+    // "vue/no-v-html": "off",
     'accessor-pairs': 2,
     'arrow-spacing': [2, {
       'before': true,
@@ -46,16 +62,16 @@ module.exports = {
     'constructor-super': 2,
     'curly': [2, 'multi-line'],
     'dot-location': [2, 'property'],
-    'eol-last': 2,
+    
     'eqeqeq': ["error", "always", {"null": "ignore"}],
+    // 'eqeqeq': ["off", "always", {"null": "ignore"}],
     'generator-star-spacing': [2, {
       'before': true,
       'after': true
     }],
     'handle-callback-err': [2, '^(err|error)$'],
-    'indent': [2, 2, {
-      'SwitchCase': 1
-    }],
+    // "indent": [1, 4],
+    "vue/html-indent":['off',4],
     'jsx-quotes': [2, 'prefer-single'],
     'key-spacing': [2, {
       'beforeColon': false,
@@ -81,6 +97,7 @@ module.exports = {
     'no-dupe-args': 2,
     'no-dupe-class-members': 2,
     'no-dupe-keys': 2,
+    // 'no-dupe-keys': 0,
     'no-duplicate-case': 2,
     'no-empty-character-class': 2,
     'no-empty-pattern': 2,
@@ -162,11 +179,8 @@ module.exports = {
       }
     }],
     'padded-blocks': [2, 'never'],
-    'quotes': [2, 'single', {
-      'avoidEscape': true,
-      'allowTemplateLiterals': true
-    }],
-    'semi': [2, 'never'],
+
+    
     'semi-spacing': [2, {
       'before': false,
       'after': true

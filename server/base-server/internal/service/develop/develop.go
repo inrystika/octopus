@@ -798,3 +798,33 @@ func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRe
 
 	return &api.GetNotebookReply{Notebook: notebook}, nil
 }
+
+func (s *developService) GetNotebookEventList(ctx context.Context, req *api.NotebookEventListRequest) (*api.NotebookEventListReply, error) {
+
+	query := &model.NotebookEventQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, err
+	}
+
+	events, totalSize, err := s.data.DevelopDao.GetNotebookEvents(query)
+	if err != nil {
+		return nil, err
+	}
+
+	notebookEvents := make([]*api.NotebookEvent, 0)
+
+	for _, value := range events {
+		event := &api.NotebookEvent{}
+		event.Timestamp = value.Timestamp
+		event.Name = value.Name
+		event.Reason = value.Reason
+		event.Message = value.Message
+		notebookEvents = append(notebookEvents, event)
+	}
+
+	return &api.NotebookEventListReply{
+		TotalSize:      totalSize,
+		NotebookEvents: notebookEvents,
+	}, nil
+}

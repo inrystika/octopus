@@ -10,6 +10,13 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service DatasetService {
+  // 查询数据集类型列表
+  rpc ListDatasetType (ListDatasetTypeRequest) returns (ListDatasetTypeReply) {
+    option (google.api.http) = {
+      get: "/v1/datasetmanage/datasettype"
+    }; 
+  }
+
   // 创建数据集
   rpc CreateDataset (CreateDatasetRequest) returns (CreateDatasetReply) {
     option (google.api.http) = {
@@ -96,9 +103,24 @@ service DatasetService {
   }
 }
 
+message DatasetType {
+  string id = 1;
+  string typeDesc = 2;
+}
+
+message ListDatasetTypeRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListDatasetTypeReply {
+  int64 totalSize = 1;
+  repeated DatasetType datasetTypes = 2;
+}
+
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  string type = 2[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string typeId = 2[(validate.rules).string = {min_len: 1, max_len: 64}];
   string desc = 3[(validate.rules).string = {max_len: 300}];
 }
 
@@ -113,9 +135,10 @@ message Dataset {
   string id = 3;
   int32 sourceType = 6;
   string name = 7;
-  string type = 8;
-  string desc = 9;
-  string latestVersion = 10;
+  string typeId = 8;
+  string typeDesc = 9;
+  string desc = 10;
+  string latestVersion = 11;
 }
 
 message ListPreDatasetRequest {
@@ -126,6 +149,7 @@ message ListPreDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListPreDatasetReply {
@@ -141,6 +165,7 @@ message ListMyDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListMyDatasetReply {
@@ -156,6 +181,7 @@ message ListCommDatasetRequest {
   int64 createdAtGte = 5;
   int64 createdAtLt = 6;
   string searchKey = 7;
+  string nameLike = 8;
 }
 
 message ListCommDatasetReply {

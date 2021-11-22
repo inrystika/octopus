@@ -6,7 +6,8 @@ const getters = {
   name: state => state.user.name,
   workspaces: state => state.user.workspaces,
   id: state => state.user.id,
-  workspaceId: state => state.user.workspaceId
+  workspaceId: state => state.user.workspaceId,
+  progressId: state => state.user.progressId
 
 }
 export default getters

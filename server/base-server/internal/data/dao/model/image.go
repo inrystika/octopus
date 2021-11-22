@@ -58,6 +58,9 @@ type ImageList struct {
 	Status        int32
 	UserId        string
 	SpaceId       string
+	UserNameLike  string
+	SpaceNameLike string
+	NameVerLike   string
 	ImageType     int32
 	SourceType    int32
 	SearchKey     string
@@ -120,6 +123,10 @@ func (i ImageList) Or(db *gorm.DB) *gorm.DB {
 		searchKeyLike := "%" + i.SearchKey + "%"
 		db = db.Where("image_name like ? or image_version like ? or image_desc like ?", searchKeyLike, searchKeyLike, searchKeyLike)
 	}
+	if i.NameVerLike != "" {
+		nameVerLike := "%" + i.NameVerLike + "%"
+		db = db.Where("image_name like ? or image_version like ?", nameVerLike, nameVerLike)
+	}
 	return db
 }
 
@@ -153,6 +160,36 @@ func (i ImageList) Pagination(db *gorm.DB) *gorm.DB {
 		pageSize = int(i.PageSize)
 	}
 	db = db.Limit(pageSize).Offset((pageIndex - 1) * pageSize)
+	return db
+}
+
+func (i ImageList) JoinUser(db *gorm.DB) *gorm.DB {
+
+	joinSql := "INNER JOIN user ON image.user_id = user.id"
+	querySql := "image.deleted_at = 0"
+	params := make([]interface{}, 0)
+
+	if i.UserNameLike != "" {
+		querySql += " and user.full_name like ?"
+		params = append(params, "%"+i.UserNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	}
+
+	return db
+}
+
+func (i ImageList) JoinWorkspace(db *gorm.DB) *gorm.DB {
+
+	joinSql := "INNER JOIN workspace ON image.space_id = workspace.id"
+	querySql := "image.deleted_at = 0"
+	params := make([]interface{}, 0)
+
+	if i.SpaceNameLike != "" {
+		querySql += " and workspace.name like ?"
+		params = append(params, "%"+i.SpaceNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	}
+
 	return db
 }
 
@@ -200,14 +237,12 @@ type ImageAccessAdd struct {
 }
 
 type ImageAccessQuery struct {
-	Id      string
 	ImageId string
 	SpaceId string
 	UserId  string
 }
 
 type ImageAccessDel struct {
-	Id      string
 	ImageId string
 	SpaceId string
 	UserId  string
@@ -221,6 +256,7 @@ type ImageAccessList struct {
 	ImageNameLike string
 	ImageName     string
 	ImageVersion  string
+	NameVerLike   string
 	IsPrefab      int32
 	Status        int32
 	UserId        string
@@ -288,6 +324,12 @@ func (i ImageAccessList) JoinImageAccess(db *gorm.DB) *gorm.DB {
 		params = append(params, searchKeyLike, searchKeyLike, searchKeyLike)
 	}
 
+	if i.NameVerLike != "" {
+		querySql += " and (image.image_name like ? or image.image_version like ?)"
+		nameVerLike := "%" + i.NameVerLike + "%"
+		params = append(params, nameVerLike, nameVerLike)
+	}
+
 	return db.Joins(joinSql).Where(querySql, params...)
 }
 
@@ -347,6 +389,12 @@ func (i ImageAccessList) JoinImage(db *gorm.DB) *gorm.DB {
 		querySql += " and image.image_name like ? or image.image_version like ? or image.image_desc like ?"
 		searchKeyLike := "%" + i.SearchKey + "%"
 		params = append(params, searchKeyLike, searchKeyLike, searchKeyLike)
+	}
+
+	if i.NameVerLike != "" {
+		querySql += " and (image.image_name like ? or image.image_version like ?)"
+		nameVerLike := "%" + i.NameVerLike + "%"
+		params = append(params, nameVerLike, nameVerLike)
 	}
 
 	return db.Joins(joinSql).Where(querySql, params...)

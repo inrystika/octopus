@@ -75,6 +75,8 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
+		UserNameLike:  req.UserNameLike,
+		SpaceNameLike: req.SpaceNameLike,
 		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
@@ -186,7 +188,8 @@ func (s *ImageService) DeletePreImage(ctx context.Context, req *pb.DeletePreImag
 	// todo 只能删除预置镜像
 
 	reply, err := s.data.ImageClient.DeleteImage(ctx, &innterapi.DeleteImageRequest{
-		ImageId: req.ImageId,
+		ImageId:  req.ImageId,
+		IsPrefab: innterapi.ImageIsPrefab_IMAGE_IS_PREFAB_YES,
 	})
 	if err != nil {
 		return nil, err

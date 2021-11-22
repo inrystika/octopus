@@ -1,14 +1,17 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm :searchForm=searchForm @searchData="getSearchData" :blurName="'Notebook名称 搜索'">
-      </searchForm>
+      <searchForm :search-form="searchForm" :blur-name="'NoteBook名称 搜索'" @searchData="getSearchData" />
     </div>
-    <el-button type="primary" size="medium" @click="create" class="create">
+    <el-button type="primary" size="medium" class="create" @click="create">
       创建
     </el-button>
-    <el-table :data="notebookList" style="width: 100%;font-size: 15px;"
-      :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+    <el-table
+      :data="notebookList"
+      style="width: 100%;font-size: 15px;"
+      :header-cell-style="{'text-align':'left','color':'black'}"
+      :cell-style="{'text-align':'left'}"
+    >
       <el-table-column label="名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
@@ -38,7 +41,7 @@
         <template slot-scope="scope">
           <!-- <span>{{ scope.row.status }}</span> -->
           <span :class="statusText[scope.row.status][0]"></span>
-          <span>{{ statusText[scope.row.status][1]}}</span>
+          <span>{{ statusText[scope.row.status][1] }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创建时间">
@@ -50,56 +53,82 @@
         <template slot-scope="scope">
           <!-- <div v-if="scope.row.status === '停止' ? true : false"> -->
           <div v-if="({'stopped':true,'succeeded':true,'failed':true})[scope.row.status] || false">
-            <el-button @click="confirmStart(scope.row)" slot="reference" type="text" style="padding-right:10px">
+            <el-button slot="reference" type="text" style="padding-right:10px" @click="confirmStart(scope.row)">
               启动
             </el-button>
-            <el-button @click="confirmDelete(scope.row)" slot="reference" type="text">删除</el-button>
+            <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
             <!-- <el-button type="text" @click="saveAlgorithm(scope.row)">保存算法</el-button> -->
           </div>
-          <el-button v-if="({'running':true})[scope.row.status] || false" type="text" style="padding-right:10px"
-            @click="jumpUrl(scope.row.url)">打开</el-button>
-          <el-button v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
-            slot="reference" type="text" @click="confirmStop(scope.row)">
+          <el-button
+            v-if="({'running':true})[scope.row.status] || false"
+            type="text"
+            style="padding-right:10px"
+            @click="jumpUrl(scope.row.url)"
+          >打开</el-button>
+          <el-button
+            v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
+            slot="reference"
+            type="text"
+            @click="confirmStop(scope.row)"
+          >
             停止
+          </el-button>
+          <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
+            详情
           </el-button>
         </template>
       </el-table-column>
     </el-table>
     <div class="block">
-      <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-        :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize"
-        layout="total, sizes, prev, pager, next, jumper" :total="total">
-      </el-pagination>
+      <el-pagination
+        :current-page="searchData.pageIndex"
+        :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
-    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close">
-    </notebookCreation>
+    <detailDialog
+      v-if="detailVisible"
+      :detail-data="detailData"
+      @confirm="confirm"
+      @cancel="cancel"
+      @close="close"
+    />
+    <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
 <script>
   import notebookCreation from "./notebookCreation.vue"
+  import detailDialog from "./detailDialog.vue"
   import searchForm from '@/components/search/index.vue'
   import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "notebookList",
+    name: "NotebookList",
+    components: {
+      notebookCreation,
+      detailDialog,
+      searchForm
+    },
     props: {
       notebook: {
         type: Boolean,
         default: false
       }
     },
-    components: {
-      notebookCreation,
-      searchForm
-    },
     data() {
       return {
         row: {},
+        detailData: {},
         notebookVisible: false,
+        detailVisible: false,
         total: undefined,
         notebookList: [],
         searchForm: [
@@ -110,10 +139,10 @@
         ],
         searchData: {
           pageIndex: 1,
-          pageSize: 10,
+          pageSize: 10
         },
         resourceList: [],
-        title: "是否启动Notebook？",
+        title: "是否启动NoteBook？",
         statusText: {
           'preparing': ['status-ready', '初始中'],
           'pending': ['status-agent', '等待中'],
@@ -121,7 +150,7 @@
           'failed': ['status-danger', '失败'],
           'succeeded': ['status-success', '成功'],
           'stopped': ['status-stopping', '已停止']
-        },
+        }
       }
     },
     created() {
@@ -136,7 +165,7 @@
         return getErrorMsg(code)
       },
       jumpUrl(url) {
-        let jumpUrl = this.GLOBAL.DOMAIN + url
+        const jumpUrl = this.GLOBAL.DOMAIN + url
         window.open(jumpUrl)
       },
       handleSizeChange(val) {
@@ -213,23 +242,20 @@
           } else {
             if (response.error.subcode === 11014) {
               this.$message({
-                message: '资源规格已被删除，请重新提交notebook',
+                message: '资源规格已被删除，请重新提交NoteBook',
                 type: 'warning'
               })
-
-            }
-            else {
+            } else {
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
               })
             }
-
           }
         })
       },
       confirmStop(row) {
-        this.$confirm('是否停止Notebook？', '提示', {
+        this.$confirm('是否停止NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -242,6 +268,10 @@
             message: '已取消'
           });
         });
+      },
+      showNotebookInfo(row) {
+        this.detailVisible = true
+        this.detailData = row
       },
       handleStop(row) {
         stopNotebook(row.id).then(response => {
@@ -257,7 +287,7 @@
         })
       },
       confirmDelete(row) {
-        this.$confirm('是否删除Notebook？', '提示', {
+        this.$confirm('是否删除NoteBook？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -284,7 +314,7 @@
           }
         })
       },
-      //时间戳转换日期
+      // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
       },
@@ -293,14 +323,17 @@
       },
       close(val) {
         this.notebookVisible = val;
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
         this.notebookVisible = val;
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
         this.notebookVisible = val
+        this.detailVisible = val;
         this.getNotebookList(this.searchData);
       }
     }
@@ -309,7 +342,7 @@
 
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 20px !important;
+    margin: 15px !important;
   }
 
   .create {

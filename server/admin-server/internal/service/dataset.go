@@ -28,6 +28,73 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 	}
 }
 
+func (s *DatasetService) AddDatasetType(ctx context.Context, req *api.AddDatasetTypeRequest) (*api.AddDatasetTypeReply, error) {
+	innerReq := &innerapi.AddDatasetTypeRequest{}
+	innerReq.TypeDesc = req.TypeDesc
+
+	innerReply, err := s.data.DatasetClient.AddDatasetType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AddDatasetTypeReply{
+		DatasetType: &api.DatasetType{
+			Id:       innerReply.DatasetType.Id,
+			TypeDesc: innerReply.DatasetType.TypeDesc,
+		},
+	}, nil
+}
+
+func (s *DatasetService) ListDatasetType(ctx context.Context, req *api.ListDatasetTypeRequest) (*api.ListDatasetTypeReply, error) {
+	innerReq := &innerapi.ListDatasetTypeRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DatasetClient.ListDatasetType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListDatasetTypeReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *DatasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteDatasetTypeRequest) (*api.DeleteDatasetTypeReply, error) {
+	innerReq := &innerapi.DeleteDatasetTypeRequest{}
+	innerReq.Id = req.Id
+
+	innerReply, err := s.data.DatasetClient.DeleteDatasetType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeleteDatasetTypeReply{
+		DeletedAt: innerReply.DeletedAt,
+	}, nil
+}
+
+func (s *DatasetService) UpdateDatasetType(ctx context.Context, req *api.UpdateDatasetTypeRequest) (*api.UpdateDatasetTypeReply, error) {
+	innerReq := &innerapi.UpdateDatasetTypeRequest{}
+	innerReq.Id = req.Id
+	innerReq.TypeDesc = req.TypeDesc
+
+	innerReply, err := s.data.DatasetClient.UpdateDatasetType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateDatasetTypeReply{
+		UpdatedAt: innerReply.UpdatedAt,
+	}, nil
+}
+
 func (s *DatasetService) ListUserDataset(ctx context.Context, req *api.ListUserDatasetRequest) (*api.ListUserDatasetReply, error) {
 	innerReq := &innerapi.ListDatasetRequest{}
 	err := copier.Copy(innerReq, req)
@@ -101,7 +168,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 	innerReq := &innerapi.CreateDatasetRequest{
 		SourceType: innerapi.DatasetSourceType_DST_PRE,
 		Name:       req.Name,
-		Type:       req.Type,
+		TypeId:     req.TypeId,
 		Desc:       req.Desc,
 	}
 

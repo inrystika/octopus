@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  let conditions = []
+  const conditions = []
   params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
   params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
@@ -12,14 +12,24 @@ export function judgeParam(params) {
   params.status ? conditions.push(`status=` + params.status) : null;
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
+  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   return conditions
 }
 
 export async function getNotebookList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/developmanage/notebook?" + conditions.join("&"),
+    method: 'get'
+  })
+  return res
+}
+
+export async function getNotebookInfo(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebookevent`,
     method: 'get',
+    params
   })
   return res
 }
@@ -36,7 +46,7 @@ export async function createNotebook(payload) {
 export async function stopNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}/stop`,
-    method: "post",
+    method: "post"
   })
   return res
 }
@@ -44,7 +54,7 @@ export async function stopNotebook(id) {
 export async function deleteNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}`,
-    method: "delete",
+    method: "delete"
   })
   return res
 }
@@ -52,16 +62,16 @@ export async function deleteNotebook(id) {
 export async function startNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}/start`,
-    method: "post",
+    method: "post"
   })
   return res
 }
 
 export async function getAlgorithmVersionList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/algorithmmanage/algorithm/${payload.algorithmId}?` + conditions.join("&"),
-    method: 'get',
+    method: 'get'
   })
   return res
 }
@@ -69,43 +79,43 @@ export async function getAlgorithmVersionList(payload) {
 export async function queryAlgorithmVersion(payload) {
   const res = await request({
     url: `/v1/algorithmmanage/algorithm/${payload.algorithmId}/version/${payload.version}`,
-    method: 'get',
+    method: 'get'
   })
   return res
 }
 
 export async function getPubAlgorithmVersionList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/algorithmmanage/commalgorithm/${payload.algorithmId}?` + conditions.join("&"),
-    method: 'get',
+    method: 'get'
   })
   return res
 }
 
 export async function getMyAlgorithmList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/algorithmmanage/myalgorithm?` + conditions.join("&"),
-    method: 'get',
+    method: 'get'
   })
   return res
 }
 
 export async function getPublicAlgorithmList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/algorithmmanage/commalgorithm?` + conditions.join("&"),
-    method: 'get',
+    method: 'get'
   })
   return res
 }
 
 export async function getPresetAlgorithmList(payload) {
-  let conditions = judgeParam(payload)
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/algorithmmanage/prealgorithm?` + conditions.join("&"),
-    method: 'get',
+    method: 'get'
   })
   return res
 }
@@ -126,7 +136,7 @@ export async function copyAlgorithm(payload) {
 export async function compressAlgorithm(payload) {
   const res = await request({
     url: `/v1/algorithmmanage/algorithm/${payload.algorithmId}/version/${payload.version}/downloadcompress`,
-    method: "post",
+    method: "post"
   })
   return res
 }
@@ -134,7 +144,7 @@ export async function compressAlgorithm(payload) {
 export async function downloadAlgorithm(payload) {
   const res = await request({
     url: `/v1/algorithmmanage/algorithm/${payload.algorithmId}/version/${payload.version}/download?compressAt=${payload.compressAt}&domain=${payload.domain}`,
-    method: "get",
+    method: "get"
   })
   return res
 }
@@ -160,7 +170,7 @@ export async function cancelShareAlgorithmVersion(payload) {
 export async function deleteAlgorithmVersion(payload) {
   const res = await request({
     url: `/v1/algorithmmanage/myalgorithm/${payload.algorithmId}/version/${payload.algorithmVersion}`,
-    method: "delete",
+    method: "delete"
   })
   return res
 }
@@ -168,7 +178,7 @@ export async function deleteAlgorithmVersion(payload) {
 export async function deleteMyAlgorithm(algorithmId) {
   const res = await request({
     url: `/v1/algorithmmanage/myalgorithm/${algorithmId}`,
-    method: "delete",
+    method: "delete"
   })
   return res
 }
@@ -205,6 +215,22 @@ export async function myAlgorithmFinishUpload(payload) {
     url: `/v1/algorithmmanage/algorithm/${payload.algorithmId}/version/${payload.version}/uploadconfirm`,
     method: "put",
     data: payload
+  })
+  return res
+}
+export async function algorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmtype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function algorithmFrame(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "get",
+    params: params
   })
   return res
 }

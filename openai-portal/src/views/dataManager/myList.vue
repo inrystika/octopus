@@ -1,20 +1,23 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm 
-        :searchForm=searchForm 
+      <searchForm
+        :search-form="searchForm"
+        :blur-name="'数据集名称 搜索'"
         @searchData="getSearchData"
-        :blurName="'数据集名称 搜索'"
-      >
-      </searchForm>
+      />
     </div>
-    <el-button type="primary" size="medium" @click="create" class="create">
+    <el-button type="primary" size="medium" class="create" @click="create">
       创建
     </el-button>
     <div class="index">
-      <el-table :data="datasetList" style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}"
-        v-loading="loading">
+      <el-table
+        v-loading="loading"
+        :data="datasetList"
+        style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}"
+        :cell-style="{'text-align':'left'}"
+      >
         <el-table-column label="名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -22,7 +25,7 @@
         </el-table-column>
         <el-table-column label="类型">
           <template slot-scope="scope">
-            <span>{{ scope.row.type }}</span>
+            <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -45,32 +48,41 @@
             <!-- <el-button type="text">预览</el-button> -->
             <el-button type="text" @click="createNewVersion(scope.row)">创建新版本
             </el-button>
-            <el-button type="text" @click="getVersionList(scope.$index, scope.row)" style="padding-right:10px">版本列表
+            <el-button type="text" style="padding-right:10px" @click="getVersionList(scope.$index, scope.row)">版本列表
             </el-button>
-            <el-button @click="confirmDelete(scope.row)" slot="reference" type="text">删除</el-button>
+            <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="block">
-      <el-pagination 
-        @size-change="handleSizeChange" 
-        @current-change="handleCurrentChange" 
+      <el-pagination
         :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]" 
-        :page-size="searchData.pageSize" 
+        :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="total">
-      </el-pagination>
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
-    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close">
-    </myDatasetCreation>
-    <newVersionCreation v-if="newVersionCreationVisible" @cancel="cancel" @confirm="confirm" @close="close"
-      :row="this.data"></newVersionCreation>
-    <versionList v-if="versionListVisible" @cancel="cancel" @confirm="confirm"
-      @close="close" :data="this.data" :typeChange="this.typeChange">
-    </versionList>
+    <myDatasetCreation v-if="myDatasetVisible" @confirm="confirm" @cancel="cancel" @close="close" />
+    <newVersionCreation
+      v-if="newVersionCreationVisible"
+      :row="data"
+      @cancel="cancel"
+      @confirm="confirm"
+      @close="close"
+    />
+    <versionList
+      v-if="versionListVisible"
+      :data="data"
+      :type-change="typeChange"
+      @cancel="cancel"
+      @confirm="confirm"
+      @close="close"
+    />
 
   </div>
 </template>
@@ -84,7 +96,7 @@
   import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "myList",
+    name: "MyList",
     components: {
       newVersionCreation,
       versionList,
@@ -92,7 +104,10 @@
       searchForm
     },
     props: {
-      Type: { type: Number },
+        dataType: {
+        type: Number,
+        default: undefined
+      },
       dataset: {
         type: Boolean,
         default: false
@@ -113,10 +128,11 @@
         typeChange: undefined,
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'Input', label: '数据集名称', prop: 'nameLike', placeholder: '请输入数据集名称' }
         ],
         searchData: {
           pageIndex: 1,
-          pageSize: 10,
+          pageSize: 10
         }
       };
     },
@@ -139,7 +155,7 @@
         this.getDataList(this.searchData)
       },
       getDataList(param) {
-        this.typeChange = this.Type
+        this.typeChange = this.dataType
           getMyDatasetList(param).then(response => {
             if (response.success) {
               this.datasetList = response.data.datasets;
@@ -150,14 +166,14 @@
                 type: 'warning'
               });
             }
-          })      
+          })
       },
       getSearchData(val) {
-        this.searchData={pageIndex:1,pageSize:this.searchData.pageSize}
+        this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
         this.searchData = Object.assign(val, this.searchData)
         if (this.searchData.time) {
-          this.searchData.createdAtGte = this.searchData.time[0]/1000
-          this.searchData.createdAtLt = this.searchData.time[1]/1000
+          this.searchData.createdAtGte = this.searchData.time[0] / 1000
+          this.searchData.createdAtLt = this.searchData.time[1] / 1000
           delete this.searchData.time
         }
         this.getDataList(this.searchData)
@@ -190,13 +206,13 @@
         this.myDatasetVisible = val
         this.getDataList(this.searchData)
       },
-      confirmDelete(row){
-        this.$confirm('是否删除此数据集？','提示',{
+      confirmDelete(row) {
+        this.$confirm('此操作将永久删除此数据集（如该数据集已分享，则分享的数据集也会被删除)，是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
           center: true
-        }).then(() =>{
+        }).then(() => {
           this.handleDelete(row)
         }).catch(() => {
           this.$message({
@@ -221,7 +237,7 @@
           }
         })
       },
-      //时间戳转换日期
+      // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
       }

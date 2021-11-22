@@ -8,6 +8,7 @@ import (
 	"server/base-server/internal/data/dao/model"
 	platformModel "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
+	"server/base-server/internal/data/influxdb"
 	platformDao "server/base-server/internal/data/dao/platform"
 	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/minio"
@@ -41,6 +42,7 @@ type Data struct {
 	Minio               minio.Minio
 	Registry            registry.ArtifactRegistry
 	Redis               redis.Redis
+	Influxdb        influxdb.Influxdb
 	PlatformDao         platformDao.PlatformDao
 	Platform            platform.Platform
 	JointCloudDao       jointcloud.JointcloudDao
@@ -55,17 +57,22 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
+	influxdb, err := influxdb.NewInfluxdb(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
 	d.AlgorithmDao = algorithm_dao.NewAlgorithmDao(db, logger)
 	d.ResourceDao = dao.NewResourceDao(db, logger)
 	d.ResourceSpecDao = dao.NewResourceSpecDao(db, logger)
-	d.DevelopDao = dao.NewDevelopDao(db, logger)
+	d.DevelopDao = dao.NewDevelopDao(db, influxdb, logger)
 	d.ModelDao = dao.NewModelDao(db, logger)
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)
 	d.ImageDao = dao.NewImageDao(db, logger)
-	d.TrainJobDao = dao.NewTrainJobDao(db, logger)
+	d.TrainJobDao = dao.NewTrainJobDao(db, influxdb, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
@@ -104,6 +111,17 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&model.AlgorithmType{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.AlgorithmFramework{})
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.AutoMigrate(&model.Algorithm{})
 	if err != nil {
 		return nil, err
@@ -190,6 +208,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.NotebookJob{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.DatasetType{})
 	if err != nil {
 		return nil, err
 	}

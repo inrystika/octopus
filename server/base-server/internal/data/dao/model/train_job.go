@@ -109,6 +109,7 @@ type TrainJobListQuery struct {
 	CreatedAtLt  int64
 	Status       string
 	SearchKey    string
+	UserNameLike string
 	UserId       string
 	WorkspaceId  string
 	Ids          []string
@@ -150,4 +151,19 @@ type TrainJobTemPlateListQuery struct {
 	UserId       string
 	WorkspaceId  string
 	Ids          []string
+}
+
+type TrainJobEvent struct {
+	Timestamp string
+	Name      string
+	Reason    string
+	Message   string
+}
+
+type JobEventQuery struct {
+	PageIndex    int
+	PageSize     int
+	Id           string
+	TaskIndex    int
+	ReplicaIndex int
 }

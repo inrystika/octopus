@@ -10,7 +10,8 @@ const getDefaultState = () => {
     avatar: '',
     id: '',
     workspaces: [],
-    workspaceId: ''
+    workspaceId: '',
+    progressId: undefined
   }
 }
 
@@ -37,6 +38,9 @@ const mutations = {
   },
   SET_WORKSPACEID: (state, workspaceId) => {
     state.workspaceId = workspaceId
+  },
+  SET_PROGRESSID: (state, progressId) => {
+    state.progressId = progressId
   }
 }
 

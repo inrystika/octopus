@@ -88,3 +88,8 @@ Modern browsers and Internet Explorer 10+.
 [MIT](https://github.com/PanJiaChen/vue-admin-template/blob/master/LICENSE) license.
 
 Copyright (c) 2017-present PanJiaChen
+
+## notice
+
+本地调试执行npm run dev需要在env.development文件中配置环境变量VUE_APP_BASE_DOMAIN中的地址
+

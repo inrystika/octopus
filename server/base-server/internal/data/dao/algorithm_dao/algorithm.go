@@ -48,6 +48,11 @@ func (d *algorithmDao) ListAlgorithm(ctx context.Context, req *model.AlgorithmLi
 		params = append(params, "%"+req.SearchKey+"%")
 	}
 
+	if req.NameLike != "" {
+		querySql += " and algorithm_name like ? "
+		params = append(params, "%"+req.NameLike+"%")
+	}
+
 	db = db.Where(querySql, params...)
 
 	// 总数计算
@@ -292,7 +297,10 @@ func (d *algorithmDao) ListAlgorithmVersion(ctx context.Context, req *model.Algo
 
 	// orderby语句拼接
 	if req.VersionOrder {
-		orderSql := fmt.Sprintf("version %s", req.VersionSort)
+		// left(version ,1) DESC , CAST(MID(version,2) AS UNSIGNED)
+		orderSql := fmt.Sprintf("left(version ,1) %s", req.VersionSort)
+		db = db.Order(orderSql)
+		orderSql = fmt.Sprintf("CAST(MID(version,2) AS UNSIGNED) %s", req.VersionSort)
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
@@ -333,12 +341,12 @@ func (d *algorithmDao) QueryAlgorithmVersion(ctx context.Context, req *model.Alg
 	db = db.Where(querySql, params...).First(&algorithmVersion)
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFirstFailed)
-		d.log.Errorw(ctx, err)
+		//d.log.Errorw(ctx, err)
 		return nil, err
 	}
 	if db.Error == gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFindEmpty)
-		d.log.Errorw(ctx, err)
+		//d.log.Errorw(ctx, err)
 		return nil, err
 	}
 
@@ -364,12 +372,12 @@ func (d *algorithmDao) BatchQueryAlgorithmVersion(ctx context.Context, req *mode
 	db = db.Where(querySql, params...).Find(&algorithmVersions)
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFindFailed)
-		d.log.Errorw(ctx, err)
+		//d.log.Errorw(ctx, err)
 		return nil, err
 	}
 	if db.Error == gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFindEmpty)
-		d.log.Errorw(ctx, err)
+		//d.log.Errorw(ctx, err)
 		return nil, err
 	}
 

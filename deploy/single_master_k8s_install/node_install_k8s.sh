@@ -41,8 +41,12 @@ join_cluster() {
     kubeadm join $masterip:6443 --token $tocken --discovery-token-ca-cert-hash sha256:$sha_value --ignore-preflight-errors=…
 
     mkdir -p $HOME/.kube
-    cp -i $bash_path/config $HOME/.kube/config
-	chown $(id -u):$(id -g) $HOME/.kube/config
+    if [ ! -f "$bash_path/config" ]; then
+        echo "$bash_path/config no such file"
+    else 
+        cp -i $bash_path/config $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
+    fi
     export KUBECONFIG=$HOME/.kube/config
     echo -e "---------------------\033[31m "`hostname`"just cluster success \033[0m---------------------"
 }
@@ -69,6 +73,13 @@ main() {
     rootssh_trust
     # 加入集群
     join_cluster
+
+    # 节点打标签
+    if [[ $node_type == "nvidia_gpu" ]];then
+        nvidia_gpu_label
+    elif [[ $node_type == "huawei_a910" ]];then
+        huawei_a910_label
+    fi
 }
 
 main

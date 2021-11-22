@@ -10,6 +10,8 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
+
+	"github.com/jinzhu/copier"
 )
 
 type AlgorithmService struct {
@@ -27,6 +29,50 @@ func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 	}
 }
 
+// 查询算法类型列表
+func (s *AlgorithmService) ListAlgorithmType(ctx context.Context, req *api.ListAlgorithmTypeRequest) (*api.ListAlgorithmTypeReply, error) {
+	innerReq := &innterapi.ListAlgorithmTypeRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.AlgorithmClient.ListAlgorithmType(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmTypeReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+// 查询算法类型框架
+func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
+	innerReq := &innterapi.ListAlgorithmFrameworkRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.AlgorithmClient.ListAlgorithmFramework(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmFrameworkReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
 // 查询预置算法列表
 func (s *AlgorithmService) ListPreAlgorithm(ctx context.Context, req *api.ListPreAlgorithmRequest) (*api.ListPreAlgorithmReply, error) {
 	reply, err := s.data.AlgorithmClient.ListPreAlgorithm(ctx, &innterapi.ListPreAlgorithmRequest{
@@ -36,6 +82,7 @@ func (s *AlgorithmService) ListPreAlgorithm(ctx context.Context, req *api.ListPr
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
@@ -71,6 +118,7 @@ func (s *AlgorithmService) ListMyAlgorithm(ctx context.Context, req *api.ListMyA
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
@@ -104,6 +152,7 @@ func (s *AlgorithmService) ListCommAlgorithm(ctx context.Context, req *api.ListC
 		OrderBy:          req.OrderBy,
 		AlgorithmVersion: req.AlgorithmVersion,
 		SearchKey:        req.SearchKey,
+		NameLike:         req.NameLike,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
 	})
@@ -366,6 +415,8 @@ func (s *AlgorithmService) CopyAlgorithmVersion(ctx context.Context, req *api.Co
 		Version:           req.Version,
 		NewAlgorithmName:  req.NewAlgorithmName,
 		AlgorithmDescript: req.AlgorithmDescript,
+		TypeId:            req.TypeId,
+		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -409,6 +460,8 @@ func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlg
 		AlgorithmName:     req.AlgorithmName,
 		ModelName:         req.ModelName,
 		AlgorithmDescript: req.AlgorithmDescript,
+		TypeId:            req.TypeId,
+		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -532,6 +585,10 @@ func (s *AlgorithmService) algorithmTransfer(ctx context.Context, algorithm *inn
 		FileStatus:        algorithm.FileStatus,
 		IsPrefab:          algorithm.IsPrefab,
 		CreatedAt:         algorithm.CreatedAt,
+		TypeId:            algorithm.TypeId,
+		TypeName:          algorithm.TypeName,
+		FrameworkId:       algorithm.FrameworkId,
+		FrameworkName:     algorithm.FrameworkName,
 	}
 
 	if algorithm.UserId != "" {

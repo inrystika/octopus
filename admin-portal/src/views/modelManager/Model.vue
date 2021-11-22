@@ -1,37 +1,23 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm 
-              :searchForm=searchForm 
-              :blurName="'模型名称/描述 搜索'"
-              @searchData="getSearchData" 
-            />
+            <searchForm :search-form="searchForm" :blur-name="'模型名称/描述 搜索'" @searchData="getSearchData" />
         </div>
-        <el-button v-if="Type===3" type="primary" @click="createModel" class="create">创建</el-button>
+        <el-button v-if="modelTabType===3" type="primary" class="create" @click="createModel">创建</el-button>
         <div class="index">
-            <el-table 
-                :data="tableData" 
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}" 
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+                <el-table-column prop="modelName" label="模型名称" />
+                <el-table-column prop="latestVersion" label="模型版本" />
+                <el-table-column prop="algorithmName" label="算法名称" />
+                <el-table-column prop="algorithmVersion" label="算法版本" />
+                <el-table-column prop="modelDescript" label="模型描述" />
                 <el-table-column label="群组名">
                     <template slot-scope="scope">
                         <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="modelName" label="模型名称">
-                </el-table-column>
-                <el-table-column prop="latestVersion" label="模型版本">
-                </el-table-column>
-                <el-table-column prop="algorithmName" label="算法名称">
-                </el-table-column>
-                <el-table-column prop="algorithmVersion" label="算法版本">
-                </el-table-column>
-                <el-table-column prop="userName" v-if="Type===1" label="提供者">
-                </el-table-column>
-                <el-table-column prop="modelDescript" label="模型描述">
-                </el-table-column>
+                <el-table-column v-if="modelTabType===1" prop="userName" label="提供者" />
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
                         <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -40,37 +26,23 @@
                 <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
-                        <el-button v-if="Type===3" type="text" @click="createList(scope.row)">创建新版本</el-button>
-                        <el-button v-if="Type===3" type="text" @click="open(scope.row)">删除</el-button>
+                        <el-button v-if="modelTabType===3" type="text" @click="createList(scope.row)">创建新版本</el-button>
+                        <el-button v-if="modelTabType===3" type="text" @click="open(scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
         <div class="block">
-            <el-pagination 
-              :current-page="searchData.pageIndex" 
-              :page-sizes="[10, 20, 50,80]" 
-              :page-size="searchData.pageSize"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper" 
-              @size-change="handleSizeChange" 
-              @current-change="handleCurrentChange"       
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50,80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 版本列表对话框 -->
-        <versionList 
-          v-if="FormVisible" 
-          :modelId="modelId"
-          :modelName="modelName"
-          :Type="type" 
-          @close="close" 
-          @cancel="cancel" 
-          @confirm="confirm" 
-        >
-        </versionList>
+        <versionList v-if="FormVisible" :model-id="modelId" :model-name="modelName" :model-type="type" @close="close"
+            @cancel="cancel" @confirm="confirm" />
         <!-- 创建对话框 -->
-        <createDialog v-if="CreateVisible" @close="close" @cancel="cancel" @confirm="confirm" :row="row"
-            :isList="isList"></createDialog>
+        <createDialog v-if="CreateVisible" :row="row" :is-list="isList" @close="close" @cancel="cancel"
+            @confirm="confirm" />
     </div>
 </template>
 
@@ -82,14 +54,14 @@
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "myModel",
+        name: "MyModel",
         components: {
             versionList,
             searchForm,
             createDialog
         },
         props: {
-            Type: { type: Number, default: undefined }
+            modelTabType: { type: Number, default: undefined }
         },
         data() {
             return {
@@ -109,7 +81,7 @@
                 isList: true,
                 searchData: {
                     pageIndex: 1,
-                    pageSize: 10,
+                    pageSize: 10
                 },
                 modelName: ''
             }
@@ -118,10 +90,6 @@
             this.getModel(this.searchData)
             // this.timer = setInterval(this.getModel, 1000);
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
             // 错误码
             getErrorMsg(code) {
@@ -139,25 +107,24 @@
                 this.FormVisible = val;
                 this.CreateVisible = val;
                 this.getModel(this.searchData)
-
             },
             cancel(val) {
                 this.FormVisible = val;
                 this.CreateVisible = val;
                 this.getModel(this.searchData)
-
-
             },
             confirm(val) {
                 this.FormVisible = val;
                 this.CreateVisible = val;
                 this.getModel(this.searchData)
-
-
             },
-            getVersionList(val) { this.FormVisible = true; this.modelId = val.modelId,this.modelName = val.modelName },
+            getVersionList(val) {
+                this.FormVisible = true
+                this.modelId = val.modelId
+                this.modelName = val.modelName
+            },
             handledDelete(row) {
-                let data = JSON.parse(JSON.stringify(row));
+                const data = JSON.parse(JSON.stringify(row));
                 data.version = row.modelVersion
                 deletePreModel(data).then(response => {
                     if (response.success) {
@@ -166,8 +133,7 @@
                             type: 'success'
                         });
                         this.getModel(this.searchData)
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
@@ -177,7 +143,7 @@
             },
             getModel(data) {
                 if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
-                this.type = this.Type
+                this.type = this.modelTabType
                 if (this.type === 1) {
                     getMyModel(data).then(response => {
                         if (response.success) {
@@ -189,7 +155,6 @@
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
                 if (this.type === 3) {
@@ -197,14 +162,12 @@
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.models
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
             },
@@ -212,20 +175,18 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getModel(this.searchData)
-
             },
             createModel() {
                 this.isList = false
                 this.CreateVisible = true
                 this.row = {}
-
             },
             createList(val) {
                 this.isList = true
                 this.CreateVisible = true
                 this.row = val
             },
-            //时间戳转换日期
+            // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },

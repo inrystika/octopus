@@ -74,7 +74,18 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjobtemplate"
       };
     };
-
+    // 复制训练任务模板
+    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
+      option (google.api.http) = {
+        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
+      };
+    };
+    // 获取训练任务事件列表
+    rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply) {
+      option (google.api.http) = {
+         get: "/v1/trainmanage/trainjobevent"
+      };
+    };
 }
 
 message TrainJobRequest {
@@ -213,6 +224,16 @@ message GetJobTemplateRequest{
 message GetJobTemplateReply{
   //模板详情
   TrainJobTemplate  jobTemplate = 1;
+}
+
+message CopyJobTemplateRequest {
+  //模板ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message CopyJobTemplateReply{
+  //模板ID
+  string templateId = 1;
 }
 
 message  StopJobRequest {
@@ -355,4 +376,35 @@ message TrainJobInfoRequest {
 message TrainJobInfoReply{
   //训练任务
   TrainJob trainJob = 4;
+}
+
+message JobEventListRequest {
+  // 页码，从1开始
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  //任务ID
+  string id = 3[(validate.rules).string = {min_len: 1}];
+  //子任务序号，从1开始
+  int64 taskIndex = 4[(validate.rules).int64 = {gte:1,lt:100}];
+  //副本序号，从1开始
+  int64 replicaIndex = 5[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message JobEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated JobEvent jobEvents = 2;
+}
+
+message JobEvent{
+  //发生时间
+  string timestamp = 1;
+  //副本名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
 }

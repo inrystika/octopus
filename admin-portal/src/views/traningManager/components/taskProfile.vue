@@ -26,11 +26,11 @@
                 </el-col>
             </el-row>
             <el-row>
-                <el-col :span="12" v-if="!show">
+                <el-col v-if="!show" :span="12">
                     <div>资源规格:<span>{{ data.config[0].resourceSpecName + '' + data.config[0].resourceSpecPrice + '机时/h' }}</span>
                     </div>
                 </el-col>
-                <el-col :span="12" v-if="!show">
+                <el-col v-if="!show" :span="12">
                     <div>运行命令:<span>{{ command(data.config[0]) }}</span></div>
                 </el-col>
             </el-row>
@@ -44,30 +44,26 @@
             </el-row>
         </div>
         <div v-if="show">
-            <el-divider></el-divider>
+            <el-divider />
             <div class="taskList">分布式任务列表</div>
             <div>
-                <el-table 
-                    :data="tableData" 
-                    style="width: 100%" 
+                <el-table
+                    :data="tableData"
+                    style="width: 100%"
                     row-key="name"
-                    :tree-props="{children: 'replicaStates', hasChildren: 'hasChildren'}" 
+                    :tree-props="{children: 'replicaStates', hasChildren: 'hasChildren'}"
                     default-expand-all
                     height="700"
                 >
-                    <el-table-column prop="name" label="任务名称" width="200px" :show-overflow-tooltip="true">
-                    </el-table-column>
+                    <el-table-column prop="name" label="任务名称" width="200px" :show-overflow-tooltip="true" />
                     <el-table-column label="是否主任务">
                         <template slot-scope="scope">
                             <span v-if="!scope.row.isChildren">{{ scope.row.isMainRole?'是':'否' }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="taskNumber" label="副本个数">
-                    </el-table-column>
-                    <el-table-column prop="minSucceededTaskCount" label="最小副本成功数">
-                    </el-table-column>
-                    <el-table-column prop="minFailedTaskCount" label="最小副本失败数">
-                    </el-table-column>
+                    <el-table-column prop="taskNumber" label="副本个数" />
+                    <el-table-column prop="minSucceededTaskCount" label="最小副本成功数" />
+                    <el-table-column prop="minFailedTaskCount" label="最小副本失败数" />
                     <el-table-column label="资源规格">
                         <template slot-scope="scope">
                             <span v-if="!scope.row.isChildren">
@@ -83,7 +79,7 @@
                     <el-table-column prop="status" label="状态" align="center">
                         <template slot-scope="scope">
                             <span :class="scope.row.status?statusText[scope.row.status][0]:''"></span>
-                            <span>{{ scope.row.status?statusText[scope.row.status][1]:''}}</span>
+                            <span>{{ scope.row.status?statusText[scope.row.status][1]:'' }}</span>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -94,22 +90,28 @@
 
 <script>
     export default {
-        name: "taskProfile",
+        name: "TaskProfile",
         props: {
             row: {
                 type: Object,
                 default: () => { }
-            },
+            }
+        },
+        data() {
+            return {
+                data: {},
+                tableData: [],
+                statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] }
+            }
         },
         computed: {
-            show: function () {
+            show: function() {
                 if (this.data.isDistributed === true) {
                     return true
+                } else {
+                    return false
                 }
-                else { return false }
-
-
-            },
+            }
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
@@ -121,29 +123,17 @@
                             item.status = undefined
                         }
                         if (item.replicaStates.length > 1) {
-
-                            item.replicaStates = item.replicaStates.map((item, index) => { return { name: item.key, status: item.state, isChildren: true, id: index+item.key } })
-                        }
-                        else {
+                            item.replicaStates = item.replicaStates.map((item, index) => { return { name: item.key, status: item.state, isChildren: true, id: index + item.key } })
+                        } else {
                             item.replicaStates = []
-
                         }
                     }
                 )
                 this.tableData = this.data.config
             }
-
-        },
-        data() {
-            return {
-                data: {},
-                tableData: [],
-                statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] },
-            }
-
         },
         methods: {
-            command: function (data) {
+            command: function(data) {
                 let command = data.command
                 if (data.parameters != null && data.parameters.length != 0) {
                     data.parameters.forEach(
@@ -151,11 +141,11 @@
                             if (item.key != '' || item.value != '') {
                                 command += " " + '--' + item.key + '=' + item.value
                             }
-
                         }
                     )
+                } else {
+                    command = data.command
                 }
-                else { command = data.command }
                 return command
             }
 

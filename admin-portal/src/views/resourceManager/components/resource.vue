@@ -4,30 +4,26 @@
             <el-button v-if="customize" type="primary" @click="add">增加资源</el-button>
         </div>
         <div>
-            <el-table 
-                :data="tableData" 
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}" 
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
                 <el-table-column label="资源名称" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                        <span>{{ scope.row.name }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="引用" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.resourceRef }}</span>
+                        <span>{{ scope.row.resourceRef }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column v-if="customize" label="绑定节点" align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.bindingNodes }}</span>
+                        <span>{{ scope.row.bindingNodes }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="备注" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.desc }}</span>
+                        <span>{{ scope.row.desc }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
@@ -40,31 +36,28 @@
         </div>
         <!-- 增加和编辑自定义资源对话框 -->
         <el-dialog :title="flag?'增加资源':'编辑'" :visible.sync="dialogVisible" width="40%" :close-on-click-modal="false">
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="资源名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" autocomplete="off" :disabled="disabled">
-                    </el-input>
+                    <el-input v-model="ruleForm.name" autocomplete="off" :disabled="disabled" />
                 </el-form-item>
                 <el-form-item v-if="customize" label="引用" prop="resourceRef" :label-width="formLabelWidth">
                     <el-select v-model="ruleForm.resourceRef" placeholder="请选择引用">
                         <el-option v-for="item in resourceOption" :key="item.name" :label="item.name"
-                            :value="item.name">
-                        </el-option>
+                            :value="item.name" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="备注" :label-width="formLabelWidth">
-                    <el-input v-model="ruleForm.desc" autocomplete="off"></el-input>
+                    <el-input v-model="ruleForm.desc" autocomplete="off" />
                 </el-form-item>
                 <el-form-item v-if="customize" label="绑定节点" prop="bindingNodes" :label-width="formLabelWidth">
                     <el-select v-model="ruleForm.bindingNodes" placeholder="请选择绑定节点" multiple>
-                        <el-option v-for="item in nodeOption" :key="item.name" :label="item.name" :value="item.name">
-                        </el-option>
+                        <el-option v-for="item in nodeOption" :key="item.name" :label="item.name" :value="item.name" />
                     </el-select>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="confirm">确 定</el-button>
+                <el-button type="primary" @click="confirm" v-preventReClick>确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -73,18 +66,9 @@
     import { getResourceList, deleteResource, updateResource, getNodeList, createCustomizeResource } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "resource",
+        name: "Resource",
         props: {
-            Type: { type: Number, default: undefined }
-        },
-        created() {
-            if (this.Type === 1) { this.system = true; this.customize = false, this.disabled = true; this.rules = {} }
-            else {
-                this.customize = true
-                this.system = false
-            }
-            this.getResourceList()
-            this.getNodeList()
+            resourceTabType: { type: Number, default: undefined }
         },
         data() {
             var checkName = (rule, value, callback) => {
@@ -106,7 +90,6 @@
                         { required: true, message: '请输入资源名称', trigger: 'blur' },
                         { validator: checkName, trigger: "blur" }
 
-
                     ],
                     resourceRef: [
                         { required: true, message: '请选择引用', trigger: 'change' }
@@ -120,11 +103,22 @@
                 system: false,
                 customize: false,
                 nodeOption: [],
-                resourceOption: [],
-
-
+                resourceOption: []
 
             }
+        },
+        created() {
+            if (this.resourceTabType === 1) {
+                this.system = true
+                this.customize = false
+                this.disabled = true
+                this.rules = {}
+            } else {
+                this.customize = true
+                this.system = false
+            }
+            this.getResourceList()
+            this.getNodeList()
         },
         methods: {
             // 错误码
@@ -132,12 +126,14 @@
                 return getErrorMsg(code)
             },
             handleEdite(val) {
-                let temp = val.bindingNodes.split(',')
+                let temp = []
+                if (val.bindingNodes != null) {
+                    temp = val.bindingNodes.split(',')
+                }
                 this.ruleForm = JSON.parse(JSON.stringify(val))
                 this.ruleForm.bindingNodes = temp
                 this.flag = false
                 this.dialogVisible = true
-
 
 
             },
@@ -153,16 +149,14 @@
                                     });
                                     this.getResourceList();
                                     this.dialogVisible = false
-                                }
-                                else {
+                                } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
                                         type: 'warning'
                                     });
                                 }
                             })
-                        }
-                        else {
+                        } else {
                             createCustomizeResource(this.ruleForm).then(response => {
                                 if (response.success) {
                                     this.$message({
@@ -171,8 +165,7 @@
                                     });
                                     this.getResourceList()
                                     this.dialogVisible = false
-                                }
-                                else {
+                                } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
                                         type: 'warning'
@@ -180,14 +173,11 @@
                                 }
                             })
                         }
-
-
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
                 });
-
             },
             handleDelete(row) {
                 deleteResource(row.id).then(response => {
@@ -197,8 +187,7 @@
                             type: 'success'
                         });
                         this.getResourceList()
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
@@ -207,8 +196,8 @@
                 })
             },
             add() {
-                this.ruleForm = {},
-                    this.flag = true
+                this.ruleForm = {}
+                this.flag = true
                 this.dialogVisible = true
             },
             getResourceList() {
@@ -220,20 +209,16 @@
                         if (this.customize && response.data !== null && response.data.resources !== null) {
                             this.tableData = response.data.resources.filter(item => item.resourceRef.length !== 0)
                             this.resourceOption = response.data.resources.filter(item => item.resourceRef.length === 0)
-
                         }
                         this.tableData.forEach(item => {
                             if (item.bindingNodes !== null) { item.bindingNodes = item.bindingNodes.toString() }
-
                         })
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             getNodeList() {
@@ -242,17 +227,14 @@
                         if (response.data !== null && response.data.nodes !== null) {
                             this.nodeOption = response.data.nodes
                         }
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
-
                 })
-            },
+            }
 
         }
     }

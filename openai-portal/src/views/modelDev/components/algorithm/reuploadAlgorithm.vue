@@ -6,25 +6,26 @@
       :visible.sync="CreateFormVisible"
       :before-close="handleDialogClose"
       :close-on-click-modal="false"
+      :show-close="close"
     >
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
+      <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
-          <el-input v-model="ruleForm.algorithmName" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.algorithmName" :disabled="true" />
         </el-form-item>
         <el-form-item label="算法描述" :label-width="formLabelWidth" prop="desc">
-          <el-input v-model="ruleForm.algorithmDescript" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.algorithmDescript" :disabled="true" />
         </el-form-item>
         <el-form-item label="模型名称" :label-width="formLabelWidth" prop="modelName">
-          <el-input v-model="ruleForm.modelName" :disabled="true"></el-input>
+          <el-input v-model="ruleForm.modelName" :disabled="true" />
         </el-form-item>
         <el-form-item label="上传代码包" :label-width="formLabelWidth" prop="path">
-          <upload        
-            :uploadData="uploadData" 
-            @confirm="confirm" 
-            @cancel="cancel"   
+          <upload
             v-model="ruleForm.path"
-          >
-          </upload>
+            :upload-data="uploadData"
+            @confirm="confirm"
+            @cancel="cancel"
+            @upload="isCloseX"
+          />
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -34,24 +35,24 @@
 <script>
 import upload from '@/components/upload/index.vue'
 export default {
-  name: "reuploadAlgorithm",
+  name: "ReuploadAlgorithm",
   components: {
-    upload,
+    upload
   },
   props: {
-    data: {
+    reuploadData: {
       type: Object,
       default: () => { }
-    },
+    }
   },
   data() {
     return {
       isEmpty: false,
       showUpload: false,
-      show:true,
-      showConfirm:false,
+      show: true,
+      showConfirm: false,
       ruleForm: {
-        path: '',
+        path: ''
       },
       uploadData: { data: {}, type: undefined },
       rules: {
@@ -61,17 +62,18 @@ export default {
             message: "请上传数据集",
             trigger: "change"
           }
-        ],
+        ]
       },
       CreateFormVisible: true,
-      formLabelWidth: "120px"
+      formLabelWidth: "120px",
+      close: true
     };
   },
   created() {
-    let {algorithmName,algorithmDescript,modelName} = this.data
-    this.ruleForm = {algorithmName,algorithmDescript,modelName}
-    this.uploadData.AlgorithmId = this.data.algorithmId
-    this.uploadData.Version = this.data.algorithmVersion
+    const { algorithmName, algorithmDescript, modelName } = this.reuploadData
+    this.ruleForm = { algorithmName, algorithmDescript, modelName }
+    this.uploadData.AlgorithmId = this.reuploadData.algorithmId
+    this.uploadData.Version = this.reuploadData.algorithmVersion
     this.uploadData.type = "myAlgorithmCreation"
   },
   methods: {
@@ -84,6 +86,9 @@ export default {
     confirm(val) {
       this.$emit("confirm", val);
     },
+    isCloseX(val) {
+        this.close = val
+      }
   }
 };
 </script>
