@@ -398,6 +398,8 @@ influxdb:
   - name: influxdb-initdb
     mountPath: /docker-entrypoint-initdb.d
     readOnly: true
+  nodeSelector:
+    <<: *nodeSelector
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
