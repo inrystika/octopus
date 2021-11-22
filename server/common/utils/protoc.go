@@ -138,7 +138,10 @@ func GenSwagger() error {
 		return err
 	}
 
-	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"), filepath.Join(baseDir, "openai-server", "api", "v1")}
+	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"),
+		filepath.Join(baseDir, "openai-server", "api", "v1"),
+		filepath.Join(baseDir, "platform-server", "api", "v1"),
+	}
 	for _, dir := range dirs {
 		err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if ext := filepath.Ext(path); ext != ".proto" {
@@ -197,18 +200,18 @@ func GenSwagger() error {
 		if err != nil {
 			return err
 		}
-		swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, []byte(`
-		{
-		  "info": {
-			"title": "octopus api",
-			"version": ""
-		  }
-		}`))
+		baseBytes, err := ioutil.ReadFile(filepath.Join(dir, "base.swagger.json"))
+		if err != nil {
+			return err
+		}
+		swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, baseBytes)
 		if err != nil {
 			return err
 		}
 
-		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), swaggerBytes, 0755)
+		swaggerStr := strings.ReplaceAll(string(swaggerBytes), `,"default":{"description":"An unexpected error response.","schema":{"$ref":"#/definitions/rpcStatus"}}`, "")
+
+		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), []byte(swaggerStr), 0755)
 		if err != nil {
 			return err
 		}

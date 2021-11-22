@@ -90,4 +90,26 @@ export function deleteGroup(params) {
     method: 'delete'
   })
 }
+// 查询配置key列表
+export function getUserConfigKey() {
+  return request({
+    url: `/v1/usermanage/userconfigkey`,
+    method: 'get'
+  })
+}
+// 查询用户配置
+export function getUserConfig(userId) {
+  return request({
+    url: `/v1/usermanage/user/${userId}/config`,
+    method: 'get'
+  })
+}
+// 更新用户配置
+export function updateUserConfig(userId,params) {
+  return request({
+    url: `/v1/usermanage/user/${userId}/config`,
+    method: 'put',
+    params
+  })
+}
 

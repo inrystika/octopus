@@ -145,3 +145,15 @@ func (s *UserService) PutUserWorkspace(ctx context.Context, req *api.PutUserWork
 	}
 	return &api.PutUserWorkspaceReply{}, nil
 }
+
+func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigRequest) (*api.GetUserConfigReply, error) {
+	session := ss.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+	reply, err := s.data.UserClient.GetUserConfig(ctx, &innterapi.GetUserConfigRequest{UserId: session.UserId})
+	if err != nil {
+		return nil, err
+	}
+	return &api.GetUserConfigReply{Config: reply.Config}, nil
+}

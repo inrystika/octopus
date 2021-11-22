@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
-  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
-  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
-  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
-  params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
-  params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
-  params.path ? conditions.push(`path=` + params.path) : null;
+  let conditions = []
+  conditions.push(`pageSize=`+params.pageSize);
+  conditions.push(`pageIndex=`+params.pageIndex);
+  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
+  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
+  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
+  params.createdAtGte?conditions.push(`createdAtGte=`+params.createdAtGte):null;
+  params.createdAtLt?conditions.push(`createdAtLt=`+params.createdAtLt):null;
+  params.path?conditions.push(`path=`+params.path):null;
   return conditions
 }
 

@@ -1,0 +1,47 @@
+syntax = "proto3";
+package platformserver.internal.conf;
+
+option go_package = "internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  App app = 1;
+  Server server = 2;
+  Data data = 3;
+  Service service = 4;
+}
+
+message App {
+  string name = 1;
+  string version = 2;
+  bool isDev = 3;
+  string logLevel = 4;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+    string jwtSecrect = 4;
+  }
+
+  HTTP http = 1;
+}
+
+message Data {
+  string baseServerAddr = 1;
+  message Redis {
+    string addr = 1;
+    string username = 2;
+    string password = 3;
+  }
+  Redis redis = 2;
+
+  string baseServerRequestTimeout = 3;
+}
+
+message Service {
+  int64 tokenExpirationSec = 1;
+}

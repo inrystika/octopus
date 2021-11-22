@@ -136,6 +136,11 @@ data:
         username: {{ .Values.influxdb.setDefaultUser.user.username }}
         password: {{ .Values.influxdb.setDefaultUser.user.password }}
         database: octopus
+      jointCloud:
+        baseUrl: {{ .Values.baseserver.data.jointCloud.baseUrl }}
+        username: {{ .Values.baseserver.data.jointCloud.username }}
+        password: {{ .Values.baseserver.data.jointCloud.password }}
+        sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
@@ -159,6 +164,17 @@ data:
         discoveryLeaderLeaseLockName: resourcediscovery
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+      platform:
+        configKeys:
+        - key: jobStatusCallbackAddr
+          title: 任务状态回调地址
+          type: input
+      user:
+        configKeys:
+        - key: jointCloudPermission
+          title: 云际权限
+          type: radio
+          options: yes,no
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"
