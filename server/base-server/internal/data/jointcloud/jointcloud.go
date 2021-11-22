@@ -226,10 +226,8 @@ func (j *jointCloud) SubmitJob(ctx context.Context, params *JointcloudJobParam) 
 		return nil, err
 	}
 	r := &Reply{}
-	paraBytes, err := json.Marshal(params)
 	_, err = j.client.R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(paraBytes).SetResult(r).
+		SetBody(params).SetResult(r).
 		Post(fmt.Sprintf("%s/v1/jointcloud/task/create", j.baseUrl))
 
 	if err != nil {
@@ -276,10 +274,8 @@ func (j *jointCloud) StopJob(ctx context.Context, req *StopJobRequest) error {
 	}
 
 	r := &Reply{}
-	paraBytes, err := json.Marshal(req)
 	_, err = j.client.R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(paraBytes).SetResult(r).
+		SetBody(req).SetResult(r).
 		Put(fmt.Sprintf("%s/v1/jointcloud/task/stop", j.baseUrl))
 
 	if err != nil {
