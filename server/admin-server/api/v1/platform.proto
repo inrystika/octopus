@@ -294,6 +294,8 @@ message PlatformTrainJobListRequest{
   string status = 7;
   //模糊查找字段，可用于name等模糊查找，非必填
   string searchKey = 8;
+  //platformId，不传则查全部平台
+  string platformId = 9;
 }
 
 message PlatformTrainJobListReply {
@@ -308,25 +310,27 @@ message PlatformTrainJob{
   string  id = 1;
   //job名称
   string name = 2;
+  //platformId
+  string platformId = 3;
   //job描述
-  string desc = 3;
+  string desc = 4;
   //数据集
-  repeated PlatformDataset datasets = 4;
+  repeated PlatformDataset datasets = 5;
   //镜像
-  PlatformImage image = 5;
+  PlatformImage image = 6;
   //子任务配置信息
-  repeated PlatformTask tasks = 6;
+  repeated PlatformTask tasks = 7;
   //创建时间
-  int64 createdAt = 7;
+  int64 createdAt = 8;
   //更新时间
-  int64 updatedAt = 8;
+  int64 updatedAt = 9;
   //任务状态
-  string status   = 9;
+  string status   = 10;
   //job完成时间
-  int64  completedAt = 10;
+  int64  completedAt = 11;
   //运行时
-  int64 runSec = 11;
+  int64 runSec = 12;
   //启动时间
-  int64  startedAt = 12;
+  int64  startedAt = 13;
 }
 
