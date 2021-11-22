@@ -17,7 +17,6 @@ service Algorithm {
             body: "*"
       };
     }
-
     // 查询算法用途列表
     rpc ListAlgorithmApply (ListAlgorithmApplyRequest) returns (ListAlgorithmApplyReply) {
       option (google.api.http) = {
