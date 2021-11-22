@@ -178,7 +178,7 @@ func (s *lableService) DeleteLable(ctx context.Context, req *api.DeleteLableRequ
 		return nil, errors.Errorf(err, errors.ErrorLableRefered)
 	}
 	if lable.SourceType != int(api.Source_LABLE_SOURCE_CUSTOMIZE) {
-		return nil, errors.Errorf(err, errors.ErrorLableNotDelete)
+		return nil, errors.Errorf(err, errors.ErrorLableNotModify)
 	}
 
 	err = s.data.LableDao.DeleteLable(ctx, req.Id)
@@ -195,6 +195,9 @@ func (s *lableService) UpdateLable(ctx context.Context, req *api.UpdateLableRequ
 	lable, err := s.data.LableDao.GetLable(ctx, req.Id)
 	if err != nil {
 		return nil, err
+	}
+	if lable.SourceType != int(api.Source_LABLE_SOURCE_CUSTOMIZE) {
+		return nil, errors.Errorf(err, errors.ErrorLableNotModify)
 	}
 
 	item, err := s.data.LableDao.QueryLable(ctx, &model.LableQuery{

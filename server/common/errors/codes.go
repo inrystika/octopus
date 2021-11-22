@@ -182,7 +182,7 @@ const (
 	ErrorLableRefered   = 19501 // 标签被引用，不能删除
 	ErrorLableRepeated  = 19502 // 标签重复
 	ErrorLableIllegal   = 19503 // 标签不合法
-	ErrorLableNotDelete = 19504 // 预置标签不可删
+	ErrorLableNotModify = 19504 // 预置标签不可更改
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat              = 20001 // 平台名称重复
@@ -375,7 +375,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorLableRefered:   {codeType: Unimplemented, msg: "lable refered"},
 	ErrorLableRepeated:  {codeType: AlreadyExists, msg: "lable repeated"},
 	ErrorLableIllegal:   {codeType: InvalidArgument, msg: "lable illegal"},
-	ErrorLableNotDelete: {codeType: OutOfRange, msg: "lable not delete"},
+	ErrorLableNotModify: {codeType: OutOfRange, msg: "lable not modify"},
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},
