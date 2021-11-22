@@ -8,7 +8,6 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/evanphx/json-patch v4.9.0+incompatible
-	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
@@ -19,7 +18,6 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/imdario/mergo v0.3.11
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
 	github.com/json-iterator/go v1.1.10
