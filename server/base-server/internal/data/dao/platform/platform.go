@@ -234,7 +234,7 @@ func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId strin
 	}
 
 	if len(deleteKeys) > 0 {
-		res := db.Where("platform_id = ? and key in ?", platformId, deleteKeys).Delete(&model.PlatformConfig{})
+		res := db.Where("platform_id = ? and `key` in ?", platformId, deleteKeys).Delete(&model.PlatformConfig{})
 		if res.Error != nil {
 			return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 		}
