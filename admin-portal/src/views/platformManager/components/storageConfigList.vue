@@ -16,7 +16,7 @@
         :header-cell-style="{'text-align':'left','color':'black'}"
         :cell-style="{'text-align':'left'}"
       >
-        <el-table-column label="平台名称">
+        <el-table-column label="配置类型">
             <span>{{ this.platformDetail.name }}</span>
         </el-table-column>
         <el-table-column label="配置名称">

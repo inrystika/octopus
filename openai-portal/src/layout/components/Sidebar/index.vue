@@ -23,7 +23,8 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
-import getUserConfig from '@/api/Home.js'
+import { getUserConfig } from '@/api/Home'
+import { getErrorMsg } from '@/error/index'
 
 export default {
   components: { SidebarItem, Logo },
@@ -31,8 +32,29 @@ export default {
     this.getUserConfig()
   },
   methods: {
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
     getUserConfig() {
-      console.log("created") 
+      getUserConfig().then(response => {
+        if (response.success) {
+          console.log("res:",response)
+            console.log("router:",this.$router.options.routes)
+          if(response.data.config.jointCloudPermission === 'no') {
+            this.$router.options.routes.forEach((item,index) => {
+              console.log("index,item",index,item)
+              if(item.children[0].name === "cloudInterconnection") {
+                delete this.$router.options.routes[item]
+              }
+            })
+          }
+        } else {
+          this.$message({
+            message: this.getErrorMsg(response.error.subcode),
+            type: 'warning'
+          });
+        }
+      })
     }
   },
   computed: {
@@ -41,7 +63,6 @@ export default {
      
     ]),
     routes() {
-      // debugger
       return this.$router.options.routes
     },
     activeMenu() {
