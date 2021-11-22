@@ -148,7 +148,7 @@ export async function deletePreAlgorithm(algorithmId) {
 }
 export async function algorithmType(params) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype`,
+    url: `/v1/algorithmmanage/algorithmapply`,
     method: "get",
     params: params
   })

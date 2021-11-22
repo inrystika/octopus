@@ -1,7 +1,7 @@
 
 <template>
     <div>
-        <div class="title">算法类型</div>
+        <div class="title">模型类别</div>
         <div>
             <el-tag v-for="(tag,index) in dynamicType" :key="index" closable :disable-transitions="false"
                 @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
