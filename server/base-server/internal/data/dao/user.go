@@ -163,7 +163,7 @@ func (d *userDao) UpdateConfig(ctx context.Context, userId string, config map[st
 	}
 
 	if len(deleteKeys) > 0 {
-		res := db.Where("user_id = ? and key in ?", userId, deleteKeys).Delete(&model.UserConfig{})
+		res := db.Where("user_id = ? and `key` in ?", userId, deleteKeys).Delete(&model.UserConfig{})
 		if res.Error != nil {
 			return commerrors.Errorf(res.Error, commerrors.ErrorDBDeleteFailed)
 		}
