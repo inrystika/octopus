@@ -12,7 +12,7 @@ global:
       address: "swr.cn-south-1.myhuaweicloud.com"
       pathname: "/openioctopus"
     pullPolicy: IfNotPresent
-  nodeSelector:
+  nodeSelector: &nodeSelector
     octopus.openi.pcl.cn/node: "server"
 
 common:
@@ -23,6 +23,7 @@ ingress:
   enabled: true
   adminserverPath: /adminserver
   openaiserverPath: /openaiserver
+  platformserverPath: /platformserver
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
@@ -113,6 +114,11 @@ baseserver:
     redis:
       username: ""
       password: "abcde"
+    jointCloud:  #需要修改为实际的值
+      baseUrl: jointCloudBaseUrl
+      username: jointCloudUsername
+      password: jointCloudPassword
+      sessionExpirySec: 540 #实际有效期为600
   service:
     billingPeriodSec: 1800
     develop:
@@ -137,7 +143,20 @@ openaiserver:
     redis:
       username: ""
       password: "abcde"
-        
+
+# platform-server
+platformserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "platform-server"
+  app:
+    logLevel: info
+  data:
+    redis:
+      username: ""
+      password: "abcde"
 
 # admin-server
 adminserver:
@@ -192,12 +211,14 @@ logger:
   filebeat:
     resources: {}
   logstash:
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
   httpd:
     replicaCount: 1
     image:
       pullPolicy: Always
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
 
 
 # minio
@@ -222,6 +243,8 @@ minio:
     type: NodePort
     nodePort: "31311"
     port: "9000"
+  nodeSelector:
+    <<: *nodeSelector
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -261,6 +284,8 @@ mysql:
       - name: mysql-initdb
         configMap:
           name: mysql-initdb-config
+    nodeSelector:
+      <<: *nodeSelector
     affinity:
       nodeAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -288,6 +313,8 @@ redis:
     persistence:
       size: "50Gi"
       existingClaim: "octopus-redis-pvc"
+    nodeSelector:
+      <<: *nodeSelector
     affinity:
       nodeAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -352,6 +379,10 @@ nginx-ingress-controller:
 # influxdb
 influxdb:
   replicaCount: 1
+  config:
+    data:
+      max-series-per-database: 0
+      max-values-per-tag: 0
   setDefaultUser:
     user:
       username: "octopus"
@@ -367,6 +398,8 @@ influxdb:
   - name: influxdb-initdb
     mountPath: /docker-entrypoint-initdb.d
     readOnly: true
+  nodeSelector:
+    <<: *nodeSelector
   affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -382,7 +415,7 @@ influxdb:
           - key: beta.kubernetes.io/arch
             operator: In
             values: ["amd64", "x64", "x86-64", "x86_64"]
-  
+
 
 # grafana
 grafana:
@@ -410,7 +443,8 @@ grafana:
     path: /grafana
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 #prometheus
 prometheus:
@@ -428,7 +462,8 @@ prometheus:
     targetPort: "9090"
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 # apidoc
 apidoc:

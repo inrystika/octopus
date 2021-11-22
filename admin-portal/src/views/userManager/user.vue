@@ -53,6 +53,7 @@
                     <el-button v-if="group" type="text" @click="handleEdite(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'用户详情':'群组详情' }}</el-button>
+                    <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -64,8 +65,23 @@
         <!-- 新增对话框 -->
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
-            @close="close" />
+        <operateDialog
+            v-if="operateVisible"
+            :row="row"
+            :user-type="change"
+            @cancel="cancel"
+            @confirm="confirm"
+            @close="close"
+        />
+        <!-- 用户配置对话框 -->
+        <userConfig
+          v-if="userConfigVisible"
+          :row="row"
+          @cancel="cancel"
+          @confirm="confirm"
+          @close="close"
+        >
+        </userConfig>
         <!-- 详情对话框 -->
         <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
             class="title" :close-on-click-modal="false">
@@ -88,6 +104,7 @@
     import { parseTime } from '@/utils/index'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
+    import userConfig from "./components/userConfig.vue";
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
@@ -95,8 +112,8 @@
         components: {
             operateDialog,
             addDialog,
-            searchForm
-
+            searchForm,
+            userConfig
         },
         props: {
             userTabType: { type: Number, default: undefined }
@@ -108,6 +125,7 @@
                 CreateVisible: false,
                 operateVisible: false,
                 detailVisible: false,
+                userConfigVisible: false,
                 show: false,
                 user: false,
                 group: false,
@@ -214,6 +232,10 @@
                 this.row = row
                 this.operateVisible = true
             },
+            handleUserConfig(row) {
+                this.row = row
+                this.userConfigVisible = true
+            },
             handleDetail(row) {
                 if (this.user) {
                     this.id = row.id
@@ -253,16 +275,19 @@
             cancel(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             confirm(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             close(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             create() {

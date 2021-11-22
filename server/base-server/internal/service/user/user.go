@@ -10,6 +10,8 @@ import (
 	"server/common/errors"
 	"server/common/utils"
 
+	"github.com/jinzhu/copier"
+
 	"server/common/log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -258,4 +260,55 @@ func (s *UserService) ListUserInCond(ctx context.Context, req *api.ListUserInCon
 	return &api.ListUserInCondReply{
 		Users: userItems,
 	}, nil
+}
+
+func (s *UserService) ListUserConfigKey(ctx context.Context, req *api.ListUserConfigKeyRequest) (*api.ListUserConfigKeyReply, error) {
+	reply := &api.ListUserConfigKeyReply{}
+	for _, i := range s.conf.Service.User.ConfigKeys {
+		k := &api.ListUserConfigKeyReply_ConfigKey{}
+		err := copier.Copy(k, i)
+		if err != nil {
+			return nil, err
+		}
+		reply.ConfigKeys = append(reply.ConfigKeys, k)
+	}
+	return reply, nil
+}
+
+func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigRequest) (*api.GetUserConfigReply, error) {
+	config, err := s.data.UserDao.GetConfig(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GetUserConfigReply{
+		Config: config,
+	}, nil
+}
+
+func (s *UserService) UpdateUserConfig(ctx context.Context, req *api.UpdateUserConfigRequest) (*api.UpdateUserConfigReply, error) {
+	for k, v := range req.Config {
+		in := false
+		for _, i := range s.conf.Service.User.ConfigKeys {
+			if k == i.Key {
+				in = true
+				err := i.ValidateValue(v)
+				if err != nil {
+					return nil, err
+				}
+				break
+			}
+		}
+
+		if !in {
+			return nil, errors.Errorf(nil, errors.ErrorUserConfigKeyNotExist)
+		}
+	}
+
+	err := s.data.UserDao.UpdateConfig(ctx, req.UserId, req.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserConfigReply{}, nil
 }

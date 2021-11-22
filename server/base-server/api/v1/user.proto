@@ -14,6 +14,10 @@ service UserService {
   rpc AddUser (AddUserRequest) returns (AddUserReply);
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
   rpc ListUserInCond (ListUserInCondRequest) returns (ListUserInCondReply);
+
+  rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply);
+  rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
+  rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
 }
 
 enum UserStatus
@@ -101,4 +105,38 @@ message ListUserInCondRequest {
 
 message ListUserInCondReply {
   repeated UserItem users = 1;
+}
+
+message ListUserConfigKeyRequest {
+
+}
+
+message ListUserConfigKeyReply {
+  message ConfigKey {
+    string key = 1;     // 键值，必填，保存配置时传入
+    string title = 2;   // 标题，必填
+    string type = 3;    // 类型，必填，input、radio、checkbox，默认为input
+    string desc = 4;    // 描述，选填
+    string options = 5; // 选项，选填，radio、checkbox时必填，逗号分隔
+    string regexp = 6;  // 正则，选填
+    bool required = 7; // 选填，默认为false
+  }
+  repeated ConfigKey configKeys = 1;
+}
+
+message GetUserConfigRequest {
+  string userId = 1;
+}
+
+message GetUserConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdateUserConfigRequest {
+  string userId = 1[(validate.rules).string = {min_len: 1}];
+  map<string, string> config = 2;
+}
+
+message UpdateUserConfigReply {
+
 }
