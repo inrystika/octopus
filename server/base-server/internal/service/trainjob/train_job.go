@@ -701,7 +701,6 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	if err != nil {
 		return nil, err
 	}
-
 	for index, config := range trainJobDetail.Config {
 		replyStates := make([]*api.ReplicaState, 0)
 		for ri := 0; ri < int(config.TaskNumber); ri++ {
@@ -856,6 +855,38 @@ func (s *trainJobService) CreateJobTemplate(ctx context.Context, req *api.TrainJ
 	}, nil
 }
 
+func (s *trainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobTemplateRequest) (*api.CopyJobTemplateReply, error) {
+	tpl, err := s.data.TrainJobDao.GetTrainJobTemplate(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	newJobTemplateId := utils.GetUUIDStartWithAlphabetic()
+	newTrainJobTemplate := &model.TrainJobTemplate{}
+	err = copier.Copy(newTrainJobTemplate, tpl)
+	if err != nil {
+		return nil, err
+	}
+	newTrainJobTemplate.Id = newJobTemplateId
+	newTrainJobTemplate.Name = fmt.Sprintf("copy-tpl-%v", time.Now().Unix())
+	newTrainJobTemplate.DeletedAt = 0
+	newTrainJobTemplate.CreatedAt = time.Time{}
+	newTrainJobTemplate.UpdatedAt = time.Time{}
+
+	//err = s.checkParamForTemplate(ctx, newTrainJobTemplate)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	err = s.data.TrainJobDao.CreateTrainJobTemplate(ctx, newTrainJobTemplate)
+	if err != nil {
+		return nil, err
+	}
+	return &api.CopyJobTemplateReply{
+		TemplateId: newJobTemplateId,
+	},nil
+}
+
 func (s *trainJobService) convertTemplateFromDb(jobDb *model.TrainJobTemplate) (*api.TrainJobTemplate, error) {
 	r := &api.TrainJobTemplate{}
 	err := copier.CopyWithOption(r, jobDb, copier.Option{DeepCopy: true})
@@ -979,7 +1010,8 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
+	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
+		strings.EqualFold(info.Job.State, pipeline.FAILED){
 		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
 			SpaceId:          trainJob.WorkspaceId,
 			UserId:           trainJob.UserId,
@@ -991,4 +1023,34 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 	}
 
 	return common.PipeLineCallbackOK
+}
+
+func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
+
+	query := &model.JobEventQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, err
+	}
+
+	events, totalSize, err := s.data.TrainJobDao.GetTrainJobEvents(query)
+	if err != nil {
+		return nil, err
+	}
+
+	jobEvents := make([]*api.JobEvent, 0)
+
+	for _, value := range events {
+		event := &api.JobEvent{}
+		event.Timestamp = value.Timestamp
+		event.Name = value.Name
+		event.Reason = value.Reason
+		event.Message = value.Message
+		jobEvents = append(jobEvents, event)
+	}
+
+	return &api.JobEventListReply{
+		TotalSize: totalSize,
+		JobEvents: jobEvents,
+	}, nil
 }

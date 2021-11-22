@@ -35,3 +35,21 @@ dependencies:
 - name: nginx-ingress-controller
   version: 7.6.9
   repository: https://charts.bitnami.com/bitnami
+- name: influxdb
+  version: 4.10.0
+  repository: https://helm.influxdata.com/
+
+home: https://octopus.openi.org.cn/
+icon: https://git.openi.org.cn/OpenI/octopus/media/branch/master/logo.png
+keywords:
+  - ai
+  - machine learning
+  - deep learning
+  - hpc
+  - openi
+maintainers:
+  - email: cloudbrain_register＠pcl.ac.cn
+    name: Octopus
+sources:
+  - https://git.openi.org.cn/OpenI/octopus
+  - https://octopus.openi.org.cn/

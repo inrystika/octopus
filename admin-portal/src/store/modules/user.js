@@ -1,12 +1,12 @@
 import { login } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
+import { getToken, setToken } from '@/utils/auth'
 import { Message } from 'element-ui'
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    progressId: undefined
   }
 }
 
@@ -18,6 +18,9 @@ const mutations = {
   // },
   SET_TOKEN: (state, token) => {
     state.token = token
+  },
+  SET_PROGRESSID: (state, progressId) => {
+    state.progressId = progressId
   }
   // SET_NAME: (state, name) => {
   //   state.name = name

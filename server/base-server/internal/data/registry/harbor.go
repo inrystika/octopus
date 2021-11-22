@@ -3,7 +3,6 @@ package registry
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"server/base-server/internal/conf"
@@ -132,11 +131,6 @@ func (h *v1Registry) CreateProject(projectReq *ProjectReq) error {
 	case http.StatusConflict:
 		return errors.Errorf(nil, errors.ErrorHarborProjectExists)
 	default:
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		h.log.Error(context.Background(), string(body))
 		return errors.Errorf(err1, errors.ErrorHarborCheckProjectFailed)
 	}
 }
@@ -172,11 +166,6 @@ func (h *v2Registry) CreateProject(projectReq *ProjectReq) error {
 	case http.StatusConflict:
 		return errors.Errorf(nil, errors.ErrorHarborProjectExists)
 	default:
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		h.log.Error(context.Background(), string(body))
 		return errors.Errorf(err1, errors.ErrorHarborCheckProjectFailed)
 	}
 }

@@ -3,7 +3,7 @@ import request from '@/utils/request'
 export function getResourcePool() {
     return request({
         url: '/v1/resourcemanage/resourcepool',
-        method: 'get',
+        method: 'get'
 
     })
 }
@@ -46,8 +46,7 @@ export function updateResourcePool(data) {
     return request({
         url: `/v1/resourcemanage/resourcepool/${data.id}`,
         method: 'put',
-        data: { desc:data.desc, bindingNodes:data.bindingNodes, mapResourceSpecIdList:data.mapResourceSpecIdList }
-
+        data: { desc: data.desc, bindingNodes: data.bindingNodes, mapResourceSpecIdList: data.mapResourceSpecIdList }
 
     })
 }
@@ -55,7 +54,7 @@ export function updateResourcePool(data) {
 export function getNodeList() {
     return request({
         url: '/v1/resourcemanage/node',
-        method: 'get',
+        method: 'get'
     })
 }
 // 创建自定义资源
@@ -71,7 +70,7 @@ export function updateResource(data) {
     return request({
         url: `/v1/resourcemanage/resource/${data.id}`,
         method: 'put',
-        data:{desc:data.desc,resourceRef:data.resourceRef,bindingNodes:data.bindingNodes}
+        data: { desc: data.desc, resourceRef: data.resourceRef, bindingNodes: data.bindingNodes }
 
     })
 }
@@ -79,7 +78,7 @@ export function updateResource(data) {
 export function deleteSpecification(params) {
     return request({
         url: `/v1/resourcemanage/resourcespec/${params}`,
-        method: 'delete',
+        method: 'delete'
 
     })
 }
@@ -87,7 +86,7 @@ export function deleteSpecification(params) {
 export function getResourceList() {
     return request({
         url: '/v1/resourcemanage/resource',
-        method: 'get',
+        method: 'get'
 
     })
 }
@@ -95,7 +94,15 @@ export function getResourceList() {
 export function deleteResource(params) {
     return request({
         url: `/v1/resourcemanage/resource/${params}`,
-        method: 'delete',
+        method: 'delete'
+
+    })
+}
+// 获取群组绑定资源池
+export function getGroupResourcePool() {
+    return request({
+        url: '/v1/usermanage/workspaces',
+        method: 'get'
 
     })
 }

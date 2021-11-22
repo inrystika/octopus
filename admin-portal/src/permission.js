@@ -1,6 +1,4 @@
 import router from './router'
-import store from './store'
-import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
@@ -24,10 +22,8 @@ router.beforeEach(async (to, from, next) => {
       // if is logged in, redirect to the home page
       next('/index')
       NProgress.done()
-    }
-    else { next() }
-  }
-  else {
+    } else { next() }
+  } else {
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly
       next()

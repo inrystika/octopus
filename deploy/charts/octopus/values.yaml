@@ -33,12 +33,15 @@ ingress:
   apidocPath: /apidoc
   tls: []
 
+
 pvc:
   minio:
     requests: 100Gi
   mysql:
     requests: 100Gi
   redis:
+    requests: 100Gi
+  influxdb:
     requests: 100Gi
   logger:
     requests: 100Gi
@@ -62,6 +65,12 @@ pv:
       nfs:
         server:  192.168.203.72
         path:  /data/datasets/data/redis
+  influxdb:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server:  192.168.203.72
+        path:  /data/datasets/data/influxdb
   logger:
     requests: 100Gi
     storageType:
@@ -81,6 +90,7 @@ taskset:
 
 # base-server
 baseserver:
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -121,6 +131,7 @@ baseserver:
 
 # openai-server
 openaiserver:
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -149,6 +160,7 @@ platformserver:
 
 # admin-server
 adminserver:
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -163,6 +175,7 @@ adminserver:
 
 # openaiportal
 openaiportal:
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -172,6 +185,7 @@ openaiportal:
 
 # adminportal
 adminportal:
+  replicas: 1
   image:
     pullPolicy: ""
     address: ""
@@ -231,6 +245,22 @@ minio:
     port: "9000"
   nodeSelector:
     <<: *nodeSelector
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+
 
 # mysql
 mysql:
@@ -256,10 +286,26 @@ mysql:
           name: mysql-initdb-config
     nodeSelector:
       <<: *nodeSelector
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
 
 
 # redis
 redis:
+  architecture: standalone
   master:
     service:
       type: NodePort
@@ -269,8 +315,21 @@ redis:
       existingClaim: "octopus-redis-pvc"
     nodeSelector:
       <<: *nodeSelector
-  replica:
-    replicaCount: 1
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
   auth:
     enabled: true
     password: "abcde"
@@ -280,9 +339,83 @@ redis:
 # nginx-ingress-controller
 nginx-ingress-controller:
   hostNetwork: true
+  updateStrategy:
+    type: "Recreate"
   replicaCount: 1
   nodeSelector:
     nginx-ingress: "yes"
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+  defaultBackend:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values: ["amd64", "x64", "x86-64", "x86_64"]
+
+# influxdb
+influxdb:
+  replicaCount: 1
+  config:
+    data:
+      max-series-per-database: 0
+      max-values-per-tag: 0
+  setDefaultUser:
+    user:
+      username: "octopus"
+      password: "octopus"
+  persistence:
+    enabled: true
+    existingClaim: "octopus-influxdb-pvc"
+  volumes:
+  - name: influxdb-initdb
+    configMap:
+      name: influxdb-initdb-config
+  mountPoints:
+  - name: influxdb-initdb
+    mountPath: /docker-entrypoint-initdb.d
+    readOnly: true
+  nodeSelector:
+    <<: *nodeSelector
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+
 
 # grafana
 grafana:

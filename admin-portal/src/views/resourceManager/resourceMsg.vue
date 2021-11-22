@@ -1,10 +1,10 @@
 <template>
-    <el-tabs v-model="activeName" @tab-click="handleClick" class="Wrapper">
+    <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleClick">
         <el-tab-pane label="系统资源" name="first">
-            <resource :Type="1"></resource>
+            <resource :resource-tab-type="1" />
         </el-tab-pane>
         <el-tab-pane label="自定义资源" name="second">
-            <resource :Type="2"></resource>
+            <resource :resource-tab-type="2" />
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -19,6 +19,17 @@
                 activeName: 'first'
             }
         },
+        mounted() {
+            window.addEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            });
+
+        },
+        destroyed() {
+            window.removeEventListener('beforeunload', e => {
+                sessionStorage.clear()
+            })
+        },
         methods: {
             handleClick(tab, event) {
 
@@ -28,9 +39,9 @@
 </script>
 <style lang="scss" scoped>
     .Wrapper {
-    margin: 15px!important;
-    background-color:#fff;
-    padding: 20px;
-    min-height: 900px;
-  }
+        margin: 15px !important;
+        background-color: #fff;
+        padding: 20px;
+        min-height: 900px;
+    }
 </style>

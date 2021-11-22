@@ -1,11 +1,9 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
-
+import store from '@/store'
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
-  // timeout: 5000 // request timeout
+  baseURL: process.env.VUE_APP_BASE_API
 })
 
 // request interceptor
@@ -43,7 +41,6 @@ service.interceptors.response.use(
    */
 
   response => {
-
     // res = response.data
     // res.data = response.data.payload
     if (response.status === 200) {
@@ -84,10 +81,12 @@ service.interceptors.response.use(
   error => {
     console.log('err' + error) // for debug
     Message({
-      message: error.message,
+      message: '上传失败',
       type: 'error',
       duration: 5 * 1000
     })
+    setTimeout(function() { location.reload() }, 1000)
+    // location.reload();
     return Promise.reject(error)
   }
 )

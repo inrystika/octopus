@@ -36,6 +36,7 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
@@ -85,6 +86,7 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		UserId:        userId,
 		SpaceId:       session.GetWorkspace(),
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
@@ -173,6 +175,7 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 		OrderBy:       req.OrderBy,
 		SpaceId:       session.GetWorkspace(),
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
@@ -281,7 +284,10 @@ func (s *ImageService) DeleteImage(ctx context.Context, req *pb.DeleteImageReque
 	}
 
 	reply, err := s.data.ImageClient.DeleteImage(ctx, &innterapi.DeleteImageRequest{
-		ImageId: req.ImageId,
+		ImageId:  req.ImageId,
+		SpaceId:  imageReply.Image.SpaceId,
+		UserId:   imageReply.Image.UserId,
+		IsPrefab: innterapi.ImageIsPrefab_IMAGE_IS_PREFAB_NO,
 	})
 	if err != nil {
 		return nil, err
@@ -332,6 +338,23 @@ func (s *ImageService) ShareImage(ctx context.Context, req *pb.ShareImageRequest
 		return nil, err
 	}
 	return &pb.ShareImageReply{SharedAt: reply.SharedAt}, nil
+}
+
+func (s *ImageService) CloseShareImage(ctx context.Context, req *pb.CloseShareImageRequest) (*pb.CloseShareImageReply, error) {
+	userId := commctx.UserIdFromContext(ctx)
+	session := ss.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+	reply, err := s.data.ImageClient.CloseShareImage(ctx, &innterapi.CloseShareImageRequest{
+		ImageId: req.ImageId,
+		UserId:  userId,
+		SpaceId: session.GetWorkspace(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CloseShareImageReply{CloseSharedAt: reply.CloseSharedAt}, nil
 }
 
 func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUploadImageRequest) (*pb.ConfirmUploadImageReply, error) {

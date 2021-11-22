@@ -194,6 +194,17 @@ func (s *TrainJobService) CreateJobTemplate(ctx context.Context, req *api.TrainJ
 	}, nil
 }
 
+// 复制训练任务模板
+func (s *TrainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobTemplateRequest) (*api.CopyJobTemplateReply, error) {
+	reply, err := s.data.TrainJobClient.CopyJobTemplate(ctx, &innerapi.CopyJobTemplateRequest{Id: req.Id})
+	if err != nil {
+		return nil, err
+	}
+	return &api.CopyJobTemplateReply{
+		TemplateId: reply.TemplateId,
+	},nil
+}
+
 //获取任务模板信息
 func (s *TrainJobService) GetJobTemplate(ctx context.Context, req *api.GetJobTemplateRequest) (*api.GetJobTemplateReply, error) {
 	session := session.SessionFromContext(ctx)
@@ -460,4 +471,30 @@ func (s *TrainJobService) assignValueToTemplate(ctx context.Context, templates [
 	}
 
 	return nil
+}
+
+// 任务事件列表
+func (s *TrainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+	innerReq := &innerapi.JobEventListRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.TrainJobClient.GetJobEventList(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.JobEventListReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
 }

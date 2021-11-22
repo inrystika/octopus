@@ -43,6 +43,110 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 	return s
 }
 
+func (s *datasetService) AddDatasetType(ctx context.Context, req *api.AddDatasetTypeRequest) (*api.AddDatasetTypeReply, error) {
+	item, err := s.data.DatasetDao.QueryDatasetType(ctx, req.TypeDesc)
+	if item != nil {
+		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRepeated)
+	}
+
+	datasetType := &model.DatasetType{}
+	datasetType.Id = utils.GetUUIDWithoutSeparator()
+	datasetType.Desc = req.TypeDesc
+
+	err = s.data.DatasetDao.AddDatasetType(ctx, datasetType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AddDatasetTypeReply{
+		DatasetType: &api.DatasetType{
+			Id:       datasetType.Id,
+			TypeDesc: datasetType.Desc,
+		},
+	}, nil
+}
+
+func (s *datasetService) ListDatasetType(ctx context.Context, req *api.ListDatasetTypeRequest) (*api.ListDatasetTypeReply, error) {
+	query := &model.DatasetTypeQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	datasetTypebl, totalSize, err := s.data.DatasetDao.ListDatasetType(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	datasetTypes := make([]*api.DatasetType, 0)
+	for _, n := range datasetTypebl {
+		datasetType := &api.DatasetType{
+			Id:       n.Id,
+			TypeDesc: n.Desc,
+		}
+		datasetTypes = append(datasetTypes, datasetType)
+	}
+
+	return &api.ListDatasetTypeReply{
+		TotalSize:    totalSize,
+		DatasetTypes: datasetTypes,
+	}, nil
+}
+
+func (s *datasetService) GetDatasetType(ctx context.Context, req *api.GetDatasetTypeRequest) (*api.GetDatasetTypeReply, error) {
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GetDatasetTypeReply{
+		Id:       datasetType.Id,
+		TypeDesc: datasetType.Desc,
+	}, nil
+}
+
+func (s *datasetService) DeleteDatasetType(ctx context.Context, req *api.DeleteDatasetTypeRequest) (*api.DeleteDatasetTypeReply, error) {
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if datasetType.ReferTimes != 0 {
+		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRefered)
+	}
+
+	err = s.data.DatasetDao.DeleteDatasetType(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeleteDatasetTypeReply{
+		DeletedAt: time.Now().Unix(),
+	}, nil
+}
+
+func (s *datasetService) UpdateDatasetType(ctx context.Context, req *api.UpdateDatasetTypeRequest) (*api.UpdateDatasetTypeReply, error) {
+	item, err := s.data.DatasetDao.QueryDatasetType(ctx, req.TypeDesc)
+	if item != nil && item.Id != req.Id {
+		return nil, errors.Errorf(err, errors.ErrorDatasetTypeRepeated)
+	}
+
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	datasetType.Desc = req.TypeDesc
+	err = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateDatasetTypeReply{
+		UpdatedAt: time.Now().Unix(),
+	}, nil
+}
+
 func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatasetRequest) (*api.CreateDatasetReply, error) {
 	v := common.VersionStrBuild(1)
 
@@ -67,6 +171,12 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		return nil, errors.Errorf(nil, errors.ErrorDatasetRepeat)
 	}
 
+	// 检查数据类型id
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, req.TypeId)
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.data.DatasetDao.CreateDataset(ctx, dataset)
 	if err != nil {
 		return nil, err
@@ -85,6 +195,10 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 	if err != nil {
 		return nil, err
 	}
+
+	// 新增数据类型引用
+	datasetType.ReferTimes++
+	_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
 
 	return &api.CreateDatasetReply{
 		Id:      datasetId,
@@ -124,6 +238,14 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 		dataset.CreatedAt = n.CreatedAt.Unix()
 		dataset.UpdatedAt = n.UpdatedAt.Unix()
 		dataset.LatestVersion = common.VersionStrBuild(idsV[n.Id])
+
+		datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, n.TypeId)
+		if err != nil {
+			dataset.TypeDesc = ""
+		} else {
+			dataset.TypeDesc = datasetType.Desc
+		}
+
 		datasets = append(datasets, dataset)
 	}
 
@@ -175,6 +297,12 @@ func (s *datasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 				DatasetId: n.Id,
 				SpaceId:   req.ShareSpaceId,
 			}])
+		}
+		datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, n.TypeId)
+		if err != nil {
+			dataset.TypeDesc = ""
+		} else {
+			dataset.TypeDesc = datasetType.Desc
 		}
 		datasets = append(datasets, dataset)
 
@@ -503,7 +631,7 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 }
 
 func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatasetRequest) (*api.DeleteDatasetReply, error) {
-	_, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -532,6 +660,16 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	err = s.data.DatasetDao.DeleteDataset(ctx, req.Id)
 	if err != nil {
 		return nil, err
+	}
+
+	// 减小数据类型引用
+	datasetType, err := s.data.DatasetDao.GetDatasetType(ctx, dataset.TypeId)
+	if err == nil {
+		if datasetType.ReferTimes > 0 {
+			datasetType.ReferTimes--
+		}
+
+		_ = s.data.DatasetDao.UpdateDatasetType(ctx, datasetType)
 	}
 
 	return &api.DeleteDatasetReply{DeletedAt: time.Now().Unix()}, nil

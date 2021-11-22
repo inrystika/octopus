@@ -48,6 +48,7 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageVersion:  req.ImageVersion,
 		Status:        int32(req.ImageStatus),
 		SearchKey:     req.SearchKey,
@@ -68,6 +69,7 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
+			NameVerLike:   req.NameVerLike,
 			ImageVersion:  req.ImageVersion,
 			SearchKey:     req.SearchKey,
 		})
@@ -107,6 +109,9 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
+		UserNameLike:  req.UserNameLike,
+		SpaceNameLike: req.SpaceNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageVersion:  req.ImageVersion,
 		Status:        int32(req.ImageStatus),
 		SearchKey:     req.SearchKey,
@@ -128,6 +133,9 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
+			UserNameLike:  req.UserNameLike,
+			SpaceNameLike: req.SpaceNameLike,
+			NameVerLike:   req.NameVerLike,
 			ImageVersion:  req.ImageVersion,
 			Status:        int32(req.ImageStatus),
 			SearchKey:     req.SearchKey,
@@ -167,6 +175,7 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 		ImageType:     int32(req.ImageType),
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
+		NameVerLike:   req.NameVerLike,
 		ImageVersion:  req.ImageVersion,
 		Status:        int32(req.ImageStatus),
 		SearchKey:     req.SearchKey,
@@ -187,6 +196,7 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 			ImageType:     int32(req.ImageType),
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
+			NameVerLike:   req.NameVerLike,
 			ImageVersion:  req.ImageVersion,
 			Status:        int32(req.ImageStatus),
 			SearchKey:     req.SearchKey,
@@ -256,7 +266,6 @@ func (s *ImageService) ShareImage(ctx context.Context, req *pb.ShareImageRequest
 
 func (s *ImageService) CloseShareImage(ctx context.Context, req *pb.CloseShareImageRequest) (*pb.CloseShareImageReply, error) {
 	_, err := s.data.ImageDao.DeleteImageAccess(ctx, &model.ImageAccessDel{
-		Id:      utils.GetUUIDWithoutSeparator(),
 		SpaceId: req.SpaceId,
 		ImageId: req.ImageId,
 		UserId:  req.UserId,
@@ -328,6 +337,17 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 }
 
 func (s *ImageService) DeleteImage(ctx context.Context, req *pb.DeleteImageRequest) (*pb.DeleteImageReply, error) {
+	if req.IsPrefab != pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES {
+		_, err := s.data.ImageDao.DeleteImageAccess(ctx, &model.ImageAccessDel{
+			SpaceId: req.SpaceId,
+			ImageId: req.ImageId,
+			UserId:  req.UserId,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	_, err := s.data.ImageDao.Delete(ctx, &model.ImageDel{
 		Id: req.ImageId,
 	})
@@ -531,47 +551,6 @@ func (s *ImageService) importAndPushImage(image *model.Image) error {
 	}
 	return nil
 }
-
-//func (s *ImageService) generateJobToHandleImageTar(image *model.Image) *batchv1.Job {
-//	//bucketName, objectName := getTempMinioPath(image)
-//	//tempPath := fmt.Sprintf("%s/%s/%s", s.conf.Data.Minio.Base.MountPath, bucketName, objectName)
-//	return &batchv1.Job{
-//		ObjectMeta: v1.ObjectMeta{
-//			Name: "image-" + image.Id,
-//		},
-//		Spec: batchv1.JobSpec{
-//			Template: corev1.PodTemplateSpec{
-//				Spec: corev1.PodSpec{
-//					Containers: []corev1.Container{
-//						corev1.Container{
-//							Name:    image.Id,
-//							Image:   "",
-//							Command: []string{},
-//							VolumeMounts: []corev1.VolumeMount{
-//								corev1.VolumeMount{
-//									Name:      image.Id,
-//									SubPath:   "",
-//									MountPath: "",
-//									ReadOnly:  true,
-//								},
-//							},
-//						},
-//					},
-//					Volumes: []corev1.Volume{
-//						corev1.Volume{
-//							Name: image.Id,
-//							VolumeSource: corev1.VolumeSource{
-//								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-//									ClaimName: "",
-//								},
-//							},
-//						},
-//					},
-//				},
-//			},
-//		},
-//	}
-//}
 
 func (s *ImageService) GetImageUploadUrl(ctx context.Context, req *pb.GetImageUploadUrlRequest) (*pb.GetImageUploadUrlReply, error) {
 	image, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: req.ImageId})

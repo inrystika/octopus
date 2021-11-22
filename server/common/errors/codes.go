@@ -64,6 +64,10 @@ const (
 	ErroRedisHGetFailed        = 10102 // redisHGet失败
 	ErroRedisHDelFailed        = 10103 // redisHDel失败
 	ErrorRedisLockObtainFailed = 10104 // redis锁获取失败
+	// influxdb操作相关错误
+	ErroInfluxdbInitFailed  = 10200 // influxdb初始化失败
+	ErroInfluxdbFindFailed  = 10201 // influxdb列表查询失败
+	ErroInfluxdbWriteFailed = 10202 // influxdb插入失败
 
 	/* 11001~12000 资源管理错误*/
 	ErrorDeleteResourcePool   = 11001 // 删除资源池失败
@@ -98,6 +102,10 @@ const (
 	ErrorAlgorithmAccessVersionExisted         = 12009 // 公共算法版本已存在
 	ErrorAlgorithmVersionFileNotReady          = 12010 // 旧版本算法文件状态未就绪
 	ErrorAlgorithmVersionUploadAuth            = 12011 // 无权提交此算法版本文件
+	ErrorAlgorithmTypeRefered                  = 12012 // 算法类型被引用，不能删除
+	ErrorAlgorithmFrameworkRefered             = 12013 // 算法框架被引用，不能删除
+	ErrorAlgorithmTypeRepeated                 = 12014 // 算法类型重复
+	ErrorAlgorithmFrameworkRepeated            = 12015 // 算法框架重复
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError    = 13001 // 制作镜像状态异常
@@ -146,13 +154,14 @@ const (
 	ErrorTokenRenew               = 16010 // 认证失败,token被重置
 
 	// 用户管理
-	ErrorUserAccountNotExisted     = 16020 // 用户不存在
-	ErrorUserAccountExisted        = 16021 // 用户已存在
-	ErrorUserIdNotRight            = 16022 // 用户id错误
-	ErrorWorkSpaceExisted          = 16023 // 空间已存在
-	ErrorWorkSpaceNotExist         = 16024 // 空间不存在
-	ErrorUserWorkSpaceNoPermission = 16025 // 用户无空间权限
-	ErrorUserConfigKeyNotExist     = 16026 // 配置项不存在
+	ErrorUserAccountNotExisted      = 16020 // 用户不存在
+	ErrorUserAccountExisted         = 16021 // 用户已存在
+	ErrorUserIdNotRight             = 16022 // 用户id错误
+	ErrorWorkSpaceExisted           = 16023 // 空间已存在
+	ErrorWorkSpaceNotExist          = 16024 // 空间不存在
+	ErrorUserWorkSpaceNoPermission  = 16025 // 用户无空间权限
+	ErrorWorkSpaceResourcePoolBound = 16026 // 空间与资源池已绑定
+	ErrorUserConfigKeyNotExist      = 16027 // 配置项不存在
 
 	/* 17001~18000 计费管理错误*/
 	ErrorBillingObtainLockFailed = 17001 //获取锁失败
@@ -172,6 +181,8 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+	ErrorDatasetTypeRefered     = 19006 // 数据集类型被引用，不能删除
+	ErrorDatasetTypeRepeated    = 19007 // 数据集类型重复
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat              = 20001 // 平台名称重复
@@ -285,6 +296,10 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAlgorithmVersionFileExisted:           {codeType: AlreadyExists, msg: "AlgorithmVersion FileExists"},
 	ErrorAlgorithmAccessVersionExisted:         {codeType: AlreadyExists, msg: "AlgorithmAccessVersion Exists"},
 	ErrorAlgorithmVersionUploadAuth:            {codeType: InvalidArgument, msg: "AlgorithmVersionUpload Auth Wrong"},
+	ErrorAlgorithmTypeRefered:                  {codeType: OutOfRange, msg: "type refered"},
+	ErrorAlgorithmFrameworkRefered:             {codeType: OutOfRange, msg: "framework refered"},
+	ErrorAlgorithmTypeRepeated:                 {codeType: OutOfRange, msg: "type repeated"},
+	ErrorAlgorithmFrameworkRepeated:            {codeType: OutOfRange, msg: "framework repeated"},
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError:    {codeType: OutOfRange, msg: "make image status error"},
@@ -332,13 +347,14 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAuthenticationFailed:     {codeType: Unauthorized, msg: "user account authentication failed"},
 	ErrorTokenRenew:               {codeType: InvalidArgument, msg: "token renew"},
 	// 用户管理
-	ErrorUserAccountNotExisted:     {codeType: NotFound, msg: "user account not exists"},
-	ErrorUserAccountExisted:        {codeType: AlreadyExists, msg: "user account exists"},
-	ErrorUserIdNotRight:            {codeType: InvalidArgument, msg: "userid not valid"},
-	ErrorWorkSpaceExisted:          {codeType: AlreadyExists, msg: "workspace existed"},
-	ErrorWorkSpaceNotExist:         {codeType: NotFound, msg: "workspace not existed"},
-	ErrorUserWorkSpaceNoPermission: {codeType: PermissionDenied, msg: "user workspace permission deny"},
-	ErrorUserConfigKeyNotExist:     {codeType: InvalidArgument, msg: "user config key not exist"},
+	ErrorUserAccountNotExisted:      {codeType: NotFound, msg: "user account not exists"},
+	ErrorUserAccountExisted:         {codeType: AlreadyExists, msg: "user account exists"},
+	ErrorUserIdNotRight:             {codeType: InvalidArgument, msg: "userid not valid"},
+	ErrorWorkSpaceExisted:           {codeType: AlreadyExists, msg: "workspace existed"},
+	ErrorWorkSpaceNotExist:          {codeType: NotFound, msg: "workspace not existed"},
+	ErrorUserWorkSpaceNoPermission:  {codeType: PermissionDenied, msg: "user workspace permission deny"},
+	ErrorWorkSpaceResourcePoolBound: {codeType: ResourceExhausted, msg: "workspace and resource pool had bind"},
+	ErrorUserConfigKeyNotExist:      {codeType: InvalidArgument, msg: "user config key not exist"},
 
 	/* 17001~18000 机时管理错误*/
 	ErrorBillingObtainLockFailed: {codeType: Internal, msg: "billing obtain lock failed"},
@@ -358,6 +374,8 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+	ErrorDatasetTypeRefered:     {codeType: OutOfRange, msg: "type refered"},
+	ErrorDatasetTypeRepeated:    {codeType: OutOfRange, msg: "type repeated"},
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},

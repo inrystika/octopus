@@ -1,27 +1,50 @@
 <template>
   <div class="login-container">
     <div class="login">
-      <el-form ref="loginForm" :inline="true" :model="loginForm" :rules="loginRules" auto-complete="on"
-        label-position="left" class="demo-form-inline">
+      <el-form
+        ref="loginForm"
+        :inline="true"
+        :model="loginForm"
+        :rules="loginRules"
+        auto-complete="on"
+        label-position="left"
+        class="demo-form-inline"
+      >
         <el-form-item class="button">
           <el-button :loading="loading" type="primary" @click.native.prevent="handleLogin">登录</el-button>
         </el-form-item>
         <el-form-item prop="password">
           <span class="svg-container">
-            <i class=" el-icon-lock"></i>
+            <i class=" el-icon-lock" />
           </span>
-          <el-input :key="passwordType" ref="password" v-model="loginForm.password" :type="passwordType"
-            placeholder="password" name="password" tabindex="2" auto-complete="on" @keyup.enter.native="handleLogin" />
+          <el-input
+            :key="passwordType"
+            ref="password"
+            v-model="loginForm.password"
+            :type="passwordType"
+            placeholder="password"
+            name="password"
+            tabindex="2"
+            auto-complete="on"
+            @keyup.enter.native="handleLogin"
+          />
           <span class=" show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
         <el-form-item prop="email">
           <span class="svg-container">
-            <i class="el-icon-message"></i>
+            <i class="el-icon-message" />
           </span>
-          <el-input ref="email" v-model="loginForm.email" placeholder="email" name="email" type="text" tabindex="1"
-            auto-complete="on" />
+          <el-input
+            ref="email"
+            v-model="loginForm.email"
+            placeholder="email"
+            name="email"
+            type="text"
+            tabindex="1"
+            auto-complete="on"
+          />
         </el-form-item>
       </el-form>
       <div class="title">
@@ -52,13 +75,13 @@
         loginRules: {
           email: [
             { required: true, message: "请输入邮箱", trigger: "blur" },
-            { validator: checkEmail, trigger: "blur" },
+            { validator: checkEmail, trigger: "blur" }
 
           ], password: [
             { required: true, message: '请输入密码！', trigger: 'blur' },
-            { min: 8, message: '密码长度不能小于8位', trigger: 'blur' },
+            { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }
 
-          ],
+          ]
         },
         loading: false,
         passwordType: 'password',
@@ -67,7 +90,7 @@
     },
     watch: {
       $route: {
-        handler: function (route) {
+        handler: function(route) {
           this.redirect = route.query && route.query.redirect
         },
         immediate: true
@@ -102,8 +125,7 @@
                   message: '登录成功',
                   type: 'success'
                 });
-              }
-              else {
+              } else {
                 this.$message({
                   message: '账号密码错误',
                   type: 'warning'
@@ -182,7 +204,6 @@
         height: 47px;
         caret-color: #000;
 
-
         &:-webkit-autofill {
 
           box-shadow: 0 0 0px 1000px $bg inset;
@@ -196,8 +217,6 @@
       border-radius: 5px;
       color: #454545;
       float: right;
-
-
     }
 
     .button {

@@ -33,7 +33,7 @@ import Layout from '@/layout'
 export const constantRoutes = [
   {
     path: '/',
-    component: () => import('@/views/Home/login'),
+    component: () => import('@/views/Home/login')
   },
 
   {
@@ -104,12 +104,28 @@ export const constantRoutes = [
   {
     path: '/timeManager',
     component: Layout,
+    meta: {
+      title: '机时管理',
+      icon: 'time'
+    },
     children: [
       {
-        path: 'index',
-        name: '/',
-        component: () => import('@/views/timeManager/index'),
-        meta: { title: '机时管理', icon: 'time' }
+        path: 'machine',
+        name: 'machine',
+        component: () => import('@/views/timeManager/machine'),
+        meta: { title: '机时', icon: 'dot' }
+      },
+      {
+        path: 'recharge',
+        name: 'recharge',
+        component: () => import('@/views/timeManager/recharge'),
+        meta: { title: '充值', icon: 'dot' }
+      },
+      {
+        path: 'consumption',
+        name: 'consumption',
+        component: () => import('@/views/timeManager/consumption'),
+        meta: { title: '消费', icon: 'dot' }
       }
     ]
   },
@@ -125,7 +141,7 @@ export const constantRoutes = [
         name: 'dataManager',
         component: () => import('@/views/dataManager/index'),
         meta: { title: '数据管理', icon: 'data' }
-      },
+      }
     ]
   },
   {
@@ -150,14 +166,14 @@ export const constantRoutes = [
         path: 'notebook',
         name: '/',
         component: () => import('@/views/devManager/notebook'),
-        meta: { title: 'Notebook', icon: 'dot' }
+        meta: { title: 'NoteBook', icon: 'dot' }
       },
       {
         path: 'algorithmManager',
         name: '/',
         component: () => import('@/views/devManager/algorithmManager'),
         meta: { title: '算法管理', icon: 'dot' }
-      },
+      }
     ]
   },
   {

@@ -146,6 +146,19 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, err
 	}
 
+	// if updated password, reset session for user
+	if req.User.Password != "" {
+		userSession, err := s.data.SessionClient.Get(ctx, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		if userSession != nil {
+			if err = s.data.SessionClient.Delete(ctx, req.UserId); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &pb.UpdateUserReply{
 		User: &pb.UserItem{
 			Id:        result.User.Id,

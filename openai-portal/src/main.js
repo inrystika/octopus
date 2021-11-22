@@ -18,6 +18,8 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import '../theme/index.css'
 import '@/styles/dot.scss'
 import globalVariable from '@/api/globalVariable.js'
+import directives from './directives'
+import install from './preventReClick'
 Vue.prototype.GLOBAL = globalVariable
 
 /**
@@ -36,9 +38,10 @@ Vue.prototype.GLOBAL = globalVariable
 Vue.use(ElementUI, { zhLocale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
-Vue.use(VueAwesomeSwiper, /* { default global options } */)
+Vue.use(VueAwesomeSwiper /* { default global options } */)
 Vue.config.productionTip = false
-
+Vue.use(directives)
+Vue.use(install)
 new Vue({
   el: '#app',
   router,

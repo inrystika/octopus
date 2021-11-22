@@ -46,7 +46,7 @@ func TestDatasetService_CreateDateset(t *testing.T) {
 		UserId:     "userid1",
 		SourceType: api.DatasetSourceType_DST_USER,
 		Name:       "name1",
-		Type:       "type1",
+		TypeId:     "type1",
 		Desc:       "desc1",
 	})
 	if err != nil {

@@ -1,12 +1,16 @@
 <template>
     <div>
-        <el-dialog :title="'版本列表/'+modelName" width="70%" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
-            class="wrapper" :close-on-click-modal="false">
+        <el-dialog
+            :title="'版本列表/'+modelName"
+            width="70%"
+            :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose"
+            class="wrapper"
+            :close-on-click-modal="false"
+        >
             <el-table :data="tableData" style="width: 100%" height="500">
-                <el-table-column prop="version" label="模型版本" align="center">
-                </el-table-column>
-                <el-table-column prop="descript" label="模型描述" align="center">
-                </el-table-column>
+                <el-table-column prop="version" label="模型版本" align="center" />
+                <el-table-column prop="descript" label="模型描述" align="center" />
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <span style="margin-left: 10px">{{ fileStatus(scope.row.fileStatus) }}</span>
@@ -19,24 +23,32 @@
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="300px">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handlePreview(scope.row)" :disabled="scope.row.fileStatus!==2">预览
+                        <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">预览
                         </el-button>
-                        <el-button type="text" @click="open(scope.row)" v-if="!scope.row.isShared&&Type===1">分享
+                        <el-button v-if="!scope.row.isShared&&modelType===1" type="text" @click="open(scope.row)">分享
                         </el-button>
-                        <el-button type="text" @click="open(scope.row)"
-                            v-if="scope.row.isShared&&scope.row.isShared&&Type===1">取消分享</el-button>
-                        <el-button type="text" @click="open2(scope.row)" v-if="Type===1">删除</el-button>
-                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="Type==1">删除</el-button> -->
-                        <el-button type="text" @click="handledDownload(scope.row)" :disabled="scope.row.fileStatus!==2">
+                        <el-button
+                            v-if="scope.row.isShared&&scope.row.isShared&&modelType===1"
+                            type="text"
+                            @click="open(scope.row)"
+                        >取消分享</el-button>
+                        <el-button v-if="modelType===1" type="text" @click="open2(scope.row)">删除</el-button>
+                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="modelType==1">删除</el-button> -->
+                        <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="block">
-                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                    :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
-                    layout="total, sizes, prev, pager, next, jumper" :total="total">
-                </el-pagination>
+                <el-pagination
+                    :current-page="pageIndex"
+                    :page-sizes="[10, 20, 50, 80]"
+                    :page-size="pageSize"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="total"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                />
             </div>
             <div slot="footer">
                 <!-- <el-button @click="cancel">取 消</el-button>
@@ -44,7 +56,7 @@
             </div>
         </el-dialog>
         <!-- 预览对话框 -->
-        <previewDialog v-if="preVisible" @close="closeShareDialog" :row="data"></previewDialog>
+        <previewDialog v-if="preVisible" :row="data" @close="closeShareDialog" />
     </div>
 </template>
 
@@ -54,16 +66,17 @@
     import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
-        name: "versionList",
+        name: "VersionList",
         components: {
             previewDialog
         },
         props: {
             modelId: {
                 type: String,
+                default: ""
             },
-            Type: { type: Number, },
-            modelName: { type: String }
+            modelType: { type: Number, default: undefined },
+            modelName: { type: String, default: "" }
         },
         data() {
             return {
@@ -105,7 +118,7 @@
                 this.dialogVisible = true;
             },
             handleDelete(row) {
-                let data = JSON.parse(JSON.stringify(row));
+                const data = JSON.parse(JSON.stringify(row));
                 data.version = row.version
                 data.modelId = row.modelId
                 deleteModelVersion(data).then(response => {
@@ -115,30 +128,26 @@
                             type: 'success'
                         });
                         this.getList()
-                    }
-                    else {
+                    } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             handledDownload(row) {
-                let data = {}
+                const data = {}
                 data.version = row.version
                 data.modelId = row.modelId
                 data.domian = this.GLOBAL.DOMAIN
                 downloadModel(data).then(response => {
-                    if (response.success) { this.URLdownload(data, response.data.downloadUrl) }
-                    else {
+                    if (response.success) { this.URLdownload(data, response.data.downloadUrl) } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-
                 })
             },
             // 接受到url下载
@@ -158,17 +167,12 @@
             },
             cancel() {
                 this.$emit('cancel', false)
-
-
             },
             confirm() {
                 this.$emit('confirm', false)
-
-
             },
             handleDialogClose() {
                 this.$emit('close', false)
-
             },
             handleSizeChange(val) {
                 this.pageSize = val
@@ -186,56 +190,46 @@
             cancelShareDialog(val) {
                 this.dialogVisible = val
                 this.getList()
-
             },
             confirmShareDialog(val) {
                 this.dialogVisible = val
                 this.getList()
-
             },
             getList() {
-                if (this.Type !== 2) {
+                if (this.modelType !== 2) {
                     getNoPublicList({ pageIndex: this.pageIndex, pageSize: this.pageSize, modelId: this.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {
                                 this.total = response.data.totalSize
-                                let data = response.data.modelVersions
-                                this.tableData = [],
-                                    data.forEach(item => {
-                                        this.tableData.push({ ...item.versionDetail, isShared: item.isShared })
-                                    })
-
+                                const data = response.data.modelVersions
+                                this.tableData = []
+                                data.forEach(item => {
+                                    this.tableData.push({ ...item.versionDetail, isShared: item.isShared })
+                                })
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
                     })
-                }
-                else {
+                } else {
                     getPublicList({ pageIndex: this.pageIndex, pageSize: this.pageSize, modelId: this.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {
                                 this.total = response.data.totalSize
                                 this.tableData = response.data.modelVersions
-
-
                             }
-                        }
-                        else {
+                        } else {
                             this.$message({
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
                         }
-
                     })
                 }
-            }
-            ,//时间戳转换日期
+            }, // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
             },
@@ -243,7 +237,7 @@
             fileStatus(val) {
                 switch (val) {
                     case 0:
-                        return '初始态'
+                        return '未上传'
                         break;
                     case 1:
                         return '上传中'
@@ -253,18 +247,19 @@
                         break;
                     default:
                         return '上传失败'
-
                 }
             },
-            //分享取消分享
+            // 分享取消分享
             open(val) {
                 let message = ''
                 let flag = true
                 if (!val.isShared) {
                     message = '分享至群组，群组内所有成员可见'
                     flag = true
+                } else {
+                  message = '取消分享'
+                  flag = false
                 }
-                else { message = '取消分享', flag = false }
                 var data = { modelId: val.modelId, version: val.version }
                 this.$confirm(message, '提示', {
                     confirmButtonText: '确定',
@@ -281,7 +276,7 @@
             },
             // 删除确认
             open2(val) {
-                this.$confirm('此操作将永久删除该模型版本, 是否继续?', '提示', {
+                this.$confirm('此操作将永久删除该模型版本(如该模型版本已分享，则分享模型版本也会被删除)， 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
@@ -311,8 +306,7 @@
                             });
                         }
                     })
-                }
-                else {
+                } else {
                     cancelShareModel(data).then(response => {
                         if (response.success) {
                             this.$message({
@@ -326,12 +320,10 @@
                                 type: 'warning'
                             });
                         }
-
-
                     })
                 }
-            },
-        },
+            }
+        }
 
     }
 </script>

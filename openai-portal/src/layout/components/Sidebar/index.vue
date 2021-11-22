@@ -1,6 +1,6 @@
 <template>
   <div :class="{'has-logo':true}">
-    <logo  :collapse="isCollapse" />
+    <logo :collapse="isCollapse" />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -60,7 +60,6 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar'
-     
     ]),
     routes() {
       return this.$router.options.routes

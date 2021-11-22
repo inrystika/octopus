@@ -1,10 +1,10 @@
 <template>
-  <el-tabs v-model="activeName" @tab-click="handleTabClick" class="Wrapper">
+  <el-tabs v-model="activeName" class="Wrapper" @tab-click="handleTabClick">
     <el-tab-pane label="用户镜像" name="menu1">
-      <mirror v-if="tabRefresh.menu1" :Type=1></mirror>
+      <mirror v-if="tabRefresh.menu1" :image-tab-type="1" />
     </el-tab-pane>
     <el-tab-pane label="预置镜像" name="menu2">
-      <mirror v-if="tabRefresh.menu2" :Type=2></mirror>
+      <mirror v-if="tabRefresh.menu2" :image-tab-type="2" />
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -19,9 +19,20 @@
         activeName: 'menu1',
         tabRefresh: {
           menu1: true,
-          menu2: false,
-        },
+          menu2: false
+        }
       }
+    },
+    mounted() {
+      window.addEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      });
+
+    },
+    destroyed() {
+      window.removeEventListener('beforeunload', e => {
+        sessionStorage.clear()
+      })
     },
     methods: {
       handleTabClick(tab) {
@@ -43,7 +54,7 @@
             this.tabRefresh[key] = false
           }
         }
-      },
+      }
     }
   }
 </script>

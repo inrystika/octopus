@@ -47,8 +47,10 @@ func (d *imageDao) List(ctx context.Context, condition *model.ImageList) ([]*mod
 	db = condition.Order(db)
 	db = condition.Where(db)
 	db = condition.Or(db)
+	db = condition.JoinUser(db)
+	db = condition.JoinWorkspace(db)
 
-	result := db.Find(&images)
+	result := db.Select("image.*").Find(&images)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -62,6 +64,8 @@ func (d *imageDao) Count(ctx context.Context, condition *model.ImageList) (int64
 
 	db = condition.Where(db)
 	db = condition.Or(db)
+	db = condition.JoinUser(db)
+	db = condition.JoinWorkspace(db)
 
 	result := db.Model(&model.Image{}).Count(&count)
 	if result.Error != nil {
@@ -177,7 +181,6 @@ func (d *imageDao) FindImageAccess(ctx context.Context, iaq *model.ImageAccessQu
 	db := d.db
 	var ia model.ImageAccess
 	result := db.Where(&model.ImageAccess{
-		Id:      iaq.Id,
 		ImageId: iaq.ImageId,
 		UserId:  iaq.UserId,
 		SpaceId: iaq.SpaceId,
@@ -194,7 +197,6 @@ func (d *imageDao) FindImageAccess(ctx context.Context, iaq *model.ImageAccessQu
 
 func (d *imageDao) DeleteImageAccess(ctx context.Context, iad *model.ImageAccessDel) (*model.ImageAccess, error) {
 	if ia, err := d.FindImageAccess(ctx, &model.ImageAccessQuery{
-		Id:      iad.Id,
 		ImageId: iad.ImageId,
 		UserId:  iad.UserId,
 		SpaceId: iad.SpaceId,

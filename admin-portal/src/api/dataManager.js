@@ -13,50 +13,50 @@ export function judgeParam(params) {
   return conditions
 }
 
-export async function getUserDatasetList(payload){
-  let conditions = judgeParam(payload)
+export async function getUserDatasetList(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/datasetmanage/userdataset?" + conditions.join("&"),
-    method: "get",   
+    method: "get"
   })
   return res
 }
 
-export async function getPresetDatasetList(payload){
-  let conditions = judgeParam(payload)
+export async function getPresetDatasetList(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: "/v1/datasetmanage/predataset?" + conditions.join("&"),
-    method: "get",
+    method: "get"
   })
   return res
 }
 
-export async function getVersionList(payload){
-  let conditions = judgeParam(payload)
+export async function getVersionList(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.id}/version?` + conditions.join("&"),
-    method: "get",
+    method: "get"
   })
   return res
 }
 
-export async function deleteDatasetVersion(payload){
+export async function deleteDatasetVersion(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}`,
-    method: "delete",
+    method: "delete"
   })
   return res
 }
 
-export async function deleteDataset(id){
+export async function deleteDataset(id) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${id}`,
-    method: "delete",
+    method: "delete"
   })
   return res
 }
 
-export async function createPreDataset(payload){
+export async function createPreDataset(payload) {
   const res = await request({
     url: "/v1/datasetmanage/dataset",
     method: "post",
@@ -65,10 +65,10 @@ export async function createPreDataset(payload){
   return res
 }
 
-export async function uploadPreDataset(payload){
+export async function uploadPreDataset(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.id}/version/${payload.version}/upload`,
-    method: "post",  
+    method: "post",
     data: {
       fileName: payload.fileName,
       domain: payload.domain
@@ -77,18 +77,18 @@ export async function uploadPreDataset(payload){
   return res
 }
 
-export async function preDatasetFinishUpload(payload){
+export async function preDatasetFinishUpload(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.id}/version/${payload.version}/uploadconfirm`,
     method: "put",
-    data:{
+    data: {
       fileName: payload.fileName
     }
   })
   return res
 }
 
-export async function createNewVersion(payload){
+export async function createNewVersion(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.datasetId}/version`,
     method: "post",
@@ -99,10 +99,10 @@ export async function createNewVersion(payload){
   return res
 }
 
-export async function uploadNewVersion(payload){
+export async function uploadNewVersion(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}/upload`,
-    method: "post",  
+    method: "post",
     data: {
       fileName: payload.fileName,
       domain: payload.domain
@@ -111,22 +111,53 @@ export async function uploadNewVersion(payload){
   return res
 }
 
-export async function newVersionFinishUpload(payload){
+export async function newVersionFinishUpload(payload) {
   const res = await request({
     url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}/uploadconfirm`,
     method: "put",
-    data:{
+    data: {
       fileName: payload.fileName
     }
   })
   return res
 }
 
-export async function previewDataset(payload){
-  let conditions = judgeParam(payload)
+export async function previewDataset(payload) {
+  const conditions = judgeParam(payload)
   const res = await request({
-    url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}/file?`+ conditions.join("&"),
+    url: `/v1/datasetmanage/dataset/${payload.datasetId}/version/${payload.version}/file?` + conditions.join("&"),
+    method: "get"
+  })
+  return res
+}
+export async function datasetType(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype`,
     method: "get",
+    params: params
+  })
+  return res
+}
+export async function addDatasetType(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype`,
+    method: "post",
+    data: { typeDesc: data }
+  })
+  return res
+}
+export async function deleteDatasetType(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateDatasetType(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasettype/${data.id}`,
+    method: "put",
+    data: data
   })
   return res
 }

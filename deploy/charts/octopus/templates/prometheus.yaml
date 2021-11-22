@@ -196,6 +196,8 @@ metadata:
 {{ include "prometheus.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.prometheus.replicaCount }}
+  strategy:
+    type: "Recreate"
   selector:
     matchLabels:
 {{ include "prometheus.select-labels" . | indent 6 }}
