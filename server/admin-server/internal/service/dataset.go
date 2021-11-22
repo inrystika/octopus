@@ -41,7 +41,7 @@ func (s *DatasetService) AddDatasetType(ctx context.Context, req *api.AddDataset
 	}
 
 	return &api.AddDatasetTypeReply{
-		DatasetType: &api.DatasetLable{
+		Lable: &api.DatasetLable{
 			Id:         innerReply.Lable.Id,
 			LableDesc:  innerReply.Lable.LableDesc,
 			SourceType: innerReply.Lable.SourceType,
@@ -115,7 +115,7 @@ func (s *DatasetService) AddDatasetApply(ctx context.Context, req *api.AddDatase
 	}
 
 	return &api.AddDatasetApplyReply{
-		DatasetApply: &api.DatasetLable{
+		Lable: &api.DatasetLable{
 			Id:         innerReply.Lable.Id,
 			LableDesc:  innerReply.Lable.LableDesc,
 			SourceType: innerReply.Lable.SourceType,

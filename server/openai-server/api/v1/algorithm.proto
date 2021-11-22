@@ -154,7 +154,7 @@ service Algorithm {
     }
 }
 
-message AlgorithmApply {
+message AlgorithmLable {
   string id = 1;
   string lableDesc = 2;
   int32 sourceType = 3;
@@ -167,13 +167,7 @@ message ListAlgorithmApplyRequest {
 
 message ListAlgorithmApplyReply {
   int64 totalSize = 1;
-  repeated AlgorithmApply algorithmApplys = 2;
-}
-
-message AlgorithmFramework {
-  string id = 1;
-  string lableDesc = 2;
-  int32 sourceType = 3;
+  repeated AlgorithmLable lables = 2;
 }
 
 message ListAlgorithmFrameworkRequest {
@@ -183,7 +177,7 @@ message ListAlgorithmFrameworkRequest {
 
 message ListAlgorithmFrameworkReply {
   int64 totalSize = 1;
-  repeated AlgorithmFramework algorithmFrameworks = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message AlgorithmDetail {

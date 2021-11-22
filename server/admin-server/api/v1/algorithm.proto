@@ -158,7 +158,7 @@ service Algorithm {
     
 }
 
-message AlgorithmApply {
+message AlgorithmLable {
   string id = 1;
   string lableDesc = 2;
   int32 sourceType = 3;
@@ -169,7 +169,7 @@ message AddAlgorithmApplyRequest {
 }
 
 message AddAlgorithmApplyReply {
-  AlgorithmApply algorithmApply = 1;
+  AlgorithmLable lable = 1;
 }
 
 message ListAlgorithmApplyRequest {
@@ -179,7 +179,7 @@ message ListAlgorithmApplyRequest {
 
 message ListAlgorithmApplyReply {
   int64 totalSize = 1;
-  repeated AlgorithmApply algorithmApplys = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message DeleteAlgorithmApplyRequest {
@@ -199,18 +199,12 @@ message UpdateAlgorithmApplyReply {
   int64 updatedAt = 1;
 }
 
-message AlgorithmFramework {
-  string id = 1;
-  string lableDesc = 2;
-  int32 sourceType = 3;
-}
-
 message AddAlgorithmFrameworkRequest {
   string lableDesc = 1[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
 message AddAlgorithmFrameworkReply {
-  AlgorithmFramework algorithmFramework = 1;
+  AlgorithmLable lable = 1;
 }
 
 message ListAlgorithmFrameworkRequest {
@@ -220,7 +214,7 @@ message ListAlgorithmFrameworkRequest {
 
 message ListAlgorithmFrameworkReply {
   int64 totalSize = 1;
-  repeated AlgorithmFramework algorithmFrameworks = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message DeleteAlgorithmFrameworkRequest {
