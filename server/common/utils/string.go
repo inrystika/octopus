@@ -49,3 +49,12 @@ func CamelToSnake(name string) string {
 	}
 	return ret.String()
 }
+
+func StringSliceContainsValue(array []string, value string) bool {
+	for _, item := range array {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}

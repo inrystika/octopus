@@ -34,4 +34,11 @@ export function changeSpace(data) {
     data: { workspaceId: data.workspaceId }
   })
 }
+// 查询用户配置
+export function getUserConfig() {
+  return request({
+    url: `/v1/usermanage/config`,
+    method: 'get',
+  })
+}
 

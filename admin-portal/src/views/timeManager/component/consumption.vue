@@ -26,6 +26,11 @@
                     <span>{{ parseTime(scope.row.endedAt) }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="类型" align="center" v-if="type=='user'">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.bizType==1?'训练':'notebook' }}</span>
+                </template>
+            </el-table-column>
         </el-table>
         <div class="block">
             <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"

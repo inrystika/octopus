@@ -9,17 +9,6 @@ option go_package = "server/base-server/api/v1;v1";
 import "validate/validate.proto";
 
 service DatasetService {
-  // 新增数据集类型
-  rpc AddDatasetType (AddDatasetTypeRequest) returns (AddDatasetTypeReply);
-  // 查询数据集类型列表
-  rpc ListDatasetType (ListDatasetTypeRequest) returns (ListDatasetTypeReply);
-  // 查询单个数据集类型
-  rpc GetDatasetType (GetDatasetTypeRequest) returns (GetDatasetTypeReply);
-  // 删除数据集类型
-  rpc DeleteDatasetType (DeleteDatasetTypeRequest) returns (DeleteDatasetTypeReply);
-  // 修改数据集类型描述
-  rpc UpdateDatasetType (UpdateDatasetTypeRequest) returns (UpdateDatasetTypeReply);
-
   // 创建数据集
   rpc CreateDataset (CreateDatasetRequest) returns (CreateDatasetReply);
   // 查询数据集列表
@@ -72,62 +61,14 @@ enum DatasetVersionStatus {
   DVS_UnzipFailed = 4;
 }
 
-message DatasetType {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message AddDatasetTypeRequest {
-  string typeDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
-}
-
-message AddDatasetTypeReply {
-  DatasetType datasetType = 1;
-}
-
-message ListDatasetTypeRequest {
-  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
-}
-
-message ListDatasetTypeReply {
-  int64 totalSize = 1;
-  repeated DatasetType datasetTypes = 2;
-}
-
-message GetDatasetTypeRequest {
-  string id = 1;
-}
-
-message GetDatasetTypeReply {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message DeleteDatasetTypeRequest {
-  string id = 1;
-}
-
-message DeleteDatasetTypeReply {
-  int64 deletedAt = 1;
-}
-
-message UpdateDatasetTypeRequest {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message UpdateDatasetTypeReply {
-  int64 updatedAt = 1;
-}
-
 message CreateDatasetRequest {
   string spaceId = 1;
   string userId = 2;
   DatasetSourceType sourceType = 3[(validate.rules).enum = {in: [1,2]}];
   string name = 4[(validate.rules).string = {min_len: 1}];
   string typeId = 5;
-  string desc = 6[(validate.rules).string = {max_len: 300}];
+  string applyId = 6;
+  string desc = 7[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetReply {
@@ -160,8 +101,10 @@ message Dataset {
   string name = 7;
   string typeId = 8;
   string typeDesc = 9;
-  string desc = 10;
-  string latestVersion = 11;
+  string applyId = 10;
+  string applyDesc = 11;
+  string desc = 12;
+  string latestVersion = 13;
 }
 
 message ListDatasetReply {
@@ -251,7 +194,8 @@ message DeleteDatasetReply {
 message UpdateDatasetRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
   string typeId = 2;
-  string desc = 3[(validate.rules).string = {max_len: 300}];
+  string applyId = 3;
+  string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
 message UpdateDatasetReply {

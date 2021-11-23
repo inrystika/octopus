@@ -1,0 +1,206 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+
+
+import "validate/validate.proto";
+
+service JointCloudService {
+  // 查询数据集列表
+  rpc ListJointCloudDataset (ListJointCloudDatasetRequest) returns (ListJointCloudDatasetReply);
+  // 查询数据集版本列表
+  rpc ListJointCloudDatasetVersion (ListJointCloudDatasetVersionRequest) returns (ListJointCloudDatasetVersionReply);
+  // 查询训练框架
+  rpc ListJointCloudFramework (ListJointCloudFrameworkRequest) returns (ListJointCloudFrameworkReply);
+  // 查询训练框架版本
+  rpc ListJointCloudFrameworkVersion (ListJointCloudFrameworkVersionRequest) returns (ListJointCloudFrameworkVersionReply);
+  // 查询训练解释器
+  rpc ListJointCloudInterpreter (ListJointCloudInterpreterRequest) returns (ListJointCloudInterpreterReply);
+  // 查询训练解释器版本
+  rpc ListJointCloudInterpreterVersion (ListJointCloudInterpreterVersionRequest) returns (ListJointCloudInterpreterVersionReply);
+  //创建训练任务
+  rpc TrainJob (JointCloudTrainJobRequest) returns (JointCloudTrainJobReply);
+  // 查询任务列表
+  rpc ListJointCloudJob (ListJointCloudJobRequest) returns (ListJointCloudJobReply);
+  //停止训练任务
+  rpc StopJob (JointCloudStopJobRequest) returns (JointCloudStopJobReply);
+}
+
+message ListJointCloudDatasetRequest {
+  int32 pageIndex = 1;
+  int32 pageSize = 2;
+}
+
+message ListJointCloudDatasetReply {
+  message DataSet {
+      string dataSetCode = 1;
+      string name = 2;
+      string remark = 3;
+  }
+  int64 totalSize = 1;
+  repeated DataSet dataSets = 2;
+}
+
+message ListJointCloudDatasetVersionRequest {
+  int32 pageIndex = 1;
+  int32 pageSize = 2;
+  string dataSetCode = 3;
+}
+
+message ListJointCloudDatasetVersionReply {
+  message DataSetVersion {
+    string version = 1;
+    string remark = 2;
+  }
+  int64 totalSize = 1;
+  repeated DataSetVersion versions = 2;
+}
+
+message ListJointCloudFrameworkRequest {
+
+}
+
+message ListJointCloudFrameworkReply {
+  message Framework {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Framework frameworks = 1;
+}
+
+message ListJointCloudFrameworkVersionRequest {
+  string key = 1;
+}
+
+message ListJointCloudFrameworkVersionReply {
+  message Version {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Version versions = 1;
+}
+
+message ListJointCloudInterpreterRequest {
+
+}
+
+message ListJointCloudInterpreterReply {
+  message Interpreter {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Interpreter interpreters = 1;
+}
+
+message ListJointCloudInterpreterVersionRequest {
+  string key = 1;
+}
+
+message ListJointCloudInterpreterVersionReply {
+  message Version {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Version versions = 1;
+}
+
+message JointCloudTrainJobRequest {
+    string taskName = 1[(validate.rules).string = {min_len: 1, max_len: 150}];
+    string execCommand = 2[(validate.rules).string = {max_len: 300}];
+    string interpreter = 3;
+    string framework = 4;
+    string outputPath = 5;
+    repeated JointCloudDataSetVersionVo dataSetVersionVoList = 6;
+    repeated JointCloudParam params = 7;
+    repeated JointCloudResourceParam resourceParams = 8;
+    string remark = 9;
+    string userId = 10;
+    string workspaceId = 11;
+}
+
+message JointCloudTrainJobReply {
+    string jobId = 1;
+    string taskId = 2;
+}
+
+message JointCloudDataSetVersionVo {
+	string dataSetName  = 1;
+	string dataSetCode = 2;
+	string version = 3;
+	string path = 4;
+}
+
+message JointCloudParam {
+	string key = 1;
+	string value = 2;
+}
+
+message JointCloudResourceParam {
+	string name = 1;
+	int32 size = 2;
+  string type = 3;
+  string unit = 4;
+}
+
+message ListJointCloudJobRequest {
+    int32  pageIndex = 1;
+    int32  pageSize = 2;
+    string ids = 3;
+    string spaceId = 4;
+    string userId = 5;
+}
+  
+message ListJointCloudJobReply {
+  int32  totalSize = 1;
+  repeated JointCloudJReplyJob list = 2;
+}
+
+message JointCloudJReplyJob {
+  string  taskId = 1;  
+  string	taskName  = 2;                           
+	string	interpreter   = 3;                      
+	string	framework = 4;                  
+	int64	cloudVendorId = 5;    
+  string cloudVendorName = 6;   
+  string imageUrl = 7;    
+  int64 creator = 8;    
+  string creatorName = 9;                      
+	string	execCommand = 10;           
+	string	outputPath = 11;                     
+	int64	status = 12;                       
+	string	remark = 13;
+  string jobId = 14;     
+  int64 createTime = 15;   
+  string userId = 16;
+  string workspaceId = 17;                     
+	repeated JointCloudReplyDataSetVersionVo dataSetList = 18;
+	repeated JointCloudParam	taskParams = 19;
+	repeated JointCloudResourceParam	resourceParams = 20;
+}
+
+message JointCloudReplyDataSetVersionVo {
+	string category = 1;   
+	string dataSetCode = 2;
+  string version = 3; 
+	string remark = 4;
+  string name = 5;
+  int64 cloudVendorId = 6;
+  string cloudVendorName = 7;
+  int64 versionNumber = 8;
+  string label = 9;
+  int64 creator = 10;
+  int64 createTime = 11;
+}
+
+message JointCloudStopJobRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string platformId = 2;
+  string operation = 3;
+}
+
+message JointCloudStopJobReply {
+  int64 stoppedAt = 1;
+}

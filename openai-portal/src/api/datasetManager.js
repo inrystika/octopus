@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  let conditions = []
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
@@ -12,7 +12,6 @@ export function judgeParam(params) {
   params.shared ? conditions.push(`shared=` + params.shared) : null;
   params.path ? conditions.push(`path=` + params.path) : null;
   params.status ? conditions.push(`status=` + params.status) : null;
-  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   return conditions
 }
 
@@ -162,6 +161,14 @@ export async function previewDataset(payload) {
 export async function datasetType(params) {
   const res = await request({
     url: `/v1/datasetmanage/datasettype`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function datasetUse(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply`,
     method: "get",
     params: params
   })

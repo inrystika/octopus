@@ -2,8 +2,8 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
@@ -148,7 +148,7 @@ export async function deletePreAlgorithm(algorithmId) {
 }
 export async function algorithmType(params) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype`,
+    url: `/v1/algorithmmanage/algorithmapply`,
     method: "get",
     params: params
   })
@@ -156,22 +156,22 @@ export async function algorithmType(params) {
 }
 export async function addAlgorithmType(data) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype`,
+    url: `/v1/algorithmmanage/algorithmapply`,
     method: "post",
-    data: { typeDesc: data }
+    data: { lableDesc: data }
   })
   return res
 }
 export async function deleteAlgorithmType(params) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype/${params}`,
+    url: `/v1/algorithmmanage/algorithmapply/${params}`,
     method: "delete"
   })
   return res
 }
 export async function updateAlgorithmType(data) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype/${data.id}`,
+    url: `/v1/algorithmmanage/algorithmapply/${data.id}`,
     method: "put",
     data: data
   })
@@ -189,7 +189,7 @@ export async function addFrameType(data) {
   const res = await request({
     url: `/v1/algorithmmanage/algorithmframework`,
     method: "post",
-    data: { frameworkDesc: data }
+    data: { lableDesc: data }
   })
   return res
 }

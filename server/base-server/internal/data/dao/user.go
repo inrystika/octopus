@@ -3,9 +3,14 @@ package dao
 import (
 	"context"
 	"errors"
+	stderrors "errors"
 	"server/base-server/internal/data/dao/model"
 	"server/common/log"
 	"server/common/utils/collections/set"
+
+	"gorm.io/gorm/clause"
+
+	commerrors "server/common/errors"
 
 	"gorm.io/gorm"
 )
@@ -17,6 +22,8 @@ type UserDao interface {
 	Add(ctx context.Context, user *model.UserAdd) (*model.User, error)
 	Update(ctx context.Context, condition *model.UserUpdateCond, user *model.UserUpdate) (*model.User, error)
 	ListIn(ctx context.Context, condition *model.UserListIn) ([]*model.User, error)
+	UpdateConfig(ctx context.Context, userId string, config map[string]string) error
+	GetConfig(ctx context.Context, userId string) (map[string]string, error)
 }
 
 type userDao struct {
@@ -137,4 +144,33 @@ func (d *userDao) ListIn(ctx context.Context, condition *model.UserListIn) ([]*m
 	}
 
 	return users, nil
+}
+
+func (d *userDao) UpdateConfig(ctx context.Context, userId string, config map[string]string) error {
+	db := d.db
+	if userId == "" || len(config) == 0 {
+		return commerrors.Errorf(nil, commerrors.ErrorInvalidRequestParameter)
+	}
+
+	c := &model.UserConfig{UserId: userId, Config: config}
+	res := db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(c)
+	if res.Error != nil {
+		return commerrors.Errorf(nil, commerrors.ErrorDBUpdateFailed)
+	}
+
+	return nil
+}
+
+func (d *userDao) GetConfig(ctx context.Context, userId string) (map[string]string, error) {
+	db := d.db
+	c := &model.UserConfig{}
+
+	res := db.First(c, "user_id = ?", userId)
+	if res.Error != nil && !stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, commerrors.Errorf(res.Error, commerrors.ErrorDBFindFailed)
+	}
+
+	return c.Config, nil
 }

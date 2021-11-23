@@ -12,7 +12,15 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
+        <div v-for="route in routes" :key="route.path">
+          <sidebar-item
+            v-if="route.path === '/cloudInterconnection' && isPermission === 'no' ? false : true"
+            :key="route.path"
+            :item="route"
+            :base-path="route.path"
+          />
+        </div>
+        <!-- <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" /> -->
       </el-menu>
     </el-scrollbar>
   </div>
@@ -23,9 +31,36 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import { getUserConfig } from '@/api/Home'
+import { getErrorMsg } from '@/error/index'
 
 export default {
   components: { SidebarItem, Logo },
+  data(){
+    return {
+      isPermission: 'no'
+    }
+  },
+  created() {
+    this.getUserConfig()
+  },
+  methods: {
+    getErrorMsg(code) {
+      return getErrorMsg(code)
+    },
+    getUserConfig() {
+      getUserConfig().then(response => {
+        if (response.success) {
+          this.isPermission = response.data.config&&response.data.config.jointCloudPermission?response.data.config.jointCloudPermission:'no'
+        } else {
+          this.$message({
+            message: this.getErrorMsg(response.error.subcode),
+            type: 'warning'
+          });
+        }
+      })
+    }
+  },
   computed: {
     ...mapGetters([
       'sidebar'

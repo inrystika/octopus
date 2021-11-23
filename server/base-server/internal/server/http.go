@@ -51,6 +51,10 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandleFunc("/v1/trainmanage/pipelinecallback", func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		pipelineCallback(w, r, service.TrainJobService)
 	})
+
+	srv.HandleFunc("/v1/platform/pipelinecallback", func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		pipelineCallback(w, r, service.PlatformTrainJobService)
+	})
 	return srv
 }
 
