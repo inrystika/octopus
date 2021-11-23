@@ -10,8 +10,6 @@ import (
 	"server/common/errors"
 	"server/common/utils"
 
-	"github.com/jinzhu/copier"
-
 	"server/common/log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -263,16 +261,7 @@ func (s *UserService) ListUserInCond(ctx context.Context, req *api.ListUserInCon
 }
 
 func (s *UserService) ListUserConfigKey(ctx context.Context, req *api.ListUserConfigKeyRequest) (*api.ListUserConfigKeyReply, error) {
-	reply := &api.ListUserConfigKeyReply{}
-	for _, i := range s.conf.Service.User.ConfigKeys {
-		k := &api.ListUserConfigKeyReply_ConfigKey{}
-		err := copier.Copy(k, i)
-		if err != nil {
-			return nil, err
-		}
-		reply.ConfigKeys = append(reply.ConfigKeys, k)
-	}
-	return reply, nil
+	return &api.ListUserConfigKeyReply{ConfigKeys: common.UserConfigKeys}, nil
 }
 
 func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigRequest) (*api.GetUserConfigReply, error) {
@@ -289,7 +278,7 @@ func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigR
 func (s *UserService) UpdateUserConfig(ctx context.Context, req *api.UpdateUserConfigRequest) (*api.UpdateUserConfigReply, error) {
 	for k, v := range req.Config {
 		in := false
-		for _, i := range s.conf.Service.User.ConfigKeys {
+		for _, i := range common.UserConfigKeys {
 			if k == i.Key {
 				in = true
 				err := i.ValidateValue(v)
