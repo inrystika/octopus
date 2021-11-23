@@ -1,58 +1,54 @@
 <template>
   <div>
-    <el-tabs class="Wrapper">
-      <el-tab-pane label="平台列表">
-        <div class="create">
-            <el-button type="primary" @click="create">创建</el-button>
-        </div>
-        <el-table 
-          :data="platformList" 
-          style="width: 100%;font-size: 15px;"
-          :header-cell-style="{'text-align':'left','color':'black'}" 
-          :cell-style="{'text-align':'left'}"
-        >
-          <el-table-column label="名称" align="center">
-            <template slot-scope="scope">
-              <span>{{ scope.row.name }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="联系人" align="center">
-            <template slot-scope="scope">
-              <span>{{ scope.row.contactName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="联系方式" align="center">
-            <template slot-scope="scope">
-              <span>{{ scope.row.contactInfo }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" align="center">
-            <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.createdAt) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center">
-            <template slot-scope="scope">
-              <el-button type="text" @click="detail(scope.row)">详情</el-button>
-              <el-button type="text" @click="edit(scope.row)">编辑</el-button>
-              <el-button type="text" @click="getPlatformConfig(scope.row)">平台配置</el-button>
-              <el-button type="text" @click="showStorageConfigList(scope.row)">存储配置</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="block">
-          <el-pagination
-            :current-page="searchData.pageIndex" 
-            :page-sizes="[10, 20, 50, 80]" 
-            :page-size="searchData.pageSize"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper" 
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+    <div class="create">
+        <el-button type="primary" @click="create">创建</el-button>
+    </div>
+    <el-table 
+      :data="platformList" 
+      style="width: 100%;font-size: 15px;"
+      :header-cell-style="{'text-align':'left','color':'black'}" 
+      :cell-style="{'text-align':'left'}"
+    >
+      <el-table-column label="名称" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="联系人" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.contactName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="联系方式" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.contactInfo }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createdAt) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center">
+        <template slot-scope="scope">
+          <el-button type="text" @click="detail(scope.row)">详情</el-button>
+          <el-button type="text" @click="edit(scope.row)">编辑</el-button>
+          <el-button type="text" @click="getPlatformConfig(scope.row)">平台配置</el-button>
+          <el-button type="text" @click="showStorageConfigList(scope.row)">存储配置</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="block">
+      <el-pagination
+        :current-page="searchData.pageIndex" 
+        :page-sizes="[10, 20, 50, 80]" 
+        :page-size="searchData.pageSize"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper" 
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <createDialog
       v-if="createVisible"
@@ -103,7 +99,7 @@ import { getPlatformList } from "@/api/platformManager"
 import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
-  name: "platform",
+  name: "platformList",
   components: {
     createDialog,
     detailsDialog,
@@ -204,12 +200,6 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  .Wrapper {
-    margin: 15px!important;
-    background-color:#fff;
-    padding: 20px;
-    min-height: 900px
-  }
   .create {
     float: right;
   }

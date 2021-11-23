@@ -203,20 +203,25 @@ export const constantRoutes = [
   {
     path: '/platformManager',
     component: Layout,
-    redirect: '/platform',
-    name: 'platformManager',
-    meta: {
-      title: '平台管理',
-      icon: 'example'
-    },
-    alwaysShow: true,
     children: [
       {
-        path: 'platform',
-        component: () => import('@/views/platformManager/platform'),
-        name: 'platform',
-        meta: { title: '平台', icon: 'dot' }
+        path: 'index',
+        name: 'platformManager',
+        component: () => import('@/views/platformManager/index'),
+        meta: { title: '平台管理', icon: 'platform' }
       },
+    ]
+  },
+  {
+    path: '/cloudInterconnection',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'cloudInterconnection',
+        component: () => import('@/views/cloudInterconnection/index'),
+        meta: { title: '云际互联', icon: 'example' }
+      }
     ]
   },
 
