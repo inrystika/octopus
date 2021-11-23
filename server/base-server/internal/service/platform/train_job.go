@@ -636,6 +636,7 @@ func (s *platformTrainJobService) PipelineCallback(ctx context.Context, req *com
 
 	if err != nil {
 		s.log.Info(ctx, fmt.Sprintf("updatePlatfromJobStatus for platformjob failed, id: %v, status: %v", req.Id, info.Job.State))
+		return common.PipeLineCallbackRE
 	}
 
 	err = s.data.PlatformTrainJobDao.UpdateTrainJob(ctx, update)

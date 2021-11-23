@@ -98,11 +98,6 @@ func (s *TrainJobService) GetJobInfo(ctx context.Context, req *api.TrainJobInfoR
 		return nil, err
 	}
 
-	err = s.assignValueToJob(ctx, []*api.TrainJob{reply.TrainJob})
-	if err != nil {
-		return nil, err
-	}
-
 	return reply, nil
 }
 
@@ -137,13 +132,9 @@ func (s *TrainJobService) TrainJobList(ctx context.Context, req *api.TrainJobLis
 			TrainJobs: nil,
 		}
 		return reply, nil
-	} else {
-		err = s.assignValueToJob(ctx, reply.TrainJobs)
-		if err != nil {
-			return nil, err
-		}
-		return reply, nil
 	}
+
+	return reply, nil
 }
 
 //获取训练任务统计信息
@@ -184,11 +175,6 @@ func (s *TrainJobService) PlatformResources(ctx context.Context, req *empty.Empt
 		return nil, err
 	}
 	return reply, nil
-}
-
-func (s *TrainJobService) assignValueToJob(ctx context.Context, trainJobs []*api.TrainJob) error {
-
-	return nil
 }
 
 func (s *TrainJobService) getPlatformId(ctx context.Context) (string, error) {
