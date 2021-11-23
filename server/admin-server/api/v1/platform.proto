@@ -69,6 +69,12 @@ service PlatformService {
       body: "*"
     };
   };
+   //获取平台任务列表
+   rpc PlatformTrainJobList(PlatformTrainJobListRequest) returns (PlatformTrainJobListReply){
+    option (google.api.http) = {
+      get: "/v1/platformmanage/platform/trainjob"
+    };
+ };
 }
 
 message ListPlatformRequest {
@@ -212,3 +218,119 @@ message UpdatePlatformConfigRequest {
 message UpdatePlatformConfigReply {
 
 }
+
+message PlatformImage {
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 300}];
+  string version = 2[(validate.rules).string = {min_len: 1, max_len: 30}];
+}
+
+message PlatformDataset {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //数据集子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //数据集名称，必填
+  string name = 3[(validate.rules).string = {max_len: 300}];
+  //数据集容器内路径
+  string path = 4[(validate.rules).string = {max_len: 300}];;
+}
+
+message PlatformOutput {
+  //存储配置名称，必填
+  string storageConfigName = 1[(validate.rules).string = {max_len: 30}];
+  //存储子目录
+  string addr = 2[(validate.rules).string = {max_len: 300}];
+  //容器内输出路径
+  string path = 3[(validate.rules).string = {max_len: 300}];
+}
+
+message PlatformTask {
+  //子任务名称，非必填，校验规则"^[0-9a-zA-Z_]*$"，最大长度30个字符
+  string name = 1[(validate.rules).string = {min_len: 1, max_len:30}];
+  //子任务执行命令
+  string command = 2[(validate.rules).string = {min_len: 0, max_len: 300}];
+  //command执行命令参数,key-value，数组
+  repeated PlatformParameter parameters = 3;
+  //资源
+  repeated PlatformResource resources = 4;
+  //副本个数，非必填
+  int64 taskNumber = 5[(validate.rules).int64 = {gte:1}];
+  //子任务最小失败数，非必填
+  int64  minFailedTaskCount = 6[(validate.rules).int64 = {gte:1}];
+  //子任务最小成功数，非必填
+  int64  minSucceededTaskCount = 7[(validate.rules).int64 = {gte:1}];
+  //是否主任务，非必填
+  bool isMainRole = 8;
+}
+
+message PlatformParameter {
+  //命令参数key，非必填
+  string key = 1;
+  //命令参数value，非必填
+  string value = 2;
+}
+
+message PlatformResource {
+  //命令参数key，必填
+  string name = 1;
+  //命令参数value，必填
+  string size = 2;
+}
+
+message PlatformTrainJobListRequest{
+  // 页码，从1开始，非必填
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条，非必填
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 分组依据，非必填
+  string sortBy = 3;
+  //升序、降序，非必填
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 5;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 6;
+  //状态查询，非必填
+  string status = 7;
+  //模糊查找字段，可用于name等模糊查找，非必填
+  string searchKey = 8;
+  //platformId，不传则查全部平台
+  string platformId = 9;
+}
+
+message PlatformTrainJobListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务
+  repeated PlatformTrainJob trainJobs = 2;
+}
+
+message PlatformTrainJob{
+  //任务ID
+  string  id = 1;
+  //job名称
+  string name = 2;
+  //platformId
+  string platformId = 3;
+  //job描述
+  string desc = 4;
+  //数据集
+  repeated PlatformDataset datasets = 5;
+  //镜像
+  PlatformImage image = 6;
+  //子任务配置信息
+  repeated PlatformTask tasks = 7;
+  //创建时间
+  int64 createdAt = 8;
+  //更新时间
+  int64 updatedAt = 9;
+  //任务状态
+  string status   = 10;
+  //job完成时间
+  int64  completedAt = 11;
+  //运行时
+  int64 runSec = 12;
+  //启动时间
+  int64  startedAt = 13;
+}
+
