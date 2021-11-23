@@ -12,7 +12,15 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
+        <div v-for="route in routes" :key="route.path">
+          <sidebar-item
+            v-if="route.path === '/cloudInterconnection' && isPermission === 'no' ? false : true"
+            :key="route.path"
+            :item="route"
+            :base-path="route.path"
+          />
+        </div>
+        <!-- <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" /> -->
       </el-menu>
     </el-scrollbar>
   </div>
@@ -28,6 +36,11 @@ import { getErrorMsg } from '@/error/index'
 
 export default {
   components: { SidebarItem, Logo },
+  data(){
+    return {
+      isPermission: 'no'
+    }
+  },
   created() {
     this.getUserConfig()
   },
@@ -38,16 +51,7 @@ export default {
     getUserConfig() {
       getUserConfig().then(response => {
         if (response.success) {
-          console.log("res:",response)
-            console.log("router:",this.$router.options.routes)
-          if(response.data.config.jointCloudPermission === 'no') {
-            this.$router.options.routes.forEach((item,index) => {
-              console.log("index,item",index,item)
-              if(item.children[0].name === "cloudInterconnection") {
-                delete this.$router.options.routes[item]
-              }
-            })
-          }
+          this.isPermission = response.data.config&&response.data.config.jointCloudPermission?response.data.config.jointCloudPermission:'no'
         } else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),

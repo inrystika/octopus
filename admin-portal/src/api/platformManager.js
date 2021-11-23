@@ -64,7 +64,9 @@ export function updatePlatformConfig(platformId,params) {
   return request({
     url: `/v1/platformmanage/platform/${platformId}/config`,
     method: 'put',
-    params
+    data: {
+      config: params
+    }
   })
 }
 
