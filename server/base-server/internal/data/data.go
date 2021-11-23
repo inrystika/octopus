@@ -58,7 +58,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
-	influxdb, _ := influxdb.NewInfluxdb(confData)
+	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -243,7 +243,7 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	err = db.AutoMigrate(&platformModel.Platform{})
 	if err != nil {
 		return nil, err
