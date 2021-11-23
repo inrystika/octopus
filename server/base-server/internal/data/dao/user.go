@@ -3,9 +3,12 @@ package dao
 import (
 	"context"
 	"errors"
+	stderrors "errors"
 	"server/base-server/internal/data/dao/model"
 	"server/common/log"
 	"server/common/utils/collections/set"
+
+	"gorm.io/gorm/clause"
 
 	commerrors "server/common/errors"
 
@@ -145,66 +148,16 @@ func (d *userDao) ListIn(ctx context.Context, condition *model.UserListIn) ([]*m
 
 func (d *userDao) UpdateConfig(ctx context.Context, userId string, config map[string]string) error {
 	db := d.db
-	if userId == "" {
+	if userId == "" || len(config) == 0 {
 		return commerrors.Errorf(nil, commerrors.ErrorInvalidRequestParameter)
 	}
 
-	configDb, err := d.GetConfig(ctx, userId)
-	if err != nil {
-		return err
-	}
-
-	deleteKeys := make([]string, 0)
-	for k, _ := range configDb {
-		_, ok := config[k]
-		if !ok {
-			deleteKeys = append(deleteKeys, k)
-		}
-	}
-
-	if len(deleteKeys) > 0 {
-		res := db.Where("user_id = ? and `key` in ?", userId, deleteKeys).Delete(&model.UserConfig{})
-		if res.Error != nil {
-			return commerrors.Errorf(res.Error, commerrors.ErrorDBDeleteFailed)
-		}
-	}
-
-	insertKeys := make([]string, 0)
-	updateKeys := make([]string, 0)
-	for k, v := range config {
-		vdb, ok := configDb[k]
-		if ok && v != vdb {
-			updateKeys = append(updateKeys, k)
-			continue
-		}
-		if !ok && v != "" {
-			insertKeys = append(insertKeys, k)
-			continue
-		}
-	}
-
-	if len(insertKeys) > 0 {
-		items := make([]*model.UserConfig, 0)
-		for _, k := range insertKeys {
-			items = append(items, &model.UserConfig{
-				UserId: userId,
-				Key:    k,
-				Value:  config[k],
-			})
-		}
-		res := db.Create(&items)
-		if res.Error != nil {
-			return commerrors.Errorf(res.Error, commerrors.ErrorDBCreateFailed)
-		}
-	}
-
-	if len(updateKeys) > 0 {
-		for _, k := range updateKeys {
-			res := db.Model(&model.UserConfig{}).Where("user_id = ? and `key` = ?", userId, k).Limit(1).Update("value", config[k])
-			if res.Error != nil {
-				return commerrors.Errorf(res.Error, commerrors.ErrorDBUpdateFailed)
-			}
-		}
+	c := &model.UserConfig{UserId: userId, Config: config}
+	res := db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(c)
+	if res.Error != nil {
+		return commerrors.Errorf(nil, commerrors.ErrorDBUpdateFailed)
 	}
 
 	return nil
@@ -212,17 +165,12 @@ func (d *userDao) UpdateConfig(ctx context.Context, userId string, config map[st
 
 func (d *userDao) GetConfig(ctx context.Context, userId string) (map[string]string, error) {
 	db := d.db
-	userConfigs := make([]*model.UserConfig, 0)
+	c := &model.UserConfig{}
 
-	res := db.Where("user_id = ?", userId).Find(&userConfigs)
-	if res.Error != nil {
+	res := db.First(c, "user_id = ?", userId)
+	if res.Error != nil && !stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, commerrors.Errorf(res.Error, commerrors.ErrorDBFindFailed)
 	}
 
-	r := map[string]string{}
-	for _, i := range userConfigs {
-		r[i.Key] = i.Value
-	}
-
-	return r, nil
+	return c.Config, nil
 }
