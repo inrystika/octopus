@@ -207,7 +207,7 @@ export const constantRoutes = [
     name: 'platformManager',
     meta: {
       title: '平台管理',
-      icon: 'example'
+      icon: 'platform'
     },
     alwaysShow: true,
     children: [
@@ -217,6 +217,18 @@ export const constantRoutes = [
         name: 'platform',
         meta: { title: '平台', icon: 'dot' }
       },
+    ]
+  },
+  {
+    path: '/cloudInterconnection',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'cloudInterconnection',
+        component: () => import('@/views/cloudInterconnection/index'),
+        meta: { title: '云际互联', icon: 'example' }
+      }
     ]
   },
 
