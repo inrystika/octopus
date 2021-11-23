@@ -1,11 +1,7 @@
 <template>
     <div>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
                     <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
@@ -20,7 +16,7 @@
             </el-table-column> -->
             <el-table-column label="当前机时剩余(小时)" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ Math.round(scope.row.amount) }}</span>
+                    <span style="margin-left: 10px">{{ scope.row.amount }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
@@ -31,15 +27,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
+                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
+                @current-change="handleCurrentChange" />
         </div>
         <!-- 对话框 -->
         <el-dialog :title="title" :visible.sync="dialogFormVisible" width="25%" :close-on-click-modal="false">
@@ -51,22 +41,17 @@
                     <span>{{ form.spaceName }}</span>
                 </el-form-item>
                 <el-form-item v-if="flag===0" label="增加机时" :label-width="formLabelWidth">
-                    <el-input
-                        v-model="form.amount"
-                        autocomplete="off"
-                        style="width: 40%;"
-                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"
-                    />
+                    <el-input v-model="form.amount" autocomplete="off" style="width: 40%;"
+                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');" />
                     <span>小时</span>
                 </el-form-item>
                 <el-form-item v-if="flag===1" label="减少机时" :label-width="formLabelWidth">
-                    <el-input
-                        v-model="form.amount"
-                        autocomplete="off"
-                        style="width: 40%;"
-                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');"
-                    />
+                    <el-input v-model="form.amount" autocomplete="off" style="width: 40%;"
+                        onkeyup="this.value = this.value.replace(/[^\d.]/g,'');" />
                     <span>小时</span>
+                </el-form-item>
+                <el-form-item label="充值说明" :label-width="formLabelWidth">
+                    <el-input v-model="form.title" style="width: 40%;"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -97,7 +82,7 @@
                 dialogFormVisible: false,
                 formLabelWidth: '120px',
                 flag: undefined,
-                form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
+                form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined, title: '' },
                 searchForm: [{ type: 'Input', label: 'ID', prop: 'id', placeholder: '请输入ID' }],
                 type: ''
                 // timer: null
@@ -105,7 +90,7 @@
             }
         },
         computed: {
-            title: function() {
+            title: function () {
                 if (this.flag === 0) {
                     return '增加机时'
                 }
@@ -119,17 +104,13 @@
             if (this.timeTabType === 1) {
                 this.type = 'user'
             } else {
-              this.type = 'group'
+                this.type = 'group'
             }
-            // this.timer = setInterval(this.getTime, 1000);
+          
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
         methods: {
-             // 错误码
-             getErrorMsg(code) {
+            // 错误码
+            getErrorMsg(code) {
                 return getErrorMsg(code)
             },
             handleSizeChange(val) {
@@ -182,6 +163,7 @@
             addTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
+                this.form.title=''
                 if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
                 } else {
@@ -192,11 +174,12 @@
             deleteTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
+                this.form.title=''
                 if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
-                  } else {
-                      this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
-                  }
+                } else {
+                    this.form.spaceName = val.spaceName; this.form.spaceId = val.spaceId
+                }
                 this.flag = 1
             },
             cancel() { this.dialogFormVisible = false },
@@ -205,7 +188,7 @@
                 if (this.flag === 1) {
                     data.amount = -data.amount
                 } else {
-                  data.amount = +data.amount
+                    data.amount = +data.amount
                 }
                 if (this.timeTabType === 1) {
                     delete data.userName

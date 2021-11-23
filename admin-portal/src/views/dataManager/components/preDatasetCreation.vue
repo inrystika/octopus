@@ -8,7 +8,13 @@
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="typeId">
           <el-select v-model="ruleForm.typeId" :disabled="disabled" placeholder="请选择数据集类型">
-            <el-option v-for="item in options" :key="item.id" :label="item.typeDesc" :value="item.id">
+            <el-option v-for="item in typeOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据用途" :label-width="formLabelWidth" prop="typeId">
+          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择数据集用途">
+            <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -30,7 +36,7 @@
 
 <script>
   import upload from '@/components/upload/index.vue'
-  import { createPreDataset, datasetType } from "@/api/dataManager"
+  import { createPreDataset, datasetType,datasetUse } from "@/api/dataManager"
   import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreDatasetCreation",
@@ -45,7 +51,8 @@
       }
     },
     created() {
-      this.datasetType()
+      this.datasetType(),
+      this.datasetUse()
     },
     data() {
       return {
@@ -63,6 +70,9 @@
           typeId: [
             { required: true, message: '请选择数据集类型', trigger: 'change' }
           ],
+          applyId: [
+            { required: true, message: '请选择数据集用途', trigger: 'change' }
+          ],
           path: [
             { required: true, message: '请上传数据集', trigger: 'change' }
           ]
@@ -70,7 +80,8 @@
         CreateFormVisible: true,
         formLabelWidth: '120px',
         close: true,
-        options:[]
+        typeOptions:[],
+        useOptions:[]
       }
     },
     methods: {
@@ -115,7 +126,21 @@
       datasetType() {
         datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
-            this.options = response.data.datasetTypes
+            this.typeOptions = response.data.lables
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
+      },
+       // 获取数据集用途
+       datasetUse() {
+        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.useOptions = response.data.lables
           } else {
             // this.showUpload = false
             this.$message({

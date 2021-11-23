@@ -18,18 +18,19 @@ import (
 
 type Data struct {
 	log                *log.Helper
-	AlgorithmClient    api.AlgorithmClient
-	UserClient         api.UserClient
+	AlgorithmClient    api.AlgorithmServiceClient
+	UserClient         api.UserServiceClient
 	TrainJobClient     api.TrainJobServiceClient
 	DevelopClient      api.DevelopClient
-	ModelClient        api.ModelClient
-	WorkspaceClient    api.WorkspaceClient
+	ModelClient        api.ModelServiceClient
+	WorkspaceClient    api.WorkspaceServiceClient
 	SessionClient      session.SessionClient
-	ImageClient        api.ImageClient
+	ImageClient        api.ImageServiceClient
 	DatasetClient      api.DatasetServiceClient
 	ResourceSpecClient api.ResourceSpecServiceClient
 	ResourcePoolClient api.ResourcePoolServiceClient
 	BillingClient      api.BillingServiceClient
+	LableClient        api.LableServiceClient
 	JointCloudClient   api.JointCloudServiceClient
 }
 
@@ -58,18 +59,19 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 
 	return &Data{
 		log:                log,
-		AlgorithmClient:    api.NewAlgorithmClient(conn),
-		UserClient:         api.NewUserClient(conn),
+		AlgorithmClient:    api.NewAlgorithmServiceClient(conn),
+		UserClient:         api.NewUserServiceClient(conn),
 		DevelopClient:      api.NewDevelopClient(conn),
 		TrainJobClient:     api.NewTrainJobServiceClient(conn),
-		ModelClient:        api.NewModelClient(conn),
-		WorkspaceClient:    api.NewWorkspaceClient(conn),
+		ModelClient:        api.NewModelServiceClient(conn),
+		WorkspaceClient:    api.NewWorkspaceServiceClient(conn),
 		SessionClient:      session.NewSessionClient(confData, logger),
-		ImageClient:        api.NewImageClient(conn),
+		ImageClient:        api.NewImageServiceClient(conn),
 		DatasetClient:      api.NewDatasetServiceClient(conn),
 		ResourceSpecClient: api.NewResourceSpecServiceClient(conn),
 		ResourcePoolClient: api.NewResourcePoolServiceClient(conn),
 		BillingClient:      api.NewBillingServiceClient(conn),
+		LableClient:        api.NewLableServiceClient(conn),
 		JointCloudClient:   api.NewJointCloudServiceClient(conn),
 	}, nil
 }

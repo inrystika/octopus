@@ -113,19 +113,19 @@ export const constantRoutes = [
         path: 'machine',
         name: 'machine',
         component: () => import('@/views/timeManager/machine'),
-        meta: { title: '机时', icon: 'dot' }
+        meta: { title: '机时列表', icon: 'dot' }
       },
       {
         path: 'recharge',
         name: 'recharge',
         component: () => import('@/views/timeManager/recharge'),
-        meta: { title: '充值', icon: 'dot' }
+        meta: { title: '充值记录', icon: 'dot' }
       },
       {
         path: 'consumption',
         name: 'consumption',
         component: () => import('@/views/timeManager/consumption'),
-        meta: { title: '消费', icon: 'dot' }
+        meta: { title: '消费记录', icon: 'dot' }
       }
     ]
   },

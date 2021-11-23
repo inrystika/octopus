@@ -32,10 +32,10 @@ type modelAddHandle struct {
 	conf             *conf.Bootstrap
 	log              *log.Helper
 	data             *data.Data
-	algorithmService api.AlgorithmServer
+	algorithmService api.AlgorithmServiceServer
 }
 
-func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServer) ModelAddHandle {
+func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServiceServer) ModelAddHandle {
 	return &modelAddHandle{
 		conf:             conf,
 		log:              log.NewHelper("ModelAddHandle", logger),

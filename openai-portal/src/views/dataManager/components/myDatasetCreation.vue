@@ -7,8 +7,14 @@
           <el-input v-model="ruleForm.name" :disabled="disabled" placeholder="请输入数据集名称，长度在 4 到 30 个字符" />
         </el-form-item>
         <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-          <el-select v-model="ruleForm.type" :disabled="disabled" placeholder="请选择数据集类型">
-            <el-option v-for="item in options" :key="item.id" :label="item.typeDesc" :value="item.id">
+          <el-select v-model="ruleForm.typeId" :disabled="disabled" placeholder="请选择数据集类型">
+            <el-option v-for="item in typeOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据集用途" :label-width="formLabelWidth" prop="type">
+          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择数据集用途">
+            <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -30,7 +36,7 @@
 
 <script>
   import upload from '@/components/upload/index.vue'
-  import { createMyDataset, datasetType } from "@/api/datasetManager.js"
+  import { createMyDataset, datasetType, datasetUse } from "@/api/datasetManager.js"
   import { getErrorMsg } from '@/error/index'
   export default {
     name: "MyDatasetCreation",
@@ -45,6 +51,7 @@
     },
     created() {
       this.datasetType()
+      this.datasetUse()
     },
     data() {
       return {
@@ -54,18 +61,26 @@
         ruleForm: {
           name: '',
           desc: '',
-          type: '',
-          path: ''
+          typeId: '',
+          path: '',
+          applyId: ''
         },
         rules: {
           name: [
             { required: true, message: "请输入数据集名称", trigger: "blur" },
             { min: 4, max: 30, message: "长度在 4 到 30 个字符", trigger: "blur" }
           ],
-          type: [
+          typeId: [
             {
               required: true,
               message: "请选择数据集类型",
+              trigger: "change"
+            }
+          ],
+          applyId: [
+            {
+              required: true,
+              message: "请选择数据集用途",
               trigger: "change"
             }
           ],
@@ -80,7 +95,8 @@
         CreateFormVisible: true,
         formLabelWidth: "120px",
         close: true,
-        options: []
+        typeOptions: [],
+        useOptions: []
       };
     },
     methods: {
@@ -93,8 +109,9 @@
             delete this.ruleForm.path
             const param = {
               name: this.ruleForm.name,
-              typeId: this.ruleForm.type,
-              desc: this.ruleForm.desc
+              typeId: this.ruleForm.typeId,
+              desc: this.ruleForm.desc,
+              applyId:this.ruleForm.applyId
             }
             createMyDataset(param).then(response => {
               if (response.success) {
@@ -132,7 +149,21 @@
       datasetType() {
         datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
-            this.options = response.data.datasetTypes
+            this.typeOptions = response.data.lables
+          } else {
+            // this.showUpload = false
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
+      },
+      // 获取数据集用途
+      datasetUse() {
+        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+          if (response.success) {
+            this.useOptions = response.data.lables
           } else {
             // this.showUpload = false
             this.$message({
