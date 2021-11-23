@@ -2,12 +2,15 @@ package platform
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	model "server/base-server/internal/data/dao/model/platform"
 	"server/common/errors"
 	"server/common/transaction"
 	"server/common/utils"
 	"time"
+
+	"gorm.io/gorm/clause"
 
 	"gorm.io/gorm"
 )
@@ -216,66 +219,16 @@ func (d *platformDao) DeletePlatformStorageConfig(ctx context.Context, platformI
 
 func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId string, config map[string]string) error {
 	db := d.db(ctx)
-	if platformId == "" {
+	if platformId == "" || len(config) == 0 {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	configDb, err := d.GetPlatformConfig(ctx, platformId)
-	if err != nil {
-		return err
-	}
-
-	deleteKeys := make([]string, 0)
-	for k, _ := range configDb {
-		_, ok := config[k]
-		if !ok {
-			deleteKeys = append(deleteKeys, k)
-		}
-	}
-
-	if len(deleteKeys) > 0 {
-		res := db.Where("platform_id = ? and key in ?", platformId, deleteKeys).Delete(&model.PlatformConfig{})
-		if res.Error != nil {
-			return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
-		}
-	}
-
-	insertKeys := make([]string, 0)
-	updateKeys := make([]string, 0)
-	for k, v := range config {
-		vdb, ok := configDb[k]
-		if ok && v != vdb {
-			updateKeys = append(updateKeys, k)
-			continue
-		}
-		if !ok && v != "" {
-			insertKeys = append(insertKeys, k)
-			continue
-		}
-	}
-
-	if len(insertKeys) > 0 {
-		items := make([]*model.PlatformConfig, 0)
-		for _, k := range insertKeys {
-			items = append(items, &model.PlatformConfig{
-				PlatformId: platformId,
-				Key:        k,
-				Value:      config[k],
-			})
-		}
-		res := db.Create(&items)
-		if res.Error != nil {
-			return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
-		}
-	}
-
-	if len(updateKeys) > 0 {
-		for _, k := range updateKeys {
-			res := db.Model(&model.PlatformConfig{}).Where("platform_id = ? and `key` = ?", platformId, k).Limit(1).Update("value", config[k])
-			if res.Error != nil {
-				return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
-			}
-		}
+	c := &model.PlatformConfig{PlatformId: platformId, Config: config}
+	res := db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(c)
+	if res.Error != nil {
+		return errors.Errorf(nil, errors.ErrorDBUpdateFailed)
 	}
 
 	return nil
@@ -283,17 +236,12 @@ func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId strin
 
 func (d *platformDao) GetPlatformConfig(ctx context.Context, platformId string) (map[string]string, error) {
 	db := d.db(ctx)
-	platformConfigs := make([]*model.PlatformConfig, 0)
+	c := &model.PlatformConfig{}
 
-	res := db.Where("platform_id = ?", platformId).Find(&platformConfigs)
-	if res.Error != nil {
+	res := db.First(c, "platform_id = ?", platformId)
+	if res.Error != nil && !stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
 	}
 
-	r := map[string]string{}
-	for _, i := range platformConfigs {
-		r[i.Key] = i.Value
-	}
-
-	return r, nil
+	return c.Config, nil
 }

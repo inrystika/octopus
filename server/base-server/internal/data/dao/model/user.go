@@ -3,8 +3,7 @@ package model
 import (
 	"fmt"
 	"server/common/dao"
-
-	"gorm.io/plugin/soft_delete"
+	"server/common/sql"
 
 	"gorm.io/gorm"
 )
@@ -150,10 +149,8 @@ type UserListIn struct {
 
 type UserConfig struct {
 	dao.Model
-	UserId    string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:userId_key_deleteAt,priority:1;comment:用户id"`
-	Key       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:userId_key_deleteAt,priority:2;comment:key"`
-	Value     string                `gorm:"type:text;comment:value"`
-	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:userId_key_deleteAt,priority:3"`
+	UserId string      `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:用户id"`
+	Config sql.SqlJson `gorm:"type:json;comment:配置"`
 }
 
 func (UserConfig) TableName() string {
