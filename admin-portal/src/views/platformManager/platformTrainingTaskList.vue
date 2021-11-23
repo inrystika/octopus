@@ -11,14 +11,15 @@
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="数据集" align="center">
+      <el-table-column label="镜像" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.datasets }}</span>
+          <span>{{ scope.row.image.name+":"+scope.row.image.version }}</span>
         </template>
       </el-table-column>
       <el-table-column label="联系方式" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.contactInfo }}</span>
+          <span :class="statusOption[scope.row.status][0]"></span>
+          <span>{{ statusOption[scope.row.status][1] }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center">
@@ -59,6 +60,14 @@ export default {
       searchData: {
         pageIndex: 1,
         pageSize: 10,
+      },
+      statusOption: {
+        'preparing': ['status-ready', '初始中'],
+        'pending': ['status-agent', '等待中'],
+        'running': ['status-running', '运行中'],
+        'failed': ['status-danger', '失败'],
+        'succeeded': ['status-success', '成功'],
+        'stopped': ['status-stopping', '已停止']
       }
     }
   },
