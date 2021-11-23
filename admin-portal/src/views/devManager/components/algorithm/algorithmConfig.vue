@@ -1,11 +1,10 @@
-
 <template>
     <div>
         <div class="title">模型类别</div>
         <div>
-            <el-tag v-for="(tag,index) in dynamicType" :key="index" closable :disable-transitions="false"
-                @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
-                <span v-if="index!=typeNum"> {{tag.typeDesc }}</span>
+            <el-tag v-for="(tag,index) in dynamicType" :key="index" :closable="tag.sourceType!==1"
+                :disable-transitions="false" @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
+                <span v-if="index!=typeNum"> {{tag.lableDesc }}</span>
                 <input class="custom_input" type="text" v-model="typeValue" v-if="index==typeNum" ref="editeTypeInput"
                     @keyup.enter.native="handleInput(tag,'TYPE')" @blur="handleInput(tag,'TYPE')">
             </el-tag>
@@ -15,11 +14,11 @@
             <el-button v-else class="button-new-tag" size="small" @click="showInput('TYPE')">{{'+ 新标签'}}</el-button>
         </div>
         <el-divider></el-divider>
-        <div class="title">算法框架</div>
+        <div class="title">框架类型</div>
         <div>
-            <el-tag v-for="(tag,index) in dynamicFrame" :key="index" closable :disable-transitions="false"
-                @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
-                <span v-if="index!=frameNum"> {{tag.frameworkDesc }}</span>
+            <el-tag v-for="(tag,index) in dynamicFrame" :key="index" :closable="tag.sourceType!==1"
+                :disable-transitions="false" @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
+                <span v-if="index!=frameNum"> {{tag.lableDesc }}</span>
                 <input class="custom_input" type="text" v-model="frameValue" v-if="index==frameNum"
                     ref="editeFrameInput" @keyup.enter.native="handleInput(tag,'FRAME')"
                     @blur="handleInput(tag,'FRAME')">
@@ -154,26 +153,31 @@
                 }
             },
             editTag(tag, index, val) {
-                if (val === 'TYPE') {
-                    this.typeNum = index;
-                    this.$nextTick(_ => {
-                        this.$refs.editeTypeInput[0].focus();
-                    });
-                    this.typeValue = tag.typeDesc;
-                    this.typeId = tag.id
+                if (tag.sourceType == 1) {
+                    return
+                } else {
+                    if (val === 'TYPE') {
+                        this.typeNum = index;
+                        this.$nextTick(_ => {
+                            this.$refs.editeTypeInput[0].focus();
+                        });
+                        this.typeValue = tag.lableDesc;
+                        this.typeId = tag.id
+                    }
+                    else {
+                        this.frameNum = index;
+                        this.$nextTick(_ => {
+                            this.$refs.editeFrameInput[0].focus();
+                        });
+                        this.frameValue = tag.lableDesc;
+                        this.frameId = tag.id
+                    }
                 }
-                else {
-                    this.frameNum = index;
-                    this.$nextTick(_ => {
-                        this.$refs.editeFrameInput[0].focus();
-                    });
-                    this.frameValue = tag.frameworkDesc;
-                    this.frameId = tag.id
-                }
+
             },
             handleInput(tag, val) {
                 if (val === 'TYPE') {
-                    updateAlgorithmType({ id: this.typeId, typeDesc: this.typeValue }).then(
+                    updateAlgorithmType({ id: this.typeId, lableDesc: this.typeValue }).then(
                         response => {
                             if (response.success) {
                                 this.algorithmType()
@@ -190,10 +194,10 @@
                     )
                 }
                 else {
-                    updateFrameType({ id: this.frameId, frameworkDesc: this.frameValue }).then(
+                    updateFrameType({ id: this.frameId, lableDesc: this.frameValue }).then(
                         response => {
                             if (response.success) {
-                               this.frameType()
+                                this.frameType()
                             }
                             else {
                                 this.$message({
@@ -215,7 +219,7 @@
                 algorithmType({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.dynamicType = response.data.algorithmTypes
+                            this.dynamicType = response.data.lables
                             if (this.dynamicType == null) {
                                 this.dynamicType = []
                             }
@@ -234,7 +238,7 @@
                 frameType({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.dynamicFrame = response.data.algorithmFrameworks
+                            this.dynamicFrame = response.data.lables
                             if (this.dynamicFrame == null) {
                                 this.dynamicFrame = []
                             }
