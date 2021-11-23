@@ -123,7 +123,7 @@ message ListDatasetTypeRequest {
 
 message ListDatasetTypeReply {
   int64 totalSize = 1;
-  repeated DatasetLable datasetTypes = 2;
+  repeated DatasetLable lables = 2;
 }
 
 message ListDatasetApplyRequest {
@@ -133,7 +133,7 @@ message ListDatasetApplyRequest {
 
 message ListDatasetApplyReply {
   int64 totalSize = 1;
-  repeated DatasetLable datasetApplys = 2;
+  repeated DatasetLable lables = 2;
 }
 
 message CreateDatasetRequest {

@@ -41,7 +41,7 @@ func (s *AlgorithmService) AddAlgorithmApply(ctx context.Context, req *api.AddAl
 	}
 
 	return &api.AddAlgorithmApplyReply{
-		AlgorithmApply: &api.AlgorithmApply{
+		Lable: &api.AlgorithmLable{
 			Id:         innerReply.Lable.Id,
 			LableDesc:  innerReply.Lable.LableDesc,
 			SourceType: innerReply.Lable.SourceType,
@@ -119,7 +119,7 @@ func (s *AlgorithmService) AddAlgorithmFramework(ctx context.Context, req *api.A
 	}
 
 	return &api.AddAlgorithmFrameworkReply{
-		AlgorithmFramework: &api.AlgorithmFramework{
+		Lable: &api.AlgorithmLable{
 			Id:         innerReply.Lable.Id,
 			LableDesc:  innerReply.Lable.LableDesc,
 			SourceType: innerReply.Lable.SourceType,

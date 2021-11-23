@@ -141,7 +141,7 @@ message AddDatasetTypeRequest {
 }
 
 message AddDatasetTypeReply {
-  DatasetLable datasetType = 1;
+  DatasetLable lable = 1;
 }
 
 message ListDatasetTypeRequest {
@@ -151,7 +151,7 @@ message ListDatasetTypeRequest {
 
 message ListDatasetTypeReply {
   int64 totalSize = 1;
-  repeated DatasetLable datasetTypes = 2;
+  repeated DatasetLable lables = 2;
 }
 
 message DeleteDatasetTypeRequest {
@@ -176,7 +176,7 @@ message AddDatasetApplyRequest {
 }
 
 message AddDatasetApplyReply {
-  DatasetLable datasetApply = 1;
+  DatasetLable lable = 1;
 }
 
 message ListDatasetApplyRequest {
@@ -186,7 +186,7 @@ message ListDatasetApplyRequest {
 
 message ListDatasetApplyReply {
   int64 totalSize = 1;
-  repeated DatasetLable datasetApplys = 2;
+  repeated DatasetLable lables = 2;
 }
 
 message DeleteDatasetApplyRequest {
