@@ -18,14 +18,14 @@ import (
 
 type Data struct {
 	log                    *log.Helper
-	AlgorithmClient        api.AlgorithmClient
+	AlgorithmClient        api.AlgorithmServiceClient
 	AdminUserClient        api.AdminUserClient
-	UserClient             api.UserClient
+	UserClient             api.UserServiceClient
 	DevelopClient          api.DevelopClient
-	WorkspaceClient        api.WorkspaceClient
-	ModelClient            api.ModelClient
+	WorkspaceClient        api.WorkspaceServiceClient
+	ModelClient            api.ModelServiceClient
 	TrainJobClient         api.TrainJobServiceClient
-	ImageClient            api.ImageClient
+	ImageClient            api.ImageServiceClient
 	NodeClient             api.NodeServiceClient
 	ResourceClient         api.ResourceServiceClient
 	ResourceSpecClient     api.ResourceSpecServiceClient
@@ -33,6 +33,7 @@ type Data struct {
 	DatasetClient          api.DatasetServiceClient
 	SessionClient          session.SessionClient
 	BillingClient          api.BillingServiceClient
+	LableClient            api.LableServiceClient
 	PlatformClient         api.PlatformServiceClient
 	JointCloudClient       api.JointCloudServiceClient
 	PlatformTrainJobClient api.PlatformTrainJobServiceClient
@@ -63,14 +64,14 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 
 	return &Data{
 		log:                    log,
-		AlgorithmClient:        api.NewAlgorithmClient(conn),
+		AlgorithmClient:        api.NewAlgorithmServiceClient(conn),
 		AdminUserClient:        api.NewAdminUserClient(conn),
-		UserClient:             api.NewUserClient(conn),
+		UserClient:             api.NewUserServiceClient(conn),
 		DevelopClient:          api.NewDevelopClient(conn),
-		WorkspaceClient:        api.NewWorkspaceClient(conn),
-		ModelClient:            api.NewModelClient(conn),
+		WorkspaceClient:        api.NewWorkspaceServiceClient(conn),
+		ModelClient:            api.NewModelServiceClient(conn),
 		TrainJobClient:         api.NewTrainJobServiceClient(conn),
-		ImageClient:            api.NewImageClient(conn),
+		ImageClient:            api.NewImageServiceClient(conn),
 		NodeClient:             api.NewNodeServiceClient(conn),
 		ResourceClient:         api.NewResourceServiceClient(conn),
 		ResourceSpecClient:     api.NewResourceSpecServiceClient(conn),
@@ -78,6 +79,7 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		DatasetClient:          api.NewDatasetServiceClient(conn),
 		SessionClient:          session.NewSessionClient(confData, logger),
 		BillingClient:          api.NewBillingServiceClient(conn),
+		LableClient:            api.NewLableServiceClient(conn),
 		PlatformClient:         api.NewPlatformServiceClient(conn),
 		JointCloudClient:       api.NewJointCloudServiceClient(conn),
 		PlatformTrainJobClient: api.NewPlatformTrainJobServiceClient(conn),

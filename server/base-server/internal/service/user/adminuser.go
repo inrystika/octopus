@@ -107,7 +107,7 @@ func (s *AdminUserService) AddDefaultAdminUser(ctx context.Context) (*api.AdminU
 		})
 		if err != nil {
 			s.log.Error(ctx, err)
-			return nil,nil
+			return nil, nil
 		}
 	}
 

@@ -10,32 +10,31 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service Algorithm {
-    // 新增算法类型
-    rpc AddAlgorithmType (AddAlgorithmTypeRequest) returns (AddAlgorithmTypeReply) {
+    // 新增算法用途
+    rpc AddAlgorithmApply (AddAlgorithmApplyRequest) returns (AddAlgorithmApplyReply) {
         option (google.api.http) = {
-            post: "/v1/algorithmmanage/algorithmtype"
+            post: "/v1/algorithmmanage/algorithmapply"
             body: "*"
       };
     }
-
-    // 查询算法类型列表
-    rpc ListAlgorithmType (ListAlgorithmTypeRequest) returns (ListAlgorithmTypeReply) {
+    // 查询算法用途列表
+    rpc ListAlgorithmApply (ListAlgorithmApplyRequest) returns (ListAlgorithmApplyReply) {
       option (google.api.http) = {
-        get: "/v1/algorithmmanage/algorithmtype"
+        get: "/v1/algorithmmanage/algorithmapply"
       }; 
     }
 
-    // 删除算法类型
-    rpc DeleteAlgorithmType (DeleteAlgorithmTypeRequest) returns (DeleteAlgorithmTypeReply) {
+    // 删除算法用途
+    rpc DeleteAlgorithmApply (DeleteAlgorithmApplyRequest) returns (DeleteAlgorithmApplyReply) {
       option (google.api.http) = {
-        delete: "/v1/algorithmmanage/algorithmtype/{id}"
+        delete: "/v1/algorithmmanage/algorithmapply/{id}"
       };
     }
 
-    // 修改算法类型描述
-    rpc UpdateAlgorithmType (UpdateAlgorithmTypeRequest) returns (UpdateAlgorithmTypeReply) {
+    // 修改算法用途描述
+    rpc UpdateAlgorithmApply (UpdateAlgorithmApplyRequest) returns (UpdateAlgorithmApplyReply) {
       option (google.api.http) = {
-        put: "/v1/algorithmmanage/algorithmtype/{id}"
+        put: "/v1/algorithmmanage/algorithmapply/{id}"
       };
     }
 
@@ -159,66 +158,53 @@ service Algorithm {
     
 }
 
-message AlgorithmType {
+message AlgorithmLable {
   string id = 1;
-  string typeDesc = 2;
+  string lableDesc = 2;
+  int32 sourceType = 3;
 }
 
-message AddAlgorithmTypeRequest {
-  string typeDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
+message AddAlgorithmApplyRequest {
+  string lableDesc = 1[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
-message AddAlgorithmTypeReply {
-  AlgorithmType algorithmType = 1;
+message AddAlgorithmApplyReply {
+  AlgorithmLable lable = 1;
 }
 
-message ListAlgorithmTypeRequest {
+message ListAlgorithmApplyRequest {
   int64 pageIndex = 1;
   int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 
-message ListAlgorithmTypeReply {
+message ListAlgorithmApplyReply {
   int64 totalSize = 1;
-  repeated AlgorithmType algorithmTypes = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
-message GetAlgorithmTypeRequest {
+message DeleteAlgorithmApplyRequest {
   string id = 1;
 }
 
-message GetAlgorithmTypeReply {
-  string id = 1;
-  string typeDesc = 2;
-}
-
-message DeleteAlgorithmTypeRequest {
-  string id = 1;
-}
-
-message DeleteAlgorithmTypeReply {
+message DeleteAlgorithmApplyReply {
   int64 deletedAt = 1;
 }
 
-message UpdateAlgorithmTypeRequest {
+message UpdateAlgorithmApplyRequest {
   string id = 1;
-  string typeDesc = 2;
+  string lableDesc = 2;
 }
 
-message UpdateAlgorithmTypeReply {
+message UpdateAlgorithmApplyReply {
   int64 updatedAt = 1;
 }
 
-message AlgorithmFramework {
-  string id = 1;
-  string frameworkDesc = 2;
-}
-
 message AddAlgorithmFrameworkRequest {
-  string frameworkDesc = 1[(validate.rules).string = {min_len: 1, max_len: 128}];
+  string lableDesc = 1[(validate.rules).string = {min_len: 1, max_len: 10}];
 }
 
 message AddAlgorithmFrameworkReply {
-  AlgorithmFramework algorithmFramework = 1;
+  AlgorithmLable lable = 1;
 }
 
 message ListAlgorithmFrameworkRequest {
@@ -228,16 +214,7 @@ message ListAlgorithmFrameworkRequest {
 
 message ListAlgorithmFrameworkReply {
   int64 totalSize = 1;
-  repeated AlgorithmFramework algorithmFrameworks = 2;
-}
-
-message GetAlgorithmFrameworkRequest {
-  string id = 1;
-}
-
-message GetAlgorithmFrameworkReply {
-  string id = 1;
-  string frameworkDesc = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message DeleteAlgorithmFrameworkRequest {
@@ -250,7 +227,7 @@ message DeleteAlgorithmFrameworkReply {
 
 message UpdateAlgorithmFrameworkRequest {
   string id = 1;
-  string frameworkDesc = 2;
+  string lableDesc = 2;
 }
 
 message UpdateAlgorithmFrameworkReply {
@@ -272,8 +249,8 @@ message AlgorithmDetail {
   string path = 12;
   bool isPrefab = 13;
   int64 createdAt = 14;
-  string typeId = 15;
-  string typeName = 16;
+  string applyId = 15;
+  string applyName = 16;
 	string frameworkId = 17;
   string frameworkName = 18;
 }
@@ -347,7 +324,7 @@ message AddAlgorithmRequest {
   string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7;
-  string typeId = 8;
+  string applyId = 8;
   string frameworkId = 9;
 }
 message AddAlgorithmReply {

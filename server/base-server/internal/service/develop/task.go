@@ -155,6 +155,11 @@ func (s *developService) startNotebookTask() {
 										s.log.Infof(ctx, "amount less than amount in db and is not completed status")
 										return
 									}
+
+									extraInfo := make(map[string]string)
+									if ownerType == api.BillingOwnerType_BOT_SPACE {
+										extraInfo = common.GetExtraInfo(notebook.UserId)
+									}
 									_, err := s.billingService.Pay(ctx, &api.PayRequest{
 										OwnerId:   ownerId,
 										OwnerType: ownerType,
@@ -165,6 +170,7 @@ func (s *developService) startNotebookTask() {
 										StartedAt: j.StartedAt.Unix(),
 										EndedAt:   payEndAt,
 										Status:    payStatus,
+										ExtraInfo: extraInfo,
 									})
 									if err != nil {
 										s.log.Errorf(ctx, "Pay err: %s", err)

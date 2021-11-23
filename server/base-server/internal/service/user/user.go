@@ -16,14 +16,14 @@ import (
 )
 
 type UserService struct {
-	api.UnimplementedUserServer
+	api.UnimplementedUserServiceServer
 	conf       *conf.Bootstrap
 	log        *log.Helper
 	data       *data.Data
 	defaultPVS common.PersistentVolumeSourceExtender
 }
 
-func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServer {
+func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
 	if err != nil {
 		panic(err)

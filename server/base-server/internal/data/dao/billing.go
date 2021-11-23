@@ -197,6 +197,11 @@ func (d *billingDao) ListBillingPayRecord(ctx context.Context, query *model.Bill
 		params = append(params, time.Unix(query.StartedAtLt, 0))
 	}
 
+	for k, v := range query.ExtraInfo {
+		querySql += fmt.Sprintf(" and extra_info->'$.%s' = ? ", k)
+		params = append(params, v)
+	}
+
 	db = db.Where(querySql, params...)
 
 	var totalSize int64
@@ -263,6 +268,11 @@ func (d *billingDao) ListBillingRechargeRecord(ctx context.Context, query *model
 	if query.CreatedAtLt != 0 {
 		querySql += " and created_at < ? "
 		params = append(params, time.Unix(query.CreatedAtLt, 0))
+	}
+
+	if query.SearchKey != "" {
+		querySql += " and title like ?"
+		params = append(params, "%"+query.SearchKey+"%")
 	}
 
 	db = db.Where(querySql, params...)

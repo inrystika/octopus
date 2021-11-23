@@ -19,13 +19,13 @@ import (
 )
 
 type WorkspaceService struct {
-	api.UnimplementedWorkspaceServer
+	api.UnimplementedWorkspaceServiceServer
 	conf *conf.Bootstrap
 	log  *log.Helper
 	data *data.Data
 }
 
-func NewWorkspaceService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.WorkspaceServer {
+func NewWorkspaceService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.WorkspaceServiceServer {
 	service := &WorkspaceService{
 		conf: conf,
 		log:  log.NewHelper("WorkspaceService", logger),
