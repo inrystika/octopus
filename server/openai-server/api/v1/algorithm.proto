@@ -360,15 +360,12 @@ message CopyAlgorithmVersionReply {
 }
 
 message AddMyAlgorithmRequest {
-  string spaceId = 1;
-  string userId = 2;
-  bool isPrefab = 3;
-  bool isEmpty = 4;
-  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
-  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
-  string applyId = 8;
-  string frameworkId = 9;
+  bool isEmpty = 1;
+  string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 3[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 4;
+  string applyId = 5;
+  string frameworkId = 6;
 }
 message AddMyAlgorithmReply {
   string algorithmId = 1;
