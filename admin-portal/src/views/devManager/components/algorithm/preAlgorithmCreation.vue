@@ -6,14 +6,14 @@
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
           <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
-        <el-form-item label="模型类别" :label-width="formLabelWidth" prop="applyId">
-          <el-select v-model="ruleForm.applyId" placeholder="请选择">
+        <el-form-item label="模型类别" :label-width="formLabelWidth">
+          <el-select v-model="ruleForm.applyId" placeholder="请选择算法类型">
             <el-option v-for="item in optionType" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="框架类型" :label-width="formLabelWidth" prop="frameworkId">
-          <el-select v-model="ruleForm.frameworkId" placeholder="请选择">
+        <el-form-item label="框架类型" :label-width="formLabelWidth" >
+          <el-select v-model="ruleForm.frameworkId" placeholder="请选择框架类型">
             <el-option v-for="item in optionFrame" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -99,8 +99,6 @@
               trigger: "blur"
             }
           ],
-          applyId: [{ required: true, message: '请选择算法类型', trigger: 'change' }],
-          frameworkId: [{ required: true, message: '请选择算法框架', trigger: 'change' }]
         },
         CreateFormVisible: true,
         formLabelWidth: "120px",
