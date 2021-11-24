@@ -108,6 +108,18 @@ service DatasetService {
       get: "/v1/datasetmanage/dataset/{datasetId}/version/{version}/file"
     };
   }
+    // 修改我的数据集
+  rpc UpdatePreDataset (UpdateMyDatasetRequest) returns (UpdateMyDatasetReply) {
+    option (google.api.http) = {
+      put: "/v1/datasetmanage/mydataset/{id}"
+    };
+  }
+    // 修改我的数据集版本
+  rpc UpdatePreDatasetVersion (UpdateMyDatasetVersionRequest) returns (UpdateMyDatasetVersionReply) {
+    option (google.api.http) = {
+      put: "/v1/datasetmanage/mydataset/{id}/version/{version}"
+    };
+  }
 }
 
 message DatasetLable {
@@ -138,8 +150,8 @@ message ListDatasetApplyReply {
 
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  string typeId = 2[(validate.rules).string = {min_len: 1, max_len: 64}];
-  string applyId = 3[(validate.rules).string = {min_len: 1, max_len: 64}];
+  string typeId = 2;
+  string applyId = 3;
   string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
@@ -315,4 +327,25 @@ message ListDatasetVersionFileReply {
     string path = 3;
   }
   repeated File files = 1;
+}
+
+message UpdateMyDatasetRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string typeId = 2;
+  string applyId = 3;
+  string desc = 4[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateMyDatasetReply {
+  int64 updatedAt  = 1;
+}
+
+message UpdateMyDatasetVersionRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+  string desc = 5[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateMyDatasetVersionReply {
+  int64 updatedAt  = 1;
 }

@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/session"
+	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -498,4 +500,69 @@ func (s *DatasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 	}
 
 	return reply, nil
+}
+
+func (s *DatasetService) UpdateMyDataset(ctx context.Context, req *api.UpdateMyDatasetRequest) (*api.UpdateMyDatasetReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.DatasetClient.UpdateDataset(ctx, &innerapi.UpdateDatasetRequest{
+		SpaceId:    spaceId,
+		UserId:     userId,
+		Id:         req.DatasetId,
+		SourceType: innerapi.DatasetSourceType_DST_USER,
+		TypeId:     req.TypeId,
+		ApplyId:    req.ApplyId,
+		Desc:       req.Desc,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyDatasetReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+func (s *DatasetService) UpdateMyDatasetVersion(ctx context.Context, req *api.UpdateMyDatasetVersionRequest) (*api.UpdateMyDatasetVersionReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.DatasetClient.UpdateDatasetVersion(ctx, &innerapi.UpdateDatasetVersionRequest{
+		SpaceId:    spaceId,
+		UserId:     userId,
+		DatasetId:  req.DatasetId,
+		Version:    req.Version,
+		SourceType: innerapi.DatasetSourceType_DST_USER,
+		Desc:       req.Desc,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyDatasetVersionReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+func (s *DatasetService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
+	userId := commctx.UserIdFromContext(ctx)
+	if userId == "" {
+		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		s.log.Errorw(ctx, err)
+		return "", "", err
+	}
+
+	session := ss.SessionFromContext(ctx)
+	if session == nil {
+		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+		s.log.Errorw(ctx, err)
+		return "", "", err
+	}
+
+	return userId, session.GetWorkspace(), nil
 }
