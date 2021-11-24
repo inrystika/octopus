@@ -1,7 +1,7 @@
 <template>
   <div>
     <iframe
-      src="http://192.168.203.156/grafana/d/ft1oaQnWk/clustermetrics?orgId=1&refresh=10s&from=now-5m&to=now&var-Node=All"
+      src="http://192.168.202.73/grafana/d/ft1oaQnWk/clustermetrics?orgId=1&refresh=10s&from=now-5m&to=now&var-Node=All"
       :height="iFrameHeight"
     >
     </iframe>
