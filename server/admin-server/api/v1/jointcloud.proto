@@ -54,10 +54,12 @@ message JointCloudJReplyJob {
 	int64	status = 12;                       
 	string	remark = 13;
   string jobId = 14;    
-  int64 createTime = 15;                        
-	repeated JointCloudReplyDataSetVersionVo dataSetList = 16;
-	repeated JointCloudParam	taskParams = 17;
-	repeated JointCloudResourceParam	resourceParams = 18;
+  int64 createTime = 15;          
+  string userId = 16;
+  string workspaceId = 17;                 
+	repeated JointCloudReplyDataSetVersionVo dataSetList = 18;
+	repeated JointCloudParam	taskParams = 19;
+	repeated JointCloudResourceParam	resourceParams = 20;
 }
 
 message JointCloudReplyDataSetVersionVo {

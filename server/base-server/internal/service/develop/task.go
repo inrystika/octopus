@@ -149,6 +149,10 @@ func (s *developService) startNotebookTask() {
 								}
 								payAmount := common.CalculateAmount(ctx, detailMap[j.Id], prices)
 								if payAmount > 0 {
+									extraInfo := make(map[string]string)
+									if ownerType == api.BillingOwnerType_BOT_SPACE {
+										extraInfo = common.GetExtraInfo(nb.UserId)
+									}
 									_, err := s.billingService.Pay(ctx, &api.PayRequest{
 										OwnerId:   ownerId,
 										OwnerType: ownerType,
@@ -159,6 +163,7 @@ func (s *developService) startNotebookTask() {
 										StartedAt: j.StartedAt.Unix(),
 										EndedAt:   payEndAt,
 										Status:    payStatus,
+										ExtraInfo: extraInfo,
 									})
 									if err != nil {
 										s.log.Errorf(ctx, "Pay err: %s", err)

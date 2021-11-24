@@ -34,9 +34,9 @@ type developService struct {
 	conf                *conf.Bootstrap
 	log                 *log.Helper
 	data                *data.Data
-	workspaceService    api.WorkspaceServer
-	algorithmService    api.AlgorithmServer
-	imageService        api.ImageServer
+	workspaceService    api.WorkspaceServiceServer
+	algorithmService    api.AlgorithmServiceServer
+	imageService        api.ImageServiceServer
 	datasetService      api.DatasetServiceServer
 	resourceSpecService api.ResourceSpecServiceServer
 	resourceService     api.ResourceServiceServer
@@ -72,8 +72,8 @@ func buildNotebookUrl(jobId string, idx int) string {
 }
 
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
-	workspaceService api.WorkspaceServer, algorithmService api.AlgorithmServer,
-	imageService api.ImageServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
+	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
+	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
 	billingService api.BillingServiceServer) (DevelopService, error) {
 	log := log.NewHelper("DevelopService", logger)

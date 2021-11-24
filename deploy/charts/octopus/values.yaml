@@ -14,6 +14,21 @@ global:
     pullPolicy: IfNotPresent
   nodeSelector: &nodeSelector
     octopus.openi.pcl.cn/node: "server"
+  affinity: &affinity
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
 
 common:
   resourceTagKey: octopus.pcl.ac.cn/type
@@ -247,20 +262,7 @@ minio:
   nodeSelector:
     <<: *nodeSelector
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+    <<: *affinity
 
 
 # mysql
@@ -288,20 +290,7 @@ mysql:
     nodeSelector:
       <<: *nodeSelector
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
 
 
 # redis
@@ -317,20 +306,7 @@ redis:
     nodeSelector:
       <<: *nodeSelector
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
   auth:
     enabled: true
     password: "abcde"
@@ -346,40 +322,18 @@ nginx-ingress-controller:
   nodeSelector:
     nginx-ingress: "yes"
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+    <<: *affinity
   defaultBackend:
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
 
 # influxdb
 influxdb:
   replicaCount: 1
+  livenessProbe:
+    initialDelaySeconds: 300
+  readinessProbe:
+    initialDelaySeconds: 300
   config:
     data:
       max-series-per-database: 0
@@ -402,20 +356,7 @@ influxdb:
   nodeSelector:
     <<: *nodeSelector
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+    <<: *affinity
 
 
 # grafana

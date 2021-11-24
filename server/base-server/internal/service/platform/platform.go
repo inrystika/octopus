@@ -3,6 +3,7 @@ package platform
 import (
 	"context"
 	api "server/base-server/api/v1"
+	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	model "server/base-server/internal/data/dao/model/platform"
@@ -121,16 +122,7 @@ func (s *platformService) UpdatePlatform(ctx context.Context, req *api.UpdatePla
 }
 
 func (s *platformService) ListPlatformConfigKey(ctx context.Context, req *api.ListPlatformConfigKeyRequest) (*api.ListPlatformConfigKeyReply, error) {
-	reply := &api.ListPlatformConfigKeyReply{}
-	for _, i := range s.conf.Service.Platform.ConfigKeys {
-		k := &api.ListPlatformConfigKeyReply_ConfigKey{}
-		err := copier.Copy(k, i)
-		if err != nil {
-			return nil, err
-		}
-		reply.ConfigKeys = append(reply.ConfigKeys, k)
-	}
-	return reply, nil
+	return &api.ListPlatformConfigKeyReply{ConfigKeys: common.PlatformConfigKeys}, nil
 }
 
 func (s *platformService) ListPlatformStorageConfig(ctx context.Context, req *api.ListPlatformStorageConfigRequest) (*api.ListPlatformStorageConfigReply, error) {
@@ -231,7 +223,7 @@ func (s *platformService) GetPlatformConfig(ctx context.Context, req *api.GetPla
 func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.UpdatePlatformConfigRequest) (*api.UpdatePlatformConfigReply, error) {
 	for k, v := range req.Config {
 		in := false
-		for _, i := range s.conf.Service.Platform.ConfigKeys {
+		for _, i := range common.PlatformConfigKeys {
 			if k == i.Key {
 				in = true
 				err := i.ValidateValue(v)

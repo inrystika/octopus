@@ -9,8 +9,7 @@
           <div>是否分布式:<span>否</span></div>
         </el-col>
       </el-row>
-      <el-input
-        v-if="showInfo"
+      <el-input       
         v-model="subTaskInfo"
         type="textarea"
         :readonly="true"
@@ -20,7 +19,6 @@
 
     <div class="block">
       <el-pagination
-        v-if="showInfo"
         :current-page="pageIndex"
         :page-sizes="[10, 20, 50, 80]"
         :page-size="pageSize"
@@ -48,7 +46,6 @@ export default {
   data() {
     return {
       notebookInfo: {},
-      showInfo: false,
       infoVisible: true,
       subTaskInfo: "",
       total: 0,
@@ -73,14 +70,10 @@ export default {
       }
       getNotebookInfo(param).then(response => {
         if (!response.success) {
-          this.$message({
-            message: "暂无相关运行信息",
-            type: 'warning'
-          });
+          this.subTaskInfo = "暂无相关运行信息"
           return
         }
 
-        this.showInfo = response.payload.notebookEvents.length
         this.total = response.payload.totalSize
 
         let infoMessage = ""

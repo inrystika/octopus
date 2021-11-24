@@ -62,18 +62,41 @@ func (s *DatasetService) checkVersionQueryPerm(ctx context.Context, datasetId st
 }
 
 func (s *DatasetService) ListDatasetType(ctx context.Context, req *api.ListDatasetTypeRequest) (*api.ListDatasetTypeReply, error) {
-	innerReq := &innerapi.ListDatasetTypeRequest{}
-	err := copier.Copy(innerReq, req)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	innerReq := &innerapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_DATASET),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_DATASET_TYPE),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
 	}
 
-	innerReply, err := s.data.DatasetClient.ListDatasetType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
 	reply := &api.ListDatasetTypeReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *DatasetService) ListDatasetApply(ctx context.Context, req *api.ListDatasetApplyRequest) (*api.ListDatasetApplyReply, error) {
+	innerReq := &innerapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_DATASET),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_DATASET_APPLY),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+	}
+
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListDatasetApplyReply{}
 	err = copier.Copy(reply, innerReply)
 	if err != nil {
 		return nil, err
@@ -94,6 +117,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		SourceType: innerapi.DatasetSourceType_DST_USER,
 		Name:       req.Name,
 		TypeId:     req.TypeId,
+		ApplyId:    req.ApplyId,
 		Desc:       req.Desc,
 	}
 

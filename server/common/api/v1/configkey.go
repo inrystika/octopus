@@ -1,16 +1,15 @@
-package conf
+package v1
 
 import (
 	"regexp"
 	"server/common/errors"
 	"server/common/utils"
-	"strings"
 )
 
 const (
-	ConfigKeyTypeInput    string = "input"
-	ConfigKeyTypeRadio    string = "radio"
-	ConfigKeyTypeCheckBox string = "checkbox"
+	ConfigKeyTypeInput    = "input"
+	ConfigKeyTypeRadio    = "radio"
+	ConfigKeyTypeCheckBox = "checkbox"
 )
 
 func (k *ConfigKey) ValidateValue(v string) error {
@@ -19,7 +18,7 @@ func (k *ConfigKey) ValidateValue(v string) error {
 	}
 
 	if (k.Type == ConfigKeyTypeRadio || k.Type == ConfigKeyTypeCheckBox) && v != "" &&
-		!utils.StringSliceContainsValue(strings.Split(k.Options, ","), v) {
+		!utils.StringSliceContainsValue(k.Options, v) {
 		return errors.Errorf(nil, errors.ErrorConfigValueValidateFailed)
 	}
 

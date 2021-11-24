@@ -28,10 +28,9 @@ import (
 )
 
 const (
-	k8sTaskNamePrefix     = "task"
-	NoDistributedJobNum   = 1
-	shmResource           = "shm"
-	jobStatusCallbackAddr = "jobStatusCallbackAddr"
+	k8sTaskNamePrefix   = "task"
+	NoDistributedJobNum = 1
+	shmResource         = "shm"
 )
 
 type platformTrainJobService struct {
@@ -1032,7 +1031,7 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 	if err != nil {
 		return err
 	}
-	if url, ok := reply.Config[jobStatusCallbackAddr]; ok {
+	if url, ok := reply.Config[common.PlatformKeyJobStatusCallbackAddr]; ok {
 		platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
 		if err != nil {
 			return err

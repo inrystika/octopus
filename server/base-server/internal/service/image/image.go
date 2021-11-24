@@ -22,14 +22,14 @@ import (
 )
 
 type ImageService struct {
-	pb.UnimplementedImageServer
+	pb.UnimplementedImageServiceServer
 	conf         *conf.Bootstrap
 	log          *log.Helper
 	data         *data.Data
 	dockerClient *docker.Client
 }
 
-func NewImageService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) pb.ImageServer {
+func NewImageService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) pb.ImageServiceServer {
 	dockerClient, err := docker.NewClientFromEnv()
 	if err != nil {
 		panic(err)
