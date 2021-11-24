@@ -7,7 +7,7 @@
           <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
         <el-form-item label="模型类别" :label-width="formLabelWidth">
-          <el-select v-model="ruleForm.applyId" placeholder="请选择算法类型">
+          <el-select v-model="ruleForm.applyId" placeholder="请选择模型类别">
             <el-option v-for="item in optionType" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
