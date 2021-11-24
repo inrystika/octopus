@@ -38,11 +38,8 @@ export default {
     getUserConfig() {
       getUserConfig().then(response => {
         if (response.success) {
-          console.log("res:",response)
-            console.log("router:",this.$router.options.routes)
           if(response.data.config.jointCloudPermission === 'no') {
             this.$router.options.routes.forEach((item,index) => {
-              console.log("index,item",index,item)
               if(item.children[0].name === "cloudInterconnection") {
                 delete this.$router.options.routes[item]
               }
