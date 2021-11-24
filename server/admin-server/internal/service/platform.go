@@ -155,3 +155,34 @@ func (s *platformService) UpdatePlatformConfig(ctx context.Context, req *api.Upd
 	}
 	return &api.UpdatePlatformConfigReply{}, nil
 }
+
+// 训练任务列表
+func (s *platformService) PlatformTrainJobList(ctx context.Context, req *api.PlatformTrainJobListRequest) (*api.PlatformTrainJobListReply, error) {
+
+	innerReq := &innerapi.PlatformTrainJobListRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.PlatformTrainJobClient.TrainJobList(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.PlatformTrainJobListReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	if reply.TrainJobs == nil {
+		reply := &api.PlatformTrainJobListReply{
+			TotalSize: 0,
+			TrainJobs: nil,
+		}
+		return reply, nil
+	}
+
+	return reply, nil
+}

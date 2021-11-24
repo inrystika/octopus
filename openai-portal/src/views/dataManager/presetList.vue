@@ -25,6 +25,11 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="数据集用途">
+          <template slot-scope="scope">
+            <span>{{ scope.row.applyDesc }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="最新版本号">
           <template slot-scope="scope">
             <span>{{ scope.row.latestVersion }}</span>

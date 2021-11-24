@@ -1,10 +1,11 @@
 <template>
   <div>
     <el-dialog
-      title="平台配置"
+      title="用户配置"
       :visible.sync="createFormVisible"
       :before-close="handleDialogClose" 
       :close-on-click-modal="false"
+      v-loading="loading"
     >
       <el-form 
         :model="ruleForm"
@@ -14,7 +15,7 @@
         <el-form-item>
           <div v-for="(item, index) in ruleForm.userConfig" :key="index">
             <el-form-item>
-              <strong>{{item.key+": "}}</strong>
+              <strong>{{item.title+": "}}</strong>
               <el-popover
                 placement="top"
                 width="400"
@@ -25,9 +26,12 @@
                 <i v-if="item.desc?true:false" style="color:orange" class="el-icon-question" slot="reference"></i>
               </el-popover>             
               <el-input v-if="item.type === 'input'" v-model="item.value" style="width: 40%;"></el-input>
-              <el-radio-group v-if="item.type === 'radio'" v-model="item.options">
-                <el-radio :label="'yes'"></el-radio>
-                <el-radio :label="'no'"></el-radio>
+              <el-radio-group v-if="item.type === 'radio'" v-model="item.value">
+                <span v-for="(option, index) in item.options" :key="index">
+                  <el-radio :label="option" style="margin-right:15px"></el-radio>
+                </span>
+                <!-- <el-radio :label="'yes'"></el-radio>
+                <el-radio :label="'no'"></el-radio> -->
               </el-radio-group>
             </el-form-item>
           </div>
@@ -57,7 +61,6 @@ export default {
     return {
       createFormVisible: true,
       userConfigKeyList: [],
-      userConfig: {},
       ruleForm: {
         userConfig: []
       },
@@ -65,7 +68,8 @@ export default {
         userConfig: {
           required: true, message: '请选择配置信息', trigger: ['change', 'blur']
         },
-      }
+      },
+      loading: true
     }
   },
   created() {
@@ -97,14 +101,15 @@ export default {
     getUserConfig() {
       getUserConfig(this.row.id).then(response => {
         if (response.success) {
-          // this.userConfig = response.data.config
           let configValue = response.data.config
           this.judgeObjectEmpty(configValue)
+          this.loading = false
         }else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
             type: 'warning'
           });
+          this.loading = false
         }
       })
     },
@@ -137,7 +142,7 @@ export default {
     update(formName) {
       const params = {}
       this.ruleForm.userConfig.map(item => {
-        params[item.key] = item.value?item.value:item.options
+        params[item.key] = item.value
       })
       updateUserConfig(this.row.id,params).then(response => {
         if(response.success) {            

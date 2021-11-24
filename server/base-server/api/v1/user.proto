@@ -5,10 +5,10 @@ package baseserver.api.v1;
 option go_package = "server/base-server/api/v1;v1";
 
 
-
+import "server/common/api/v1/configkey.proto";
 import "validate/validate.proto";
 
-service User {
+service UserService {
   rpc ListUser (ListUserRequest) returns (ListUserReply);
   rpc FindUser (FindUserRequest) returns (FindUserReply);
   rpc AddUser (AddUserRequest) returns (AddUserReply);
@@ -112,16 +112,7 @@ message ListUserConfigKeyRequest {
 }
 
 message ListUserConfigKeyReply {
-  message ConfigKey {
-    string key = 1;     // 键值，必填，保存配置时传入
-    string title = 2;   // 标题，必填
-    string type = 3;    // 类型，必填，input、radio、checkbox，默认为input
-    string desc = 4;    // 描述，选填
-    string options = 5; // 选项，选填，radio、checkbox时必填，逗号分隔
-    string regexp = 6;  // 正则，选填
-    bool required = 7; // 选填，默认为false
-  }
-  repeated ConfigKey configKeys = 1;
+  repeated common.api.v1.ConfigKey  configKeys = 1;
 }
 
 message GetUserConfigRequest {
@@ -134,7 +125,7 @@ message GetUserConfigReply {
 
 message UpdateUserConfigRequest {
   string userId = 1[(validate.rules).string = {min_len: 1}];
-  map<string, string> config = 2;
+  map<string, string> config = 2[(validate.rules).map.min_pairs = 1];
 }
 
 message UpdateUserConfigReply {

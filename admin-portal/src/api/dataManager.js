@@ -142,7 +142,7 @@ export async function addDatasetType(data) {
   const res = await request({
     url: `/v1/datasetmanage/datasettype`,
     method: "post",
-    data: { typeDesc: data }
+    data: { lableDesc: data }
   })
   return res
 }
@@ -156,6 +156,37 @@ export async function deleteDatasetType(params) {
 export async function updateDatasetType(data) {
   const res = await request({
     url: `/v1/datasetmanage/datasettype/${data.id}`,
+    method: "put",
+    data: data
+  })
+  return res
+}
+export async function datasetUse(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addDatasetUse(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply`,
+    method: "post",
+    data: { lableDesc: data }
+  })
+  return res
+}
+export async function deleteDatasetUse(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateDatasetUse(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply/${data.id}`,
     method: "put",
     data: data
   })

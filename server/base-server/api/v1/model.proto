@@ -8,7 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service Model {
+service ModelService {
   // 查询预置模型列表
   rpc ListPreModel (ListPreModelRequest) returns (ListPreModelReply);
   // 查询我的模型列表

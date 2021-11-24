@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"server/common/dao"
+	"server/common/sql"
 
 	"gorm.io/plugin/soft_delete"
 )
@@ -86,10 +87,8 @@ type PlatformStorageConfigQuery struct {
 
 type PlatformConfig struct {
 	dao.Model
-	PlatformId string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_key_deleteAt,priority:1;comment:平台id"`
-	Key        string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:platformId_key_deleteAt,priority:2;comment:key"`
-	Value      string                `gorm:"type:text;comment:value"`
-	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:platformId_key_deleteAt,priority:3"`
+	PlatformId string      `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:平台id"`
+	Config     sql.SqlJson `gorm:"type:json;comment:配置"`
 }
 
 func (PlatformConfig) TableName() string {

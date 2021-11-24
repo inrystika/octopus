@@ -8,7 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service Image {
+service ImageService {
   // 查询预置镜像列表
   rpc ListPreImage (ListPreImageRequest) returns (ListPreImageReply);
   // 查询用户镜像列表
