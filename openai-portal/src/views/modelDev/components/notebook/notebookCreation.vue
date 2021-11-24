@@ -183,7 +183,9 @@
                         />
                     </el-select>
                 </el-form-item>
-                <el-button type="text" @click="showMultitask">高级设置</el-button>
+                <el-form-item>
+                    <el-button type="text" @click="showMultitask">高级设置</el-button>
+                </el-form-item>
                 <el-form-item v-if="isShowMultitask" label="任务数" prop="taskNumber">
                     <el-select
                         v-model.number="ruleForm.taskNumber"

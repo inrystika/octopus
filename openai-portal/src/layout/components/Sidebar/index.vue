@@ -51,17 +51,7 @@ export default {
     getUserConfig() {
       getUserConfig().then(response => {
         if (response.success) {
-<<<<<<< HEAD
-          if(response.data.config.jointCloudPermission === 'no') {
-            this.$router.options.routes.forEach((item,index) => {
-              if(item.children[0].name === "cloudInterconnection") {
-                delete this.$router.options.routes[item]
-              }
-            })
-          }
-=======
           this.isPermission = response.data.config&&response.data.config.jointCloudPermission?response.data.config.jointCloudPermission:'no'
->>>>>>> db391938c7eacdd41c8d4cb56729e1bcb908d39b
         } else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
