@@ -131,13 +131,13 @@ service DatasetService {
     // 修改预置数据集
   rpc UpdatePreDataset (UpdatePreDatasetRequest) returns (UpdatePreDatasetReply) {
     option (google.api.http) = {
-      put: "/v1/datasetmanage/predataset/{id}"
+      put: "/v1/datasetmanage/predataset/{datasetId}"
     };
   }
     // 修改预置数据集版本
   rpc UpdatePreDatasetVersion (UpdatePreDatasetVersionRequest) returns (UpdatePreDatasetVersionReply) {
     option (google.api.http) = {
-      put: "/v1/datasetmanage/predataset/{id}/version/{version}"
+      put: "/v1/datasetmanage/predataset/{datasetId}/version/{version}"
     };
   }
 }
