@@ -18,17 +18,17 @@
         :header-cell-style="{'text-align':'left','color':'black'}"
         :cell-style="{'text-align':'left'}"
       >
-        <el-table-column label="名称">
+        <el-table-column label="数据集名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="类型">
+        <el-table-column label="数据类型">
           <template slot-scope="scope">
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据集用途">
+        <el-table-column label="标注类型">
           <template slot-scope="scope">
             <span>{{ scope.row.applyDesc }}</span>
           </template>
