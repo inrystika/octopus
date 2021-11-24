@@ -27,6 +27,8 @@ func CalculateAmount(ctx context.Context, job *pipeline.JobStatusDetail, prices 
 	}
 
 	return rs
+}
+
 // 模型开发和训练生成extraInfo
 func GetExtraInfo(userId string) map[string]string {
 	return map[string]string{
