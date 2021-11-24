@@ -4,7 +4,7 @@
       <el-tab-pane label="平台列表" name="platformList">
         <platformList></platformList>
       </el-tab-pane>
-      <el-tab-pane label="平台训练任务列表" name="trainingTask">
+      <el-tab-pane label="训练任务列表" name="trainingTask">
         <platformTrainingTaskList></platformTrainingTaskList>
       </el-tab-pane>
     </el-tabs>

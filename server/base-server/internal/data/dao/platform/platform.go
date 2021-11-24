@@ -223,7 +223,14 @@ func (d *platformDao) UpdatePlatformConfig(ctx context.Context, platformId strin
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	c := &model.PlatformConfig{PlatformId: platformId, Config: config}
+	configUp := make(map[string]string)
+	for k, v := range config {
+		if v != "" {
+			configUp[k] = v
+		}
+	}
+
+	c := &model.PlatformConfig{PlatformId: platformId, Config: configUp}
 	res := db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(c)
