@@ -122,9 +122,6 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             const param = {
-              spaceId: '',
-              userId: null,
-              IsPrefab: true,
               algorithmName: this.ruleForm.algorithmName,
               algorithmDescript: this.ruleForm.desc,
               modelname: this.ruleForm.modelName,
