@@ -16,12 +16,6 @@
           <span>{{ scope.row.image.name+":"+scope.row.image.version }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="联系方式" align="center">
-        <template slot-scope="scope">
-          <span :class="statusOption[scope.row.status][0]"></span>
-          <span>{{ statusOption[scope.row.status][1] }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -80,7 +74,6 @@ export default {
     },
     getPlatformTrainingTaskList(param){
       getPlatformTrainingTaskList(param).then(response => {
-        console.log("res:",response.data.trainJobs)
         if(response.success){
           this.taskList = response.data.trainJobs;
           this.total = response.data.totalSize
