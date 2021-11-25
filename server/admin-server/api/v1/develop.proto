@@ -88,10 +88,10 @@ message NotebookEventListRequest {
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   //任务ID
   string id = 3[(validate.rules).string = {min_len: 1}];
-  //子任务序号，从1开始
-  int64 taskIndex = 4[(validate.rules).int64 = {gte:1,lt:100}];
-  //副本序号，从1开始
-  int64 replicaIndex = 5[(validate.rules).int64 = {gte:1,lt:100}];
+  //子任务序号，从0开始
+  int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lt:100}];
+  //副本序号，从0开始
+  int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lt:100}];
 }
 
 message NotebookEventListReply {
