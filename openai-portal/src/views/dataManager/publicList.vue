@@ -1,20 +1,11 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm
-        :search-form="searchForm"
-        :blur-name="'数据集名称 搜索'"
-        @searchData="getSearchData"
-      />
+      <searchForm :search-form="searchForm" :blur-name="'数据集名称 搜索'" @searchData="getSearchData" />
     </div>
     <div class="index">
-      <el-table
-        v-loading="loading"
-        :data="datasetList"
-        style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}"
-        :cell-style="{'text-align':'left'}"
-      >
+      <el-table v-loading="loading" :data="datasetList" style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
         <el-table-column label="数据集名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -40,6 +31,11 @@
             <span>{{ scope.row.desc }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="提供者">
+          <template slot-scope="scope">
+            <span>{{ scope.row.userName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -55,25 +51,13 @@
       </el-table>
     </div>
     <div class="block">
-      <el-pagination
-        :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]"
-        :page-size="searchData.pageSize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
-    <versionList
-      v-if="versionListVisible"
-      :data="row"
-      :type-change="typeChange"
-      @cancel="cancel"
-      @confirm="confirm"
-      @close="close"
-    />
+    <versionList v-if="versionListVisible" :data="row" :type-change="typeChange" @cancel="cancel" @confirm="confirm"
+      @close="close" />
   </div>
 </template>
 
@@ -183,6 +167,7 @@
     float: right;
     margin: 20px;
   }
+
   .searchForm {
     display: inline-block;
   }

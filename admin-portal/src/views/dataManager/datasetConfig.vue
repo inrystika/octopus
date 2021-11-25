@@ -31,7 +31,7 @@
     </div>
 </template>
 <script>
-    import { datasetType,addDatasetType,deleteDatasetType,updateDatasetType,datasetUse,addDatasetUse,deleteDatasetUse,updateDatasetUse } from "@/api/dataManager.js"
+    import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType, datasetUse, addDatasetUse, deleteDatasetUse, updateDatasetUse } from "@/api/dataManager.js"
     import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
@@ -55,36 +55,53 @@
                 dynamicFrame: []
             }
         },
-
         methods: {
             handleClose(tag, val) {
-                if (val === 'TYPE') {
-                    deleteDatasetType(tag.id).then(response => {
-                        if (response.success) {
-                            this.datasetType()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-                else {
-                    deleteDatasetUse(tag.id).then(response => {
-                        if (response.success) {
-                            this.datasetUse()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-
+                this.$confirm('此操作将永久删除该标签, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    if (val === 'TYPE') {
+                        deleteDatasetType(tag.id).then(response => {
+                            if (response.success) {
+                                this.datasetType()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                    else {
+                        deleteDatasetUse(tag.id).then(response => {
+                            if (response.success) {
+                                this.datasetUse()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             },
 
             showInput(val) {

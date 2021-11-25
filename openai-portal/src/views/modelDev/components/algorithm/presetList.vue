@@ -43,11 +43,6 @@
           <span>{{ parseTime(scope.row.createdAt) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="提供者">
-        <template slot-scope="scope">
-          <span>{{ scope.row.userName }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
