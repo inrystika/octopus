@@ -389,7 +389,7 @@ func (d *developDao) ListNotebookEventRecord(ctx context.Context, query *model.N
 		return nil, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	q := fmt.Sprintf("select notebook_id, type, title, remark from notebook_event_record where notebook_id = '%s' limit %d offset %d",
+	q := fmt.Sprintf("select notebook_id, type, title, remark from notebook_event_record where notebook_id = '%s' order by time desc limit %d offset %d",
 		query.NotebookId, query.PageSize, (query.PageIndex-1)*query.PageSize)
 	res, err = d.influxdb.Query(q)
 	if err != nil {
