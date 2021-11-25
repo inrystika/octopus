@@ -418,8 +418,6 @@ func (s *AlgorithmService) CopyAlgorithmVersion(ctx context.Context, req *api.Co
 		Version:           req.Version,
 		NewAlgorithmName:  req.NewAlgorithmName,
 		AlgorithmDescript: req.AlgorithmDescript,
-		ApplyId:           req.ApplyId,
-		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -562,6 +560,55 @@ func (s *AlgorithmService) BatchQueryAlgorithm(ctx context.Context, req *api.Bat
 	return &api.BatchQueryAlgorithmReply{
 		TotalSize:  reply.TotalSize,
 		Algorithms: algorithms,
+	}, nil
+}
+
+// 修改我的算法
+func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.UpdateMyAlgorithmRequest) (*api.UpdateMyAlgorithmReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		AlgorithmId:       req.AlgorithmId,
+		IsPrefab:          false,
+		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+// 修改我的算法版本
+func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdateMyAlgorithmVersionRequest) (*api.UpdateMyAlgorithmVersionReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		IsPrefab:          false,
+		AlgorithmId:       req.AlgorithmId,
+		Version:           req.Version,
+		AlgorithmDescript: req.AlgorithmDescript,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmVersionReply{
+		UpdatedAt: reply.UpdatedAt,
 	}, nil
 }
 
