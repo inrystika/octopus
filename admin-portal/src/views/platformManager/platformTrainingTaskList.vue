@@ -11,6 +11,11 @@
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="平台名称" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.platformName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="镜像" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.image.name+":"+scope.row.image.version }}</span>
