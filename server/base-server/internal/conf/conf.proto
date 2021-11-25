@@ -83,8 +83,8 @@ message Influxdb {
   string addr = 1;
   string username = 2;
   string password = 3;
-  string Database = 4;
-  string Precision = 5;
+  string database = 4;
+  string precision = 5;
 }
 
 message Data {

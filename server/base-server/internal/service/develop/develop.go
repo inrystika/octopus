@@ -19,6 +19,8 @@ import (
 
 	"server/common/log"
 
+	commapi "server/common/api/v1"
+
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
@@ -337,7 +339,7 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 		return nil, err
 	}
 	closes = append(closes, func(ctx context.Context) error {
-		return s.data.Cluster.DeleteService(ctx, nb.UserId, nbJob.Id)
+		return s.deleteService(ctx, nb, nbJob)
 	})
 
 	err = s.createIngress(ctx, nb, nbJob)
@@ -345,7 +347,7 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 		return nil, err
 	}
 	closes = append(closes, func(ctx context.Context) error {
-		return s.data.Cluster.DeleteIngress(ctx, nb.UserId, nbJob.Id)
+		return s.deleteIngress(ctx, nb, nbJob)
 	})
 
 	return resFunc, nil
@@ -429,6 +431,16 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			return err
 		}
 
+		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+			Time:       time.Now(),
+			NotebookId: nb.Id,
+			Type:       commapi.NotebookEventRecordType_CREATE,
+			Title:      fmt.Sprintf("%s create", nb.Name),
+		})
+		if err != nil { // 插入事件记录出错只打印
+			s.log.Error(ctx, "create notebook event record error:", err)
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -491,6 +503,16 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 				}
 			}
 		}()
+
+		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+			Time:       time.Now(),
+			NotebookId: nb.Id,
+			Type:       commapi.NotebookEventRecordType_START,
+			Title:      fmt.Sprintf("%s start", nb.Name),
+		})
+		if err != nil { // 插入事件记录出错只打印
+			s.log.Error(ctx, "create notebook event record error:", err)
+		}
 
 		return nil
 	})
@@ -578,9 +600,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Name:  taskName,
-							Image: startJobInfo.imageAddr,
-							Command: []string{"sh" ,"-c" ,startJobInfo.command},
+							Name:    taskName,
+							Image:   startJobInfo.imageAddr,
+							Command: []string{"sh", "-c", startJobInfo.command},
 							Resources: v1.ResourceRequirements{
 								Requests: startJobInfo.resources,
 								Limits:   startJobInfo.resources,
@@ -681,6 +703,16 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		Time:       time.Now(),
+		NotebookId: nb.Id,
+		Type:       commapi.NotebookEventRecordType_STOP,
+		Title:      fmt.Sprintf("%s stop", nb.Name),
+	})
+	if err != nil { // 插入事件记录出错只打印
+		s.log.Error(ctx, "create notebook event record error:", err)
 	}
 
 	return &api.StopNotebookReply{Id: req.Id}, nil
@@ -890,5 +922,34 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 	return &api.NotebookEventListReply{
 		TotalSize:      totalSize,
 		NotebookEvents: notebookEvents,
+	}, nil
+}
+
+func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
+	query := &model.NotebookEventRecordQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	recordsTbl, totalSize, err := s.data.DevelopDao.ListNotebookEventRecord(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	records := make([]*api.NotebookEventRecord, 0)
+	for _, t := range recordsTbl {
+		r := &api.NotebookEventRecord{}
+		err := copier.Copy(r, t)
+		if err != nil {
+			return nil, err
+		}
+		r.Time = t.Time.Unix()
+		records = append(records, r)
+	}
+
+	return &api.ListNotebookEventRecordReply{
+		TotalSize: totalSize,
+		Records:   records,
 	}, nil
 }

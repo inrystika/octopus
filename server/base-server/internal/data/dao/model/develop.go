@@ -2,6 +2,7 @@ package model
 
 import (
 	api "server/base-server/api/v1"
+	v1 "server/common/api/v1"
 	"server/common/dao"
 	"time"
 
@@ -95,4 +96,18 @@ type NotebookEventQuery struct {
 	Id           string
 	TaskIndex    int
 	ReplicaIndex int
+}
+
+type NotebookEventRecord struct {
+	Time       time.Time
+	NotebookId string
+	Type       v1.NotebookEventRecordType
+	Title      string
+	Remark     string
+}
+
+type NotebookEventRecordQuery struct {
+	PageIndex  int
+	PageSize   int
+	NotebookId string
 }
