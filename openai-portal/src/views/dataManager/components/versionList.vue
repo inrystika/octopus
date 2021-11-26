@@ -300,4 +300,8 @@
 </script>
 
 <style lang="scss" scoped>
+  .block {
+    float: right;
+    margin: 20px;
+  }
 </style>
