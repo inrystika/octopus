@@ -10,7 +10,6 @@
         </el-col>
       </el-row>
       <el-input
-        
         v-model="subTaskInfo"
         type="textarea"
         :readonly="true"
