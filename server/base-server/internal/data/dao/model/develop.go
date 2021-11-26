@@ -102,7 +102,6 @@ type NotebookEventRecord struct {
 	Time       time.Time
 	NotebookId string
 	Type       v1.NotebookEventRecordType
-	Title      string
 	Remark     string
 }
 

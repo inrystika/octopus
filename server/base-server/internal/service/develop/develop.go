@@ -435,7 +435,6 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			Time:       time.Now(),
 			NotebookId: nb.Id,
 			Type:       commapi.NotebookEventRecordType_CREATE,
-			Title:      fmt.Sprintf("%s create", nb.Name),
 		})
 		if err != nil { // 插入事件记录出错只打印
 			s.log.Error(ctx, "create notebook event record error:", err)
@@ -508,7 +507,6 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			Time:       time.Now(),
 			NotebookId: nb.Id,
 			Type:       commapi.NotebookEventRecordType_START,
-			Title:      fmt.Sprintf("%s start", nb.Name),
 		})
 		if err != nil { // 插入事件记录出错只打印
 			s.log.Error(ctx, "create notebook event record error:", err)
@@ -709,7 +707,6 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		Time:       time.Now(),
 		NotebookId: nb.Id,
 		Type:       commapi.NotebookEventRecordType_STOP,
-		Title:      fmt.Sprintf("%s stop", nb.Name),
 	})
 	if err != nil { // 插入事件记录出错只打印
 		s.log.Error(ctx, "create notebook event record error:", err)

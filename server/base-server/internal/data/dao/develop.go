@@ -363,7 +363,7 @@ func (d *developDao) GetNotebookEvents(notebookEventQuery *model.NotebookEventQu
 func (d *developDao) CreateNotebookEventRecord(ctx context.Context, r *model.NotebookEventRecord) error {
 	err := d.influxdb.Write("notebook_event_record", r.Time,
 		map[string]string{"notebook_id": r.NotebookId},
-		map[string]interface{}{"type": int(r.Type), "title": r.Title, "remark": r.Remark})
+		map[string]interface{}{"type": int(r.Type), "remark": r.Remark})
 	if err != nil {
 		return err
 	}
@@ -389,7 +389,7 @@ func (d *developDao) ListNotebookEventRecord(ctx context.Context, query *model.N
 		return nil, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
 	}
 
-	q := fmt.Sprintf("select notebook_id, type, title, remark from notebook_event_record where notebook_id = '%s' order by time desc limit %d offset %d",
+	q := fmt.Sprintf("select notebook_id, type, remark from notebook_event_record where notebook_id = '%s' order by time desc limit %d offset %d",
 		query.NotebookId, query.PageSize, (query.PageIndex-1)*query.PageSize)
 	res, err = d.influxdb.Query(q)
 	if err != nil {
@@ -410,8 +410,7 @@ func (d *developDao) ListNotebookEventRecord(ctx context.Context, query *model.N
 			return nil, 0, errors.Errorf(err, errors.ErrorParseDurationFailed)
 		}
 		event.Type = v1.NotebookEventRecordType(eventType)
-		event.Title = row[3].(string)
-		event.Remark = row[4].(string)
+		event.Remark = row[3].(string)
 		records = append(records, event)
 	}
 

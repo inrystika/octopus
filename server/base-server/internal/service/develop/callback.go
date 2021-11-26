@@ -2,7 +2,6 @@ package develop
 
 import (
 	"context"
-	"fmt"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/pipeline"
@@ -43,7 +42,6 @@ func (s *developService) PipelineCallback(ctx context.Context, req *common.Pipel
 	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
 		nbJobUp.StartedAt = &req.CurrentTime
 		record.Type = commapi.NotebookEventRecordType_RUN
-		record.Title = fmt.Sprintf("%s run", nb.Name)
 	} else if pipeline.IsCompletedState(req.CurrentState) {
 		nbJobUp.StoppedAt = &req.CurrentTime
 		nbJobUp.Status = pipeline.STOPPED //转为stopped
@@ -60,7 +58,6 @@ func (s *developService) PipelineCallback(ctx context.Context, req *common.Pipel
 		}
 
 		record.Type = commapi.NotebookEventRecordType_STOP
-		record.Title = fmt.Sprintf("%s stop", nb.Name)
 	}
 
 	err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, nbUp)

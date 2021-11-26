@@ -160,8 +160,7 @@ message NotebookEventRecord {
   int64 time = 1;
   string notebookId = 2;
   common.api.v1.NotebookEventRecordType type = 3;
-  string title = 4;
-  string remark = 5;
+  string remark = 4;
 }
 
 message ListNotebookEventRecordRequest {
