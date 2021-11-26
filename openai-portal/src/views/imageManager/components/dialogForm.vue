@@ -127,14 +127,14 @@
 
         },
         created() {
-            const { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus } = this.row
+            const {  imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus } = this.row
             // 新建镜像
             if (this.flag) {
-                this.ruleForm = { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType: 2 }
+                this.ruleForm = {  imageDesc, imageName, imageVersion, imageAddr, sourceType: 2 }
             } else {
                 // 编辑镜像
                 this.id = this.row.id
-                this.ruleForm = { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus }
+                this.ruleForm = {  imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus }
                 if (this.ruleForm.imageStatus === 1 || this.ruleForm.imageStatus === 4) {
                     this.uploadData.data.id = this.id
                     this.uploadData.type = "imageManager"
@@ -152,7 +152,6 @@
                 imageName: "",
                 imageVersion: "",
                 imageDesc: "",
-                imageType: "",
                 sourceType: 2,
                 imageAddr: ""
             }
