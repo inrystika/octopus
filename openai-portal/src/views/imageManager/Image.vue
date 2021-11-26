@@ -26,16 +26,6 @@
                     <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageType(scope.row.imageType) }}</span>
-                </template>
-            </el-table-column>
-            <!-- <el-table-column label="镜像状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>

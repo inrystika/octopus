@@ -9,12 +9,6 @@
             :show-close="close"
         >
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
-                <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
-                    <el-select v-model="ruleForm.imageType" placeholder="请选择镜像类型" :disabled="!flag||showUpload">
-                        <el-option label="Notebook镜像" :value="1" />
-                        <el-option label="训练镜像" :value="2" />
-                    </el-select>
-                </el-form-item>
                 <el-form-item label="镜像名称" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="imageName">
                     <el-input v-model="ruleForm.imageName" :disabled="!flag||showUpload" />
                 </el-form-item>
@@ -95,9 +89,6 @@
                 uploadData: { data: {}, type: undefined },
                 CreateFormVisible: true,
                 rules: {
-                    imageType: [
-                        { required: true, message: '请选择镜像类型', trigger: 'change' }
-                    ],
                     imageName: [
                         { required: true, message: '请输入镜像名称', trigger: 'blur' },
                         { validator: checkName, trigger: "blur" }
