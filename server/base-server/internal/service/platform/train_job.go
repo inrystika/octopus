@@ -588,7 +588,11 @@ func (s *platformTrainJobService) TrainJobList(ctx context.Context, req *api.Pla
 		if err != nil {
 			return nil, err
 		}
-
+		platform, err := s.getPlatformInfo(ctx, job.PlatformId)
+		if err != nil {
+			return nil, err
+		}
+		trainJob.PlatformName = platform.Name
 		trainJobs = append(trainJobs, trainJob)
 	}
 
@@ -1032,15 +1036,10 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		return err
 	}
 	if url, ok := reply.Config[common.PlatformKeyJobStatusCallbackAddr]; ok {
-		platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
+		platform, err := s.getPlatformInfo(ctx, platformId)
 		if err != nil {
 			return err
 		}
-		if len(platformReply.Platforms) <= 0 {
-			s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform ClientSecret:"+info.JobId)
-			return errors.Errorf(err, errors.ErrorDBFindEmpty)
-		}
-		platform := platformReply.Platforms[0]
 		err = s.data.Platform.UpdateJobStatus(ctx, url, platform.ClientSecret, info)
 		if err != nil {
 			return err
@@ -1049,4 +1048,18 @@ func (s *platformTrainJobService) updatePlatfromJobStatus(ctx context.Context, p
 		s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform Config:"+info.JobId)
 	}
 	return nil
+}
+
+func (s *platformTrainJobService) getPlatformInfo(ctx context.Context, platformId string) (*api.Platform, error) {
+
+	platformReply, err := s.platformService.BatchGetPlatform(ctx, &api.BatchGetPlatformRequest{Ids: []string{platformId}})
+	if err != nil {
+		return nil, err
+	}
+	if len(platformReply.Platforms) <= 0 {
+		s.log.Info(ctx, "updatePlatfromJobStatus failed, cannot find platform ClientSecret")
+		return nil, errors.Errorf(err, errors.ErrorDBFindEmpty)
+	}
+	platform := platformReply.Platforms[0]
+	return platform, nil
 }

@@ -69,17 +69,6 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		return nil, errors.Errorf(nil, errors.ErrorDatasetRepeat)
 	}
 
-	// 检查数据类型id
-	datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
-	if err != nil {
-		return nil, err
-	}
-	// 检查数据用途id
-	datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
-	if err != nil {
-		return nil, err
-	}
-
 	err = s.data.DatasetDao.CreateDataset(ctx, dataset)
 	if err != nil {
 		return nil, err
@@ -99,10 +88,24 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		return nil, err
 	}
 
-	// 新增数据类型引用
-	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetType.Lable.Id})
-	// 新增数据用途引用
-	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetApply.Lable.Id})
+	// 检查数据类型id
+	if req.TypeId != "" {
+		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
+		if err != nil {
+			return nil, err
+		}
+		// 新增数据类型引用
+		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetType.Lable.Id})
+	}
+	// 检查数据用途id
+	if req.ApplyId != "" {
+		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
+		if err != nil {
+			return nil, err
+		}
+		// 新增数据用途引用
+		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetApply.Lable.Id})
+	}
 
 	return &api.CreateDatasetReply{
 		Id:      datasetId,
@@ -594,6 +597,9 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 	if err != nil {
 		return nil, err
 	}
+	if dataset.SpaceId != req.SpaceId || dataset.UserId != req.UserId || dataset.SourceType != int(req.SourceType) {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetNoPermission)
+	}
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
@@ -713,6 +719,14 @@ func (s *datasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 }
 
 func (s *datasetService) UpdateDatasetVersion(ctx context.Context, req *api.UpdateDatasetVersionRequest) (*api.UpdateDatasetVersionReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+	if dataset.SpaceId != req.SpaceId || dataset.UserId != req.UserId || dataset.SourceType != int(req.SourceType) {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetNoPermission)
+	}
+
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
 	if err != nil {
 		return nil, err

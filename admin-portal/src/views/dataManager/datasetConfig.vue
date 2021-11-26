@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="title">数据集类型</div>
+        <div class="title">数据类型</div>
         <div>
             <el-tag v-for="(tag,index) in dynamicType" :key="index" :closable="tag.sourceType!==1"
                 :disable-transitions="false" @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
@@ -14,7 +14,7 @@
             <el-button v-else class="button-new-tag" size="small" @click="showInput('TYPE')">{{'+ 新标签'}}</el-button>
         </div>
         <el-divider></el-divider>
-        <div class="title">数据集用途</div>
+        <div class="title">标注类型</div>
         <div>
             <el-tag v-for="(tag,index) in dynamicFrame" :key="index" :closable="tag.sourceType!==1"
                 :disable-transitions="false" @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
