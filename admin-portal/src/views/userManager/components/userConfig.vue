@@ -15,7 +15,7 @@
         <el-form-item>
           <div v-for="(item, index) in ruleForm.userConfig" :key="index">
             <el-form-item>
-              <strong>{{item.key+": "}}</strong>
+              <strong>{{item.title+": "}}</strong>
               <el-popover
                 placement="top"
                 width="400"
@@ -27,8 +27,11 @@
               </el-popover>             
               <el-input v-if="item.type === 'input'" v-model="item.value" style="width: 40%;"></el-input>
               <el-radio-group v-if="item.type === 'radio'" v-model="item.value">
-                <el-radio :label="'yes'"></el-radio>
-                <el-radio :label="'no'"></el-radio>
+                <span v-for="(option, index) in item.options" :key="index">
+                  <el-radio :label="option" style="margin-right:15px"></el-radio>
+                </span>
+                <!-- <el-radio :label="'yes'"></el-radio>
+                <el-radio :label="'no'"></el-radio> -->
               </el-radio-group>
             </el-form-item>
           </div>

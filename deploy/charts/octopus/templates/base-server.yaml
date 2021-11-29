@@ -150,6 +150,7 @@ data:
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       develop:
+        jpyCommand: {{ .Values.baseserver.service.develop.jpyCommand }}
         jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
       resource:
@@ -164,17 +165,6 @@ data:
         discoveryLeaderLeaseLockName: resourcediscovery
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
-      platform:
-        configKeys:
-        - key: jobStatusCallbackAddr
-          title: 任务状态回调地址
-          type: input
-      user:
-        configKeys:
-        - key: jointCloudPermission
-          title: 云际权限
-          type: radio
-          options: yes,no
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"

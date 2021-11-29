@@ -14,7 +14,7 @@
         <el-form-item>
           <div v-for="(item, index) in ruleForm.platformConfig" :key="index">
             <el-form-item>
-              <strong>{{item.key+": "}}</strong>
+              <strong>{{item.title+": "}}</strong>
               <el-popover
                 placement="top"
                 width="400"
