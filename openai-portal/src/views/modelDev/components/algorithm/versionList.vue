@@ -23,17 +23,6 @@
             <span>{{ scope.row.userName }}</span>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="算法状态" props="status">
-          <template slot-scope="scope">
-            <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
-          </template>
-        </el-table-column> -->
-        <!-- <el-table-column label="上传进度" v-if="algorithmTabType == 1">
-          <template slot-scope="scope">
-            <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-              scope.row.progress+'%' }}</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="算法状态">
           <template slot-scope="scope">
             <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getAlgorithmStatus(scope.row.fileStatus)
