@@ -119,7 +119,7 @@
                             this.showLog = true
                             this.textarea = response.data
                         } else {
-                            this.textarea = ''
+                            this.textarea = '暂无相关日志'
                         }
                     })
                 } else {
@@ -144,7 +144,7 @@
                             this.timer2 = null;
                             clearTimeout(this.timer);
                             this.timer = null;
-                            this.textarea = ''
+                            this.textarea = '暂无相关日志'
                         }
                     })
                 }

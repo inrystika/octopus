@@ -65,11 +65,11 @@ service.interceptors.response.use(
         // }
     },
     error => {
-        Message({
-            message: '没有找到日志',
-            type: 'warning',
-            duration: 5 * 1000
-        })
+        // Message({
+        //     message: '没有找到日志',
+        //     type: 'warning',
+        //     duration: 5 * 1000
+        // })
         console.log("error:", error)
         // return Promise.reject(error)
     }
