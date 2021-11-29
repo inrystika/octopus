@@ -192,3 +192,12 @@ export async function updateDatasetUse(data) {
   })
   return res
 }
+// 修改数据集
+export async function editeDataSet(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/predataset/${params.datasetId}`,
+    method: "put",
+    params: { typeId: params.typeId, applyId: params.applyId, desc: params.desc }
+  })
+  return res
+}
