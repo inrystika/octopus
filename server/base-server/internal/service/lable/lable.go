@@ -17,12 +17,12 @@ import (
 
 var LABLE_DEFAULT_DESC = map[api.Relegation]map[api.Type][]string{
 	api.Relegation_LABLE_RELEGATION_DATASET: {
-		api.Type_LABLE_TYPE_DATASET_TYPE:  {"图像", "视频", "音频", "文本", "其他"},
-		api.Type_LABLE_TYPE_DATASET_APPLY: {"图像分类", "目标检测", "目标跟踪", "语义分割", "文本分类", "中文分词", "音频分类", "数据增强", "其他"},
+		api.Type_LABLE_TYPE_DATASET_TYPE:  {"图像", "视频", "音频", "文本"},
+		api.Type_LABLE_TYPE_DATASET_APPLY: {"图像分类", "目标检测", "目标跟踪", "语义分割", "文本分类", "中文分词", "音频分类", "数据增强"},
 	},
 	api.Relegation_LABLE_RELEGATION_ALGORITHM: {
-		api.Type_LABLE_TYPE_ALGORITHM_APPLY:     {"图像分类", "目标检测", "目标跟踪", "语义分割", "文本分类", "中文分词", "音频分类", "模型优化", "其他"},
-		api.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK: {"TensorFlow", "Pytorch", "MindSpore", "Keras", "其他"},
+		api.Type_LABLE_TYPE_ALGORITHM_APPLY:     {"图像分类", "目标检测", "目标跟踪", "语义分割", "文本分类", "中文分词", "音频分类", "模型优化"},
+		api.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK: {"TensorFlow", "Pytorch", "MindSpore", "Keras"},
 	},
 }
 
