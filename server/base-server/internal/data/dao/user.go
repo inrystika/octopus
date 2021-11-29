@@ -152,7 +152,14 @@ func (d *userDao) UpdateConfig(ctx context.Context, userId string, config map[st
 		return commerrors.Errorf(nil, commerrors.ErrorInvalidRequestParameter)
 	}
 
-	c := &model.UserConfig{UserId: userId, Config: config}
+	configUp := make(map[string]string)
+	for k, v := range config {
+		if v != "" {
+			configUp[k] = v
+		}
+	}
+
+	c := &model.UserConfig{UserId: userId, Config: configUp}
 	res := db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(c)

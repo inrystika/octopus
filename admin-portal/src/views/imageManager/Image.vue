@@ -301,18 +301,6 @@
                     });
                 });
             }
-            // 群组详情
-            // getGroupDetail(id) {
-            //     groupDetail(id).then(response => {
-            //         if (response.success) {
-            //             console.log(response.data.workspace.name)
-            //             return response.data.workspace.name
-            //         }
-            //         else { return '' }
-
-            //     })
-            // }
-
         }
     }
 </script>

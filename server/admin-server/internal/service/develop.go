@@ -127,3 +127,24 @@ func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.Note
 	}
 	return reply, nil
 }
+
+func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
+	innerReq := &innerapi.ListNotebookEventRecordRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DevelopClient.ListNotebookEventRecord(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListNotebookEventRecordReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
