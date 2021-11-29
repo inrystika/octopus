@@ -41,7 +41,7 @@
         </div>
         <div>
             <el-row>
-                <el-input v-model="textarea" type="textarea" :rows="20" />
+                <el-input v-model="textarea" type="textarea" :rows="20" :readonly="true"  />
             </el-row>
         </div>
     </div>
