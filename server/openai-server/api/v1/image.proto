@@ -80,17 +80,16 @@ service ImageService {
 message ImageDetail {
   string id = 1;
   string imageName = 2;
-  int32 imageType = 3;
-  string imageDesc = 4;
-  string imageAddr = 5;
-  int32 sourceType = 6;
-  string spaceId = 7;
-  string userId = 8;
-  int64 createdAt = 10;
-  int64 updatedAt = 11;
-  int32 imageStatus = 12;
-  string username = 13;
-  string imageVersion = 14;
+  string imageDesc = 3;
+  string imageAddr = 4;
+  int32 sourceType = 5;
+  string spaceId = 6;
+  string userId = 7;
+  int64 createdAt = 8;
+  int64 updatedAt = 9;
+  int32 imageStatus = 10;
+  string username = 11;
+  string imageVersion = 12;
 }
 
 message UserImage {
@@ -105,12 +104,11 @@ message ListPreImageRequest {
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
-  int32 imageType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
-  int32 sourceType = 8[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
-  int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
-  string imageVersion = 10[(validate.rules).string = {max_len: 50}];
-  string searchKey = 11[(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 12[(validate.rules).string = {max_len: 50}];
+  int32 sourceType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 imageStatus = 8[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
+  string imageVersion = 9[(validate.rules).string = {max_len: 50}];
+  string searchKey = 10[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 11[(validate.rules).string = {max_len: 50}];
 }
 
 message ListPreImageReply {
@@ -125,12 +123,11 @@ message ListUserImageRequest {
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
-  int32 imageType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
-  int32 sourceType = 8[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
-  int32 imageStatus = 9[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
-  string imageVersion = 10[(validate.rules).string = {max_len: 50}];
-  string searchKey = 11[(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 12[(validate.rules).string = {max_len: 50}];
+  int32 sourceType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 imageStatus = 8[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
+  string imageVersion = 9[(validate.rules).string = {max_len: 50}];
+  string searchKey = 10[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 11[(validate.rules).string = {max_len: 50}];
 }
 
 message ListUserImageReply {
@@ -146,12 +143,11 @@ message ListCommImageRequest {
   string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
   string spaceId = 7[(validate.rules).string = {max_len: 36}];
-  int32 imageType = 8[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
-  int32 sourceType = 9[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
-  int32 imageStatus = 10[(validate.rules).int32 = {in: [1,2,3,4], ignore_empty: true}];
-  string imageVersion = 11[(validate.rules).string = {max_len: 50}];
-  string searchKey = 12[(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 13[(validate.rules).string = {max_len: 50}];
+  int32 sourceType = 10[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
+  int32 imageStatus = 11[(validate.rules).int32 = {in: [1,2,3,4], ignore_empty: true}];
+  string imageVersion = 12[(validate.rules).string = {max_len: 50}];
+  string searchKey = 13[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 14[(validate.rules).string = {max_len: 50}];
 }
 
 message ListCommImageReply {
@@ -162,10 +158,9 @@ message ListCommImageReply {
 message AddImageRequest {
   string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1, max_len:50}];
   string imageVersion = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$",min_len: 1, max_len: 50}];
-  int32 imageType = 3[(validate.rules).int32 = {in: [1,2]}];
-  string imageDesc = 4;
-  string imageAddr = 5[(validate.rules).string = {max_len: 254}];
-  int32 sourceType = 6[(validate.rules).int32 = {in: [1,2]}];
+  string imageDesc = 3;
+  string imageAddr = 4[(validate.rules).string = {max_len: 254}];
+  int32 sourceType = 5[(validate.rules).int32 = {in: [1,2]}];
 }
 
 message AddImageReply {
@@ -195,9 +190,8 @@ message UpdateImageRequest {
   string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
   string imageName = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len:50}];
   string imageVersion = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", max_len: 50}];
-  int32 imageType = 4[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
-  string imageDesc = 5;
-  string imageAddr = 6[(validate.rules).string = {max_len: 254}];
+  string imageDesc = 4;
+  string imageAddr = 5[(validate.rules).string = {max_len: 254}];
   // ImageSourceType sourceType = 6;
   // string spaceId = 7;
   // string userId = 8;

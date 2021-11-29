@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data/cluster"
 	"server/base-server/internal/data/dao"
@@ -50,7 +51,8 @@ type Data struct {
 	JointCloud          jointcloud.JointCloud
 }
 
-func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
+	confData := bc.Data
 	d := &Data{}
 
 	db, err := dbInit(confData)
@@ -58,9 +60,12 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 
-	influxdb, _ := influxdb.NewInfluxdb(confData)
+	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
-		return nil, nil, err
+		if !bc.App.IsDev {
+			return nil, nil, err
+		}
+		log.Error(context.TODO(), err)
 	}
 
 	d.UserDao = dao.NewUserDao(db, logger)
@@ -243,7 +248,7 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	err = db.AutoMigrate(&platformModel.Platform{})
 	if err != nil {
 		return nil, err

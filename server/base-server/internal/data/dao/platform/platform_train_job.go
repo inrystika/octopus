@@ -128,7 +128,7 @@ func (d *platformTrainJobDao) GetTrainJobList(ctx context.Context, query *model.
 	}
 
 	if query.OrderBy != "" {
-		sortBy = query.OrderBy
+		orderBy = query.OrderBy
 	}
 
 	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
