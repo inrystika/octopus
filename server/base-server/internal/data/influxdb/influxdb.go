@@ -15,7 +15,7 @@ type Influxdb interface {
 	//查询
 	Query(cmd string) (res []influxdbClient.Result, err error)
 	//写入
-	Write(measurement string, tags map[string]string, fields map[string]interface{}) (err error)
+	Write(measurement string, time time.Time, tags map[string]string, fields map[string]interface{}) (err error)
 }
 
 type influxbd struct {
@@ -76,11 +76,11 @@ func (i *influxbd) Query(cmd string) (res []influxdbClient.Result, err error) {
 	return res, nil
 }
 
-func (i *influxbd) Write(measurement string, tags map[string]string, fields map[string]interface{}) (err error) {
+func (i *influxbd) Write(measurement string, time time.Time, tags map[string]string, fields map[string]interface{}) (err error) {
 
 	point := influxdbClient.Point{
 		Measurement: measurement,
-		Time:        time.Now().UTC(),
+		Time:        time,
 		Fields:      fields,
 		Tags:        tags,
 	}
