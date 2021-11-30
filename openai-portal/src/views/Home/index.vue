@@ -1,31 +1,16 @@
 <template>
     <div class="firstPage">
-        <header1 />
-        <banner1 />
         <login />
-        <description />
-        <banner2 class="banner" />
-        <description2 />
     </div>
 </template>
 
 <script>
-    import header1 from "./header1.vue";
-    import banner1 from "./banner1.vue";
-    import banner2 from "./banner2.vue";
     import login from "./login.vue";
-    import description from './description.vue'
-    import description2 from './description2.vue';
 
     export default {
         name: "FirstPage",
         components: {
-            header1,
-            banner1,
-            banner2,
             login,
-            description,
-            description2
         },
         data() {
             return {
