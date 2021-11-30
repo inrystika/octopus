@@ -351,6 +351,43 @@ func (s *DatasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 	return reply, nil
 }
 
+func (s *DatasetService) UpdatePreDataset(ctx context.Context, req *api.UpdatePreDatasetRequest) (*api.UpdatePreDatasetReply, error) {
+	reply, err := s.data.DatasetClient.UpdateDataset(ctx, &innerapi.UpdateDatasetRequest{
+		SpaceId:    "",
+		UserId:     "",
+		Id:         req.DatasetId,
+		SourceType: innerapi.DatasetSourceType_DST_PRE,
+		TypeId:     req.TypeId,
+		ApplyId:    req.ApplyId,
+		Desc:       req.Desc,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreDatasetReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+func (s *DatasetService) UpdatePreDatasetVersion(ctx context.Context, req *api.UpdatePreDatasetVersionRequest) (*api.UpdatePreDatasetVersionReply, error) {
+	reply, err := s.data.DatasetClient.UpdateDatasetVersion(ctx, &innerapi.UpdateDatasetVersionRequest{
+		SpaceId:    "",
+		UserId:     "",
+		DatasetId:  req.DatasetId,
+		Version:    req.Version,
+		SourceType: innerapi.DatasetSourceType_DST_PRE,
+		Desc:       req.Desc,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreDatasetVersionReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
 func (s *DatasetService) assignValue(ctx context.Context, datasets []*api.Dataset) error {
 	if len(datasets) > 0 {
 		userIdMap := map[string]interface{}{}

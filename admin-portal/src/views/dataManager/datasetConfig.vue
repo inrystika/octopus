@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="title">数据集类型</div>
+        <div class="title">数据类型</div>
         <div>
             <el-tag v-for="(tag,index) in dynamicType" :key="index" :closable="tag.sourceType!==1"
                 :disable-transitions="false" @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
@@ -14,7 +14,7 @@
             <el-button v-else class="button-new-tag" size="small" @click="showInput('TYPE')">{{'+ 新标签'}}</el-button>
         </div>
         <el-divider></el-divider>
-        <div class="title">数据集用途</div>
+        <div class="title">标注类型</div>
         <div>
             <el-tag v-for="(tag,index) in dynamicFrame" :key="index" :closable="tag.sourceType!==1"
                 :disable-transitions="false" @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
@@ -31,7 +31,7 @@
     </div>
 </template>
 <script>
-    import { datasetType,addDatasetType,deleteDatasetType,updateDatasetType,datasetUse,addDatasetUse,deleteDatasetUse,updateDatasetUse } from "@/api/dataManager.js"
+    import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType, datasetUse, addDatasetUse, deleteDatasetUse, updateDatasetUse } from "@/api/dataManager.js"
     import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
@@ -55,36 +55,53 @@
                 dynamicFrame: []
             }
         },
-
         methods: {
             handleClose(tag, val) {
-                if (val === 'TYPE') {
-                    deleteDatasetType(tag.id).then(response => {
-                        if (response.success) {
-                            this.datasetType()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-                else {
-                    deleteDatasetUse(tag.id).then(response => {
-                        if (response.success) {
-                            this.datasetUse()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-
+                this.$confirm('此操作将永久删除该标签, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    if (val === 'TYPE') {
+                        deleteDatasetType(tag.id).then(response => {
+                            if (response.success) {
+                                this.datasetType()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                    else {
+                        deleteDatasetUse(tag.id).then(response => {
+                            if (response.success) {
+                                this.datasetUse()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             },
 
             showInput(val) {

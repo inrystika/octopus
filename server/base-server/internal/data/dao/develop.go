@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/influxdb"
+	v1 "server/common/api/v1"
 	"server/common/errors"
 	"server/common/transaction"
 	"server/common/utils"
@@ -33,6 +34,9 @@ type DevelopDao interface {
 	ListNotebookJob(ctx context.Context, query *model.NotebookJobQuery) ([]*model.NotebookJob, error)
 	//获取Notebook事件
 	GetNotebookEvents(notebookEventQuery *model.NotebookEventQuery) ([]*model.NotebookEvent, int64, error)
+
+	CreateNotebookEventRecord(ctx context.Context, r *model.NotebookEventRecord) error
+	ListNotebookEventRecord(ctx context.Context, query *model.NotebookEventRecordQuery) ([]*model.NotebookEventRecord, int64, error)
 }
 
 type developDao struct {
@@ -354,4 +358,61 @@ func (d *developDao) GetNotebookEvents(notebookEventQuery *model.NotebookEventQu
 	}
 
 	return events, totalSize, nil
+}
+
+func (d *developDao) CreateNotebookEventRecord(ctx context.Context, r *model.NotebookEventRecord) error {
+	err := d.influxdb.Write("notebook_event_record", r.Time,
+		map[string]string{"notebook_id": r.NotebookId},
+		map[string]interface{}{"type": int(r.Type), "remark": r.Remark})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *developDao) ListNotebookEventRecord(ctx context.Context, query *model.NotebookEventRecordQuery) ([]*model.NotebookEventRecord, int64, error) {
+	records := make([]*model.NotebookEventRecord, 0)
+
+	countQuery := fmt.Sprintf("select count(remark) from notebook_event_record where notebook_id = '%s'", query.NotebookId)
+	res, err := d.influxdb.Query(countQuery)
+	if err != nil {
+		return nil, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	if len(res) == 0 || len(res[0].Series) == 0 || len(res[0].Series[0].Values) == 0 || len(res[0].Series[0].Values[0]) < 2 {
+		return records, 0, nil
+	}
+
+	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
+	if err != nil {
+		return nil, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	q := fmt.Sprintf("select notebook_id, type, remark from notebook_event_record where notebook_id = '%s' order by time desc limit %d offset %d",
+		query.NotebookId, query.PageSize, (query.PageIndex-1)*query.PageSize)
+	res, err = d.influxdb.Query(q)
+	if err != nil {
+		return nil, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	for _, row := range res[0].Series[0].Values {
+		event := &model.NotebookEventRecord{}
+		ts := row[0].(string)
+		time, err := time.Parse(time.RFC3339, ts)
+		if err != nil {
+			return nil, 0, errors.Errorf(err, errors.ErrorParseDurationFailed)
+		}
+		event.Time = time
+		event.NotebookId = row[1].(string)
+		eventType, err := row[2].(json.Number).Int64()
+		if err != nil {
+			return nil, 0, errors.Errorf(err, errors.ErrorParseDurationFailed)
+		}
+		event.Type = v1.NotebookEventRecordType(eventType)
+		event.Remark = row[3].(string)
+		records = append(records, event)
+	}
+
+	return records, totalSize, nil
 }

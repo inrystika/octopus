@@ -37,7 +37,6 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
-		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
@@ -52,7 +51,6 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 		images[idx] = &pb.ImageDetail{
 			Id:           image.Id,
 			ImageName:    image.ImageName,
-			ImageType:    int32(image.ImageType),
 			ImageDesc:    image.ImageDesc,
 			ImageStatus:  int32(image.ImageStatus),
 			ImageAddr:    image.ImageAddr,
@@ -87,7 +85,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SpaceId:       session.GetWorkspace(),
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
-		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
@@ -106,7 +103,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 			Image: &pb.ImageDetail{
 				Id:           image.Id,
 				ImageName:    image.ImageName,
-				ImageType:    int32(image.ImageType),
 				ImageDesc:    image.ImageDesc,
 				ImageStatus:  int32(image.ImageStatus),
 				ImageAddr:    image.ImageAddr,
@@ -176,7 +172,6 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 		SpaceId:       session.GetWorkspace(),
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
-		ImageType:     innterapi.ImageType(req.ImageType),
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
@@ -192,7 +187,6 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 		images[idx] = &pb.ImageDetail{
 			Id:           image.Id,
 			ImageName:    image.ImageName,
-			ImageType:    int32(image.ImageType),
 			ImageDesc:    image.ImageDesc,
 			ImageAddr:    image.ImageAddr,
 			ImageVersion: image.ImageVersion,
@@ -237,7 +231,6 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 
 	reply, err := s.data.ImageClient.AddImage(ctx, &innterapi.AddImageRequest{
 		ImageName:    req.ImageName,
-		ImageType:    innterapi.ImageType(req.ImageType),
 		ImageDesc:    req.ImageDesc,
 		ImageAddr:    req.ImageAddr,
 		ImageVersion: req.ImageVersion,
@@ -313,7 +306,6 @@ func (s *ImageService) UpdateImage(ctx context.Context, req *pb.UpdateImageReque
 	reply, err := s.data.ImageClient.UpdateImage(ctx, &innterapi.UpdateImageRequest{
 		ImageId:      req.ImageId,
 		ImageName:    req.ImageName,
-		ImageType:    innterapi.ImageType(req.ImageType),
 		ImageDesc:    req.ImageDesc,
 		ImageAddr:    req.ImageAddr,
 		ImageVersion: req.ImageVersion,

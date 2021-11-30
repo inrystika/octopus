@@ -150,6 +150,7 @@ data:
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       develop:
+        jpyCommand: {{ .Values.baseserver.service.develop.jpyCommand }}
         jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
       resource:

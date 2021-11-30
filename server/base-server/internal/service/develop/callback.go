@@ -5,6 +5,7 @@ import (
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/pipeline"
+	commapi "server/common/api/v1"
 	"strings"
 )
 
@@ -18,43 +19,62 @@ func (s *developService) PipelineCallback(ctx context.Context, req *common.Pipel
 		return common.PipeLineCallbackOK
 	}
 
-	updateNb := &model.Notebook{
+	nb, err := s.data.DevelopDao.GetNotebook(ctx, nbJob.NotebookId)
+	if err != nil {
+		return common.PipeLineCallbackRE
+	}
+
+	nbUp := &model.Notebook{
 		NotebookJobId: req.Id,
 		Status:        req.CurrentState,
 	}
 
-	updateNbJob := &model.NotebookJob{
+	nbJobUp := &model.NotebookJob{
 		Id:     req.Id,
 		Status: req.CurrentState,
 	}
+
+	record := &model.NotebookEventRecord{
+		Time:       req.CurrentTime,
+		NotebookId: nb.Id,
+	}
+
 	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
-		updateNbJob.StartedAt = &req.CurrentTime
-	} else if strings.EqualFold(req.CurrentState, pipeline.FAILED) ||
-		strings.EqualFold(req.CurrentState, pipeline.SUCCEEDED) ||
-		strings.EqualFold(req.CurrentState, pipeline.STOPPED) {
-		updateNbJob.StoppedAt = &req.CurrentTime
-		updateNbJob.Status = pipeline.STOPPED //转为stopped
-		updateNb.Status = pipeline.STOPPED    //转为stopped
+		nbJobUp.StartedAt = &req.CurrentTime
+		record.Type = commapi.NotebookEventRecordType_RUN
+	} else if pipeline.IsCompletedState(req.CurrentState) {
+		nbJobUp.StoppedAt = &req.CurrentTime
+		nbJobUp.Status = pipeline.STOPPED //转为stopped
+		nbUp.Status = pipeline.STOPPED    //转为stopped
 
-		err = s.data.Cluster.DeleteIngress(ctx, req.UserID, req.Id)
+		err = s.deleteIngress(ctx, nb, nbJob)
 		if err != nil {
 			return common.PipeLineCallbackRE
 		}
 
-		err = s.data.Cluster.DeleteService(ctx, req.UserID, req.Id)
+		err = s.deleteService(ctx, nb, nbJob)
 		if err != nil {
 			return common.PipeLineCallbackRE
 		}
+
+		record.Type = commapi.NotebookEventRecordType_STOP
 	}
 
-	err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, updateNb)
+	err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, nbUp)
 	if err != nil {
 		return common.PipeLineCallbackRE
 	}
 
-	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, updateNbJob)
+	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, nbJobUp)
 	if err != nil {
 		return common.PipeLineCallbackRE
+	}
+
+	if pipeline.IsRunningOrCompletedState(req.CurrentState) {
+		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
+		if err != nil { // 插入事件记录出错只打印
+			s.log.Error(ctx, "create notebook event record error:", err)
+		}
 	}
 
 	return common.PipeLineCallbackOK
