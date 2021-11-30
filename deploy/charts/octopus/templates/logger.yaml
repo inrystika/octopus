@@ -170,7 +170,7 @@ data:
         drop { }
       }
 
-      if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "train_job" {
+      if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "train_job" or [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "platform_train_job" {
         mutate {
           copy => { "[kubernetes][pod][name]" => "_extend_octopus_log" }
        }
@@ -179,6 +179,15 @@ data:
 
     filter {
       if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "train_job" {
+        mutate {
+          replace => {"_extend_octopus_log" => "user/trainjob/%{_extend_octopus_log}" }
+          gsub => [
+            "_extend_octopus_log","-","/"
+          ]
+        }
+      }
+
+      if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "platform_train_job" {
         mutate {
           replace => {"_extend_octopus_log" => "user/trainjob/%{_extend_octopus_log}" }
           gsub => [
