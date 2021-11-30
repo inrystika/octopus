@@ -884,7 +884,7 @@ func (s *trainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobT
 	}
 	return &api.CopyJobTemplateReply{
 		TemplateId: newJobTemplateId,
-	},nil
+	}, nil
 }
 
 func (s *trainJobService) convertTemplateFromDb(jobDb *model.TrainJobTemplate) (*api.TrainJobTemplate, error) {
@@ -1011,7 +1011,7 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 	}
 
 	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
-		strings.EqualFold(info.Job.State, pipeline.FAILED){
+		strings.EqualFold(info.Job.State, pipeline.FAILED) {
 		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
 			SpaceId:          trainJob.WorkspaceId,
 			UserId:           trainJob.UserId,

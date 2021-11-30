@@ -2,7 +2,6 @@ package modeldeploy
 
 import (
 	"context"
-	"github.com/jinzhu/copier"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
@@ -10,6 +9,16 @@ import (
 	"server/base-server/internal/data/pipeline"
 	"server/common/log"
 	"server/common/utils"
+	"time"
+
+	"github.com/jinzhu/copier"
+	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+)
+
+const (
+	STATE_AVAILABLE = "Available"
+	STATE_CREATING  = "Creating"
+	STATE_FAILED    = "Failed"
 )
 
 type modelDeployService struct {
@@ -48,6 +57,36 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 	}
 
 	//s.modelDepBilling(context.Background())
+	ctx := context.Background()
+	s.data.Cluster.RegisterDeploymentInformerCallback(ctx,
+		func(obj interface{}) {},
+		func(old, obj interface{}) {
+			objSeldon, ok := obj.(*seldonv2.SeldonDeployment)
+			if !ok {
+				return
+			}
+			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, objSeldon.Name)
+			if err != nil {
+				return
+			}
+			newState := string(objSeldon.Status.State)
+			if newState == deployService.Status {
+				return
+			}
+			update := &model.ModelDeploy{
+				Id:     objSeldon.Name,
+				Status: newState,
+			}
+			now := time.Now()
+			if newState == STATE_AVAILABLE {
+				update.StartedAt = &now
+			} else if newState == STATE_FAILED {
+				update.CompletedAt = &now
+			}
+			s.data.ModelDeployDao.UpdateModelDeployService(ctx, update)
+		},
+		func(obj interface{}) {},
+	)
 
 	return s, nil
 }
@@ -137,6 +176,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 
 //获取模型服务详情
 func (s *modelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepInfoRequest) (*api.DepInfoReply, error) {
+
 	return nil, nil
 }
 

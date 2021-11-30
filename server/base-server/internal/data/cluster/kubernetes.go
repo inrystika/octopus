@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/common/errors"
 	"sync"
@@ -13,6 +14,8 @@ import (
 
 	"server/common/log"
 
+	seldonclientset "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
+	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/informers/externalversions"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -63,12 +66,19 @@ func NewCluster(confData *conf.Data, logger log.Logger) Cluster {
 }
 
 func newKubernetesCluster(config *rest.Config, logger log.Logger) Cluster {
+
+	seldonClientset, err := seldonclientset.NewForConfig(config)
+	if err != nil {
+		return nil
+	}
+
 	kc := &kubernetesCluster{
-		nodes:      make(map[string]*v1.Node),
-		kubeclient: kubernetes.NewForConfigOrDie(config),
-		vcClient:   vcclient.NewForConfigOrDie(config),
-		log:        log.NewHelper("Cluster", logger),
-		config:     config,
+		nodes:           make(map[string]*v1.Node),
+		kubeclient:      kubernetes.NewForConfigOrDie(config),
+		vcClient:        vcclient.NewForConfigOrDie(config),
+		seldonClientset: seldonClientset,
+		log:             log.NewHelper("Cluster", logger),
+		config:          config,
 	}
 
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
@@ -98,9 +108,10 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) Cluster {
 
 type kubernetesCluster struct {
 	sync.Mutex
-	log        *log.Helper
-	kubeclient *kubernetes.Clientset
-	vcClient   *vcclient.Clientset
+	log             *log.Helper
+	kubeclient      *kubernetes.Clientset
+	vcClient        *vcclient.Clientset
+	seldonClientset *seldonclientset.Clientset
 
 	nodeInformer infov1.NodeInformer
 
@@ -402,4 +413,16 @@ func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pv
 		return nil, err
 	}
 	return p, nil
+}
+
+func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
+
+	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClientset, 0)
+	deploymentInformer := informerFactory.Machinelearning().V1().SeldonDeployments().Informer()
+	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    onAdd,
+		DeleteFunc: onDelete,
+		UpdateFunc: onUpdate,
+	})
+	return nil
 }
