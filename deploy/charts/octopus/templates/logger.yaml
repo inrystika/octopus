@@ -189,7 +189,7 @@ data:
 
       if [kubernetes][labels][{{ .Values.common.resourceTagKey | replace "." "_" }}] == "platform_train_job" {
         mutate {
-          replace => {"_extend_octopus_log" => "user/trainjob/%{_extend_octopus_log}" }
+          replace => {"_extend_octopus_log" => "platform/trainjob/%{_extend_octopus_log}" }
           gsub => [
             "_extend_octopus_log","-","/"
           ]
