@@ -7,26 +7,25 @@ require (
 	github.com/bsm/redislock v0.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/evanphx/json-patch v4.9.0+incompatible
+	github.com/evanphx/json-patch v4.11.0+incompatible
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
-	github.com/json-iterator/go v1.1.10
+	github.com/json-iterator/go v1.1.11
 	github.com/minio/minio-go/v7 v7.0.11
+	github.com/seldonio/seldon-core/operator v0.0.0-20200924151300-70a36cdbfbf7
 	github.com/sony/sonyflake v1.0.0
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
+	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	golang.org/x/text v0.3.6
 	gonum.org/v1/gonum v0.8.2
-	google.golang.org/genproto v0.0.0-20210212180131-e7f2df4ecc2d
-	google.golang.org/grpc v1.36.0
+	google.golang.org/genproto v0.0.0-20210416161957-9910b6c460de
+	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/errgo.v2 v2.1.0
 	gopkg.in/resty.v1 v1.12.0
@@ -35,13 +34,14 @@ require (
 	gorm.io/gorm v1.21.7
 	gorm.io/plugin/soft_delete v1.0.0
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.18.18
-	k8s.io/apimachinery v0.18.18
-	k8s.io/client-go v0.18.18
+	k8s.io/api v0.21.3
+	k8s.io/apimachinery v0.21.3
+	k8s.io/client-go v12.0.0+incompatible
 	volcano.sh/volcano v0.0.0-00010101000000-000000000000
 )
 
 replace (
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.3.1
 	k8s.io/api => k8s.io/api v0.18.18
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.18
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.18

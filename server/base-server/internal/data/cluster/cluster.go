@@ -3,6 +3,8 @@ package cluster
 import (
 	"context"
 
+	"server/base-server/internal/common"
+
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -31,4 +33,5 @@ type Cluster interface {
 	CreateAndListenJob(ctx context.Context, job *batchv1.Job, callback func(e error)) error
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
+	RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error
 }

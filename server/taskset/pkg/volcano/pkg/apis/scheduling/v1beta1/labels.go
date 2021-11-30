@@ -49,3 +49,7 @@ const WillEvictAnnotationValue = "YES"
 const PriNodeNameAnnotationKey = "PriNodeNameAnnotationKey"
 
 const EvictsAnnotationKey = "EvictsAnnotationKey"
+
+const PoolBindingNodeLabelKeyFormat = "openi.octopus.resourcepool.%s"
+const DefaultPoolName = "common-pool"
+const PoolBindingNodeLabelValue = "bound"
