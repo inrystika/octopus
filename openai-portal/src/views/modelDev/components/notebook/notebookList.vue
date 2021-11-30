@@ -59,12 +59,22 @@
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
             <!-- <el-button type="text" @click="saveAlgorithm(scope.row)">保存算法</el-button> -->
           </div>
-          <el-button
-            v-if="({'running':true})[scope.row.status] || false"
-            type="text"
-            style="padding-right:10px"
-            @click="jumpUrl(scope.row.url)"
-          >打开</el-button>
+          <el-popover
+            placement="top-start"
+          >
+            <div v-for="(item,index) in scope.row.tasks" :key="index">
+              <!-- <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button> -->
+              <el-button type="text" @click="jumpUrl(item.url)">子任务{{ index + 1 }}</el-button>
+            </div>
+            <el-button
+              v-if="({'running':true})[scope.row.status] || false"
+              type="text"
+              style="padding-right:10px"          
+              slot="reference"
+            >
+              打开
+            </el-button>
+          </el-popover>
           <el-button
             v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
             slot="reference"
