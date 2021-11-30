@@ -19,16 +19,7 @@
             <span>{{ parseTime(scope.row.createdAt) }}</span>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="数据集状态" props="status">
-          <template slot-scope="scope">
-            <span>{{ getDatasetStatus(scope.row.status) }}</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="数据集状态" v-if="typeChange===1">
-          <!-- <template slot-scope="scope">
-            <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-              scope.row.progress+'%' }}</span>
-          </template> -->
           <template slot-scope="scope">
             <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getDatasetStatus(scope.row.status) }}</span>
             <span v-if="scope.row.progress&&scope.row.progress!=0">{{ "上传中" }}</span>
