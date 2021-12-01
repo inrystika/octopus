@@ -1,38 +1,36 @@
 syntax = "proto3";
 
-package baseserver.api.v1;
+package adminserver.api.v1;
 
-option go_package = "server/base-server/api/v1;v1";
+option go_package = "server/admin-server/api/v1;v1";
 
+
+
+import "google/api/annotations.proto";
 import "validate/validate.proto";
 
-
 service ModelDeployService {
-  //创建部署任务
-  rpc DeployModel (DepRequest) returns (DepReply);
-  //停止部署任务
-  rpc StopDepModel (StopDepRequest) returns (StopDepReply);
-  //删除部署任务
-  rpc DeleteDepModel (DeleteDepRequest) returns (DeleteDepReply);
-  //获取部署任务详情
-  rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply);
-  //获取部署任务列表
-  rpc ListDepModel(DepListRequest) returns (DepListReply);
-  //获取任务事件列表
-  rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply);
-}
 
-message DepRequest {
-  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
-  string desc = 2;
-  string serviceType = 3;
-  string modelType = 4;
-  string modelId = 5[(validate.rules).string = {min_len: 1}];
-  string modelVersion = 6[(validate.rules).string = {min_len: 1}];
-  string resourceType = 7;
-  string resourceSpecName = 8;
-  string userId = 9;
-  string workspaceId = 10;
+    // 获取模型部署详情
+    rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply){
+       option (google.api.http) = {
+          get: "/v1/deploymanage/modeldeploy/{id}"
+       };
+    };
+    // 获取模型部署列表
+    rpc ListDepModel(DepListRequest) returns (DepListReply){
+       option (google.api.http) = {
+         get: "/v1/deploymanage/modeldeploy"
+       };
+    };
+
+    // 获取模型部署事件列表
+    rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply) {
+      option (google.api.http) = {
+         get: "/v1/deploymanage/modeldeployevent"
+      };
+    };
+
 }
 
 message DepInfo {
@@ -60,27 +58,6 @@ message ResSpecPrice {
 	int64 price = 2;
 }
 
-message DepReply {
-  string serviceId = 1;
-  string serviceUrl = 2;
-  string message = 3;
-}
-
-message StopDepRequest {
-
-}
-
-message StopDepReply {
-
-}
-
-message DeleteDepRequest {
-
-}
-
-message DeleteDepReply {
-
-}
 message DepInfoRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
 }

@@ -2,15 +2,17 @@ package dao
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
-	"gorm.io/gorm"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/influxdb"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type modelDeployDao struct {
@@ -40,8 +42,9 @@ type ModelDeployDao interface {
 	UpdateModelDeployService(ctx context.Context, trainJob *model.ModelDeploy) error
 	//删除部署服务信息（软删除）
 	DeleteModelDeployService(ctx context.Context, id string) error
+	//查询部署服务事件列表
+	GetModelDeployEvents(deployEventQuery *model.DeployEventQuery) ([]*model.ModelDeployEvent, int64, error)
 }
-
 
 func (d *modelDeployDao) CreateModelDeployService(ctx context.Context, ModelDeploy *model.ModelDeploy) error {
 	res := d.db.Create(ModelDeploy)
@@ -177,4 +180,70 @@ func (d *modelDeployDao) DeleteModelDeployService(ctx context.Context, id string
 	return nil
 }
 
+func (d *modelDeployDao) GetModelDeployEvents(deployEventQuery *model.DeployEventQuery) ([]*model.ModelDeployEvent, int64, error) {
 
+	keyName := "object_name"
+	keyReason := "reason"
+	keyMessage := "message"
+
+	PageIndex := deployEventQuery.PageIndex
+	PageSize := deployEventQuery.PageSize
+	events := make([]*model.ModelDeployEvent, 0)
+
+	objectName := ""
+	if !deployEventQuery.IsMain {
+		objectName = fmt.Sprintf("%s-default-0-model", deployEventQuery.Id)
+	} else {
+		objectName = deployEventQuery.Id
+	}
+
+	countQuery := ""
+	if !deployEventQuery.IsMain {
+		countQuery = fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name =~ /^%s/", keyMessage, objectName)
+	} else {
+		countQuery = fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name = '%s'", keyMessage, objectName)
+	}
+
+	res, err := d.influxdb.Query(countQuery)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	if len(res) == 0 || len(res[0].Series) == 0 || len(res[0].Series[0].Values) == 0 || len(res[0].Series[0].Values[0]) < 2 {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	totalSize, err := res[0].Series[0].Values[0][1].(json.Number).Int64()
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	query := ""
+	if !deployEventQuery.IsMain {
+		query = fmt.Sprintf("select %s, %s, %s from octopus..events where object_name =~ /^%s/ LIMIT %d OFFSET %d",
+			keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+
+	} else {
+		query = fmt.Sprintf("select %s, %s, %s from octopus..events where object_name = '%s' LIMIT %d OFFSET %d",
+			keyName, keyReason, keyMessage, objectName, PageSize, (PageIndex-1)*PageSize)
+	}
+
+	res, err = d.influxdb.Query(query)
+
+	if err != nil {
+		return events, 0, errors.Errorf(err, errors.ErroInfluxdbFindFailed)
+	}
+
+	for _, row := range res[0].Series[0].Values {
+
+		event := &model.ModelDeployEvent{}
+		event.Timestamp = row[0].(string)
+		event.Name = row[1].(string)
+		event.Reason = row[2].(string)
+		event.Message = row[3].(string)
+		events = append(events, event)
+	}
+
+	return events, totalSize, nil
+}

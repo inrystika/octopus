@@ -33,6 +33,7 @@ type Data struct {
 	DatasetClient      api.DatasetServiceClient
 	SessionClient      session.SessionClient
 	BillingClient      api.BillingServiceClient
+	ModelDeployClient  api.ModelDeployServiceClient
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
@@ -75,5 +76,6 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		DatasetClient:      api.NewDatasetServiceClient(conn),
 		SessionClient:      session.NewSessionClient(confData, logger),
 		BillingClient:      api.NewBillingServiceClient(conn),
+		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
 	}, nil
 }

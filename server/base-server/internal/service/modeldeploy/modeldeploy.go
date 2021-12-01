@@ -177,15 +177,79 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 //获取模型服务详情
 func (s *modelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepInfoRequest) (*api.DepInfoReply, error) {
 
-	return nil, nil
+	deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	depInfo := &api.DepInfo{}
+	err = copier.Copy(depInfo, deployService)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DepInfoReply{
+		DepInfo: depInfo,
+	}, nil
 }
 
 //获取模型服务列表
 func (s *modelDeployService) ListDepModel(ctx context.Context, req *api.DepListRequest) (*api.DepListReply, error) {
-	return nil, nil
+
+	query := &model.ModelDeployListQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, err
+	}
+
+	deployservices, totalSize, err := s.data.ModelDeployDao.GetModelDeployServiceList(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	deployInfos := make([]*api.DepInfo, 0)
+	for _, svc := range deployservices {
+
+		depInfo := &api.DepInfo{}
+		err = copier.Copy(depInfo, svc)
+		if err != nil {
+			return nil, err
+		}
+		deployInfos = append(deployInfos, depInfo)
+	}
+
+	return &api.DepListReply{
+		TotalSize: totalSize,
+		DepInfos:  deployInfos,
+	}, nil
 }
 
 //获取模型事件
 func (s *modelDeployService) ListDepEvent(ctx context.Context, req *api.DepEventListRequest) (*api.DepEventListReply, error) {
-	return nil, nil
+	query := &model.DeployEventQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, err
+	}
+
+	events, totalSize, err := s.data.ModelDeployDao.GetModelDeployEvents(query)
+	if err != nil {
+		return nil, err
+	}
+
+	depEvents := make([]*api.DepEvent, 0)
+
+	for _, value := range events {
+		event := &api.DepEvent{}
+		event.Timestamp = value.Timestamp
+		event.Name = value.Name
+		event.Reason = value.Reason
+		event.Message = value.Message
+		depEvents = append(depEvents, event)
+	}
+
+	return &api.DepEventListReply{
+		TotalSize: totalSize,
+		DepEvents: depEvents,
+	}, nil
 }
