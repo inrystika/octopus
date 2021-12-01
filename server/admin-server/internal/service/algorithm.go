@@ -373,6 +373,45 @@ func (s *AlgorithmService) AddPreAlgorithm(ctx context.Context, req *api.AddAlgo
 	}, nil
 }
 
+// 修改预置算法
+func (s *AlgorithmService) UpdatePreAlgorithm(ctx context.Context, req *api.UpdatePreAlgorithmRequest) (*api.UpdatePreAlgorithmReply, error) {
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
+		SpaceId:           "",
+		UserId:            "",
+		IsPrefab:          true,
+		AlgorithmId:       req.AlgorithmId,
+		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreAlgorithmReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+// 修改预置算法版本
+func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdatePreAlgorithmVersionRequest) (*api.UpdatePreAlgorithmVersionReply, error) {
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
+		SpaceId:           "",
+		UserId:            "",
+		AlgorithmId:       req.AlgorithmId,
+		Version:           req.Version,
+		IsPrefab:          true,
+		AlgorithmDescript: req.AlgorithmDescript,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreAlgorithmVersionReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
 // 上传算法
 func (s *AlgorithmService) UploadPreAlgorithm(ctx context.Context, req *api.UploadPreAlgorithmRequest) (*api.UploadPreAlgorithmReply, error) {
 

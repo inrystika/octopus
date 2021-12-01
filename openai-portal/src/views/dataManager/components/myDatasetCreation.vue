@@ -6,14 +6,14 @@
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
           <el-input v-model="ruleForm.name" :disabled="disabled" placeholder="请输入数据集名称，长度在 4 到 30 个字符" />
         </el-form-item>
-        <el-form-item label="数据类型" :label-width="formLabelWidth" prop="type">
-          <el-select v-model="ruleForm.typeId" :disabled="disabled" placeholder="请选择数据集类型">
+        <el-form-item label="数据类型" :label-width="formLabelWidth" prop="typeId">
+          <el-select v-model="ruleForm.typeId" :disabled="disabled" placeholder="请选择数据类型">
             <el-option v-for="item in typeOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="数据集用途" :label-width="formLabelWidth" prop="type">
-          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择数据集用途">
+        <el-form-item label="标注类型" :label-width="formLabelWidth">
+          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择标注类型">
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -74,13 +74,6 @@
             {
               required: true,
               message: "请选择数据集类型",
-              trigger: "change"
-            }
-          ],
-          applyId: [
-            {
-              required: true,
-              message: "请选择数据集用途",
               trigger: "change"
             }
           ],

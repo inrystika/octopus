@@ -58,33 +58,51 @@
 
         methods: {
             handleClose(tag, val) {
-                if (val === 'TYPE') {
-                    deleteAlgorithmType(tag.id).then(response => {
-                        if (response.success) {
-                            this.algorithmType()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-                else {
-                    deleteFrameType(tag.id).then(response => {
-                        if (response.success) {
-                            this.frameType()
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-
+                this.$confirm('此操作将永久删除该标签, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    if (val === 'TYPE') {
+                        deleteAlgorithmType(tag.id).then(response => {
+                            if (response.success) {
+                                this.algorithmType()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                    else {
+                        deleteFrameType(tag.id).then(response => {
+                            if (response.success) {
+                                this.frameType()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             },
 
             showInput(val) {

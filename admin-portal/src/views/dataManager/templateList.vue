@@ -1,28 +1,14 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm
-        :search-form="searchForm"
-        :blur-name="'数据集名称 搜索'"
-        @searchData="getSearchData"
-      />
+      <searchForm :search-form="searchForm" :blur-name="'数据集名称 搜索'" @searchData="getSearchData" />
     </div>
-    <el-button
-      type="primary"
-      size="medium"
-      class="create"
-      @click="create"
-    >
+    <el-button type="primary" size="medium" class="create" @click="create">
       创建
     </el-button>
     <div class="index">
-      <el-table
-        v-loading="loading"
-        :data="datasetList"
-        style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}"
-        :cell-style="{'text-align':'left'}"
-      >
+      <el-table v-loading="loading" :data="datasetList" style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
         <el-table-column label="数据集名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -33,7 +19,7 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据用途">
+        <el-table-column label="标注类型">
           <template slot-scope="scope">
             <span>{{ scope.row.applyDesc }}</span>
           </template>
@@ -57,41 +43,21 @@
           <template slot-scope="scope">
             <el-button type="text" @click="getVersionList(scope.$index, scope.row)">版本列表</el-button>
             <el-button style="padding-right:10px" type="text" @click="createNewVersion(scope.row)">创建新版本</el-button>
+            <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="block">
-      <el-pagination
-        :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]"
-        :page-size="searchData.pageSize"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
-    <preDatasetCreation
-      v-if="preDatasetVisible"
-      @cancel="cancel"
-      @close="close"
-      @confirm="confirm"
-    />
-    <versionList
-      v-if="versionListVisible"
-      :data="data"
-      :version-list-type="versionListType"
-      @close="close"
-    />
-    <newVersion
-      v-if="newVersionVisible"
-      :row="data"
-      @cancel="cancel"
-      @confirm="confirm"
-      @close="close"
-    />
+    <preDatasetCreation v-if="preDatasetVisible" @cancel="cancel" @close="close" @confirm="confirm" />
+    <versionList v-if="versionListVisible" :data="data" :version-list-type="versionListType" @close="close" />
+    <newVersion v-if="newVersionVisible" :row="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <dataSetEdite v-if="editeDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -99,6 +65,7 @@
   import versionList from "./components/versionList.vue"
   import newVersion from "./components/newVersion.vue"
   import preDatasetCreation from "./components/preDatasetCreation.vue";
+  import dataSetEdite from "./components/dataSetEdite.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getPresetDatasetList } from "@/api/dataManager"
   import { parseTime } from '@/utils/index'
@@ -109,17 +76,19 @@
       versionList,
       newVersion,
       preDatasetCreation,
-      searchForm
+      searchForm,
+      dataSetEdite
     },
     props: {
-        payload: { type: Array, default: () => [] },
-        dataTabType: { type: Number, default: undefined }
+      payload: { type: Array, default: () => [] },
+      dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
         input: "",
         data: undefined,
         versionListVisible: false,
+        editeDataSet: false,
         versionListType: 1,
         total: undefined,
         newVersionVisible: false,
@@ -183,11 +152,6 @@
         this.data = row;
         this.newVersionVisible = true;
       },
-      confirm(val) {
-        this.preDatasetVisible = val
-        this.newVersionVisible = val
-        this.getDataList(this.searchData)
-      },
       confirmDelete(row) {
         this.$confirm('是否删除此数据集？？', '提示', {
           confirmButtonText: '确定',
@@ -210,24 +174,32 @@
             this.$message.success("删除成功");
             this.loading = false
             this.getDataList(this.searchData)
-            } else {
-              this.$message({
-                message: this.getErrorMsg(response.error.subcode),
-                type: 'warning'
-              });
-              this.loading = false
-            }
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+            this.loading = false
+          }
         })
       },
       close(val) {
-        this.newVersionVisible = val;
-        this.preDatasetVisible = val;
-        this.versionListVisible = val;
-        this.getDataList(this.searchData)
+        this.editeDataSet = val;
+        this.preDatasetVisible = val
+        this.newVersionVisible = val
+        this.versionListVisible = val    
       },
       cancel(val) {
+        this.editeDataSet = val;
         this.newVersionVisible = val;
         this.preDatasetVisible = val;
+        this.getDataList(this.searchData)
+      },
+      confirm(val) {
+        this.editeDataSet = val;
+        this.preDatasetVisible = val
+        this.newVersionVisible = val
+        this.getDataList(this.searchData)
       },
       getVersionList(index, row) {
         this.data = row;
@@ -237,6 +209,10 @@
       // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
+      },
+      handleEdite(val) {
+        this.editeDataSet = true
+        this.data = val
       }
     }
   }
@@ -246,10 +222,12 @@
   .create {
     float: right;
   }
+
   .block {
     float: right;
     margin: 20px;
   }
+
   .searchForm {
     display: inline-block;
   }

@@ -2,6 +2,7 @@ package develop
 
 import (
 	"context"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -17,6 +18,8 @@ import (
 	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
 
 	"server/common/log"
+
+	commapi "server/common/api/v1"
 
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -49,10 +52,26 @@ type DevelopService interface {
 }
 
 const (
-	k8sTaskName = "task0"
-	servicePort = 8888
-	shmResource = "shm"
+	k8sTaskNamePrefix = "task"
+	servicePort       = 8888
+	shmResource       = "shm"
 )
+
+func buildTaskName(idx int) string {
+	return fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
+}
+
+func buildServiceName(jobId string, idx int) string {
+	return fmt.Sprintf("%s-%s", jobId, buildTaskName(idx))
+}
+
+func buildIngressName(jobId string, idx int) string {
+	return fmt.Sprintf("%s-%s", jobId, buildTaskName(idx))
+}
+
+func buildNotebookUrl(jobId string, idx int) string {
+	return fmt.Sprintf("/notebook_%s_%s", jobId, buildTaskName(idx))
+}
 
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
@@ -63,11 +82,10 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
 	if err != nil {
-		if conf.App.IsDev {
-			log.Error(context.Background(), err)
-		} else {
+		if !conf.App.IsDev {
 			return nil, err
 		}
+		log.Error(context.TODO(), err)
 	}
 
 	s := &developService{
@@ -277,6 +295,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		resources:     k8sResources,
 		nodeSelectors: nodeSelectors,
 		shm:           shm,
+		command:       s.conf.Service.Develop.JpyCommand,
 	}, nil
 }
 
@@ -315,20 +334,20 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 		return err1
 	})
 
-	err = s.createService(ctx, nb.UserId, nbJob.Id)
+	err = s.createService(ctx, nb, nbJob)
 	if err != nil {
 		return nil, err
 	}
 	closes = append(closes, func(ctx context.Context) error {
-		return s.data.Cluster.DeleteService(ctx, nb.UserId, nbJob.Id)
+		return s.deleteService(ctx, nb, nbJob)
 	})
 
-	err = s.createIngress(ctx, nb.UserId, nbJob.Id, nb.Url)
+	err = s.createIngress(ctx, nb, nbJob)
 	if err != nil {
 		return nil, err
 	}
 	closes = append(closes, func(ctx context.Context) error {
-		return s.data.Cluster.DeleteIngress(ctx, nb.UserId, nbJob.Id)
+		return s.deleteIngress(ctx, nb, nbJob)
 	})
 
 	return resFunc, nil
@@ -339,6 +358,7 @@ type startJobInfo struct {
 	imageAddr     string
 	algorithmPath string
 	datasetPath   string
+	command       string
 	resources     map[v1.ResourceName]resource.Quantity
 	nodeSelectors map[string]string
 	shm           *resource.Quantity
@@ -364,9 +384,9 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			return err
 		}
 		nb.Id = nbId
-		nb.Url = "/notebook_" + nbId
 		nb.Status = pipeline.PREPARING
 		nb.NotebookJobId = jobId
+		nb.TaskNumber = int(req.TaskNumber)
 
 		nbJob := &model.NotebookJob{
 			Id:         jobId,
@@ -409,6 +429,15 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 		}()
 		if err != nil {
 			return err
+		}
+
+		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+			Time:       time.Now(),
+			NotebookId: nb.Id,
+			Type:       commapi.NotebookEventRecordType_CREATE,
+		})
+		if err != nil { // 插入事件记录出错只打印
+			s.log.Error(ctx, "create notebook event record error:", err)
 		}
 
 		return nil
@@ -473,6 +502,15 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 				}
 			}
 		}()
+
+		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+			Time:       time.Now(),
+			NotebookId: nb.Id,
+			Type:       commapi.NotebookEventRecordType_START,
+		})
+		if err != nil { // 插入事件记录出错只打印
+			s.log.Error(ctx, "create notebook event record error:", err)
+		}
 
 		return nil
 	})
@@ -549,6 +587,39 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		})
 	}
 
+	tasks := make([]vcBatch.TaskSpec, 0)
+	for i := 0; i < nb.TaskNumber; i++ {
+		taskName := buildTaskName(i)
+		task := vcBatch.TaskSpec{
+			Name:     taskName,
+			Replicas: 1,
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					RestartPolicy: v1.RestartPolicyNever,
+					Containers: []v1.Container{
+						{
+							Name:    taskName,
+							Image:   startJobInfo.imageAddr,
+							Command: []string{"sh", "-c", startJobInfo.command},
+							Resources: v1.ResourceRequirements{
+								Requests: startJobInfo.resources,
+								Limits:   startJobInfo.resources,
+							},
+							VolumeMounts: VolumeMounts,
+							Env: []v1.EnvVar{{
+								Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
+								Value: buildNotebookUrl(nbJob.Id, i),
+							}},
+						},
+					},
+					NodeSelector: startJobInfo.nodeSelectors,
+					Volumes:      volumes,
+				},
+			},
+		}
+		tasks = append(tasks, task)
+	}
+
 	param.Job = &vcBatch.Job{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "batch.volcano.sh/v1alpha1",
@@ -562,38 +633,15 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			MinAvailable:  1,
 			Queue:         startJobInfo.queue,
 			SchedulerName: "volcano",
+			Plugins: map[string][]string{
+				"env": {},
+				"svc": {},
+			},
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
 			},
-			Tasks: []vcBatch.TaskSpec{
-				{
-					Name:     k8sTaskName,
-					Replicas: 1,
-					Template: v1.PodTemplateSpec{
-						Spec: v1.PodSpec{
-							RestartPolicy: v1.RestartPolicyNever,
-							Containers: []v1.Container{
-								{
-									Name:  k8sTaskName,
-									Image: startJobInfo.imageAddr,
-									Resources: v1.ResourceRequirements{
-										Requests: startJobInfo.resources,
-										Limits:   startJobInfo.resources,
-									},
-									VolumeMounts: VolumeMounts,
-									Env: []v1.EnvVar{{
-										Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-										Value: nb.Url,
-									}},
-								},
-							},
-							NodeSelector: startJobInfo.nodeSelectors,
-							Volumes:      volumes,
-						},
-					},
-				},
-			},
+			Tasks: tasks,
 		},
 	}
 
@@ -627,12 +675,12 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, err
 	}
 
-	err = s.data.Cluster.DeleteIngress(ctx, nb.UserId, nbJob.Id)
+	err = s.deleteIngress(ctx, nb, nbJob)
 	if err != nil {
 		s.log.Errorw(ctx, "err", err)
 	}
 
-	err = s.data.Cluster.DeleteService(ctx, nb.UserId, nbJob.Id)
+	err = s.deleteService(ctx, nb, nbJob)
 	if err != nil {
 		s.log.Errorw(ctx, "err", err)
 	}
@@ -655,50 +703,75 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, err
 	}
 
+	err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		Time:       time.Now(),
+		NotebookId: nb.Id,
+		Type:       commapi.NotebookEventRecordType_STOP,
+	})
+	if err != nil { // 插入事件记录出错只打印
+		s.log.Error(ctx, "create notebook event record error:", err)
+	}
+
 	return &api.StopNotebookReply{Id: req.Id}, nil
 }
 
-func (s *developService) createService(ctx context.Context, userId string, nbJobId string) error {
-	err := s.data.Cluster.CreateService(ctx, &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      nbJobId,
-			Namespace: userId,
-		},
-		Spec: v1.ServiceSpec{
-			Selector: map[string]string{
-				"volcano.sh/task-spec": k8sTaskName,
-				"volcano.sh/job-name":  nbJobId,
+func (s *developService) createService(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
+	for i := 0; i < nb.TaskNumber; i++ {
+		err := s.data.Cluster.CreateService(ctx, &v1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      buildServiceName(nbJob.Id, i),
+				Namespace: nb.UserId,
 			},
-			Ports: []v1.ServicePort{{
-				Port:       servicePort,
-				TargetPort: intstr.FromInt(servicePort),
-			}},
-		},
-	})
-	if err != nil {
-		return err
+			Spec: v1.ServiceSpec{
+				Selector: map[string]string{
+					"volcano.sh/task-spec": buildTaskName(i),
+					"volcano.sh/job-name":  nbJob.Id,
+				},
+				Ports: []v1.ServicePort{{
+					Port:       servicePort,
+					TargetPort: intstr.FromInt(servicePort),
+				}},
+			},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (s *developService) createIngress(ctx context.Context, userId string, nbJobId string, url string) error {
-	err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      nbJobId,
-			Namespace: userId,
-		},
-		Spec: v1beta1.IngressSpec{
-			Rules: []v1beta1.IngressRule{
-				{
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
-								{
-									Path: url,
-									Backend: v1beta1.IngressBackend{
-										ServiceName: nbJobId,
-										ServicePort: intstr.FromInt(servicePort),
+func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
+	for i := 0; i < nb.TaskNumber; i++ {
+		err := s.data.Cluster.DeleteService(ctx, nb.UserId, buildServiceName(nbJob.Id, i))
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
+	for i := 0; i < nb.TaskNumber; i++ {
+		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      buildIngressName(nbJob.Id, i),
+				Namespace: nb.UserId,
+			},
+			Spec: v1beta1.IngressSpec{
+				Rules: []v1beta1.IngressRule{
+					{
+						IngressRuleValue: v1beta1.IngressRuleValue{
+							HTTP: &v1beta1.HTTPIngressRuleValue{
+								Paths: []v1beta1.HTTPIngressPath{
+									{
+										Path: buildNotebookUrl(nbJob.Id, i),
+										Backend: v1beta1.IngressBackend{
+											ServiceName: buildServiceName(nbJob.Id, i),
+											ServicePort: intstr.FromInt(servicePort),
+										},
 									},
 								},
 							},
@@ -706,10 +779,22 @@ func (s *developService) createIngress(ctx context.Context, userId string, nbJob
 					},
 				},
 			},
-		},
-	})
-	if err != nil {
-		return err
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *developService) deleteIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
+	for i := 0; i < nb.TaskNumber; i++ {
+		err := s.data.Cluster.DeleteIngress(ctx, nb.UserId, buildIngressName(nbJob.Id, i))
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -750,6 +835,18 @@ func (s *developService) ListNotebook(ctx context.Context, req *api.ListNotebook
 		return nil, err
 	}
 
+	notebooks, err := s.convertNotebook(ctx, notebooksTbl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.ListNotebookReply{
+		TotalSize: totalSize,
+		Notebooks: notebooks,
+	}, nil
+}
+
+func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*model.Notebook) ([]*api.Notebook, error) {
 	jobIds := make([]string, 0)
 	for _, n := range notebooksTbl {
 		jobIds = append(jobIds, n.NotebookJobId)
@@ -773,13 +870,12 @@ func (s *developService) ListNotebook(ctx context.Context, req *api.ListNotebook
 		notebook.CreatedAt = n.CreatedAt.Unix()
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
+		for i := 0; i < n.TaskNumber; i++ {
+			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Url: buildNotebookUrl(n.NotebookJobId, i)})
+		}
 		notebooks = append(notebooks, notebook)
 	}
-
-	return &api.ListNotebookReply{
-		TotalSize: totalSize,
-		Notebooks: notebooks,
-	}, nil
+	return notebooks, nil
 }
 
 func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRequest) (*api.GetNotebookReply, error) {
@@ -788,15 +884,12 @@ func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRe
 		return nil, err
 	}
 
-	notebook := &api.Notebook{}
-	err = copier.Copy(notebook, notebookTbl)
+	notebooks, err := s.convertNotebook(ctx, []*model.Notebook{notebookTbl})
 	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+		return nil, err
 	}
-	notebook.CreatedAt = notebookTbl.CreatedAt.Unix()
-	notebook.UpdatedAt = notebookTbl.UpdatedAt.Unix()
 
-	return &api.GetNotebookReply{Notebook: notebook}, nil
+	return &api.GetNotebookReply{Notebook: notebooks[0]}, nil
 }
 
 func (s *developService) GetNotebookEventList(ctx context.Context, req *api.NotebookEventListRequest) (*api.NotebookEventListReply, error) {
@@ -826,5 +919,34 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 	return &api.NotebookEventListReply{
 		TotalSize:      totalSize,
 		NotebookEvents: notebookEvents,
+	}, nil
+}
+
+func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
+	query := &model.NotebookEventRecordQuery{}
+	err := copier.Copy(query, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	recordsTbl, totalSize, err := s.data.DevelopDao.ListNotebookEventRecord(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	records := make([]*api.NotebookEventRecord, 0)
+	for _, t := range recordsTbl {
+		r := &api.NotebookEventRecord{}
+		err := copier.Copy(r, t)
+		if err != nil {
+			return nil, err
+		}
+		r.Time = t.Time.Unix()
+		records = append(records, r)
+	}
+
+	return &api.ListNotebookEventRecordReply{
+		TotalSize: totalSize,
+		Records:   records,
 	}, nil
 }

@@ -1,20 +1,11 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm
-        :search-form="searchForm"
-        :blur-name="'数据集名称 搜索'"
-        @searchData="getSearchData"
-      />
+      <searchForm :search-form="searchForm" :blur-name="'数据集名称 搜索'" @searchData="getSearchData" />
     </div>
     <div class="index">
-      <el-table
-        v-loading="loading"
-        :data="datasetList"
-        style="width: 100%;font-size: 15px;"
-        :header-cell-style="{'text-align':'left','color':'black'}"
-        :cell-style="{'text-align':'left'}"
-      >
+      <el-table v-loading="loading" :data="datasetList" style="width: 100%;font-size: 15px;"
+        :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
         <el-table-column label="数据集名称">
           <template slot-scope="scope">
             <span>{{ scope.row.name }}</span>
@@ -25,7 +16,7 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据用途">
+        <el-table-column label="标注类型">
           <template slot-scope="scope">
             <span>{{ scope.row.applyDesc }}</span>
           </template>
@@ -63,23 +54,12 @@
       </el-table>
     </div>
     <div class="block">
-      <el-pagination
-        :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]"
-        :page-size="searchData.pageSize"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
-    <versionList
-      v-if="versionListVisible"
-      :data="row"
-      :version-list-type="versionListType"
-      @close="close"
-    />
+    <versionList v-if="versionListVisible" :data="row" :version-list-type="versionListType" @close="close" />
   </div>
 </template>
 
@@ -96,8 +76,8 @@
       searchForm
     },
     props: {
-        payload: { type: Array, default: () => [] },
-        dataTabType: { type: Number, default: undefined }
+      payload: { type: Array, default: () => [] },
+      dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
@@ -158,8 +138,8 @@
         this.getDataList(this.searchData)
       },
       close(val) {
+        this.editeDataSet = val;
         this.versionListVisible = val;
-        this.getDataList(this.searchData)
       },
       getVersionList(index, row) {
         this.row = row;
@@ -169,7 +149,7 @@
       // 时间戳转换日期
       parseTime(val) {
         return parseTime(val)
-      }
+      }   
     }
   }
 </script>
@@ -179,6 +159,7 @@
     float: right;
     margin: 20px;
   }
+
   .searchForm {
     display: inline-block;
   }

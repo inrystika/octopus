@@ -300,8 +300,6 @@ message CopyAlgorithmVersionRequest {
   string newAlgorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
-  string applyId = 8;
-  string frameworkId = 9;
 }
 message CopyAlgorithmVersionReply {
   string newAlgorithmId = 1;
@@ -321,10 +319,13 @@ message ConfirmUploadAlgorithmReply {
 }
 
 message UpdateAlgorithmRequest {
-  string id = 1[(validate.rules).string = {min_len: 1}];
-  string applyId = 2;
-  string frameworkId = 3;
-  string algorithmDescript = 4[(validate.rules).string = {max_len: 300}];
+  string spaceId = 1;
+  string userId = 2;
+  bool IsPrefab = 3;
+  string algorithmId = 4[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string applyId = 5;
+  string frameworkId = 6;
+  string algorithmDescript = 7[(validate.rules).string = {max_len: 300}];
 }
 
 message UpdateAlgorithmReply {
@@ -402,9 +403,12 @@ message DeletePreAlgorithmReply {
 }
 
 message UpdateAlgorithmVersionRequest {
-  string algorithmId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
-  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
-  string algorithmDescript = 3[(validate.rules).string = {max_len: 300}];
+  string spaceId = 1;
+  string userId = 2;
+  bool IsPrefab = 3;
+  string algorithmId = 4[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}]; 
+  string version = 5[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 6[(validate.rules).string = {max_len: 300}];
 }
 
 message UpdateAlgorithmVersionReply {

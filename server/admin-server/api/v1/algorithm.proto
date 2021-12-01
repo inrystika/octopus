@@ -133,6 +133,22 @@ service Algorithm {
       };
     };
 
+    // 修改预置算法
+	  rpc UpdatePreAlgorithm(UpdatePreAlgorithmRequest) returns (UpdatePreAlgorithmReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/prealgorithm/{algorithmId}"
+            body: "*"
+      };
+    };
+
+    // 修改预置算法版本
+	  rpc UpdatePreAlgorithmVersion(UpdatePreAlgorithmVersionRequest) returns (UpdatePreAlgorithmVersionReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/prealgorithm/{algorithmId}/version/{version}"
+            body: "*"
+      };
+    };
+
      // 上传预置算法
 	  rpc UploadPreAlgorithm(UploadPreAlgorithmRequest) returns (UploadPreAlgorithmReply) {
         option (google.api.http) = {
@@ -317,21 +333,38 @@ message DeletePreAlgorithmReply {
 }
 
 message AddAlgorithmRequest {
-  string spaceId = 1;
-  string userId = 2;
-  bool isPrefab = 3;
-  bool isEmpty = 4;
-  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
-  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
-  string applyId = 8;
-  string frameworkId = 9;
+  bool isEmpty = 1;
+  string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 3[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 4;
+  string applyId = 5;
+  string frameworkId = 6;
 }
 message AddAlgorithmReply {
   string algorithmId = 1;
   string version = 2;
   int64 createdAt = 3;
 }
+
+message UpdatePreAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmDescript = 2;
+  string applyId = 3;
+  string frameworkId = 4;
+}
+message UpdatePreAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
+message UpdatePreAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 3;
+}
+message UpdatePreAlgorithmVersionReply {
+  int64 updatedAt = 1;
+}
+
 message UploadPreAlgorithmRequest {
   string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
   string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
@@ -341,6 +374,7 @@ message UploadPreAlgorithmRequest {
 message UploadPreAlgorithmReply {
   string uploadUrl = 1;
 }
+
 message ConfirmUploadPreAlgorithmRequest {
   string algorithmId = 1;
   string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
@@ -369,10 +403,8 @@ message DownloadAlgorithmVersionReply {
 }
 
 message AddPreAlgorithmVersionRequest {
-  string spaceId = 1;
-  string userId = 2;
-  string algorithmId = 3;
-  string algorithmDescript = 4;
+  string algorithmId = 1;
+  string algorithmDescript = 2;
 }
 message AddPreAlgorithmVersionReply {
   string algorithmId = 1;
