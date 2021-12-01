@@ -35,11 +35,11 @@ type ModelDeployDao interface {
 	//查询部署服务信息
 	GetModelDeployService(ctx context.Context, id string) (*model.ModelDeploy, error)
 	//查询训练任务名称是否重复
-	GetModelDeployServiceByName(ctx context.Context, jobName string, userId string, workspaceId string) (*model.ModelDeploy, error)
+	GetModelDeployServiceByName(ctx context.Context, serviceName string, userId string, workspaceId string) (*model.ModelDeploy, error)
 	//查询任务列表
 	GetModelDeployServiceList(ctx context.Context, query *model.ModelDeployListQuery) ([]*model.ModelDeploy, int64, error)
 	//更新部署服务信息
-	UpdateModelDeployService(ctx context.Context, trainJob *model.ModelDeploy) error
+	UpdateModelDeployService(ctx context.Context, modelDeploy *model.ModelDeploy) error
 	//删除部署服务信息（软删除）
 	DeleteModelDeployService(ctx context.Context, id string) error
 	//查询部署服务事件列表
