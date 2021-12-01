@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/jinzhu/copier"
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -20,17 +22,14 @@ import (
 	"server/common/log"
 	"server/common/utils"
 	"time"
-	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/jinzhu/copier"
-	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 )
 
 const (
-	deployJobKind   	= "deploy_job"
-	deployJobNum 		= 1
-	MetaNamePrefix      = "deploy-"
-	TensorFlowFrame     = "tensorflow"
-	PytorchFrame        = "pytorch"
+	deployJobKind   = "deploy_job"
+	deployJobNum    = 1
+	MetaNamePrefix  = "deploy-"
+	TensorFlowFrame = "tensorflow"
+	PytorchFrame    = "pytorch"
 	STATE_AVAILABLE = "Available"
 	STATE_CREATING  = "Creating"
 	STATE_FAILED    = "Failed"
@@ -59,10 +58,10 @@ type startJobInfoSpec struct {
 }
 
 type startJobInfo struct {
-	queue         string
-	modelFrame    string
-	modelPath     string
-	specs         map[string]*startJobInfoSpec
+	queue      string
+	modelFrame string
+	modelPath  string
+	specs      map[string]*startJobInfoSpec
 }
 
 func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
@@ -234,25 +233,24 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	//todo 修改模型路径
 	parameters := []seldonv1.Parameter{
 		{
-			Name: "model_volume_path",
-			Type: "STRING",
-			Value:"/app/models",
-
+			Name:  "model_volume_path",
+			Type:  "STRING",
+			Value: "/app/models",
 		},
 		{
 			Name: "user_model_dir",
 			Type: "STRING",
 			//todo 用户模型目录
-			Value:"user2_model",
+			Value: "user2_model",
 		},
 	}
 
-	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec,0)
+	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec, 0)
 	seldonPodSpec := &seldonv1.SeldonPodSpec{
 		Spec: v1.PodSpec{
-			Containers:[]v1.Container{
+			Containers: []v1.Container{
 				{
-					Name:  modelDeployName,
+					Name:         modelDeployName,
 					VolumeMounts: volumeMounts,
 				},
 			},
@@ -261,31 +259,31 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}
 	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
 
-    var modelServer seldonv1.PredictiveUnitImplementation
+	var modelServer seldonv1.PredictiveUnitImplementation
 	if startJobInfo.modelFrame == TensorFlowFrame {
-		modelServer =  "TENSORFLOW_SERVER"
-	}else if startJobInfo.modelFrame == PytorchFrame{
-		modelServer =  "PYTORCH_SERVER"
+		modelServer = "TENSORFLOW_SERVER"
+	} else if startJobInfo.modelFrame == PytorchFrame {
+		modelServer = "PYTORCH_SERVER"
 	}
 
 	graph := seldonv1.PredictiveUnit{
-		Name: modelDeployName,
-		Children: nil,
+		Name:           modelDeployName,
+		Children:       nil,
 		Implementation: &modelServer,
 		//todo 修改为pvc挂载
-		ModelURI: "gs:seldon-models/sklearn/iris",
+		ModelURI:   "gs:seldon-models/sklearn/iris",
 		Parameters: parameters,
 	}
 
 	var replica int32 = deployJobNum
-	predictors := make([]seldonv1.PredictorSpec,0)
-	predictor :=  seldonv1.PredictorSpec{
-		Name: "default",
-		Replicas: &replica,
+	predictors := make([]seldonv1.PredictorSpec, 0)
+	predictor := seldonv1.PredictorSpec{
+		Name:           "default",
+		Replicas:       &replica,
 		ComponentSpecs: seldonPodSpecs,
-		Graph: graph,
+		Graph:          graph,
 	}
-	predictors = append(predictors,predictor)
+	predictors = append(predictors, predictor)
 
 	metadataName := fmt.Sprintf("%s%s ", MetaNamePrefix, modelDeploy.Name)
 	//pod template
@@ -350,13 +348,12 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 	}
 	//check  model framework
 	modelFrameType := modelDeploy.ModelFrame
-    if  modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame{
+	if modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame {
 		return nil, errors.Errorf(err, errors.ErrorModelDeployForbidden)
 	}
 
-
-    //模型查询
-	model, err := s.getModelAndCheckPerm(ctx, modelDeploy.UserId, modelDeploy.WorkspaceId, modelDeploy.Id )
+	//模型查询
+	model, err := s.getModelAndCheckPerm(ctx, modelDeploy.UserId, modelDeploy.WorkspaceId, modelDeploy.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -419,16 +416,15 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 		queue: queue,
 		//todo： 模型路径信息
 		modelPath: "undefined_model_path",
-		specs: startJobSpecs,
+		specs:     startJobSpecs,
 	}
 
 	return startModelDeployInfo, nil
 }
 
-
 func (s *modelDeployService) getModelAndCheckPerm(ctx context.Context, userId string, spaceId string, modelId string) (*api.QueryModelReply, error) {
-    modelReq := &api.QueryModelRequest{}
-    modelReq.ModelId = modelId
+	modelReq := &api.QueryModelRequest{}
+	modelReq.ModelId = modelId
 	reply, err := s.modelService.QueryModel(ctx, modelReq)
 	if err != nil {
 		return nil, err
@@ -437,7 +433,7 @@ func (s *modelDeployService) getModelAndCheckPerm(ctx context.Context, userId st
 		return nil, errors.Errorf(nil, errors.ErrorModelVersionFileNotFound)
 	}
 	//todo 待模型模块增加权限
-	if userId != reply.Model.UserId && reply.Model.IsPrefab != true  {
+	if userId != reply.Model.UserId && reply.Model.IsPrefab != true {
 		hasPerm := false
 		//for _, i := range reply.Model.Access {
 		//	if spaceId == i.SpaceId {

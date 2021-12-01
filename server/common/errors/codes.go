@@ -178,6 +178,9 @@ const (
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
 	ErrorDatasetTypeRefered     = 19006 // 数据集类型被引用，不能删除
 	ErrorDatasetTypeRepeated    = 19007 // 数据集类型重复
+
+	/* 21001~22000 训练管理错误*/
+	ErrorModelDeployForbidden = 21001 // 部署使用计算框架不在权限范围内
 )
 
 type codeMsg struct {
@@ -357,4 +360,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
 	ErrorDatasetTypeRefered:     {codeType: OutOfRange, msg: "type refered"},
 	ErrorDatasetTypeRepeated:    {codeType: OutOfRange, msg: "type repeated"},
+
+	/* 19001~20000 数据集管理错误*/
+	ErrorModelDeployForbidden: {codeType: PermissionDenied, msg: "no permission"},
 }

@@ -53,6 +53,7 @@ message DepInfo {
 	int64 payEndedAt = 15;    
 	string payStatus = 16;
 	repeated ResSpecPrice resourceSpecPrices = 17;
+	string modelFrame = 18;
 }
 
 message ResSpecPrice {
@@ -67,19 +68,21 @@ message DepReply {
 }
 
 message StopDepRequest {
-
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  string operation = 2;
 }
 
 message StopDepReply {
-
+  int64 stoppedAt = 1;
 }
 
 message DeleteDepRequest {
-
+  repeated string jobIds = 1[(validate.rules).repeated.min_items = 1];
+  string userId = 2[(validate.rules).string = {min_len: 1}];
 }
 
 message DeleteDepReply {
-
+  int64 deletedAt = 1;
 }
 message DepInfoRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];

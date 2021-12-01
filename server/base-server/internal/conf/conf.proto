@@ -125,6 +125,7 @@ message Service {
   Resource resource = 7;
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
+  string dockerModelDeployPath = 10;
 }
 
 message Administrator {

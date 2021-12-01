@@ -52,6 +52,7 @@ service:
   dockerDatasetPath: /dataset
   dockerCodePath: /code
   dockerModelPath: /model
+  dockerModelDeployPath: /app/models
   resourceLabelKey: octopus.pcl.ac.cn/type
   billingPeriodSec: 60
   develop:
