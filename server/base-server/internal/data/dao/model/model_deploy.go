@@ -1,10 +1,11 @@
 package model
 
 import (
-	"gorm.io/plugin/soft_delete"
 	api "server/base-server/api/v1"
 	"server/common/dao"
 	"time"
+
+	"gorm.io/plugin/soft_delete"
 )
 
 func (ModelDeploy) TableName() string {
@@ -50,4 +51,18 @@ type ModelDeployListQuery struct {
 	WorkspaceId  string
 	Ids          []string
 	PayStatus    api.BillingPayRecordStatus
+}
+
+type DeployEventQuery struct {
+	PageIndex int
+	PageSize  int
+	Id        string
+	IsMain    bool
+}
+
+type ModelDeployEvent struct {
+	Timestamp string
+	Name      string
+	Reason    string
+	Message   string
 }

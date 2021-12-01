@@ -29,23 +29,23 @@ service ModelDeployService {
       delete: "/v1/deploymanage/deploymodel"
     };
   };
-  //获取部署服务详情
+  // 获取模型部署详情
   rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply){
     option (google.api.http) = {
-      get: "/v1/deploymanage/deploymodel/{id}"
+      get: "/v1/deploymanage/modeldeploy/{id}"
     };
   };
-  //获取部署服务列表
+  // 获取模型部署列表
   rpc ListDepModel(DepListRequest) returns (DepListReply){
     option (google.api.http) = {
-      get: "/v1/deploymanage/deploymodel"
+      get: "/v1/deploymanage/modeldeploy"
     };
   };
 
-  // 获取部署服务事件
+  // 获取模型部署事件列表
   rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply) {
     option (google.api.http) = {
-      get: "/v1/deploymanage/deploymodelevent"
+        get: "/v1/deploymanage/modeldeployevent"
     };
   };
 }
@@ -82,22 +82,80 @@ message DeleteDepRequest {
 message DeleteDepReply {
 
 }
-message DepInfoRequest {
 
+
+message DepInfo {
+  string id = 1;      
+	string userId = 2;          
+	string workspaceId = 3;      
+	string name = 4;                      
+	string desc = 5;                             
+	string modelId = 6;      	                      
+	string modelVersion = 7;                          
+	string modelName = 8;                     
+	string serviceUrl = 9;    					
+	string status = 10;                       
+	int64 completedAt = 11;                    
+	int64 startedAt = 12;             
+	float payAmount = 13;                     
+	int64 payStartedAt = 14;
+	int64 payEndedAt = 15;    
+	string payStatus = 16;
+	repeated ResSpecPrice resourceSpecPrices = 17;
+}
+
+message ResSpecPrice {
+  int64 task = 1;
+	int64 price = 2;
+}
+
+message DepInfoRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
 }
 message DepInfoReply {
-
+  DepInfo depInfo = 1;
 }
 message DepListRequest {
-
+  int64 pageIndex = 1;
+  int64 pageSize = 2;
+  string sortBy = 3;
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  int64 createdAtGte = 5;
+  int64 createdAtLt = 6;
+  string status = 7;
+  string searchKey = 8; //name等模糊查找
+  string userId = 9;
+  string workspaceId =10;
+  string userNameLike = 11;
 }
 message DepListReply {
-
+  int64  totalSize = 1;
+  repeated DepInfo depInfos = 2;
 }
 
 message DepEventListRequest {
-
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  //服务Id
+  string id = 3[(validate.rules).string = {min_len: 1}];
+  //是否总任务事件
+  bool isMain = 4;
 }
-message DepEventListReply {
 
+message DepEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated DepEvent depEvents = 2;
+}
+
+message DepEvent{
+  //发生时间
+  string timestamp = 1;
+  //名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
 }
