@@ -6,11 +6,11 @@ import (
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -30,6 +30,9 @@ const (
 	MetaNamePrefix  = "deploy-"
 	TensorFlowFrame = "tensorflow"
 	PytorchFrame    = "pytorch"
+	ModelVolumePath = "model_volume_path"
+	SeldonDockerWorkDir = "/app/models"
+	UserModelDir    = "user_model_dir"
 	STATE_AVAILABLE = "Available"
 	STATE_CREATING  = "Creating"
 	STATE_FAILED    = "Failed"
@@ -186,24 +189,12 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	modelDeployName := modelDeploy.Name
 
-	param := &pipeline.SubmitJobParam{
-		UserID:       modelDeploy.UserId,
-		JobKind:      deployJobKind,
-		JobName:      modelDeploy.Id,
-		Header:       nil,
-		JobNamespace: modelDeploy.UserId,
-		//JobNamespace: "default",
-		Cluster: "",
-	}
-
-	minAvailable := 0
-
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
 		{
 			Name:      "modelFilePath",
 			MountPath: s.conf.Service.DockerModelDeployPath,
-			SubPath:   s.getModelSubPath(modelDeploy),
+			SubPath:   startJobInfo.modelPath,
 			ReadOnly:  false,
 		},
 		{
@@ -230,18 +221,16 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		},
 	}
 
-	//todo 修改模型路径
 	parameters := []seldonv1.Parameter{
 		{
-			Name:  "model_volume_path",
+			Name:  ModelVolumePath,
 			Type:  "STRING",
-			Value: "/app/models",
+			Value: SeldonDockerWorkDir,
 		},
 		{
-			Name: "user_model_dir",
+			Name: UserModelDir,
 			Type: "STRING",
-			//todo 用户模型目录
-			Value: "user2_model",
+			Value: startJobInfo.modelPath,
 		},
 	}
 
@@ -270,7 +259,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		Name:           modelDeployName,
 		Children:       nil,
 		Implementation: &modelServer,
-		//todo 修改为pvc挂载
+		//todo 此处可以修改为pvc挂载
 		ModelURI:   "gs:seldon-models/sklearn/iris",
 		Parameters: parameters,
 	}
@@ -285,27 +274,25 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}
 	predictors = append(predictors, predictor)
 
-	metadataName := fmt.Sprintf("%s%s ", MetaNamePrefix, modelDeploy.Name)
+	//metadataName := fmt.Sprintf("%s%s ", MetaNamePrefix, modelDeploy.Name)
 	//pod template
-	modelSdep := &seldonv2.SeldonDeployment{
+	modelSeldonDep := &v1alpha2.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "machinelearning.seldon.io/v1alpha2",
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: modelDeploy.UserId,
-			//Namespace: "default",
-			Name: modelDeploy.Id,
+			Name: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
 			Predictors: predictors,
 		},
 	}
-	kubeConfig := s.data.Cluster.GetClusterConfig()
-	k8sClient := clientset.NewForConfigOrDie(kubeConfig)
-	_, podErr := k8sClient.CoreV1().S(modelDeploy.UserId).Create(context.TODO(), modelSdep, metav1.CreateOptions{})
 
-	if podErr != nil {
+	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), modelDeploy.UserId, modelSeldonDep)
+
+	if error != nil {
 
 	}
 	//if modelDeploy.Id != submitJobReply.JobId {
@@ -353,7 +340,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 	}
 
 	//模型查询
-	model, err := s.getModelAndCheckPerm(ctx, modelDeploy.UserId, modelDeploy.WorkspaceId, modelDeploy.Id)
+	_, err = s.getModelAndCheckPerm(ctx, modelDeploy.UserId, modelDeploy.WorkspaceId, modelDeploy.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -414,8 +401,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 
 	startModelDeployInfo := &startJobInfo{
 		queue: queue,
-		//todo： 模型路径信息
-		modelPath: "undefined_model_path",
+		modelPath: s.getModelSubPath(modelDeploy),
 		specs:     startJobSpecs,
 	}
 

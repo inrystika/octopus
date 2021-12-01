@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"os"
 	"path/filepath"
 	"server/base-server/internal/common"
@@ -14,8 +15,8 @@ import (
 
 	"server/common/log"
 
-	seldonclientset "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
-	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/informers/externalversions"
+	seldonclientset "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/clientset/versioned"
+	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/informers/externalversions"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -415,10 +416,18 @@ func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pv
 	return p, nil
 }
 
+func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context,namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error ){
+	p, err := kc.seldonClientset.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment,metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
 
 	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClientset, 0)
-	deploymentInformer := informerFactory.Machinelearning().V1().SeldonDeployments().Informer()
+	deploymentInformer := informerFactory.Machinelearning().V1alpha2().SeldonDeployments().Informer()
 	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    onAdd,
 		DeleteFunc: onDelete,

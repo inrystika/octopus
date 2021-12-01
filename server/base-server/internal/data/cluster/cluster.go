@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"context"
-
+	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"server/base-server/internal/common"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -33,5 +33,6 @@ type Cluster interface {
 	CreateAndListenJob(ctx context.Context, job *batchv1.Job, callback func(e error)) error
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
+	CreateSeldonDeployment(ctx context.Context, namespace string,seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
 	RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error
 }
