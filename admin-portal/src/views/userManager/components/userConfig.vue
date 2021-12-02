@@ -73,8 +73,9 @@ export default {
     }
   },
   created() {
-    this.getUserConfigKey()
-    this.getUserConfig()
+    this.timer = setInterval(this.getUserConfigKey, 1000);
+    // this.getUserConfigKey()
+    // this.getUserConfig()
   },
   methods: {
     handleDialogClose() {
@@ -90,6 +91,7 @@ export default {
       getUserConfigKey().then(response => {
         if (response.success) {
           this.userConfigKeyList = response.data.configKeys
+          console.log(this.userConfigKeyList)
         }else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
