@@ -55,12 +55,6 @@
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
             <!-- <el-button type="text" @click="saveAlgorithm(scope.row)">保存算法</el-button> -->
           </div>
-<<<<<<< HEAD
-          <el-button v-if="({'running':true})[scope.row.status] || false" type="text" @click="jumpUrl(scope.row.url)">打开
-          </el-button>
-          <el-button v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
-            slot="reference" type="text" @click="confirmStop(scope.row)">
-=======
           <el-popover
             placement="top-start"
           >
@@ -83,7 +77,6 @@
             type="text"
             @click="confirmStop(scope.row)"
           >
->>>>>>> 405cf00bdc98dce684ae34c94f3e8e733977ecbd
             停止
           </el-button>
           <el-button slot="reference" type="text" @click="save(scope.row)">
