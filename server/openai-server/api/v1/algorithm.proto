@@ -10,10 +10,10 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service Algorithm {
-    // 查询算法类型列表
-    rpc ListAlgorithmType (ListAlgorithmTypeRequest) returns (ListAlgorithmTypeReply) {
+    // 查询算法用途列表
+    rpc ListAlgorithmApply (ListAlgorithmApplyRequest) returns (ListAlgorithmApplyReply) {
       option (google.api.http) = {
-        get: "/v1/algorithmmanage/algorithmtype"
+        get: "/v1/algorithmmanage/algorithmapply"
       }; 
     }
 
@@ -152,26 +152,38 @@ service Algorithm {
             body: "*"
       };
     }
+
+    // 修改我的算法
+	  rpc UpdateMyAlgorithm(UpdateMyAlgorithmRequest) returns (UpdateMyAlgorithmReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/myalgorithm/{algorithmId}"
+            body: "*"
+      };
+    };
+
+    // 修改我的算法版本
+	  rpc UpdateMyAlgorithmVersion(UpdateMyAlgorithmVersionRequest) returns (UpdateMyAlgorithmVersionReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/myalgorithm/{algorithmId}/version/{version}"
+            body: "*"
+      };
+    };
 }
 
-message AlgorithmType {
+message AlgorithmLable {
   string id = 1;
-  string typeDesc = 2;
+  string lableDesc = 2;
+  int32 sourceType = 3;
 }
 
-message ListAlgorithmTypeRequest {
+message ListAlgorithmApplyRequest {
   int64 pageIndex = 1;
   int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 
-message ListAlgorithmTypeReply {
+message ListAlgorithmApplyReply {
   int64 totalSize = 1;
-  repeated AlgorithmType algorithmTypes = 2;
-}
-
-message AlgorithmFramework {
-  string id = 1;
-  string frameworkDesc = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message ListAlgorithmFrameworkRequest {
@@ -181,7 +193,7 @@ message ListAlgorithmFrameworkRequest {
 
 message ListAlgorithmFrameworkReply {
   int64 totalSize = 1;
-  repeated AlgorithmFramework algorithmFrameworks = 2;
+  repeated AlgorithmLable lables = 2;
 }
 
 message AlgorithmDetail {
@@ -199,8 +211,8 @@ message AlgorithmDetail {
   string path = 12;
   bool isPrefab = 13;
   int64 createdAt = 14;
-  string typeId = 15;
-  string typeName = 16;
+  string applyId = 15;
+  string applyName = 16;
 	string frameworkId = 17;
   string frameworkName = 18;
 }
@@ -340,8 +352,6 @@ message CopyAlgorithmVersionRequest {
   string newAlgorithmName = 3[(validate.rules).string = {min_len:1,max_len:128}];
   string modelName = 4[(validate.rules).string = {min_len:1,max_len:128}];
   string algorithmDescript = 5;
-  string typeId = 6;
-  string frameworkId = 7;
 }
 message CopyAlgorithmVersionReply {
   string newAlgorithmId = 1;
@@ -350,15 +360,12 @@ message CopyAlgorithmVersionReply {
 }
 
 message AddMyAlgorithmRequest {
-  string spaceId = 1;
-  string userId = 2;
-  bool isPrefab = 3;
-  bool isEmpty = 4;
-  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
-  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
-  string typeId = 8;
-  string frameworkId = 9;
+  bool isEmpty = 1;
+  string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 3[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 4;
+  string applyId = 5;
+  string frameworkId = 6;
 }
 message AddMyAlgorithmReply {
   string algorithmId = 1;
@@ -418,4 +425,23 @@ message BatchQueryAlgorithmRequest {
 message BatchQueryAlgorithmReply {
   int64 totalSize = 1;
   repeated AlgorithmInfo algorithms = 2;
+}
+
+message UpdateMyAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmDescript = 2;
+  string applyId = 3;
+  string frameworkId = 4;
+}
+message UpdateMyAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
+message UpdateMyAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 3;
+}
+message UpdateMyAlgorithmVersionReply {
+  int64 updatedAt = 1;
 }

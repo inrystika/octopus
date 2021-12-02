@@ -2,16 +2,16 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   let conditions = []
-  conditions.push(`pageSize=`+params.pageSize);
-  conditions.push(`pageIndex=`+params.pageIndex);
-  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
-  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
-  params.createdAtGte?conditions.push(`createdAtGte=`+params.createdAtGte):null;
-  params.createdAtLt?conditions.push(`createdAtLt=`+params.createdAtLt):null;
-  params.shared?conditions.push(`shared=`+params.shared):null;
-  params.path?conditions.push(`path=`+params.path):null;
-  params.status?conditions.push(`status=`+params.status):null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
+  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
+  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
+  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
+  params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
+  params.shared ? conditions.push(`shared=` + params.shared) : null;
+  params.path ? conditions.push(`path=` + params.path) : null;
+  params.status ? conditions.push(`status=` + params.status) : null;
   return conditions
 }
 
@@ -163,6 +163,23 @@ export async function datasetType(params) {
     url: `/v1/datasetmanage/datasettype`,
     method: "get",
     params: params
+  })
+  return res
+}
+export async function datasetUse(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/datasetapply`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+// 修改数据集
+export async function editeDataSet(params) {
+  const res = await request({
+    url: `/v1/datasetmanage/mydataset/${params.datasetId}`,
+    method: "put",
+    params: { typeId: params.typeId, applyId: params.applyId, desc: params.desc }
   })
   return res
 }

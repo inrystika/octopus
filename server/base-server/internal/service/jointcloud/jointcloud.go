@@ -216,6 +216,8 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 	var totalSize int64
 	ids := req.Ids
 	jobList := make([]*api.JointCloudJReplyJob, 0)
+	userIdMap := map[string]string{}
+	spaceIdMap := map[string]string{}
 
 	if ids == "" {
 		jobs, size, err := s.data.JointCloudDao.GetTrainJobList(ctx, &jointcloud.TrainJobListQuery{
@@ -242,6 +244,8 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 			if i < len(jobs)-1 {
 				ids = ids + ","
 			}
+			userIdMap[job.TaskId] = job.UserId
+			spaceIdMap[job.TaskId] = job.WorkspaceId
 		}
 		ids = ids + "]"
 		totalSize = size
@@ -265,6 +269,12 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		createTime, err := time.Parse("2006-01-02 15:04:05", n.CreateTime)
 		if err == nil {
 			job.CreateTime = createTime.Unix()
+		}
+		if userId, ok := userIdMap[job.TaskId]; ok {
+			job.UserId = userId
+		}
+		if spaceId, ok := spaceIdMap[job.TaskId]; ok {
+			job.WorkspaceId = spaceId
 		}
 		jobList = append(jobList, job)
 	}

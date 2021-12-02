@@ -83,8 +83,8 @@ message Influxdb {
   string addr = 1;
   string username = 2;
   string password = 3;
-  string Database = 4;
-  string Precision = 5;
+  string database = 4;
+  string precision = 5;
 }
 
 message Data {
@@ -118,24 +118,6 @@ message Resource {
   string ignoreSystemResources = 11;
 }
 
-message ConfigKey {
-  string key = 1;     // 键值，必填，保存配置时传入
-  string title = 2;   // 标题，必填
-  string desc = 3;    // 描述，选填
-  string type = 4;    // 类型，选填，input、radio、checkbox，默认为input radio
-  string options = 5; // 选项，选填，radio、checkbox时必填，逗号分隔 yes,no
-  string regexp = 6;  // 正则，选填
-  bool required = 7; // 选填，默认为false
-}
-
-message Platform {
-  repeated ConfigKey configKeys = 1;
-}
-
-message User {
-  repeated ConfigKey configKeys = 1;
-}
-
 message JointCloud {
   string baseUrl = 1;
   string username = 2;
@@ -152,8 +134,6 @@ message Service {
   Resource resource = 7;
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
-  Platform platform = 10;
-  User user = 11;
 }
 
 message Administrator {

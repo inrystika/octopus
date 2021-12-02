@@ -10,7 +10,7 @@ import (
 )
 
 type ModelService struct {
-	api.UnimplementedModelServer
+	api.UnimplementedModelServiceServer
 	conf         *conf.Bootstrap
 	log          *log.Helper
 	data         *data.Data
@@ -20,7 +20,7 @@ type ModelService struct {
 	shareHandle  ModelShareHandle
 }
 
-func NewModelService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServer) api.ModelServer {
+func NewModelService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServiceServer) api.ModelServiceServer {
 	return &ModelService{
 		conf:         conf,
 		log:          log.NewHelper("ModelService", logger),

@@ -9,8 +9,7 @@
           <div>是否分布式:<span>否</span></div>
         </el-col>
       </el-row>
-      <el-input
-        v-if="showInfo"
+      <el-input       
         v-model="subTaskInfo"
         type="textarea"
         :readonly="true"
@@ -20,7 +19,6 @@
 
     <div class="block">
       <el-pagination
-        v-if="showInfo"
         :current-page="pageIndex"
         :page-sizes="[10, 20, 50, 80]"
         :page-size="pageSize"
@@ -48,7 +46,6 @@ export default {
   data() {
     return {
       notebookInfo: {},
-      showInfo: false,
       infoVisible: true,
       subTaskInfo: "",
       total: 0,
@@ -72,27 +69,40 @@ export default {
         replicaIndex: this.replicaIndex
       }
       getNotebookInfo(param).then(response => {
-        if (!response.success) {
-          this.$message({
-            message: "暂无相关运行信息",
-            type: 'warning'
-          });
-          return
+        if (response.success){
+          this.total = response.payload.totalSize
+          let infoMessage = ""
+          response.payload.notebookEvents.forEach(function(element) {
+            const title = element.reason
+            const message = element.message
+            infoMessage += "\n" + "[" + title + "]"
+            infoMessage += "\n" + "[" + message + "]" + "\n"
+          })
+          this.subTaskInfo = infoMessage
+        } else {
+          const data = {
+            id: this.notebookInfo.notebookJobId,
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize,
+            taskIndex: 0,
+            replicaIndex: 0
+          }
+          getNotebookInfo(data).then(response => {
+            if (response.success) {
+              this.total = response.payload.totalSize
+              let vcMessage = ""
+              response.payload.notebookEvents.forEach(function(element) {
+                const title = element.reason
+                const message = element.message
+                vcMessage += "\n" + "[" + title + "]"
+                vcMessage += "\n" + "[" + message + "]" + "\n"
+              })
+              this.subTaskInfo = vcMessage
+            } else {
+              this.subTaskInfo = "暂无相关运行信息"
+            }
+          })
         }
-
-        this.showInfo = response.payload.notebookEvents.length
-        this.total = response.payload.totalSize
-
-        let infoMessage = ""
-
-        response.payload.notebookEvents.forEach(function(element) {
-          const title = element.reason
-          const message = element.message
-          infoMessage += "\n" + "[" + title + "]"
-          infoMessage += "\n" + "[" + message + "]" + "\n"
-        })
-
-        this.subTaskInfo = infoMessage
       }).catch(err => {
         console.log("err:", err)
         this.$message({

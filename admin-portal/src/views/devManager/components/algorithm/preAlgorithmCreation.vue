@@ -6,15 +6,15 @@
         <el-form-item label="算法名称" :label-width="formLabelWidth" prop="algorithmName">
           <el-input v-model="ruleForm.algorithmName" :disabled="disabled" placeholder="请输入算法名称" />
         </el-form-item>
-        <el-form-item label="算法类型" :label-width="formLabelWidth" prop="typeId">
-          <el-select v-model="ruleForm.typeId" placeholder="请选择">
-            <el-option v-for="item in optionType" :key="item.id" :label="item.typeDesc" :value="item.id">
+        <el-form-item label="模型类别" :label-width="formLabelWidth">
+          <el-select v-model="ruleForm.applyId" placeholder="请选择模型类别">
+            <el-option v-for="item in optionType" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="算法框架" :label-width="formLabelWidth" prop="frameworkId">
-          <el-select v-model="ruleForm.frameworkId" placeholder="请选择">
-            <el-option v-for="item in optionFrame" :key="item.id" :label="item.frameworkDesc" :value="item.id">
+        <el-form-item label="框架类型" :label-width="formLabelWidth" >
+          <el-select v-model="ruleForm.frameworkId" placeholder="请选择框架类型">
+            <el-option v-for="item in optionFrame" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -61,7 +61,7 @@
           path: '',
           modelName: '',
           desc: '',
-          typeId: '',
+          applyId: '',
           frameworkId: ''
         },
         uploadData: { data: {}, type: undefined },
@@ -99,8 +99,6 @@
               trigger: "blur"
             }
           ],
-          typeId: [{ required: true, message: '请选择算法类型', trigger: 'change' }],
-          frameworkId: [{ required: true, message: '请选择算法框架', trigger: 'change' }]
         },
         CreateFormVisible: true,
         formLabelWidth: "120px",
@@ -124,15 +122,12 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             const param = {
-              spaceId: '',
-              userId: null,
-              IsPrefab: true,
               algorithmName: this.ruleForm.algorithmName,
               algorithmDescript: this.ruleForm.desc,
               modelname: this.ruleForm.modelName,
               isEmpty: false,
               frameworkId: this.ruleForm.frameworkId,
-              typeId: this.ruleForm.typeId
+              applyId: this.ruleForm.applyId
             }
             addPreAlgorithm(param).then(response => {
               if (response.success) {
@@ -167,7 +162,7 @@
       algorithmType() {
         algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
-            this.optionType = response.data.algorithmTypes
+            this.optionType = response.data.lables
           } else {
             // this.showUpload = false
             this.$message({
@@ -181,7 +176,7 @@
       algorithmFrame() {
         frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
-            this.optionFrame = response.data.algorithmFrameworks
+            this.optionFrame = response.data.lables
           } else {
             // this.showUpload = false
             this.$message({

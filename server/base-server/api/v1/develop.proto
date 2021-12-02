@@ -7,6 +7,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 
 import "validate/validate.proto";
+import "server/common/api/v1/develop.proto";
 
 service Develop {
   // 创建notebook
@@ -25,6 +26,8 @@ service Develop {
   rpc GetNotebookEventList (NotebookEventListRequest) returns (NotebookEventListReply);
   // 保存notebook
   rpc SaveNotebook (SaveNotebookRequest) returns (SaveNotebookReply);
+  // 查询事件记录列表
+  rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply);
 }
 
 message CreateNotebookRequest {
@@ -99,7 +102,6 @@ message Notebook {
   string algorithmVersion = 10;
   string resourceSpecId = 11;
   string status = 12;
-  string url = 13;
   string imageName = 14;
   string algorithmName = 15;
   string resourceSpecName = 16;
@@ -132,10 +134,10 @@ message NotebookEventListRequest {
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   //任务ID
   string id = 3[(validate.rules).string = {min_len: 1}];
-  //子任务序号，从1开始
-  int64 taskIndex = 4[(validate.rules).int64 = {gte:1,lt:100}];
-  //副本序号，从1开始
-  int64 replicaIndex = 5[(validate.rules).int64 = {gte:1,lt:100}];
+  //子任务序号，从0开始
+  int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lt:100}];
+  //副本序号，从0开始
+  int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lt:100}];
 }
 
 message NotebookEventListReply {
@@ -165,4 +167,22 @@ message SaveNotebookRequest {
 
 message SaveNotebookReply {
 
+}
+
+message NotebookEventRecord {
+  int64 time = 1;
+  string notebookId = 2;
+  common.api.v1.NotebookEventRecordType type = 3;
+  string remark = 4;
+}
+
+message ListNotebookEventRecordRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  string notebookId = 3[(validate.rules).string = {min_len: 1}];
+}
+
+message ListNotebookEventRecordReply {
+  int64  totalSize = 1;
+  repeated NotebookEventRecord records = 2;
 }

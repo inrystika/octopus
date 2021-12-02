@@ -10,70 +10,20 @@ import (
 )
 
 type AlgorithmService struct {
-	api.UnimplementedAlgorithmServer
+	api.UnimplementedAlgorithmServiceServer
 	conf   *conf.Bootstrap
 	log    *log.Helper
 	data   *data.Data
 	handle AlgorithmHandle
 }
 
-func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.AlgorithmServer {
+func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.AlgorithmServiceServer {
 	return &AlgorithmService{
 		conf:   conf,
 		log:    log.NewHelper("AlgorithmService", logger),
 		data:   data,
-		handle: NewAlgorithmHandle(conf, logger, data),
+		handle: NewAlgorithmHandle(conf, logger, data, lableService),
 	}
-}
-
-// 新增算法类型
-func (s *AlgorithmService) AddAlgorithmType(ctx context.Context, req *api.AddAlgorithmTypeRequest) (*api.AddAlgorithmTypeReply, error) {
-	return s.handle.AddAlgorithmType(ctx, req)
-}
-
-// 查询算法类型列表
-func (s *AlgorithmService) ListAlgorithmType(ctx context.Context, req *api.ListAlgorithmTypeRequest) (*api.ListAlgorithmTypeReply, error) {
-	return s.handle.ListAlgorithmType(ctx, req)
-}
-
-// 查询单个算法类型
-func (s *AlgorithmService) GetAlgorithmType(ctx context.Context, req *api.GetAlgorithmTypeRequest) (*api.GetAlgorithmTypeReply, error) {
-	return s.handle.GetAlgorithmType(ctx, req)
-}
-
-// 删除算法类型
-func (s *AlgorithmService) DeleteAlgorithmType(ctx context.Context, req *api.DeleteAlgorithmTypeRequest) (*api.DeleteAlgorithmTypeReply, error) {
-	return s.handle.DeleteAlgorithmType(ctx, req)
-}
-
-// 修改算法类型描述
-func (s *AlgorithmService) UpdateAlgorithmType(ctx context.Context, req *api.UpdateAlgorithmTypeRequest) (*api.UpdateAlgorithmTypeReply, error) {
-	return s.handle.UpdateAlgorithmType(ctx, req)
-}
-
-// 新增算法框架
-func (s *AlgorithmService) AddAlgorithmFramework(ctx context.Context, req *api.AddAlgorithmFrameworkRequest) (*api.AddAlgorithmFrameworkReply, error) {
-	return s.handle.AddAlgorithmFramework(ctx, req)
-}
-
-// 查询算法框架列表
-func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
-	return s.handle.ListAlgorithmFramework(ctx, req)
-}
-
-// 查询单个算法框架
-func (s *AlgorithmService) GetAlgorithmFramework(ctx context.Context, req *api.GetAlgorithmFrameworkRequest) (*api.GetAlgorithmFrameworkReply, error) {
-	return s.handle.GetAlgorithmFramework(ctx, req)
-}
-
-// 删除算法框架
-func (s *AlgorithmService) DeleteAlgorithmFramework(ctx context.Context, req *api.DeleteAlgorithmFrameworkRequest) (*api.DeleteAlgorithmFrameworkReply, error) {
-	return s.handle.DeleteAlgorithmFramework(ctx, req)
-}
-
-// 修改算法框架描述
-func (s *AlgorithmService) UpdateAlgorithmFramework(ctx context.Context, req *api.UpdateAlgorithmFrameworkRequest) (*api.UpdateAlgorithmFrameworkReply, error) {
-	return s.handle.UpdateAlgorithmFramework(ctx, req)
 }
 
 // 查询预置算法列表
@@ -156,6 +106,11 @@ func (s *AlgorithmService) ConfirmUploadAlgorithm(ctx context.Context, req *api.
 	return s.handle.ConfirmUploadAlgorithmHandle(ctx, req)
 }
 
+// 修改算法
+func (s *AlgorithmService) UpdateAlgorithm(ctx context.Context, req *api.UpdateAlgorithmRequest) (*api.UpdateAlgorithmReply, error) {
+	return s.handle.UpdateAlgorithmHandle(ctx, req)
+}
+
 // 新增我的算法版本
 func (s *AlgorithmService) AddMyAlgorithmVersion(ctx context.Context, req *api.AddMyAlgorithmVersionRequest) (*api.AddMyAlgorithmVersionReply, error) {
 	return s.handle.AddMyAlgorithmVersionHandle(ctx, req)
@@ -184,6 +139,11 @@ func (s *AlgorithmService) DeletePreAlgorithmVersion(ctx context.Context, req *a
 // 删除预置算法
 func (s *AlgorithmService) DeletePreAlgorithm(ctx context.Context, req *api.DeletePreAlgorithmRequest) (*api.DeletePreAlgorithmReply, error) {
 	return s.handle.DeletePreAlgorithmHandle(ctx, req)
+}
+
+// 修改算法版本
+func (s *AlgorithmService) UpdateAlgorithmVersion(ctx context.Context, req *api.UpdateAlgorithmVersionRequest) (*api.UpdateAlgorithmVersionReply, error) {
+	return s.handle.UpdateAlgorithmVersionHandle(ctx, req)
 }
 
 // 压缩算法版本包

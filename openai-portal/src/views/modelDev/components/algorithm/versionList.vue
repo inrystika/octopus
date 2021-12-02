@@ -23,17 +23,6 @@
             <span>{{ scope.row.userName }}</span>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="算法状态" props="status">
-          <template slot-scope="scope">
-            <span>{{ getAlgorithmStatus(scope.row.fileStatus) }}</span>
-          </template>
-        </el-table-column> -->
-        <!-- <el-table-column label="上传进度" v-if="algorithmTabType == 1">
-          <template slot-scope="scope">
-            <span v-if="scope.row.progress&&scope.row.progress!=0" style="color:#409EFF">{{
-              scope.row.progress+'%' }}</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="算法状态">
           <template slot-scope="scope">
             <span v-if="!(scope.row.progress&&scope.row.progress!=0)">{{ getAlgorithmStatus(scope.row.fileStatus)
@@ -69,7 +58,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="block">
+      <div class="pagination">
         <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
           layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
           @current-change="handleCurrentChange" />
@@ -394,3 +383,9 @@
     }
   }
 </script>
+<style lang="scss" scoped>
+  .pagination {
+    float: right;
+    margin: 20px;
+  }
+</style>

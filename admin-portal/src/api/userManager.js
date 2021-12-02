@@ -109,7 +109,9 @@ export function updateUserConfig(userId,params) {
   return request({
     url: `/v1/usermanage/user/${userId}/config`,
     method: 'put',
-    params
+    data: {
+      config: params
+    }
   })
 }
 

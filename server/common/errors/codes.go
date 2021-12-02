@@ -15,6 +15,7 @@ const (
 	ErrorOperateDirFailed          = 10011 // 操作文件夹失败
 	ErrorOperateFileFailed         = 10012 // 操作文件失败
 	ErrorConfigValueValidateFailed = 10013 // 校验配置值失败
+	ErrorFormatParseFailed         = 10014 // 格式解析失败
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -102,10 +103,6 @@ const (
 	ErrorAlgorithmAccessVersionExisted         = 12009 // 公共算法版本已存在
 	ErrorAlgorithmVersionFileNotReady          = 12010 // 旧版本算法文件状态未就绪
 	ErrorAlgorithmVersionUploadAuth            = 12011 // 无权提交此算法版本文件
-	ErrorAlgorithmTypeRefered                  = 12012 // 算法类型被引用，不能删除
-	ErrorAlgorithmFrameworkRefered             = 12013 // 算法框架被引用，不能删除
-	ErrorAlgorithmTypeRepeated                 = 12014 // 算法类型重复
-	ErrorAlgorithmFrameworkRepeated            = 12015 // 算法框架重复
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError    = 13001 // 制作镜像状态异常
@@ -178,14 +175,18 @@ const (
 	ErrorModelVersionFileExisted        = 18005 // 模型版本文件已存在
 	ErrorModelCreateAlgorithmNotExisted = 18006 // 创建模型时归属算法不存在
 
-	/* 19001~20000 数据集管理错误*/
+	/* 19001~19500 数据集管理错误*/
 	ErrorDatasetFileNotFound    = 19001 // 数据集文件不存在
 	ErrorDatasetAlreadyShared   = 19002 // 数据集已分享
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
-	ErrorDatasetTypeRefered     = 19006 // 数据集类型被引用，不能删除
-	ErrorDatasetTypeRepeated    = 19007 // 数据集类型重复
+
+	/* 19501~20000 标签管理错误*/
+	ErrorLableRefered   = 19501 // 标签被引用，不能删除
+	ErrorLableRepeated  = 19502 // 标签重复
+	ErrorLableIllegal   = 19503 // 标签不合法
+	ErrorLableNotModify = 19504 // 预置标签不可更改
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat              = 20001 // 平台名称重复
@@ -220,6 +221,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorOperateDirFailed:          {codeType: Internal, msg: "dir operate failed"},
 	ErrorOperateFileFailed:         {codeType: Internal, msg: "file operate failed"},
 	ErrorConfigValueValidateFailed: {codeType: Internal, msg: "config value validate failed"},
+	ErrorFormatParseFailed:         {codeType: Internal, msg: "format parse failed"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},
@@ -299,10 +301,6 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAlgorithmVersionFileExisted:           {codeType: AlreadyExists, msg: "AlgorithmVersion FileExists"},
 	ErrorAlgorithmAccessVersionExisted:         {codeType: AlreadyExists, msg: "AlgorithmAccessVersion Exists"},
 	ErrorAlgorithmVersionUploadAuth:            {codeType: InvalidArgument, msg: "AlgorithmVersionUpload Auth Wrong"},
-	ErrorAlgorithmTypeRefered:                  {codeType: OutOfRange, msg: "type refered"},
-	ErrorAlgorithmFrameworkRefered:             {codeType: OutOfRange, msg: "framework refered"},
-	ErrorAlgorithmTypeRepeated:                 {codeType: OutOfRange, msg: "type repeated"},
-	ErrorAlgorithmFrameworkRepeated:            {codeType: OutOfRange, msg: "framework repeated"},
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError:    {codeType: OutOfRange, msg: "make image status error"},
@@ -380,8 +378,12 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
-	ErrorDatasetTypeRefered:     {codeType: OutOfRange, msg: "type refered"},
-	ErrorDatasetTypeRepeated:    {codeType: OutOfRange, msg: "type repeated"},
+
+	/* 19501~20000 标签管理错误*/
+	ErrorLableRefered:   {codeType: Unimplemented, msg: "lable refered"},
+	ErrorLableRepeated:  {codeType: AlreadyExists, msg: "lable repeated"},
+	ErrorLableIllegal:   {codeType: InvalidArgument, msg: "lable illegal"},
+	ErrorLableNotModify: {codeType: OutOfRange, msg: "lable not modify"},
 
 	/* 20001-21000 第三方平台管理错误*/
 	ErrorPlatformNameRepeat:              {codeType: AlreadyExists, msg: "platform existed"},

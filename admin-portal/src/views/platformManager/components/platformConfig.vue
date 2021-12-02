@@ -9,12 +9,13 @@
       <el-form 
         :model="ruleForm"
         :rules="rules"
-        ref="ruleForm"        
+        ref="ruleForm"
+        v-loading="loading"  
       >
         <el-form-item>
           <div v-for="(item, index) in ruleForm.platformConfig" :key="index">
             <el-form-item>
-              <strong>{{item.key+": "}}</strong>
+              <strong>{{item.title+": "}}</strong>
               <el-popover
                 placement="top"
                 width="400"
@@ -64,12 +65,12 @@ export default {
         platformConfig: {
           required: true, message: '请选择配置信息', trigger: ['change', 'blur']
         },
-      }
+      },
+      loading: true
     }
   },
   created() {
     this.getPlatformConfigKey()
-    this.getPlatformConfigValue()
   },
   methods: {
     getErrorMsg(code) {
@@ -82,6 +83,7 @@ export default {
       getPlatformConfigKey().then(response => {
         if (response.success) {
           this.platformConfigKeyList = response.data.configKeys
+          this.getPlatformConfigValue()
         } else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
@@ -97,6 +99,7 @@ export default {
           let configValue = response.data.config
           this.judgeObjectEmpty(configValue)
         } else {
+          this.loading = false
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
             type: 'warning'
@@ -129,14 +132,7 @@ export default {
             })
         })
       }
-      // this.ruleForm.platformConfig.push({
-      //   key: "test1",
-      //   value: "",
-      //   type: "radio",
-      //   options: "yes",
-      //   title: "test title",
-      //   desc: "this is desc"
-      // })
+      this.loading = false
     },
     update(formName) {
       const params = {}

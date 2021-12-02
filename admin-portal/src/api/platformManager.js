@@ -10,6 +10,8 @@ export function judgeParam(params) {
   params.createdAtGte?conditions.push(`createdAtGte=`+params.createdAtGte):null;
   params.createdAtLt?conditions.push(`createdAtLt=`+params.createdAtLt):null;
   params.name?conditions.push(`name=`+params.name):null;
+  params.status?conditions.push(`status=`+params.status):null;
+  params.platformId?conditions.push(`name=`+params.platformId):null;
   return conditions
 }
 
@@ -64,7 +66,9 @@ export function updatePlatformConfig(platformId,params) {
   return request({
     url: `/v1/platformmanage/platform/${platformId}/config`,
     method: 'put',
-    params
+    data: {
+      config: params
+    }
   })
 }
 
@@ -79,5 +83,13 @@ export function getPlatformConfigValue(platformId) {
   return request({
     url: `/v1/platformmanage/platform/${platformId}/config`,
     method: 'get'
+  })
+}
+
+export function getPlatformTrainingTaskList(params) {
+  let conditions = judgeParam(params)
+  return request({
+    url: '/v1/platformmanage/platform/trainjob?' + conditions.join("&"),
+    method: 'get',
   })
 }

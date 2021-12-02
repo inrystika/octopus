@@ -37,6 +37,7 @@ type Data struct {
 	WorkspaceDao        dao.WorkspaceDao
 	ImageDao            dao.ImageDao
 	BillingDao          dao.BillingDao
+	LableDao            dao.LableDao
 	PlatformTrainJobDao platformDao.PlatformTrainJobDao
 	Pipeline            pipeline.Pipeline
 	Cluster             cluster.Cluster
@@ -79,6 +80,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.ImageDao = dao.NewImageDao(db, logger)
 	d.TrainJobDao = dao.NewTrainJobDao(db, influxdb, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
+	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
 	cluster, clusterCancel := cluster.NewCluster(confData, logger)
@@ -115,16 +117,6 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 	err = db.AutoMigrate(&model.AdminUser{})
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.AutoMigrate(&model.AlgorithmType{})
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.AutoMigrate(&model.AlgorithmFramework{})
 	if err != nil {
 		return nil, err
 	}
@@ -219,11 +211,6 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&model.DatasetType{})
-	if err != nil {
-		return nil, err
-	}
-
 	err = db.AutoMigrate(&model.Dataset{})
 	if err != nil {
 		return nil, err
@@ -255,6 +242,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.BillingPayRecord{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.Lable{})
 	if err != nil {
 		return nil, err
 	}

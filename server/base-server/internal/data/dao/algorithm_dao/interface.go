@@ -10,30 +10,6 @@ import (
 )
 
 type AlgorithmDao interface {
-	// 新增算法类型
-	AddAlgorithmType(ctx context.Context, req *model.AlgorithmType) error
-	// 查询算法类型列表
-	ListAlgorithmType(ctx context.Context, req *model.AlgorithmTypeQuery) ([]*model.AlgorithmType, int64, error)
-	// 查询单个算法类型
-	GetAlgorithmType(ctx context.Context, id string) (*model.AlgorithmType, error)
-	QueryAlgorithmType(ctx context.Context, typeDesc string) (*model.AlgorithmType, error)
-	// 删除算法类型
-	DeleteAlgorithmType(ctx context.Context, id string) error
-	// 修改算法类型描述
-	UpdateAlgorithmType(ctx context.Context, req *model.AlgorithmType) error
-
-	// 新增算法框架
-	AddAlgorithmFramework(ctx context.Context, req *model.AlgorithmFramework) error
-	// 查询算法框架列表
-	ListAlgorithmFramework(ctx context.Context, req *model.AlgorithmFrameworkQuery) ([]*model.AlgorithmFramework, int64, error)
-	// 查询单个算法框架
-	GetAlgorithmFramework(ctx context.Context, id string) (*model.AlgorithmFramework, error)
-	QueryAlgorithmFramework(ctx context.Context, frameworkDesc string) (*model.AlgorithmFramework, error)
-	// 删除算法框架
-	DeleteAlgorithmFramework(ctx context.Context, id string) error
-	// 修改算法框架描述
-	UpdateAlgorithmFramework(ctx context.Context, req *model.AlgorithmFramework) error
-
 	// 算法列表查询
 	ListAlgorithm(ctx context.Context, req *model.AlgorithmList) (int64, []*model.Algorithm, error)
 	// 查询算法

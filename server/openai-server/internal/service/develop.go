@@ -200,16 +200,16 @@ func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.Note
 	return reply, nil
 }
 
+
 // 保存notebook
 func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
 	session := session.SessionFromContext(ctx)
 	if session == nil {
 		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
 	}
-
 	userId := commctx.UserIdFromContext(ctx)
-    spaceId := session.GetWorkspace()
-    // create a new image to make
+	spaceId := session.GetWorkspace()
+	// create a new image to make
 	reply, err  := s.data.ImageClient.AddImage(ctx, &innerapi.AddImageRequest{
 		ImageName:        req.ImageName,
 		ImageVersion:     req.ImageVersion,
@@ -232,4 +232,37 @@ func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 		return nil, err
 	}
 	return &api.SaveNotebookReply{}, nil
+}
+
+func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+
+	err := s.checkPermission(ctx, req.NotebookId, session.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+
+	innerReq := &innerapi.ListNotebookEventRecordRequest{}
+	err = copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DevelopClient.ListNotebookEventRecord(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListNotebookEventRecordReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }

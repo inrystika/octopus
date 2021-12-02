@@ -147,26 +147,28 @@ message PlatformTrainJob{
   string name = 2;
   //platformId
   string platformId = 3;
+  //platformName
+  string platformName = 4;
   //job描述
-  string desc = 4;
+  string desc = 5;
   //数据集
-  repeated PlatformDataset datasets = 5;
+  repeated PlatformDataset datasets = 6;
   //镜像
-  PlatformImage image = 6;
+  PlatformImage image = 7;
   //子任务配置信息
-  repeated PlatformTask tasks = 7;
+  repeated PlatformTask tasks = 8;
   //创建时间
-  int64 createdAt = 8;
+  int64 createdAt = 9;
   //更新时间
-  int64 updatedAt = 9;
+  int64 updatedAt = 10;
   //任务状态
-  string status   = 10;
+  string status   = 11;
   //job完成时间
-  int64  completedAt = 11;
+  int64  completedAt = 12;
   //运行时
-  int64 runSec = 12;
+  int64 runSec = 13;
   //启动时间
-  int64  startedAt = 13;
+  int64  startedAt = 14;
 }
 
 

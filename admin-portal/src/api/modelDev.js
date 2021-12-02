@@ -33,6 +33,14 @@ export async function getNotebookInfo(params) {
   return res
 }
 
+export async function getNotebookEventRecord(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${params.id}/eventrecord?pageSize=${params.pageSize}&pageIndex=${params.pageIndex}`,
+    method: 'get',
+  })
+  return res
+}
+
 export async function stopNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}/stop`,
@@ -148,7 +156,7 @@ export async function deletePreAlgorithm(algorithmId) {
 }
 export async function algorithmType(params) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype`,
+    url: `/v1/algorithmmanage/algorithmapply`,
     method: "get",
     params: params
   })
@@ -156,22 +164,22 @@ export async function algorithmType(params) {
 }
 export async function addAlgorithmType(data) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype`,
+    url: `/v1/algorithmmanage/algorithmapply`,
     method: "post",
-    data: { typeDesc: data }
+    data: { lableDesc: data }
   })
   return res
 }
 export async function deleteAlgorithmType(params) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype/${params}`,
+    url: `/v1/algorithmmanage/algorithmapply/${params}`,
     method: "delete"
   })
   return res
 }
 export async function updateAlgorithmType(data) {
   const res = await request({
-    url: `/v1/algorithmmanage/algorithmtype/${data.id}`,
+    url: `/v1/algorithmmanage/algorithmapply/${data.id}`,
     method: "put",
     data: data
   })
@@ -189,7 +197,7 @@ export async function addFrameType(data) {
   const res = await request({
     url: `/v1/algorithmmanage/algorithmframework`,
     method: "post",
-    data: { frameworkDesc: data }
+    data: { lableDesc: data }
   })
   return res
 }
@@ -205,6 +213,15 @@ export async function updateFrameType(data) {
     url: `/v1/algorithmmanage/algorithmframework/${data.id}`,
     method: "put",
     data: data
+  })
+  return res
+}
+// 修改我的算法
+export async function editeAlgorithm(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/prealgorithm/${params.algorithmId}`,
+    method: "put",
+    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript }
   })
   return res
 }

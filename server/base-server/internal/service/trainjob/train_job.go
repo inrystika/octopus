@@ -38,11 +38,11 @@ type trainJobService struct {
 	conf                *conf.Bootstrap
 	log                 *log.Helper
 	data                *data.Data
-	workspaceService    api.WorkspaceServer
-	algorithmService    api.AlgorithmServer
-	imageService        api.ImageServer
+	workspaceService    api.WorkspaceServiceServer
+	algorithmService    api.AlgorithmServiceServer
+	imageService        api.ImageServiceServer
 	datasetService      api.DatasetServiceServer
-	modelService        api.ModelServer
+	modelService        api.ModelServiceServer
 	resourceSpecService api.ResourceSpecServiceServer
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
@@ -55,8 +55,8 @@ type TrainJobService interface {
 }
 
 func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
-	workspaceService api.WorkspaceServer, algorithmService api.AlgorithmServer,
-	imageService api.ImageServer, datasetService api.DatasetServiceServer, modelService api.ModelServer,
+	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
+	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
 	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (TrainJobService, error) {
 	log := log.NewHelper("TrainJobService", logger)
@@ -884,7 +884,7 @@ func (s *trainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobT
 	}
 	return &api.CopyJobTemplateReply{
 		TemplateId: newJobTemplateId,
-	},nil
+	}, nil
 }
 
 func (s *trainJobService) convertTemplateFromDb(jobDb *model.TrainJobTemplate) (*api.TrainJobTemplate, error) {
@@ -1011,7 +1011,7 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 	}
 
 	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
-		strings.EqualFold(info.Job.State, pipeline.FAILED){
+		strings.EqualFold(info.Job.State, pipeline.FAILED) {
 		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
 			SpaceId:          trainJob.WorkspaceId,
 			UserId:           trainJob.UserId,
