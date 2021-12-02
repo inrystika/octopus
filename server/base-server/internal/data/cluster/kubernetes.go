@@ -450,12 +450,9 @@ func (kc *kubernetesCluster) GetPodInformer() infov1.PodInformer {
 }
 
 func (kc *kubernetesCluster) CreateNodeAction(ctx context.Context, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error){
-	//
-	//	kc.vcClient.SchedulingV1beta1().Queues()
-	//kc.naClient.AgentV1().
-	return nil, nil
+	return kc.naClient.AgentV1().NodeActions("").Create(ctx, nodeAction, metav1.CreateOptions{})
 }
 
 func (kc *kubernetesCluster) GetNodeAction(ctx context.Context, name string) (*nav1.NodeAction, error) {
-	return nil, nil
+	return kc.naClient.AgentV1().NodeActions("").Get(ctx, name, metav1.GetOptions{})
 }
