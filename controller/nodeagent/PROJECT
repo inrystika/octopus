@@ -1,0 +1,17 @@
+domain: octopus.openi.org.cn
+layout:
+- go.kubebuilder.io/v3
+multigroup: true
+projectName: nodeagent
+repo: octopus.openi.org.cn/nodeagent
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: octopus.openi.org.cn
+  group: agent
+  kind: NodeAction
+  path: octopus.openi.org.cn/nodeagent/apis/agent/v1
+  version: v1
+version: "3"
