@@ -57,12 +57,62 @@ func (s *ModelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 
 // 停止模型服务
 func (s *ModelDeployService) StopDepModel(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
-	return nil, nil
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+	//查询任务是否存在及用户是否一致
+	depInfo, err := s.data.ModelDeployClient.GetModelDepInfo(ctx, &innerapi.DepInfoRequest{Id: req.Id})
+	if err != nil {
+		return nil, err
+	}
+	if depInfo.DepInfo.UserId != session.UserId {
+		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
+	}
+	innerReq := &innerapi.StopDepRequest{
+		Id:        req.Id,
+		Operation: "user stop job",
+	}
+	reply, err := s.data.ModelDeployClient.StopDepModel(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+	return &api.StopDepReply{StoppedAt: reply.StoppedAt}, nil
 }
 
 //删除模型服务
 func (s *ModelDeployService) DeleteDepModel(ctx context.Context, req *api.DeleteDepRequest) (*api.DeleteDepReply, error) {
-	return nil, nil
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+	err := s.checkPermission(ctx, req.JobIds, session.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	innerReq := &innerapi.DeleteDepRequest{UserId: session.UserId, JobIds: req.JobIds}
+	reply, err := s.data.ModelDeployClient.DeleteDepModel(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeleteDepReply{DeletedAt: reply.DeletedAt}, nil
+}
+
+func (s *ModelDeployService) checkPermission(ctx context.Context, serviceIds []string, userId string) error {
+	for _, jobId := range serviceIds {
+		reply, err := s.data.ModelDeployClient.GetModelDepInfo(ctx, &innerapi.DepInfoRequest{Id: jobId})
+		if err != nil {
+			return err
+		}
+
+		if reply.DepInfo.UserId != userId {
+			return errors.Errorf(nil, errors.ErrorNotAuthorized)
+		}
+	}
+	return nil
 }
 
 // 获取模型服务详情

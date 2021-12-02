@@ -168,9 +168,6 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 	}, nil
 }
 
-type deployInfo struct {
-}
-
 type closeFunc func(ctx context.Context) error
 
 func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *model.ModelDeploy, startJobInfo *startJobInfo) (closeFunc, string ,error) {

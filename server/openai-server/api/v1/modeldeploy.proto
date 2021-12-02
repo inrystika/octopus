@@ -68,19 +68,23 @@ message DepReply {
 }
 
 message StopDepRequest {
-
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
 }
 
 message StopDepReply {
-
+  //停止时间
+  int64 stoppedAt = 1;
 }
 
 message DeleteDepRequest {
-
+  //任务ID
+  repeated string jobIds = 1[(validate.rules).repeated.min_items = 1];
 }
 
 message DeleteDepReply {
-
+  //删除时间
+  int64 deletedAt = 1;
 }
 
 
