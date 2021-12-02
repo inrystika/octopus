@@ -24,6 +24,7 @@ type Image struct {
 	Accesses       []*ImageAccess `gorm:"foreignKey:ImageId"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"index:in_iv_sid_uid_da"`
+	ImageType      int32          `gorm:"type:int;not null;default:0;comment:'镜像类型'"` // deprecated
 }
 
 func (Image) TableName() string {

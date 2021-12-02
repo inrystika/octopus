@@ -305,15 +305,25 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 			IsPrefab:     imageAdd.IsPrefab,
 		}
 		imageAdd.ImageAddr = s.generateImageRepositoryPath(&im)
-		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
 	} else if req.SourceType == pb.ImageSourceType_IMAGE_SOURCE_TYPE_REMOTE {
 		// 远程镜像类型，无需上传，保存镜像地址
 		if imageAdd.ImageAddr == "" {
 			return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 		}
-		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_MADE)
+	} else if req.SourceType == pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED {
+		im := model.Image{
+			SpaceId:      imageAdd.SpaceId,
+			UserId:       imageAdd.UserId,
+			ImageName:    imageAdd.ImageName,
+			ImageVersion: imageAdd.ImageVersion,
+			IsPrefab:     imageAdd.IsPrefab,
+		}
+		imageAdd.ImageAddr = s.generateImageRepositoryPath(&im)
+	} else {
+		return nil, errors.Errorf(nil, errors.ErrorImageSourceType)
 	}
 
+	imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
 	image, err := s.data.ImageDao.Add(ctx, imageAdd)
 	if err != nil {
 		return nil, err
@@ -457,6 +467,15 @@ func (s *ImageService) generateImageRepository(image *model.Image) string {
 func (s *ImageService) generateImageRepositoryPath(image *model.Image) string {
 	if image == nil {
 		return ""
+	}
+
+	// support the historical data inversion function
+	if image.ImageType > 0 {
+		if image.IsPrefab == int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES) {
+			return fmt.Sprintf("%s/%s/%s/%v", common.PREAB_FOLDER, image.UserId, image.ImageName, image.ImageType)
+		} else {
+			return fmt.Sprintf("%s/%s/%s/%v", image.SpaceId, image.UserId, image.ImageName, image.ImageType)
+		}
 	}
 
 	if image.IsPrefab == int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES) {

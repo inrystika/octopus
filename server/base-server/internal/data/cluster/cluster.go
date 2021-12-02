@@ -2,14 +2,21 @@ package cluster
 
 import (
 	"context"
-
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/rest"
+	nav1 "nodeagent/apis/agent/v1"
 )
 
+type ClusterClient interface {
+	GetNodeInformer() infov1.NodeInformer
+	GetPodInformer()  infov1.PodInformer
+}
+
 type Cluster interface {
+	ClusterClient
 	GetClusterConfig() *rest.Config
 	GetAllNodes(ctx context.Context) (map[string]v1.Node, error)
 	GetRunningTasks(context.Context) (*v1.PodList, error)
@@ -35,4 +42,6 @@ type Cluster interface {
 	DeletePersistentVolume(ctx context.Context, name string) error
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, name string) error
 	DeleteSecret(ctx context.Context, namespace string, name string) error
+	CreateNodeAction(ctx context.Context, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error)
+	GetNodeAction(ctx context.Context, name string) (*nav1.NodeAction, error)
 }

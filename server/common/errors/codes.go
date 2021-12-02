@@ -113,6 +113,9 @@ const (
 	ErrorImageExisted            = 13003 // 镜像已存在
 	ErrorImageNotExist           = 13004 // 镜像不存在
 	ErrorImageOpForbidden        = 13005 // 无权限镜像操作
+	ErrorImageSourceType         = 13006 // 不支持的镜像来源
+	ErrorImageContainerCommitError        = 13007 // 容器提交操作失败
+	ErrorImagePushFailed         = 13008 // 推送镜像操作失败
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden          = 14001 // notebook状态不允许操作
@@ -307,6 +310,9 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorImageExisted:            {codeType: AlreadyExists, msg: "image exists"},
 	ErrorImageNotExist:           {codeType: NotFound, msg: "image not exists"},
 	ErrorImageOpForbidden:        {codeType: PermissionDenied, msg: "image operation forbidden"},
+	ErrorImageSourceType:         {codeType: Unimplemented, msg: "error image source type"},
+	ErrorImageContainerCommitError: {codeType: Unimplemented, msg: "error commit container"},
+	ErrorImagePushFailed:         {codeType: OutOfRange, msg: "error push image"},
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden:          {codeType: OutOfRange, msg: "status forbidden"},

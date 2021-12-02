@@ -842,7 +842,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
 		for i := 0; i < n.TaskNumber; i++ {
-			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Url: buildNotebookUrl(n.NotebookJobId, i)})
+			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i) ,Url: buildNotebookUrl(n.NotebookJobId, i)})
 		}
 		notebooks = append(notebooks, notebook)
 	}
@@ -891,4 +891,29 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 		TotalSize:      totalSize,
 		NotebookEvents: notebookEvents,
 	}, nil
+}
+
+func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	if err != nil {
+		return nil, err
+	}
+	if !pipeline.JobRunningState(notebook.Status) {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
+	//originImage, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: notebook.ImageId})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//newImage, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: req.ImageId})
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	// acc node agent to commit image
+	return nil, nil
+}
+
+func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, error) {
+	return "", nil
 }

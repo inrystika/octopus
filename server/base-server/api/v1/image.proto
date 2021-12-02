@@ -49,6 +49,7 @@ enum ImageSourceType
     IMAGE_SOURCE_TYPE_PLACEHOLDER = 0;
     IMAGE_SOURCE_TYPE_UPLOADED    = 1;
     IMAGE_SOURCE_TYPE_REMOTE      = 2;
+    IMAGE_SOURCE_TYPE_SAVED       = 3;
 }
 
 enum ImageIsPrefab

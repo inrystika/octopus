@@ -81,7 +81,8 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.BillingDao = dao.NewBillingDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
-	d.Cluster = cluster.NewCluster(confData, logger)
+	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	d.Cluster = cluster
 	d.Minio = minio.NewMinio(confData, logger)
 	d.Registry = registry.NewRegistry(confData, logger)
 	redis, err := redis.NewRedis(confData, logger)
@@ -95,6 +96,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
 
 	return d, func() {
+		clusterCancel()
 		redis.Close()
 	}, nil
 }
