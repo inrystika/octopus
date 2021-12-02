@@ -43,5 +43,13 @@ message Data {
 }
 
 message Service {
+  message WebConfig {
+      string logoAddr = 1;
+      string themeColor = 2;
+      string systemNameEn = 3;
+      string systemNameZh = 4;
+  }
   int64 tokenExpirationSec = 1;
+  WebConfig webConfig = 2;
+
 }

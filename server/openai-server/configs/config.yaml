@@ -17,3 +17,9 @@ data:
     password: abcde
 service:
   tokenExpirationSec: 86400
+  webConfig:
+    logoAddr:
+    #格式如#94070a
+    themeColor:
+    systemNameEn:
+    systemNameZh:
