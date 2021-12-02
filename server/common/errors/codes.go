@@ -181,6 +181,7 @@ const (
 
 	/* 21001~22000 训练管理错误*/
 	ErrorModelDeployForbidden = 21001 // 部署使用计算框架不在权限范围内
+	ErrorModelDeployFailed = 21002   // 创建模型部署服务失败
 )
 
 type codeMsg struct {

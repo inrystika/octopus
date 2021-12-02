@@ -32,6 +32,10 @@ const (
 	PytorchFrame    = "pytorch"
 	ModelVolumePath = "model_volume_path"
 	SeldonDockerWorkDir = "/app/models"
+	PredictorSpecName = "default"
+	SeldonNameSpace = "model-infer"
+	SeldonInUrl = "/seldon/"
+	ServiceUrlSuffix = "/api/v1.0/predictions"
 	UserModelDir    = "user_model_dir"
 	STATE_AVAILABLE = "Available"
 	STATE_CREATING  = "Creating"
@@ -142,7 +146,7 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 		return nil, err
 	}
 	//submit deploy job
-	closeFunc, err := s.submitDeployJob(ctx, deployJob, startJobInfo)
+	closeFunc, modelInferServiceUrl,err := s.submitDeployJob(ctx, deployJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
 		if err != nil {
 			_ = closeFunc(ctx)
@@ -157,7 +161,11 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 		return nil, err
 	}
 
-	return nil, nil
+	return &api.DepReply{
+		ServiceId: modelServiceId,
+		ServiceUrl: modelInferServiceUrl,
+		Message: "deploy model infer service successfully!",
+	}, nil
 }
 
 type deployInfo struct {
@@ -165,7 +173,7 @@ type deployInfo struct {
 
 type closeFunc func(ctx context.Context) error
 
-func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *model.ModelDeploy, startJobInfo *startJobInfo) (closeFunc, error) {
+func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *model.ModelDeploy, startJobInfo *startJobInfo) (closeFunc, string ,error) {
 	var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
@@ -267,7 +275,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	var replica int32 = deployJobNum
 	predictors := make([]seldonv1.PredictorSpec, 0)
 	predictor := seldonv1.PredictorSpec{
-		Name:           "default",
+		Name:           PredictorSpecName,
 		Replicas:       &replica,
 		ComponentSpecs: seldonPodSpecs,
 		Graph:          graph,
@@ -282,25 +290,23 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: modelDeploy.UserId,
 			Name: modelDeploy.UserId,
+			Namespace: SeldonNameSpace,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
 			Predictors: predictors,
 		},
 	}
 
-	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), modelDeploy.UserId, modelSeldonDep)
+	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), SeldonNameSpace, modelSeldonDep)
 
 	if error != nil {
-
+		return nil, "",errors.Errorf(err, errors.ErrorModelDeployFailed)
 	}
-	//if modelDeploy.Id != submitJobReply.JobId {
-	//	return nil, errors.Errorf(err, errors.ErrorPipelineDoRequest)
-	//}
 
-	return resFunc, nil
+	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + SeldonNameSpace + "/" + modelDeployName + ServiceUrlSuffix
 
+	return resFunc, serviceUrl, nil
 }
 
 func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.ModelDeploy) (*startJobInfo, error) {

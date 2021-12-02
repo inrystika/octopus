@@ -47,6 +47,8 @@ data:
     username: octopus
     password: octopus
     database: octopus
+  ambassador:
+    addr: 192.168.203.156:31812
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset

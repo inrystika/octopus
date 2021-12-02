@@ -87,6 +87,10 @@ message Influxdb {
   string Precision = 5;
 }
 
+message Ambassador {
+  string addr = 1;
+}
+
 message Data {
   Database database = 1;
   Pipeline pipeline = 2;
@@ -95,6 +99,7 @@ message Data {
   Harbor harbor = 5;
   Redis redis = 6;
   Influxdb influxdb = 7;
+  Ambassador ambassador = 8;
 }
 
 message Develop {
