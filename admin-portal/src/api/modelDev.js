@@ -33,6 +33,14 @@ export async function getNotebookInfo(params) {
   return res
 }
 
+export async function getNotebookEventRecord(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${params.id}/eventrecord?pageSize=${params.pageSize}&pageIndex=${params.pageIndex}`,
+    method: 'get',
+  })
+  return res
+}
+
 export async function stopNotebook(id) {
   const res = await request({
     url: `/v1/developmanage/notebook/${id}/stop`,

@@ -69,23 +69,40 @@ export default {
         replicaIndex: this.replicaIndex
       }
       getNotebookInfo(param).then(response => {
-        if (!response.success) {
-          this.subTaskInfo = "暂无相关运行信息"
-          return
+        if (response.success){
+          this.total = response.payload.totalSize
+          let infoMessage = ""
+          response.payload.notebookEvents.forEach(function(element) {
+            const title = element.reason
+            const message = element.message
+            infoMessage += "\n" + "[" + title + "]"
+            infoMessage += "\n" + "[" + message + "]" + "\n"
+          })
+          this.subTaskInfo = infoMessage
+        } else {
+          const data = {
+            id: this.notebookInfo.notebookJobId,
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize,
+            taskIndex: 0,
+            replicaIndex: 0
+          }
+          getNotebookInfo(data).then(response => {
+            if (response.success) {
+              this.total = response.payload.totalSize
+              let vcMessage = ""
+              response.payload.notebookEvents.forEach(function(element) {
+                const title = element.reason
+                const message = element.message
+                vcMessage += "\n" + "[" + title + "]"
+                vcMessage += "\n" + "[" + message + "]" + "\n"
+              })
+              this.subTaskInfo = vcMessage
+            } else {
+              this.subTaskInfo = "暂无相关运行信息"
+            }
+          })
         }
-
-        this.total = response.payload.totalSize
-
-        let infoMessage = ""
-
-        response.payload.notebookEvents.forEach(function(element) {
-          const title = element.reason
-          const message = element.message
-          infoMessage += "\n" + "[" + title + "]"
-          infoMessage += "\n" + "[" + message + "]" + "\n"
-        })
-
-        this.subTaskInfo = infoMessage
       }).catch(err => {
         console.log("err:", err)
         this.$message({

@@ -139,7 +139,6 @@ message Notebook {
   string resourceSpecId = 13;
   string resourceSpecName = 14;
   string status = 15;
-  string url = 16;
   string datasetId = 17;
   string datasetVersion = 18;
   string datasetName = 19;

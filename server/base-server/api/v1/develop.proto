@@ -99,7 +99,6 @@ message Notebook {
   string algorithmVersion = 10;
   string resourceSpecId = 11;
   string status = 12;
-  string url = 13;
   string imageName = 14;
   string algorithmName = 15;
   string resourceSpecName = 16;
