@@ -65,22 +65,11 @@
         <!-- 新增对话框 -->
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog
-            v-if="operateVisible"
-            :row="row"
-            :user-type="change"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-        />
+        <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
+            @close="close" />
         <!-- 用户配置对话框 -->
-        <userConfig
-          v-if="userConfigVisible"
-          :row="row"
-          @cancel="cancel"
-          @confirm="confirm"
-          @close="close"
-        >
+        <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
+            @confirm="confirm" @close="close">
         </userConfig>
         <!-- 详情对话框 -->
         <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
@@ -101,6 +90,7 @@
 
 <script>
     import { getUserList, groupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
+    import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import { parseTime } from '@/utils/index'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
@@ -142,7 +132,9 @@
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
-                }
+                },
+                conKey: [],
+                conValue: {}
             }
         },
         created() {
@@ -234,7 +226,8 @@
             },
             handleUserConfig(row) {
                 this.row = row
-                this.userConfigVisible = true
+                this.getUserConfigKey(row)
+                // this.userConfigVisible = true
             },
             handleDetail(row) {
                 if (this.user) {
@@ -328,8 +321,31 @@
             // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
+            },
+            // 获取用户配置信息
+            getUserConfigKey(row) {
+                getUserConfigKey().then(response => {
+                    if (response.success) {
+                        this.conKey = response.data.configKeys
+                        getUserConfig(row.id).then(response => {
+                            if (response.success) {
+                                this.conValue = response.data.config
+                                this.userConfigVisible = true
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
             }
-
         }
     }
 </script>
