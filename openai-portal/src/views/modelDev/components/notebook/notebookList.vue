@@ -63,11 +63,11 @@
             placement="top-start"
           >
             <div v-for="(item,index) in scope.row.tasks" :key="index">
-              <!-- <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button> -->
-              <el-button type="text" @click="jumpUrl(item.url)">子任务{{ index + 1 }}</el-button>
+              <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button>
+              <!-- <el-button type="text" @click="jumpUrl(item.url)">子任务{{ index + 1 }}</el-button> -->
             </div>
             <el-button
-              v-if="({'running':true})[scope.row.status] || false"
+              
               type="text"
               style="padding-right:10px"          
               slot="reference"
