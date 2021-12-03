@@ -1,0 +1,34 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions/status
+  verbs:
+  - get
+  - patch
+  - update

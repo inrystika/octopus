@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"os"
 	"path/filepath"
 	"server/base-server/internal/conf"
@@ -24,6 +25,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	nav1 "nodeagent/apis/agent/v1"
+	naclient "nodeagent/clients/agent/clientset/versioned"
 	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
 	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
 )
@@ -54,7 +57,7 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	return nil, fmt.Errorf("load kubernetes config failed %v %v", err1, err2)
 }
 
-func NewCluster(confData *conf.Data, logger log.Logger) Cluster {
+func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc) {
 	restConfig, err := buildConfigFromFlagsOrCluster(confData.Kubernetes.ConfigPath)
 	if err != nil {
 		panic(err)
@@ -62,11 +65,14 @@ func NewCluster(confData *conf.Data, logger log.Logger) Cluster {
 	return newKubernetesCluster(restConfig, logger)
 }
 
-func newKubernetesCluster(config *rest.Config, logger log.Logger) Cluster {
+func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
+	c, cancel := context.WithCancel(context.Background())
 	kc := &kubernetesCluster{
+		ctx:        c,
 		nodes:      make(map[string]*v1.Node),
 		kubeclient: kubernetes.NewForConfigOrDie(config),
 		vcClient:   vcclient.NewForConfigOrDie(config),
+		naClient:   naclient.NewForConfigOrDie(config),
 		log:        log.NewHelper("Cluster", logger),
 		config:     config,
 	}
@@ -89,18 +95,18 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) Cluster {
 		0,
 	)
 
-	ctx, cancel := context.WithCancel(context.TODO())
-	kc.Run(ctx.Done())
-	kc.WaitForCacheSync(ctx.Done())
-	cancel()
-	return kc
+	kc.Run()
+	kc.WaitForCacheSync()
+	return kc, cancel
 }
 
 type kubernetesCluster struct {
 	sync.Mutex
+	ctx        context.Context
 	log        *log.Helper
 	kubeclient *kubernetes.Clientset
 	vcClient   *vcclient.Clientset
+	naClient   *naclient.Clientset
 
 	nodeInformer infov1.NodeInformer
 
@@ -108,13 +114,13 @@ type kubernetesCluster struct {
 	config *rest.Config
 }
 
-func (kc *kubernetesCluster) Run(stopCh <-chan struct{}) {
-	go kc.nodeInformer.Informer().Run(stopCh)
+func (kc *kubernetesCluster) Run() {
+	go kc.nodeInformer.Informer().Run(kc.ctx.Done())
 }
 
 // WaitForCacheSync sync the cache with the api server
-func (kc *kubernetesCluster) WaitForCacheSync(stopCh <-chan struct{}) bool {
-	return cache.WaitForCacheSync(stopCh,
+func (kc *kubernetesCluster) WaitForCacheSync() bool {
+	return cache.WaitForCacheSync(kc.ctx.Done(),
 		func() []cache.InformerSynced {
 			informerSynced := []cache.InformerSynced{
 				kc.nodeInformer.Informer().HasSynced,
@@ -433,4 +439,20 @@ func (kc *kubernetesCluster) DeleteSecret(ctx context.Context, namespace string,
 		return errors.Errorf(err, errors.ErrorK8sDeleteSecretFailed)
 	}
 	return nil
+}
+
+func (kc *kubernetesCluster) GetNodeInformer() infov1.NodeInformer {
+	return kc.nodeInformer
+}
+
+func (kc *kubernetesCluster) GetPodInformer() infov1.PodInformer {
+	return nil
+}
+
+func (kc *kubernetesCluster) CreateNodeAction(ctx context.Context, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error){
+	return kc.naClient.AgentV1().NodeActions("").Create(ctx, nodeAction, metav1.CreateOptions{})
+}
+
+func (kc *kubernetesCluster) GetNodeAction(ctx context.Context, name string) (*nav1.NodeAction, error) {
+	return kc.naClient.AgentV1().NodeActions("").Get(ctx, name, metav1.GetOptions{})
 }
