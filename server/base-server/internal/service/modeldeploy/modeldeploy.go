@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -16,7 +16,6 @@ import (
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/log"
@@ -25,21 +24,22 @@ import (
 )
 
 const (
-	deployJobKind   = "deploy_job"
-	deployJobNum    = 1
-	MetaNamePrefix  = "deploy-"
-	TensorFlowFrame = "tensorflow"
-	PytorchFrame    = "pytorch"
-	ModelVolumePath = "model_volume_path"
+	deployJobKind       = "deploy_job"
+	deployJobNum        = 1
+	MetaNamePrefix      = "deploy-"
+	TensorFlowFrame     = "tensorflow"
+	PytorchFrame        = "pytorch"
+	ModelVolumePath     = "model_volume_path"
 	SeldonDockerWorkDir = "/app/models"
-	PredictorSpecName = "default"
-	SeldonNameSpace = "model-infer"
-	SeldonInUrl = "/seldon/"
-	ServiceUrlSuffix = "/api/v1.0/predictions"
-	UserModelDir    = "user_model_dir"
-	STATE_AVAILABLE = "Available"
-	STATE_CREATING  = "Creating"
-	STATE_FAILED    = "Failed"
+	PredictorSpecName   = "default"
+	SeldonInUrl         = "/seldon/"
+	ServiceUrlSuffix    = "/api/v1.0/predictions"
+	UserModelDir        = "user_model_dir"
+	STATE_PREPARING     = "Preparing"
+	STATE_AVAILABLE     = "Available"
+	STATE_CREATING      = "Creating"
+	STATE_FAILED        = "Failed"
+	STATE_STOPPED       = "Stopped"
 )
 
 type modelDeployService struct {
@@ -139,14 +139,14 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 		return nil, err
 	}
 	deployJob.Id = modelServiceId
-	deployJob.Status = pipeline.PREPARING
+	deployJob.Status = STATE_PREPARING
 	//模型部署参数校验
 	startJobInfo, err := s.checkParam(ctx, deployJob)
 	if err != nil {
 		return nil, err
 	}
 	//submit deploy job
-	closeFunc, modelInferServiceUrl,err := s.submitDeployJob(ctx, deployJob, startJobInfo)
+	closeFunc, modelInferServiceUrl, err := s.submitDeployJob(ctx, deployJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
 		if err != nil {
 			_ = closeFunc(ctx)
@@ -155,6 +155,7 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 	if err != nil {
 		return nil, err
 	}
+	deployJob.ServiceUrl = modelInferServiceUrl
 	//create recorde
 	err = s.data.ModelDeployDao.CreateModelDeployService(ctx, deployJob)
 	if err != nil {
@@ -162,15 +163,15 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 	}
 
 	return &api.DepReply{
-		ServiceId: modelServiceId,
+		ServiceId:  modelServiceId,
 		ServiceUrl: modelInferServiceUrl,
-		Message: "deploy model infer service successfully!",
+		Message:    "deploy model infer service successfully!",
 	}, nil
 }
 
 type closeFunc func(ctx context.Context) error
 
-func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *model.ModelDeploy, startJobInfo *startJobInfo) (closeFunc, string ,error) {
+func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *model.ModelDeploy, startJobInfo *startJobInfo) (closeFunc, string, error) {
 	var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
@@ -233,8 +234,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Value: SeldonDockerWorkDir,
 		},
 		{
-			Name: UserModelDir,
-			Type: "STRING",
+			Name:  UserModelDir,
+			Type:  "STRING",
 			Value: startJobInfo.modelPath,
 		},
 	}
@@ -279,29 +280,28 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}
 	predictors = append(predictors, predictor)
 
-	//metadataName := fmt.Sprintf("%s%s ", MetaNamePrefix, modelDeploy.Name)
-	//pod template
+	//seldon deployment yaml
 	modelSeldonDep := &v1alpha2.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "machinelearning.seldon.io/v1alpha2",
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: modelDeploy.UserId,
-			Namespace: SeldonNameSpace,
+			Name:      modelDeploy.UserId,
+			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
 			Predictors: predictors,
 		},
 	}
 
-	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), SeldonNameSpace, modelSeldonDep)
+	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), modelDeploy.UserId, modelSeldonDep)
 
 	if error != nil {
-		return nil, "",errors.Errorf(err, errors.ErrorModelDeployFailed)
+		return nil, "", errors.Errorf(err, errors.ErrorModelDeployFailed)
 	}
 
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + SeldonNameSpace + "/" + modelDeployName + ServiceUrlSuffix
+	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + modelDeploy.UserId + "/" + modelDeployName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }
@@ -321,6 +321,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	//资源队列
 	queue := ""
 	if modelDeploy.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
 		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
@@ -336,15 +337,15 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 
 		queue = workspace.Workspace.ResourcePoolId
 	}
-	//check  model framework
+	// 校验模型框架
 	modelFrameType := modelDeploy.ModelFrame
 	if modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame {
 		return nil, errors.Errorf(err, errors.ErrorModelDeployForbidden)
 	}
 
-	//模型查询
-	_, err = s.getModelAndCheckPerm(ctx, modelDeploy.UserId, modelDeploy.WorkspaceId, modelDeploy.Id)
-	if err != nil {
+	//模型权限查询
+	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, modelDeploy.WorkspaceId, modelDeploy.UserId, modelDeploy.Id, modelDeploy.ModelVersion)
+	if queryModelVersionReply == nil || err != nil {
 		return nil, err
 	}
 
@@ -403,7 +404,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 	}
 
 	startModelDeployInfo := &startJobInfo{
-		queue: queue,
+		queue:     queue,
 		modelPath: s.getModelSubPath(modelDeploy),
 		specs:     startJobSpecs,
 	}
@@ -411,56 +412,52 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 	return startModelDeployInfo, nil
 }
 
-func (s *modelDeployService) getModelAndCheckPerm(ctx context.Context, userId string, spaceId string, modelId string) (*api.QueryModelReply, error) {
-	modelReq := &api.QueryModelRequest{}
+func (s *modelDeployService) ModelAccessAuthCheck(ctx context.Context, spaceId string, userId string,
+	modelId string, modelVersion string) (*api.QueryModelVersionReply, error) {
+	modelReq := &api.QueryModelVersionRequest{}
 	modelReq.ModelId = modelId
-	reply, err := s.modelService.QueryModel(ctx, modelReq)
+	modelReq.Version = modelVersion
+	queryModelVersionReply, err := s.modelService.QueryModelVersion(ctx, modelReq)
 	if err != nil {
 		return nil, err
 	}
-	if reply.Model == nil {
+	if queryModelVersionReply.Model == nil {
 		return nil, errors.Errorf(nil, errors.ErrorModelVersionFileNotFound)
 	}
-	//todo 待模型模块增加权限
-	if userId != reply.Model.UserId && reply.Model.IsPrefab != true {
-		hasPerm := false
-		//for _, i := range reply.Model.Access {
-		//	if spaceId == i.SpaceId {
-		//		hasPerm = true
-		//		break
-		//	}
-		//}
-		if !hasPerm {
-			return nil, errors.Errorf(err, errors.ErrorModelNoPermission)
-		}
+	//非自己模型，非分享模型，则无权限发布成服务
+	if queryModelVersionReply.Model.SpaceId != spaceId || queryModelVersionReply.Model.UserId != userId || !queryModelVersionReply.Model.IsPrefab {
+		err := errors.Errorf(nil, errors.ErrorModelNoPermission)
+		return nil, err
 	}
 
-	return reply, nil
+	return queryModelVersionReply, nil
 }
 
-//获取模型路径, todo 注意这里是否需要引入模型版本
+//获取模型路径
 func (s *modelDeployService) getModelSubPath(model *model.ModelDeploy) string {
 	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioModelObject(model.WorkspaceId, model.UserId, model.ModelId, model.ModelVersion))
 }
 
 //停止模型服务
 func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
-	_, err := s.data.ModelDeployDao.GetModelDeployService(ctx, req.Id)
+	modelDep, err := s.data.ModelDeployDao.GetModelDeployService(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-
 	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: req.Id, Reason: req.Operation})
+	serviceName := modelDep.ModelName
+	seldonNameSpace := modelDep.UserId
+	//停止任务
+	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
 	}
 
 	now := time.Now()
 	err = s.data.ModelDeployDao.UpdateModelDeployService(ctx, &model.ModelDeploy{
 		Id:          req.Id,
 		Operation:   req.Operation,
-		Status:      pipeline.STOPPED,
+		Status:      STATE_STOPPED,
 		CompletedAt: &now,
 	})
 	if err != nil {
@@ -468,7 +465,6 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	}
 
 	return &api.StopDepReply{StoppedAt: time.Now().Unix()}, nil
-
 }
 
 //删除模型服务
@@ -482,13 +478,15 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		//只有任务是终止状态，才可以删除
-		if !pipeline.IsCompletedState(i.Status) {
-			return nil, errors.Errorf(nil, errors.ErrorDeleteJobRequest)
+		serviceName := i.ModelName
+		seldonNameSpace := i.UserId
+		//删除服务前先停止服务
+		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
 		}
-
-		//train_job软删除
-		err = s.data.TrainJobDao.DeleteTrainJob(ctx, i.Id)
+		//软删除
+		err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
 		if err != nil {
 			return nil, err
 		}

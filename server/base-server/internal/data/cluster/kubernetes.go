@@ -416,12 +416,20 @@ func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pv
 	return p, nil
 }
 
-func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context,namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error ){
-	p, err := kc.seldonClientset.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment,metav1.CreateOptions{})
+func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error) {
+	p, err := kc.seldonClientset.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return p, nil
+}
+
+func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error {
+	err := kc.seldonClientset.MachinelearningV1alpha2().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {

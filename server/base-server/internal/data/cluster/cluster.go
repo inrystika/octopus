@@ -33,6 +33,7 @@ type Cluster interface {
 	CreateAndListenJob(ctx context.Context, job *batchv1.Job, callback func(e error)) error
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
-	CreateSeldonDeployment(ctx context.Context, namespace string,seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
+	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
+	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
 	RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error
 }

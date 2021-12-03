@@ -180,8 +180,9 @@ const (
 	ErrorDatasetTypeRepeated    = 19007 // 数据集类型重复
 
 	/* 21001~22000 训练管理错误*/
-	ErrorModelDeployForbidden = 21001 // 部署使用计算框架不在权限范围内
-	ErrorModelDeployFailed = 21002   // 创建模型部署服务失败
+	ErrorModelDeployForbidden    = 21001 // 部署使用计算框架不在权限范围内
+	ErrorModelDeployFailed       = 21002 // 创建模型部署服务失败
+	ErrorModelDeployDeleteFailed = 21003 // 删除模型部署服务失败
 )
 
 type codeMsg struct {
@@ -363,5 +364,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetTypeRepeated:    {codeType: OutOfRange, msg: "type repeated"},
 
 	/* 19001~20000 数据集管理错误*/
-	ErrorModelDeployForbidden: {codeType: PermissionDenied, msg: "no permission"},
+	ErrorModelDeployForbidden:    {codeType: PermissionDenied, msg: "no permission"},
+	ErrorModelDeployFailed:       {codeType: Internal, msg: "deploy seldon service failed"},
+	ErrorModelDeployDeleteFailed: {codeType: Internal, msg: "delete seldon service failed"},
 }
