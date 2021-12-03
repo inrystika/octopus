@@ -89,10 +89,10 @@ data:
         targetPort: {{ template "openaiserver.port" . }}
         tokenExpirationSec: 86400
         webConfig:
-          logoAddr: {{ .Values.openaiserver.service.webConfig.logoAddr }}
-          themeColor: {{ .Values.openaiserver.service.webConfig.themeColor }}
-          systemNameEn: {{ .Values.openaiserver.service.webConfig.systemNameEn }}
-          systemNameZh: {{ .Values.openaiserver.service.webConfig.systemNameZh }}
+          logoAddr: "{{ .Values.openaiserver.service.webConfig.logoAddr }}"
+          themeColor: "{{ .Values.openaiserver.service.webConfig.themeColor }}"
+          systemNameEn: "{{ .Values.openaiserver.service.webConfig.systemNameEn }}"
+          systemNameZh: "{{ .Values.openaiserver.service.webConfig.systemNameZh }}"
 
 ---
 
