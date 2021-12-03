@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="用户配置" :visible.sync="createFormVisible" :before-close="handleDialogClose"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" width="25%">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
         <el-form-item>
           <div v-for="(item, index) in ruleForm.userConfig" :key="index">
