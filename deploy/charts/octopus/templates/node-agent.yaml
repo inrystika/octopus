@@ -93,7 +93,8 @@ spec:
             - /manager
           args:
             - --leader-elect
-            - --service-conf /conf/nodeagent.yaml
+            - --service-conf
+            - /conf/nodeagent.yaml
           image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.nodeagent.image.name }}:{{ default .Chart.AppVersion .Values.nodeagent.image.tag }}"
           name: agentcontroller
           volumeMounts:
