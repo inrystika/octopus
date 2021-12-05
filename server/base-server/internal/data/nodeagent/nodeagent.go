@@ -12,7 +12,7 @@ import (
 const NODE_AGENT_SERVER_ROLE = "nodeagent"
 
 type NodeAgentManager interface {
-    Switch(nodeName string) (NodeAgent, error)
+	Switch(nodeName string) (NodeAgent, error)
 }
 
 type CommitImageOpt struct {
@@ -26,8 +26,8 @@ type NodeAgent interface {
 }
 
 type nodeAgentManager struct {
-	agentMap      sync.Map
-	podInformer   infov1.PodInformer
+	agentMap    sync.Map
+	podInformer infov1.PodInformer
 }
 
 func NewNodeAgentManger(podInformer infov1.PodInformer) NodeAgentManager {
@@ -39,7 +39,7 @@ func NewNodeAgentManger(podInformer infov1.PodInformer) NodeAgentManager {
 			FilterFunc: func(obj interface{}) bool {
 				// match pod of nodeagent
 				pod := obj.(*v1.Pod)
-				for k,v :=range pod.Labels {
+				for k, v := range pod.Labels {
 					if k == common.OctopusServiceRoleLabel && v == NODE_AGENT_SERVER_ROLE {
 						return true
 					}

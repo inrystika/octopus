@@ -43,12 +43,12 @@ type DockerAction struct {
 }
 
 type DockerCommitCommand struct {
-	Container  string   `json:"container,omitempty"`
-	Repository string   `json:"repository,omitempty"`
-	Tag        string   `json:"tag,omitempty"`
-	Author     string   `json:"author,omitempty"`
-	Message    string   `json:"message,omitempty"`
-	Changes    []string `json:"changes"`
+	Container  string    `json:"container,omitempty"`
+	Repository string    `json:"repository,omitempty"`
+	Tag        string    `json:"tag,omitempty"`
+	Author     string    `json:"author,omitempty"`
+	Message    string    `json:"message,omitempty"`
+	Changes    []string  `json:"changes"`
 }
 
 type CommandStatus struct {

@@ -105,14 +105,14 @@ const (
 	ErrorAlgorithmVersionUploadAuth            = 12011 // 无权提交此算法版本文件
 
 	/* 13001~14000 镜像管理错误*/
-	ErrorImageStatusMakeError    = 13001 // 制作镜像状态异常
-	ErrorImageSourceTypeToUpload = 13002 //上传错误镜像来源类型
-	ErrorImageExisted            = 13003 // 镜像已存在
-	ErrorImageNotExist           = 13004 // 镜像不存在
-	ErrorImageOpForbidden        = 13005 // 无权限镜像操作
-	ErrorImageSourceType         = 13006 // 不支持的镜像来源
-	ErrorImageContainerCommitError        = 13007 // 容器提交操作失败
-	ErrorImagePushFailed         = 13008 // 推送镜像操作失败
+	ErrorImageStatusMakeError      = 13001 // 制作镜像状态异常
+	ErrorImageSourceTypeToUpload   = 13002 //上传错误镜像来源类型
+	ErrorImageExisted              = 13003 // 镜像已存在
+	ErrorImageNotExist             = 13004 // 镜像不存在
+	ErrorImageOpForbidden          = 13005 // 无权限镜像操作
+	ErrorImageSourceType           = 13006 // 不支持的镜像来源
+	ErrorImageContainerCommitError = 13007 // 容器提交操作失败
+	ErrorImagePushFailed           = 13008 // 推送镜像操作失败
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden          = 14001 // notebook状态不允许操作
@@ -125,6 +125,8 @@ const (
 	ErrorNotebookRepeat                   = 14008 // notebook重复
 	ErrorNotebookDatasetNoPermission      = 14009 // notebook使用数据集不在权限范围内
 	ErrorNotebookDatasetStatusForbidden   = 14010 // notebook使用数据集状态不允许操作
+	ErrorNotebookRepeatedToSave           = 14011 // notebook保存中，禁止重复保存
+	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -303,14 +305,14 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAlgorithmVersionUploadAuth:            {codeType: InvalidArgument, msg: "AlgorithmVersionUpload Auth Wrong"},
 
 	/* 13001~14000 镜像管理错误*/
-	ErrorImageStatusMakeError:    {codeType: OutOfRange, msg: "make image status error"},
-	ErrorImageSourceTypeToUpload: {codeType: OutOfRange, msg: "error image source to upload"},
-	ErrorImageExisted:            {codeType: AlreadyExists, msg: "image exists"},
-	ErrorImageNotExist:           {codeType: NotFound, msg: "image not exists"},
-	ErrorImageOpForbidden:        {codeType: PermissionDenied, msg: "image operation forbidden"},
-	ErrorImageSourceType:         {codeType: Unimplemented, msg: "error image source type"},
+	ErrorImageStatusMakeError:      {codeType: OutOfRange, msg: "make image status error"},
+	ErrorImageSourceTypeToUpload:   {codeType: OutOfRange, msg: "error image source to upload"},
+	ErrorImageExisted:              {codeType: AlreadyExists, msg: "image exists"},
+	ErrorImageNotExist:             {codeType: NotFound, msg: "image not exists"},
+	ErrorImageOpForbidden:          {codeType: PermissionDenied, msg: "image operation forbidden"},
+	ErrorImageSourceType:           {codeType: Unimplemented, msg: "error image source type"},
 	ErrorImageContainerCommitError: {codeType: Unimplemented, msg: "error commit container"},
-	ErrorImagePushFailed:         {codeType: OutOfRange, msg: "error push image"},
+	ErrorImagePushFailed:           {codeType: OutOfRange, msg: "error push image"},
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden:          {codeType: OutOfRange, msg: "status forbidden"},
@@ -323,6 +325,8 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorNotebookRepeat:                   {codeType: AlreadyExists, msg: "notebook repeat"},
 	ErrorNotebookDatasetNoPermission:      {codeType: PermissionDenied, msg: "dataset no permission"},
 	ErrorNotebookDatasetStatusForbidden:   {codeType: OutOfRange, msg: "dataset status forbidden"},
+	ErrorNotebookRepeatedToSave:           {codeType: AlreadyExists, msg: "repeated notebook saveing"},
+	ErrorNotebookNoFoundRuntimeContainer:  {codeType: NotFound, msg: "no found runtime container"},
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden:         {codeType: PermissionDenied, msg: "image Auth forbidden"},

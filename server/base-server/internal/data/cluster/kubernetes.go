@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"os"
 	"path/filepath"
 	"server/base-server/internal/conf"
@@ -17,6 +16,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
@@ -27,6 +27,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	nav1 "nodeagent/apis/agent/v1"
 	naclient "nodeagent/clients/agent/clientset/versioned"
+	nainformer "nodeagent/clients/agent/informers/externalversions"
+	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
 	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
 )
@@ -78,6 +80,7 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 	}
 
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
+	naInformerFactory := nainformer.NewSharedInformerFactory(kc.naClient, 0)
 
 	// create informer for node information
 	kc.nodeInformer = informerFactory.Core().V1().Nodes()
@@ -95,6 +98,8 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 		0,
 	)
 
+	kc.nodeActionInformer = naInformerFactory.Agent().V1().NodeActions()
+
 	kc.Run()
 	kc.WaitForCacheSync()
 	return kc, cancel
@@ -108,7 +113,8 @@ type kubernetesCluster struct {
 	vcClient   *vcclient.Clientset
 	naClient   *naclient.Clientset
 
-	nodeInformer infov1.NodeInformer
+	nodeInformer       infov1.NodeInformer
+	nodeActionInformer nainformerv1.NodeActionInformer
 
 	nodes  map[string]*v1.Node
 	config *rest.Config
@@ -116,6 +122,7 @@ type kubernetesCluster struct {
 
 func (kc *kubernetesCluster) Run() {
 	go kc.nodeInformer.Informer().Run(kc.ctx.Done())
+	go kc.nodeActionInformer.Informer().Run(kc.ctx.Done())
 }
 
 // WaitForCacheSync sync the cache with the api server
@@ -124,6 +131,7 @@ func (kc *kubernetesCluster) WaitForCacheSync() bool {
 		func() []cache.InformerSynced {
 			informerSynced := []cache.InformerSynced{
 				kc.nodeInformer.Informer().HasSynced,
+				kc.nodeActionInformer.Informer().HasSynced,
 			}
 			return informerSynced
 		}()...,
@@ -449,10 +457,38 @@ func (kc *kubernetesCluster) GetPodInformer() infov1.PodInformer {
 	return nil
 }
 
-func (kc *kubernetesCluster) CreateNodeAction(ctx context.Context, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error){
-	return kc.naClient.AgentV1().NodeActions("").Create(ctx, nodeAction, metav1.CreateOptions{})
+func (kc *kubernetesCluster) GetNodeActionInformer() nainformerv1.NodeActionInformer {
+	return kc.nodeActionInformer
 }
 
-func (kc *kubernetesCluster) GetNodeAction(ctx context.Context, name string) (*nav1.NodeAction, error) {
-	return kc.naClient.AgentV1().NodeActions("").Get(ctx, name, metav1.GetOptions{})
+func (kc *kubernetesCluster) CreateNodeAction(ctx context.Context, namespace string, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error) {
+	return kc.naClient.AgentV1().NodeActions(namespace).Create(ctx, nodeAction, metav1.CreateOptions{})
+}
+
+func (kc *kubernetesCluster) GetNodeAction(ctx context.Context, namespace, name string) (*nav1.NodeAction, error) {
+	na, err := kc.naClient.AgentV1().NodeActions(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if kubeerrors.IsNotFound(err) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return na, nil
+}
+
+func (kc *kubernetesCluster) DeleteNodeAction(ctx context.Context, namespace string, name string) error {
+	return kc.naClient.AgentV1().NodeActions(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+}
+
+func (kc *kubernetesCluster) GetPod(ctx context.Context, namespace string, name string) (*v1.Pod, error) {
+	pod, err := kc.kubeclient.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if kubeerrors.IsNotFound(err) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return pod, nil
 }

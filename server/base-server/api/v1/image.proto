@@ -190,7 +190,7 @@ message AddImageRequest {
   string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1,max_len: 50}];
   string imageDesc = 2;
   string imageVersion = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", min_len: 1, max_len: 50}];
-  ImageSourceType sourceType = 4[(validate.rules).enum = {in: [1,2]}];
+  ImageSourceType sourceType = 4[(validate.rules).enum = {in: [1,2,3]}];
   string spaceId = 5[(validate.rules).string = {max_len: 36}];
   string userId = 6[(validate.rules).string = {max_len: 36}];
   ImageIsPrefab isPrefab = 7[(validate.rules).enum = {in: [1,2]}];

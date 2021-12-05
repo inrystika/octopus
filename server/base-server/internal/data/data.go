@@ -62,11 +62,21 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 
 	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
-		if !bc.App.IsDev {
+		//if !bc.App.IsDev {
 			return nil, nil, err
-		}
+		//}
 		log.Error(context.TODO(), err)
 	}
+
+	d.Minio = minio.NewMinio(confData, logger)
+	d.Registry = registry.NewRegistry(confData, logger)
+	redis, err := redis.NewRedis(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	d.Redis = redis
+	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	d.Cluster = cluster
 
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
@@ -83,15 +93,6 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
-	cluster, clusterCancel := cluster.NewCluster(confData, logger)
-	d.Cluster = cluster
-	d.Minio = minio.NewMinio(confData, logger)
-	d.Registry = registry.NewRegistry(confData, logger)
-	redis, err := redis.NewRedis(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
 	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
