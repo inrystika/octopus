@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "nodeagent.fullname" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "nodeagent.fullname" . }}
+rules:
+  - apiGroups:
+      - agent.octopus.openi.org.cn
+    resources:
+      - nodeactions
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - agent.octopus.openi.org.cn
+    resources:
+      - nodeactions/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - agent.octopus.openi.org.cn
+    resources:
+      - nodeactions/status
+    verbs:
+      - get
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "nodeagent.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "nodeagent.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "nodeagent.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "nodeagent.fullname" . }}
+  labels:
+{{ include "nodeagent.labels" . | indent 4 }}
+data:
+  nodeagent.yaml: |
+    harbor:
+      host: {{ .Values.baseserver.data.harbor.host }}
+      username: {{ .Values.baseserver.data.harbor.username }}
+      password: {{ .Values.baseserver.data.harbor.password }}
+      useSSL: {{ .Values.baseserver.data.harbor.useSSL }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "nodeagent.fullname" . }}
+  labels:
+{{ include "nodeagent.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+{{ include "nodeagent.select-labels" . | indent 8 }}
+  template:
+    metadata:
+      labels:
+{{ include "nodeagent.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "nodeagent.fullname" . }}
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: nodeagent-config
+          configMap:
+            name: {{ template "nodeagent.fullname" . }}
+      containers:
+        - command:
+            - /manager
+          args:
+            - --leader-elect
+            - --service-conf /conf/nodeagent.yaml
+          image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.nodeagent.image.name }}:{{ default .Chart.AppVersion .Values.nodeagent.image.tag }}"
+          name: agentcontroller
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: nodeagent-config
+              mountPath: /conf
+          env:
+            - name: NODE_AGENT_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+{{ toYaml .Values.nodeagent.resources | indent 12 }}
+      terminationGracePeriodSeconds: 10
+{{- with .Values.nodeagent.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+---
