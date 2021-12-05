@@ -16,6 +16,9 @@
         <el-tab-pane label="运行信息">
           <notebookInfo :notebook-data="notebookData" />
         </el-tab-pane>
+        <el-tab-pane label="事件记录">
+          <notebookEventRecord :notebook-data="notebookData" />
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
   </div>
@@ -23,11 +26,13 @@
 <script>
 import notebookInfo from "./notebookInfo.vue"
 import notebookProfile from "./notebookProfile.vue"
+import notebookEventRecord from "./notebookEventRecord.vue"
 export default {
   name: "DetailDialog",
   components: {
     notebookInfo,
-    notebookProfile
+    notebookProfile,
+    notebookEventRecord
   },
   props: {
     detailData: {

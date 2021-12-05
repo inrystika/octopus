@@ -15,6 +15,7 @@ const (
 	ErrorOperateDirFailed          = 10011 // 操作文件夹失败
 	ErrorOperateFileFailed         = 10012 // 操作文件失败
 	ErrorConfigValueValidateFailed = 10013 // 校验配置值失败
+	ErrorFormatParseFailed         = 10014 // 格式解析失败
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -217,6 +218,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorOperateDirFailed:          {codeType: Internal, msg: "dir operate failed"},
 	ErrorOperateFileFailed:         {codeType: Internal, msg: "file operate failed"},
 	ErrorConfigValueValidateFailed: {codeType: Internal, msg: "config value validate failed"},
+	ErrorFormatParseFailed:         {codeType: Internal, msg: "format parse failed"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},

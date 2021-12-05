@@ -48,7 +48,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="block">
+      <div class="pagination">
         <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
           layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
           @current-change="handleCurrentChange" />
@@ -291,7 +291,7 @@
 </script>
 
 <style lang="scss" scoped>
-  .block {
+  .pagination {
     float: right;
     margin: 20px;
   }

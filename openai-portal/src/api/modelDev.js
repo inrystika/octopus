@@ -34,6 +34,14 @@ export async function getNotebookInfo(params) {
   return res
 }
 
+export async function getNotebookEventRecord(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${params.id}/eventrecord?pageSize=${params.pageSize}&pageIndex=${params.pageIndex}`,
+    method: 'get',
+  })
+  return res
+}
+
 export async function createNotebook(payload) {
   const res = await request({
     url: `/v1/developmanage/notebook`,
@@ -231,6 +239,15 @@ export async function algorithmFrame(params) {
     url: `/v1/algorithmmanage/algorithmframework`,
     method: "get",
     params: params
+  })
+  return res
+}
+// 修改我的算法
+export async function editeAlgorithm(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/myalgorithm/${params.algorithmId}`,
+    method: "put",
+    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript }
   })
   return res
 }

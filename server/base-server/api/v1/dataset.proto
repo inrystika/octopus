@@ -192,10 +192,13 @@ message DeleteDatasetReply {
 }
 
 message UpdateDatasetRequest {
-  string id = 1[(validate.rules).string = {min_len: 1}];
-  string typeId = 2;
-  string applyId = 3;
-  string desc = 4[(validate.rules).string = {max_len: 300}];
+  string spaceId = 1;
+  string userId = 2;
+  string id = 3[(validate.rules).string = {min_len: 1}];
+  DatasetSourceType sourceType = 4;
+  string typeId = 5;
+  string applyId = 6;
+  string desc = 7[(validate.rules).string = {max_len: 300}];
 }
 
 message UpdateDatasetReply {
@@ -274,9 +277,12 @@ message ListDatasetVersionFileReply {
 }
 
 message UpdateDatasetVersionRequest {
-  string datasetId = 1[(validate.rules).string = {min_len: 1}];
-  string version = 2[(validate.rules).string = {min_len: 1}];
-  string desc = 3[(validate.rules).string = {max_len: 300}];
+  string spaceId = 1;
+  string userId = 2;
+  string datasetId = 3[(validate.rules).string = {min_len: 1}];
+  string version = 4[(validate.rules).string = {min_len: 1}];
+  DatasetSourceType sourceType = 5;
+  string desc = 6[(validate.rules).string = {max_len: 300}];
 }
 
 message UpdateDatasetVersionReply {

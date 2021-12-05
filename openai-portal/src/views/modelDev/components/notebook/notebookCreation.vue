@@ -183,6 +183,18 @@
                         />
                     </el-select>
                 </el-form-item>
+                <el-form-item>
+                    <el-button type="text" @click="showMultitask">高级设置</el-button>
+                </el-form-item>
+                <el-form-item v-if="isShowMultitask" label="任务数" prop="taskNumber">
+                    <el-select
+                        v-model.number="ruleForm.taskNumber"
+                        placeholder="请选择"
+                    >
+                        <el-option label="1" value="1" />
+                        <el-option label="2" value="2" />
+                    </el-select>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
@@ -228,7 +240,8 @@ export default {
                 imageItem: "",
                 dataSetSource: "",
                 dataSetId: "",
-                dataSetVersion: ""
+                dataSetVersion: "",
+                taskNumber: 1
             },
             rules: {
                 name: [
@@ -294,6 +307,7 @@ export default {
             formLabelWidth: "120px",
             pageIndex: 1,
             pageSize: 20,
+            isShowMultitask: false,
             // 算法三级框
             algorithmName: false,
             algorithmVersion: false,
@@ -372,6 +386,9 @@ export default {
                 }
             });
         },
+        showMultitask() {
+          this.isShowMultitask = !this.isShowMultitask
+        },
         submit(formName) {
             this.$refs[formName].validate(valid => {
                 if (valid) {
@@ -385,7 +402,8 @@ export default {
                         algorithmId: this.ruleForm.algorithmId || "",
                         algorithmVersion: this.ruleForm.algorithmVersion || "",
                         datasetId: this.ruleForm.dataSetId || "",
-                        datasetVersion: this.ruleForm.dataSetVersion || ""
+                        datasetVersion: this.ruleForm.dataSetVersion || "",
+                        taskNumber: this.ruleForm.taskNumber
                     };
                     const confirmInfo = this.$createElement
                     this.$confirm(
