@@ -56,16 +56,16 @@ const (
 
 func main() {
 	var metricsAddr string
-	var enableLeaderElection bool
+	var enableLeaderElection bool = false  // force
 	var probeAddr string
 	// load agent config
 	var servConf string
 	flag.StringVar(&servConf, "service-conf", "config.yaml", "config path, eg: -conf config.yaml")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+	//flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+	//	"Enable leader election for controller manager. "+
+	//		"Enabling this will ensure there is only one active controller manager.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -89,8 +89,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	nodeName := os.Getenv(NODE_AGENT_NODE_NAME)
+	setupLog.Info("Node Agent Controller: ", NODE_AGENT_NODE_NAME, nodeName)
 	if err = (&agentcontrollers.NodeActionReconciler{
-		NodeName: os.Getenv(NODE_AGENT_NODE_NAME),
+		NodeName: nodeName,
 		Svc:      agentsvc.NewActionServiceManager(agentConfig),
 
 		Client: mgr.GetClient(),
