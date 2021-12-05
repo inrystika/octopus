@@ -16,8 +16,8 @@
                             label-width="0px"
                             class="demo-ruleForm login-page"
                           >
-                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span class="octopus">{{ this.GLOBAL.THEMETITLEZH }}</span></div>
-                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEMETITLEZH }}</span></div>
+                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
+                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH }}</span></div>
                             <el-form-item prop="email">
                                 <el-input
                                     v-model="loginForm.email"
@@ -49,8 +49,6 @@
 </template>
 
 <script>
-    import { themeChange } from "@/api/themeChange.js"
-    import { changeThemeColor, curColor } from '@/utils/themeColorClient'
     export default {
         data() {
             // 邮箱类型验证
@@ -74,12 +72,13 @@
                     password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
                 },
                 checked: false,
-                itemShow: this.GLOBAL.THEMETITLEZH == '启智章鱼',
-                mainColor: curColor
+                itemShow: true,
             }
         },
         created(){
-          this.themeChange()
+          if(this.GLOBAL.THEME_TITLE_ZH){
+            this.itemShow = false
+          }
         },
         watch: {
             $route: {
@@ -90,22 +89,6 @@
             }
         },
         methods: {
-          themeChange(){
-            themeChange().then(response => {
-              if(response.success) {
-                if(response.data.themeColor == ''){
-                  this.mainColor = "#94070A"
-                  this.itemShow = false
-                  this.changeColor(this.mainColor)
-                }
-              }
-            })
-          },
-          changeColor(newColor) {
-            changeThemeColor(newColor).then(() => {
-              // this.$message.success('主题色切换成功')
-            })
-          },
             handleLogin() {
                 this.$refs.loginForm.validate(valid => {
                     if (valid) {

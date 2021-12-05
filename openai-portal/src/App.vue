@@ -1,11 +1,56 @@
 <template>
   <div id="app">
-    <router-view />
+    <router-view v-if="isShow" />
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
+import { themeChange } from "@/api/themeChange.js"
+import { changeThemeColor, curColor } from '@/utils/themeColorClient'
 export default {
-  name: 'App'
+  name: 'App',
+  data() {
+    return {
+      isShow: false,
+      ainColor: curColor
+    }
+  },
+  created() {
+    this.themeChange()
+  },
+  methods: {
+    themeChange(){
+      themeChange().then(response => {
+        if(response.success) {
+          if(response.data && response.data.themeColor){
+            Vue.prototype.GLOBAL.THEME_COLOR = response.data.themeColor
+            Vue.prototype.GLOBAL.THEME_TITLE_ZH = response.data.systemNameZh
+            Vue.prototype.GLOBAL.THEME_TITLE_EN = response.data.systemNameEn
+            Vue.prototype.GLOBAL.THEME_LOGO_ADDR = response.data.logoAddr
+            this.mainColor = response.data.themeColor
+            this.changeColor(this.mainColor)
+          } else {
+            Vue.prototype.GLOBAL.THEME_COLOR = ''
+            Vue.prototype.GLOBAL.THEME_TITLE_ZH = ''
+            Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
+            Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
+          }
+          this.isShow = true
+        }
+      }).catch(err => {
+        console.log('err:',err)
+        Vue.prototype.GLOBAL.THEME_COLOR = ''
+        Vue.prototype.GLOBAL.THEME_TITLE_ZH = ''
+        Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
+        Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
+      })
+    },
+    changeColor(newColor) {
+      changeThemeColor(newColor).then(() => {
+        // this.$message.success('主题色切换成功')
+      })
+    },
+  }
 }
 </script>
