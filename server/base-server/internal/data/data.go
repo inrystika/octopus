@@ -62,9 +62,9 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 
 	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
-		//if !bc.App.IsDev {
+		if !bc.App.IsDev {
 			return nil, nil, err
-		//}
+		}
 		log.Error(context.TODO(), err)
 	}
 
