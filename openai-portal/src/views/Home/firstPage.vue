@@ -35,11 +35,12 @@
                                 />
                             </el-form-item>
                             <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" :loading="logining" @click="handleLogin">
+                                <el-button type="primary" style="width:100%;" :style="{'background':colorChange,'border-color':colorChange}" :loading="logining" @click="handleLogin">
                                     登录
                                 </el-button>
                             </el-form-item>
                         </el-form>
+                        <div class="pku-footer">&copy;北大人工智能研究院</div>
                     </div>
                 </div>
             </div>
@@ -73,6 +74,7 @@
                 },
                 checked: false,
                 itemShow: true,
+                colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : ''
             }
         },
         created(){
@@ -208,5 +210,9 @@
     .grid-content {
         position: relative;
         top: 30%;
+    }
+    .pku-footer {
+      font-weight: 600;
+      margin-top: 40px;
     }
 </style>
