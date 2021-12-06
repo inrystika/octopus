@@ -67,13 +67,12 @@ export default {
         pageSize: 10,
       },
       statusOption: {
-        '0': ['status-ready', '初始中'],
-        '1': ['status-agent', '已分派'],
-        '2': ['status-running', '分中心处理中'],
-        '-1': ['status-danger', '失败'],
-        '3': ['status-success', '成功'],
-        '4': ['status-stopping', '停止'],
-        '7': ['status-reassign', '重分派'],
+        'preparing': ['status-ready', '初始中'],
+        'pending': ['status-agent', '等待中'],
+        'running': ['status-running', '运行中'],
+        'failed': ['status-danger', '失败'],
+        'succeeded': ['status-success', '成功'],
+        'stopped': ['status-stopping', '已停止']
       }
     }
   },
