@@ -13,6 +13,7 @@ import (
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/utils"
+	"strings"
 	"time"
 
 	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	nav1 "nodeagent/apis/agent/v1"
 	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
 )
 
@@ -55,6 +57,8 @@ const (
 	k8sTaskNamePrefix = "task"
 	servicePort       = 8888
 	shmResource       = "shm"
+	nodeActionLabelNotebookId   = "nodebook.octopus.dev/id"
+	nodeActionLabelImageId      = "image.octopus.dev/id"
 )
 
 func buildTaskName(idx int) string {
@@ -871,7 +875,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
 		for i := 0; i < n.TaskNumber; i++ {
-			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Url: buildNotebookUrl(n.NotebookJobId, i)})
+			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.NotebookJobId, i)})
 		}
 		notebooks = append(notebooks, notebook)
 	}
@@ -920,6 +924,94 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 		TotalSize:      totalSize,
 		NotebookEvents: notebookEvents,
 	}, nil
+}
+
+func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	if err != nil {
+		return nil, err
+	}
+	if !pipeline.JobRunningState(notebook.Status) {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
+
+	// check saveNotebook action existed
+	podName := s.GetPodNameFromNoteBookTask(notebook, req.TaskName)
+	nodeAction, err := s.data.Cluster.GetNodeAction(ctx, notebook.UserId, podName)
+	if err != nil {
+		return nil, err
+	}
+	if nodeAction != nil {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookRepeatedToSave)
+	}
+
+	nodeName, containerId, err := s.getNotebookTaskContainer(ctx, notebook, req.TaskName)
+	if err != nil {
+		return nil, err
+	}
+
+	newImage, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: req.ImageId})
+	if err != nil {
+		return nil, err
+	}
+	nodeAction = &nav1.NodeAction{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       podName,
+			Labels: map[string]string{
+				nodeActionLabelNotebookId: req.NotebookId,
+				nodeActionLabelImageId:    req.ImageId,
+			},
+		},
+		Spec: nav1.NodeActionSpec{
+			NodeName: nodeName,
+			Actions: nav1.Action{
+				Docker: &nav1.DockerAction{
+					CommitAndPush: &nav1.DockerCommitCommand{
+						Container:  containerId,
+						Repository: fmt.Sprintf("%s/%s", s.conf.Data.Harbor.Host, newImage.ImageAddr),
+						Tag:        newImage.ImageVersion,
+						Author:     newImage.UserId,
+						Message:    req.LayerDescription,
+						Changes:    []string{},
+					},
+				},
+			},
+		},
+	}
+	_, err = s.data.ImageDao.Update(ctx, &model.ImageUpdateCond{Id: newImage.Id}, &model.ImageUpdate{
+		Status:    int32(api.ImageStatus_IMAGE_STATUS_MAKING),
+		ImageDesc: req.LayerDescription,
+	})
+	if err != nil {
+		s.log.Errorw(ctx, err)
+		return nil ,err
+	}
+	if _, err := s.data.Cluster.CreateNodeAction(ctx, notebook.UserId, nodeAction); err != nil {
+		return nil, err
+	}
+
+	// acc node agent to commit image
+	return &api.SaveNotebookReply{}, nil
+}
+
+func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, taskName string) string {
+	return  fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
+}
+
+func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, string, error) {
+	pod, err := s.data.Cluster.GetPod(ctx, notebook.UserId, s.GetPodNameFromNoteBookTask(notebook, taskName))
+	if err != nil {
+		return "", "", err
+	}
+	if pod.Status.Phase != v1.PodRunning {
+		return "", "", errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
+	for _, cs :=range pod.Status.ContainerStatuses {
+		if cs.Name == taskName {
+			return pod.Spec.NodeName, strings.TrimPrefix(cs.ContainerID,"docker://"), nil
+		}
+	}
+	return "", "", errors.Errorf(nil, errors.ErrorNotebookNoFoundRuntimeContainer)
 }
 
 func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {

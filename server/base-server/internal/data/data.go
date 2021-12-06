@@ -68,6 +68,16 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 		log.Error(context.TODO(), err)
 	}
 
+	d.Minio = minio.NewMinio(confData, logger)
+	d.Registry = registry.NewRegistry(confData, logger)
+	redis, err := redis.NewRedis(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	d.Redis = redis
+	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	d.Cluster = cluster
+
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
 	d.AlgorithmDao = algorithm_dao.NewAlgorithmDao(db, logger)
@@ -83,20 +93,13 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
-	d.Cluster = cluster.NewCluster(confData, logger)
-	d.Minio = minio.NewMinio(confData, logger)
-	d.Registry = registry.NewRegistry(confData, logger)
-	redis, err := redis.NewRedis(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
 	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
 
 	return d, func() {
+		clusterCancel()
 		redis.Close()
 	}, nil
 }

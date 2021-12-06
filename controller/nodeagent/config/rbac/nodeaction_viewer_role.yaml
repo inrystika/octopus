@@ -1,0 +1,20 @@
+# permissions for end users to view nodeactions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nodeaction-viewer-role
+rules:
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions/status
+  verbs:
+  - get

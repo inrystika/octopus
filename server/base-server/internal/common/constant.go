@@ -7,3 +7,7 @@ const (
 const (
 	StorageTypeJuicefs string = "juicefs"
 )
+
+const (
+	OctopusServiceRoleLabel = "octopus.openi.pcl.cn/role"
+)

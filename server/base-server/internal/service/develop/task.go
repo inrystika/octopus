@@ -2,10 +2,13 @@ package develop
 
 import (
 	"context"
+	"fmt"
+	"k8s.io/client-go/tools/cache"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/pipeline"
+	commapi "server/common/api/v1"
 	"server/common/constant"
 	"server/common/leaderleaselock"
 	"server/common/utils"
@@ -13,6 +16,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	nav1 "nodeagent/apis/agent/v1"
 )
 
 const (
@@ -40,7 +44,7 @@ func (s *developService) startNotebookTask() {
 	k8sns := utils.GetEnvOrDefault("K8S_NAMESPACE", "default")
 	lock := leaseLock
 	if s.conf.App.IsDev {
-		lock = lock + "-dev"
+		lock = lock + "-dev11"
 	}
 	rdlock := leaderleaselock.NewLeaderLeaselock(k8sns, lock, s.data.Cluster.GetClusterConfig())
 	rdlock.RunOrRetryLeaderElection(ctx, func(ctx context.Context) {
@@ -189,6 +193,91 @@ func (s *developService) startNotebookTask() {
 				})()
 			}, time.Duration(BillingPeriodSec)*time.Second, ctx.Done())
 		}()
+
+		go func(){
+			nodeActionInformer := s.data.Cluster.GetNodeActionInformer()
+			nodeActionInformer.Informer().AddEventHandlerWithResyncPeriod(
+				cache.FilteringResourceEventHandler{
+					FilterFunc: func(obj interface{}) bool {
+						na := obj.(*nav1.NodeAction)
+						matchedLabels := false
+						for lk, _ :=range na.Labels {
+							if lk == nodeActionLabelNotebookId {
+								matchedLabels = true
+							}
+						}
+						if !matchedLabels {
+							return false
+						}
+						if na.Status.State != nav1.ActionCompletedState {
+							return false
+						}
+						return true
+					},
+					Handler: cache.ResourceEventHandlerFuncs{
+						AddFunc: func(obj interface{}) {
+							na := obj.(*nav1.NodeAction)
+							s.handleNodeActions(na)
+						},
+						UpdateFunc: func(oldObj, newObj interface{}) {
+							na := newObj.(*nav1.NodeAction)
+							s.handleNodeActions(na)
+						},
+					},
+				},
+				0,
+			)
+		}()
 	})
 
+}
+
+func (s *developService) handleNodeActions(na *nav1.NodeAction) {
+	notebookId := na.Labels[nodeActionLabelNotebookId]
+	imageId    := na.Labels[nodeActionLabelImageId]
+
+	var remark string = "{\"state\":\"%s\",\"reason\":\"%s\",\"imageId\":\"%s\"}"
+	actionStatus := na.Status.Actions
+	var commandStatus *nav1.CommandStatus
+	for _, s :=range actionStatus {
+		if s.Name == "docker.commitAndPush" {
+			commandStatus = s
+			break
+		}
+	}
+	if commandStatus == nil {
+		return
+	}
+
+	var imageStatus api.ImageStatus
+	switch commandStatus.Result {
+	case nav1.CommandFailedResult:
+		imageStatus = api.ImageStatus_IMAGE_STATUS_MADE_FAILED
+	case nav1.CommandSucceedResult:
+		imageStatus = api.ImageStatus_IMAGE_STATUS_MADE
+	default:
+		imageStatus = api.ImageStatus_IMAGE_STATUS_MADE_FAILED
+	}
+
+	ctx := context.Background()
+	_, err := s.data.ImageDao.Update(ctx, &model.ImageUpdateCond{Id: imageId}, &model.ImageUpdate{
+		Status:    int32(imageStatus),
+	})
+	if err != nil {
+		s.log.Errorw(ctx, err)
+	}
+
+	if err := s.data.Cluster.DeleteNodeAction(ctx, na.Namespace, na.Name); err != nil {
+		s.log.Error(ctx, err)
+	}
+
+	err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		Time:       time.Now(),
+		NotebookId: notebookId,
+		Type:       commapi.NotebookEventRecordType_SAVE,
+		Remark:     fmt.Sprintf(remark, commandStatus.Result, commandStatus.Reason, imageId),
+	})
+	if err != nil { // 插入事件记录出错只打印
+		s.log.Error(ctx, "save notebook event record error:", err)
+	}
 }

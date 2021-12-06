@@ -180,7 +180,7 @@ taskset_lint: lint_init
 	cd ./server/taskset && golangci-lint run ./...
 
 # 构建镜像
-images: base-server_image admin-server_image openai-server_image platform-server_image taskset_image admin-portal_image openai-portal_image api-doc_image
+images: base-server_image admin-server_image openai-server_image platform-server_image taskset_image admin-portal_image openai-portal_image api-doc_image node-agent_image
 
 base-server_image:
 	docker build --no-cache -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
@@ -214,8 +214,11 @@ openai-portal_image:
 api-doc_image:
 	docker build --no-cache -t api-doc:${RELEASE_VER} -f ./build/application/api-doc/dockerfile .
 
+node-agent_image:
+	docker build --no-cache -t node-agent:${RELEASE_VER} -f ./build/application/nodeagent/dockerfile ./controller/nodeagent
+
 # 镜像推送
-images_push: base-server_image_push admin-server_image_push openai-server_image_push platform-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push
+images_push: base-server_image_push admin-server_image_push openai-server_image_push platform-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push node-agent_image_push
 
 image_push_init:
 	(echo ${DOCKER_HUB_PASSWD} | docker login ${DOCKER_HUB_HOST} -u ${DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
@@ -330,6 +333,17 @@ ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
 	docker tag api-doc:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:latest
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/api-doc:latest
+endif
+endif
+
+node-agent_image_push: image_push_init
+	docker tag node-agent:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:${RELEASE_VER}
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:${RELEASE_VER}
+
+ifneq (${RELEASE_VER}, latest)
+ifeq (${NEED_LATEST}, TRUE)
+	docker tag node-agent:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:latest
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:latest
 endif
 endif
 

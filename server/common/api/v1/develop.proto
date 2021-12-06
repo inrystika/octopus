@@ -10,4 +10,5 @@ enum NotebookEventRecordType {
   START = 2;
   RUN = 3;
   STOP = 4;
+  SAVE = 5;
 }
