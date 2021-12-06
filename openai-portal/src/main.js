@@ -20,7 +20,11 @@ import '@/styles/dot.scss'
 import globalVariable from '@/api/globalVariable.js'
 import directives from './directives'
 import install from './preventReClick'
+import './styles/element-variables.scss'
+import { initThemeColor } from './utils/themeColorClient'
 Vue.prototype.GLOBAL = globalVariable
+
+initThemeColor()
 
 /**
  * If you don't want to use mock-server

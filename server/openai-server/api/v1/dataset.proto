@@ -172,6 +172,7 @@ message Dataset {
   string applyDesc = 11;
   string desc = 12;
   string latestVersion = 13;
+  string userName = 14;
 }
 
 message ListPreDatasetRequest {

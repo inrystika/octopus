@@ -26,5 +26,6 @@ func (s *systemService) GetWebConfig(ctx context.Context, req *api.GetWebConfigR
 		ThemeColor:   s.conf.Service.WebConfig.ThemeColor,
 		SystemNameEn: s.conf.Service.WebConfig.SystemNameEn,
 		SystemNameZh: s.conf.Service.WebConfig.SystemNameZh,
+		Organization: s.conf.Service.WebConfig.Organization,
 	}, nil
 }

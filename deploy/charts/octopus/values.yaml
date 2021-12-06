@@ -166,6 +166,7 @@ openaiserver:
       themeColor:
       systemNameEn:
       systemNameZh:
+      organization:
 
 # platform-server
 platformserver:

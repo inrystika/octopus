@@ -25,4 +25,5 @@ message GetWebConfigReply {
   string themeColor = 2;
   string systemNameEn = 3;
   string systemNameZh = 4;
+  string organization = 5;
 }

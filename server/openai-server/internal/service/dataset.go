@@ -8,6 +8,7 @@ import (
 	"server/common/log"
 	"server/common/session"
 	ss "server/common/session"
+	"server/common/utils/collections/set"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -217,15 +218,36 @@ func (s *DatasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 	if err != nil {
 		return nil, err
 	}
+
+	userIds := make([]string, 0)
+	for _, i := range innerReply.Datasets {
+		userIds = append(userIds, i.UserId)
+	}
+
+	users, err := s.listUserInCond(ctx, set.NewStrings(userIds...).Values())
 	for _, i := range reply.Datasets {
 		for _, j := range innerReply.Datasets {
 			if i.Id == j.Id {
-				i.LatestVersion = j.LatestVersion
+				i.UserName = users[j.UserId].FullName
 			}
 		}
 	}
 
 	return reply, nil
+}
+
+func (s *DatasetService) listUserInCond(ctx context.Context, ids []string) (map[string]*innerapi.UserItem, error) {
+	userMap := map[string]*innerapi.UserItem{}
+	users, err := s.data.UserClient.ListUserInCond(ctx, &innerapi.ListUserInCondRequest{
+		Ids: ids,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range users.Users {
+		userMap[i.Id] = i
+	}
+	return userMap, nil
 }
 
 func (s *DatasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatasetRequest) (*api.DeleteDatasetReply, error) {
