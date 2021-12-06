@@ -21,6 +21,12 @@
           <span>{{ scope.row.image.name+":"+scope.row.image.version }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="状态" align="center">
+        <template slot-scope="scope">
+          <span :class="statusOption[scope.row.status][0]"></span>
+          <span>{{ statusOption[scope.row.status][1] }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -61,12 +67,13 @@ export default {
         pageSize: 10,
       },
       statusOption: {
-        'preparing': ['status-ready', '初始中'],
-        'pending': ['status-agent', '等待中'],
-        'running': ['status-running', '运行中'],
-        'failed': ['status-danger', '失败'],
-        'succeeded': ['status-success', '成功'],
-        'stopped': ['status-stopping', '已停止']
+        '0': ['status-ready', '初始中'],
+        '1': ['status-agent', '已分派'],
+        '2': ['status-running', '分中心处理中'],
+        '-1': ['status-danger', '失败'],
+        '3': ['status-success', '成功'],
+        '4': ['status-stopping', '停止'],
+        '7': ['status-reassign', '重分派'],
       }
     }
   },
