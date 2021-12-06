@@ -24,6 +24,8 @@ service Develop {
   rpc GetNotebook (GetNotebookRequest) returns (GetNotebookReply);
   //获取任务事件列表
   rpc GetNotebookEventList (NotebookEventListRequest) returns (NotebookEventListReply);
+  // 保存notebook
+  rpc SaveNotebook (SaveNotebookRequest) returns (SaveNotebookReply);
   // 查询事件记录列表
   rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply);
 }
@@ -86,6 +88,7 @@ message ListNotebookRequest {
 message Notebook {
   message Task {
     string url = 1;
+    string name = 2;
   }
   int64 createdAt = 1;
   int64 updatedAt = 2;
@@ -153,6 +156,17 @@ message NotebookEvent{
   string reason = 3;
   //消息
   string message = 4;
+}
+
+message SaveNotebookRequest {
+  string notebookId = 1[(validate.rules).string = {min_len: 1}];
+  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  string imageId = 3[(validate.rules).string = {min_len: 1}];
+  string layerDescription = 4;
+}
+
+message SaveNotebookReply {
+
 }
 
 message NotebookEventRecord {

@@ -1,0 +1,15 @@
+apiVersion: agent.octopus.openi.org.cn/v1
+kind: NodeAction
+metadata:
+  name: nodeaction-sample
+spec:
+  nodeName: amax
+  actions:
+    docker:
+      commit:
+        container: ""
+        repository: ""
+        tag: ""
+        author: ""
+        message: ""
+        changes: []

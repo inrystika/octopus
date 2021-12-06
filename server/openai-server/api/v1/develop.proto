@@ -54,6 +54,12 @@ service Develop {
        get: "/v1/developmanage/notebookevent"
     };
   };
+  // 保存notebook
+  rpc SaveNotebook (SaveNotebookRequest) returns (SaveNotebookReply) {
+    option (google.api.http) = {
+      post: "/v1/developmanage/notebook/{notebookId}/save"
+    };
+  }
   // 查询事件记录列表
   rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply) {
     option (google.api.http) = {
@@ -123,6 +129,7 @@ message QueryNotebookReply {
 message Notebook {
   message Task {
     string url = 1;
+    string name = 2;
   }
   int64 createdAt = 1;
   int64 updatedAt = 2;
@@ -182,6 +189,17 @@ message NotebookEvent{
   string reason = 3;
   //消息
   string message = 4;
+}
+
+message SaveNotebookRequest {
+  string notebookId = 1[(validate.rules).string = {min_len: 1}];
+  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  string imageName = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len:50}];
+  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", max_len: 50}];
+  string layerDescription = 5;
+}
+
+message SaveNotebookReply {
 }
 
 message NotebookEventRecord {
