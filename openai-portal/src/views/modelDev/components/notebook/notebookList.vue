@@ -53,7 +53,7 @@
               启动
             </el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
-            <!-- <el-button type="text" @click="saveAlgorithm(scope.row)">保存算法</el-button> -->
+            <el-button type="text" @click="saveAlgorithm(scope.row)">保存</el-button>
           </div>
           <el-popover
             placement="top-start"
@@ -96,7 +96,7 @@
 
     <detailDialog v-if="detailVisible" :detail-data="detailData" @confirm="confirm" @cancel="cancel" @close="close" />
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
-    <saveDialog v-if="saveVisible" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <saveDialog v-if="saveVisible" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -341,7 +341,7 @@
         this.getNotebookList(this.searchData);
       },
       save(val) {
-        this.data = val,
+        this.row = val,
         this.saveVisible = true
       }
     }
