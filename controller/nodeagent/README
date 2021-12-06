@@ -1,0 +1,18 @@
+# NodeAgent
+
+此项目主要为了节点上运行一些特殊的操作, 项目通过[kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)生成基础框架．
+
+##　开发
+
+### 更新CRD相关文件
+
+```shell
+make && make manifests
+```
+
+### 生成CRD　client包
+
+```shell
+go mod vendor
+make update-codegen
+```

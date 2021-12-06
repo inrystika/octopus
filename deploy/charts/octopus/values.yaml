@@ -421,3 +421,12 @@ apidoc:
     address: ""
     pathname: ""
     name: "api-doc"
+
+nodeagent:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "node-agent"
+  resources: {}
+  nodeSelector: {}

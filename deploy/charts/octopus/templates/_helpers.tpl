@@ -933,3 +933,51 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- define "apidoc.targetPort" -}}
 {{- printf "8080" -}}
 {{- end -}}
+
+{{/******************node-agent******************/}}
+
+{{- define "nodeagent.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "nodeagent.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-node-agent" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "nodeagent.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "nodeagent.core-labels" -}}
+helm.sh/chart: {{ include "nodeagent.chart" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{- define "nodeagent.select-labels" -}}
+app.kubernetes.io/name: {{ include "nodeagent.name" . }}
+app.kubernetes.io/instance: {{ include "nodeagent.fullname" . }}
+app.kubernetes.io/part-of: {{ include "nodeagent.name" . }}
+{{- end -}}
+
+{{- define "nodeagent.resource-labels" -}}
+octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ include "nodeagent.fullname" . }}_{{ default .Chart.AppVersion .Values.nodeagent.image.tag }}
+{{- end -}}
+
+
+{{- define "nodeagent.labels" -}}
+{{ include "nodeagent.core-labels" . }}
+{{ include "nodeagent.select-labels" . }}
+{{ include "nodeagent.resource-labels" . }}
+{{- end -}}

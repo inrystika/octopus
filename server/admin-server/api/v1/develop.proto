@@ -58,6 +58,10 @@ message ListNotebookRequest {
 }
 
 message Notebook {
+  message Task {
+    string url = 1;
+    string name = 2;
+  }
   int64 createdAt = 1;
   int64 updatedAt = 2;
   string id = 3;
@@ -81,6 +85,7 @@ message Notebook {
   uint32 resourceSpecPrice = 22;
   string notebookJobId = 23;
   string imageVersion = 24;
+  repeated Task tasks = 25;
 }
 
 message ListNotebookReply {
