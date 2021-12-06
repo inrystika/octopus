@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard-container">
     <el-card v-loading="loading" :body-style="{padding: '0px'}">
-      <div v-if="show" class="top">
-        <div class="topTitle">
+      <div v-if="show" class="top" :style="{'background':topBgColor}">
+        <div class="topTitle" :style="{'color':mainColor}">
           <span>任务概览</span>
         </div>
 
@@ -10,7 +10,7 @@
           <el-col :span="8">
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-card class="topCard">
+                <el-card class="topCard" :style="{'background':mainColor,'border-color':mainColor}">
                   <span class="topCardTitle">运行中的训练任务</span>
                   <br>
                   <span class="topCardRunningNum">
@@ -19,7 +19,7 @@
                 </el-card>
               </el-col>
               <el-col :span="12">
-                <el-card class="topCard">
+                <el-card class="topCard" :style="{'background':mainColor,'border-color':mainColor}">
                   <span class="topCardTitle">等待的训练任务</span>
                   <br>
                   <span class="topCardNum">
@@ -30,7 +30,7 @@
             </el-row>
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-card class="topCard">
+                <el-card class="topCard" :style="{'background':mainColor,'border-color':mainColor}">
                   <span class="topCardTitle">已成功的训练任务</span>
                   <br>
                   <span class="topCardNum">
@@ -39,7 +39,7 @@
                 </el-card>
               </el-col>
               <el-col :span="12">
-                <el-card class="topCard">
+                <el-card class="topCard" :style="{'background':mainColor,'border-color':mainColor}">
                   <span class="topCardTitle">已终止的训练任务</span>
                   <br>
                   <span class="topCardNum">
@@ -55,7 +55,7 @@
               <el-progress type="circle" :show-text="false" :percentage="100" :color="customColor" :width="200" />
               <div class="topCircleContent">
                 <div class="topCircleContentTitle">剩余机时</div>
-                <span class="topCircleContentNum">{{ billAmount }}</span>
+                <span :style="{'color':fontColor}" class="topCircleContentNum">{{ billAmount }}</span>
                 <!-- <div class='topCircleContentText'>机时/h</div> -->
               </div>
             </div>
@@ -63,12 +63,12 @@
           <el-col :span="8">
             <div class="topHour">
               <!-- <el-button type="primary" size="small">机时充值</el-button> -->
-              <el-button class="topHourButton" type="primary" size="small" @click="getConsumption">消费记录</el-button>
-              <el-button class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
+              <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getConsumption">消费记录</el-button>
+              <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
               <br>
               <div class="topHourInstrucTitle">
                 充值说明:
-                <span class="topHourInstrucText">
+                <span class="topHourInstrucText" :style="{'color':fontColor}">
                   充值请向管理员提交申请
                 </span>
               </div>
@@ -80,75 +80,75 @@
       <div class="main">
         <el-row :gutter="20" class="rowPadding">
           <el-col :span="8">
-            <span class="mainTitle">
+            <span class="mainTitle" :style="{'color':mainColor}">
               模型开发
             </span>
             <div class="mainBlock">
-              <el-button class="mainButtonBorder" size="small" @click="create('notebook')">
-                <span class="mainButtonText">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('notebook')">
+                <span :style="{'color':mainColor}" class="mainButtonText">
                   创建NoteBook
                 </span>
               </el-button>
-              <el-button class="mainButtonBorder" size="small" @click="create('algorithm')">
-                <span class="mainButtonText">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('algorithm')">
+                <span :style="{'color':mainColor}" class="mainButtonText">
                   创建算法
                 </span>
               </el-button>
             </div>
           </el-col>
           <el-col :span="8">
-            <span class="mainTitle">
+            <span class="mainTitle" :style="{'color':mainColor}">
               模型训练
             </span>
             <div class="mainBlock">
-              <el-button class="mainButtonBorder" size="small" @click="create('trainingTask')">
-                <span class="mainButtonText">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('trainingTask')">
+                <span :style="{'color':mainColor}" class="mainButtonText">
                   创建训练任务
                 </span>
               </el-button>
-              <el-button class="mainButtonBorder" size="small" @click="create('trainingTemplate')">
-                <span class="mainButtonText">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('trainingTemplate')">
+                <span :style="{'color':mainColor}" class="mainButtonText">
                   创建训练模板
                 </span>
               </el-button>
             </div>
             <div class="mainColText">
               总训练任务：
-              <span class="mainNum">
+              <span :style="{'color':mainColor}" class="mainNum">
                 {{ totalTrainingTaskNum }}
               </span>
               个
             </div>
             <div class="mainBlockText">
               任务模板：
-              <span class="mainNum">
+              <span :style="{'color':mainColor}" class="mainNum">
                 {{ trainingTemplateNum }}
               </span>
               个
             </div>
           </el-col>
           <el-col :span="8">
-            <span class="mainTitle">
+            <span class="mainTitle" :style="{'color':mainColor}">
               模型管理
             </span>
             <div class="mainBlock">
               <div class="mainBlockText">
                 我的模型：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ myModelNum }}
                 </span>
                 个
               </div>
               <div class="mainColText">
                 公共模型：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ pubModelNum }}
                 </span>
                 个
               </div>
               <div class="mainColText">
                 预置模型：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ preModelNum }}
                 </span>
                 个
@@ -165,34 +165,34 @@
           <el-col :span="8">
             <el-row>
               <el-col :span="12">
-                <span class="mainTitle">
+                <span class="mainTitle" :style="{'color':mainColor}">
                   算法
                 </span>
                 <div class="mainBlock">
                   <div class="mainBlockText">
                     我的算法：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ myAlgorithmNum }}
                     </span>
                     个
                   </div>
                   <div class="mainColText">
                     公共算法：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ pubAlgorithmNum }}
                     </span>
                     个
                   </div>
                   <div class="mainColText">
                     预置算法：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ preAlgorithmNum }}
                     </span>
                     个
                   </div>
                 </div>
-                <el-button class="mainButtonBorder" size="small" @click="create('algorithm')">
-                  <span class="mainButtonText">
+                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('algorithm')">
+                  <span :style="{'color':mainColor}" class="mainButtonText">
                     创建算法
                   </span>
                 </el-button>
@@ -206,34 +206,34 @@
           <el-col :span="8">
             <el-row>
               <el-col :span="12">
-                <span class="mainTitle">
+                <span class="mainTitle" :style="{'color':mainColor}">
                   数据集
                 </span>
                 <div class="mainBlock">
                   <div class="mainBlockText">
                     我的数据集：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ myDatasetNum }}
                     </span>
                     个
                   </div>
                   <div class="mainColText">
                     公共数据集：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ pubDatasetNum }}
                     </span>
                     个
                   </div>
                   <div class="mainColText">
                     预置数据集：
-                    <span class="mainNum">
+                    <span :style="{'color':mainColor}" class="mainNum">
                       {{ preDatasetNum }}
                     </span>
                     个
                   </div>
                 </div>
-                <el-button class="mainButtonBorder" size="small" @click="create('dataset')">
-                  <span class="mainButtonText">
+                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('dataset')">
+                  <span :style="{'color':mainColor}" class="mainButtonText">
                     创建数据集
                   </span>
                 </el-button>
@@ -245,34 +245,34 @@
           </el-col>
 
           <el-col :span="8">
-            <span class="mainTitle">
+            <span class="mainTitle" :style="{'color':mainColor}">
               镜像
             </span>
             <div class="mainBlock">
               <div class="mainBlockText">
                 我的镜像：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ myImageNum }}
                 </span>
                 个
               </div>
               <div class="mainColText">
                 公共镜像：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ pubImageNum }}
                 </span>
                 个
               </div>
               <div class="mainColText">
                 预置镜像：
-                <span class="mainNum">
+                <span :style="{'color':mainColor}" class="mainNum">
                   {{ preImageNum }}
                 </span>
                 个
               </div>
             </div>
-            <el-button class="mainButtonBorder" size="small" @click="create('image')">
-              <span class="mainButtonText">
+            <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('image')">
+              <span :style="{'color':mainColor}" class="mainButtonText">
                 创建镜像
               </span>
             </el-button>
@@ -303,7 +303,7 @@
     },
     data() {
       return {
-        customColor: [{ color: '#666699', percentage: 100 }],
+        customColor: this.GLOBAL.THEME_COLOR?[{ color: this.GLOBAL.THEME_COLOR, percentage: 100 }]:[{ color: '#666699', percentage: 100 }],
         count: {},
         show: false,
         recordVisible: false,
@@ -324,7 +324,10 @@
         preDatasetNum: undefined,
         myImageNum: undefined,
         pubImageNum: undefined,
-        preImageNum: undefined
+        preImageNum: undefined,
+        topBgColor: this.GLOBAL.THEME_COLOR ? '#EEF1F4' : '',
+        mainColor: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : '',
+        fontColor: this.GLOBAL.THEME_COLOR ? '#000000' : '',
       };
     },
     computed: {
