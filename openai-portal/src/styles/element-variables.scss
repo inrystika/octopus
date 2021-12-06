@@ -1,0 +1,32 @@
+/* 改变主题色变量 */
+$--color-primary: #3296fa;
+$input-color: #008CEE;
+$disabled-color: #F5F7FA;
+$--color-text-placeholder: #ccc !default;
+$--font-color-disabled-base: #333 !default;
+
+$--background-color-base: #F5F7FA !default;
+/* 一级边框颜色 */
+$--border-color-base: #C4CBDA !default;
+
+$--radio-button-disabled-checked-fill: #333 !default;
+$--select-option-disabled-color: #333 !default;
+$--input-fill-disabled: #333 !default;
+$--input-disabled-color: #333 !default;
+
+// hover时border颜色
+$--border-color-hover: $--color-primary !default;
+$--select-border-color-hover: $--border-color-hover !default;
+// 获取焦点（输入时）border的颜色
+$--select-input-focus-border-color: $input-color !default;
+$--select-input-focus-border-color: $--color-primary !default;
+$--input-focus-border: $input-color !default;
+
+$--select-option-selected-hover: #EBF5FF !important;
+$--select-option-hover-background: #EBF5FF !default;
+$--select-option-selected-font-color: $--color-primary !default;
+$--select-option-selected-hover: $--color-primary !default;
+
+/* 改变 icon 字体路径变量，必需 */
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+@import "~element-ui/packages/theme-chalk/src/index";

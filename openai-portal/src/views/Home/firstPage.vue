@@ -1,6 +1,6 @@
 <template>
     <el-container>
-        <el-aside>
+        <el-aside v-show="itemShow">
             <div class="logo"></div>
         </el-aside>
         <el-main>
@@ -16,7 +16,8 @@
                             label-width="0px"
                             class="demo-ruleForm login-page"
                           >
-                            <div class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
+                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
+                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH }}</span></div>
                             <el-form-item prop="email">
                                 <el-input
                                     v-model="loginForm.email"
@@ -70,8 +71,14 @@
                     ],
                     password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
                 },
-                checked: false
+                checked: false,
+                itemShow: true,
             }
+        },
+        created(){
+          if(this.GLOBAL.THEME_TITLE_ZH){
+            this.itemShow = false
+          }
         },
         watch: {
             $route: {
@@ -161,6 +168,16 @@
         margin-left: 5px;
         font-weight: bold;
         color: #502374;
+    }
+
+    .pkuTitle{
+        font-size: 24px;
+        margin-bottom: 66px;
+    }
+
+    .pku {
+        text-align: center;
+        font-weight: bold;
     }
 
     .login-container {
