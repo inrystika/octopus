@@ -48,6 +48,7 @@ message Service {
       string themeColor = 2;
       string systemNameEn = 3;
       string systemNameZh = 4;
+      string organization = 5;
   }
   int64 tokenExpirationSec = 1;
   WebConfig webConfig = 2;
