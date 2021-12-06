@@ -630,6 +630,8 @@ func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) 
 	var imageFullAddr string
 	if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_UPLOADED) {
 		imageFullAddr = s.generateImageAddress(image)
+	} else if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED) {
+		imageFullAddr = s.generateImageAddress(image)
 	} else {
 		imageFullAddr = image.ImageAddr
 	}
