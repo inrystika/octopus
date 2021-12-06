@@ -159,6 +159,13 @@ openaiserver:
     redis:
       username: ""
       password: "abcde"
+  service:
+    webConfig:
+      logoAddr:
+      #格式如#94070a
+      themeColor:
+      systemNameEn:
+      systemNameZh:
 
 # platform-server
 platformserver:

@@ -37,16 +37,17 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 
+	noAuthUris := []string{"/v1/authmanage/token", "/v1/systemmanage/webconfig"}
 	var jwtOpts = []jwt.Option{}
 	jwtOpts = append(jwtOpts, func(options *jwt.Options) {
 		options.Secret = c.Http.JwtSecrect
-		options.NoAuthUris = []string{"/v1/authmanage/token"}
+		options.NoAuthUris = noAuthUris
 	})
 
 	var sessionOpts = []session.Option{}
 	sessionOpts = append(sessionOpts, func(options *session.Options) {
 		options.Store = service.Data.SessionClient
-		options.NoAuthUris = []string{"/v1/authmanage/token"}
+		options.NoAuthUris = noAuthUris
 		options.CheckSession = func(ctx context.Context, s *ss.Session) error {
 			if s.Status != int32(innterapi.UserStatus_ACTIVITY) {
 				return errors.Errorf(nil, errors.ErrorAuthenticationForbidden)
@@ -89,6 +90,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/imagemanage", api.NewImageServiceHandler(service.ImageService, options...))
 	srv.HandlePrefix("/v1/billingmanage", api.NewBillingServiceHandler(service.BillingService, options...))
 	srv.HandlePrefix("/v1/jointcloudmanage", api.NewJointCloudServiceHandler(service.JointCloudService, options...))
+	srv.HandlePrefix("/v1/systemmanage", api.NewSystemServiceHandler(service.SystemService, options...))
 	return srv
 }
 
