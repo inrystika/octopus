@@ -399,7 +399,7 @@ func (s *platformTrainJobService) submitJob(ctx context.Context, job *model.Plat
 			Replicas: int32(i.TaskNumber),
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{s.conf.Service.ResourceLabelKey: "platform_train_job"},
+					Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
 				},
 				Spec: v1.PodSpec{
 					RestartPolicy: "Never",

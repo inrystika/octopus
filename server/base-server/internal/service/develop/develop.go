@@ -634,13 +634,14 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      nbJob.Id,
 		},
 		Spec: vcBatch.JobSpec{
-			MinAvailable:  1,
+			MinAvailable:  int32(nb.TaskNumber),
 			Queue:         startJobInfo.queue,
 			SchedulerName: "volcano",
-			Plugins: map[string][]string{
-				"env": {},
-				"svc": {},
-			},
+			//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
+			//Plugins: map[string][]string{
+			//	"env": {},
+			//	"svc": {},
+			//},
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
