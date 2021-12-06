@@ -66,6 +66,7 @@
         }
         getNotebookEventRecord(params).then(response => {
           if (response.success) {
+            if (response.data.records == null) { response.data.records = [] }
             response.data.records.forEach(
               item => {
                 if (item.remark !== '') {

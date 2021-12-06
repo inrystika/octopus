@@ -37,6 +37,7 @@
 </template>
 <script>
   import { saveNoteBook } from "@/api/modelDev";
+  import { getErrorMsg } from '@/error/index'
   export default {
     props: {
       row: {
@@ -86,6 +87,9 @@
       };
     },
     methods: {
+      getErrorMsg(code) {
+        return getErrorMsg(code)
+      },
       cancel() {
         this.$emit("cancel", false);
       },
@@ -95,7 +99,8 @@
       confirm(val) {
         this.$refs['ruleForm'].validate((valid) => {
           if (valid) {
-            saveNoteBook({ id: this.id, taskName: this.ruleForm.taskName, imageName: this.ruleForm.imageName, imageVersion: this.ruleForm.imageVersion, LayerDescription: this.ruleForm.LayerDescription }).then(response => {
+            console.log(this.ruleForm.LayerDescription)
+            saveNoteBook({ id: this.id, taskName: this.ruleForm.taskName, imageName: this.ruleForm.imageName, imageVersion: this.ruleForm.imageVersion, layerDescription: this.ruleForm.LayerDescription }).then(response => {
               if (response.success) {
                 this.$message({
                   message: '保存成功',
