@@ -3,7 +3,6 @@ package develop
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/tools/cache"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
@@ -15,13 +14,16 @@ import (
 	"server/common/utils/collections/set"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
+
 	nav1 "nodeagent/apis/agent/v1"
+
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
 	taskPageSize = 100
-	leaseLock    = "notebookleaselock1"
+	leaseLock    = "notebookleaselock"
 )
 
 func (s *developService) getOwner(notebook *model.Notebook) (string, api.BillingOwnerType) {
@@ -194,14 +196,14 @@ func (s *developService) startNotebookTask() {
 			}, time.Duration(BillingPeriodSec)*time.Second, ctx.Done())
 		}()
 
-		go func(){
+		go func() {
 			nodeActionInformer := s.data.Cluster.GetNodeActionInformer()
 			nodeActionInformer.Informer().AddEventHandlerWithResyncPeriod(
 				cache.FilteringResourceEventHandler{
 					FilterFunc: func(obj interface{}) bool {
 						na := obj.(*nav1.NodeAction)
 						matchedLabels := false
-						for lk, _ :=range na.Labels {
+						for lk, _ := range na.Labels {
 							if lk == nodeActionLabelNotebookId {
 								matchedLabels = true
 							}
@@ -234,12 +236,12 @@ func (s *developService) startNotebookTask() {
 
 func (s *developService) handleNodeActions(na *nav1.NodeAction) {
 	notebookId := na.Labels[nodeActionLabelNotebookId]
-	imageId    := na.Labels[nodeActionLabelImageId]
+	imageId := na.Labels[nodeActionLabelImageId]
 
 	var remark string = "{\"state\":\"%s\",\"reason\":\"%s\",\"imageId\":\"%s\"}"
 	actionStatus := na.Status.Actions
 	var commandStatus *nav1.CommandStatus
-	for _, s :=range actionStatus {
+	for _, s := range actionStatus {
 		if s.Name == "docker.commitAndPush" {
 			commandStatus = s
 			break
@@ -261,7 +263,7 @@ func (s *developService) handleNodeActions(na *nav1.NodeAction) {
 
 	ctx := context.Background()
 	_, err := s.data.ImageDao.Update(ctx, &model.ImageUpdateCond{Id: imageId}, &model.ImageUpdate{
-		Status:    int32(imageStatus),
+		Status: int32(imageStatus),
 	})
 	if err != nil {
 		s.log.Errorw(ctx, err)
