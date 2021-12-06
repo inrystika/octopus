@@ -1,14 +1,14 @@
 <template>
   <div :class="{'has-logo':true}">
     <logo :collapse="isCollapse" />
-    <el-scrollbar wrap-class="scrollbar-wrapper">
+    <el-scrollbar wrap-class="scrollbar-wrapper" :style="{'background':this.GLOBAL.THEME_COLOR?this.GLOBAL.THEME_COLOR:''}">
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
-        :background-color="variables.menuBg"
-        :text-color="variables.menuText"
+        :background-color="this.GLOBAL.THEME_COLOR?this.GLOBAL.THEME_COLOR:variables.menuBg"
+        :text-color="this.GLOBAL.THEME_COLOR?'#dfb5b6':variables.menuText"
         :unique-opened="false"
-        :active-text-color="variables.menuActiveText"
+        :active-text-color="this.GLOBAL.THEME_COLOR?'#fff':variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
       >
