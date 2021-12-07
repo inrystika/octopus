@@ -94,6 +94,7 @@ data:
           systemNameEn: "{{ .Values.openaiserver.service.webConfig.systemNameEn }}"
           systemNameZh: "{{ .Values.openaiserver.service.webConfig.systemNameZh }}"
           organization: "{{ .Values.openaiserver.service.webConfig.organization }}"
+          manualInvisible: "{{ .Values.openaiserver.service.webConfig.manualInvisible }}"
 
 ---
 
