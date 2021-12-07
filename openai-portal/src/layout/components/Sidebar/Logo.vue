@@ -1,11 +1,12 @@
 <template>
-  <div class="sidebar-logo-container" :class="{'collapse':collapse}">
+  <div class="sidebar-logo-container" :class="{'collapse':collapse}" :style="{'background':this.GLOBAL.THEME_COLOR?this.GLOBAL.THEME_COLOR:''}">
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logoCollapse" class="sidebar-logo">
+      <img v-if="logo" :src="this.GLOBAL.THEME_LOGO_ADDR?this.GLOBAL.THEME_LOGO_ADDR:logoCollapse" class="sidebar-logo">         
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo">
+        <div v-if="this.GLOBAL.THEME_LOGO_ADDR"><p class="sidebar-title">北大人工智能集群系统</p></div>
+        <div v-else><img v-if="logo" :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo"></div>
       </router-link>
     </transition>
   </div>
@@ -65,7 +66,7 @@
         color: #fff;
         font-weight: 600;
         line-height: 50px;
-        font-size: 14px;
+        font-size: 16px;
         font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
         vertical-align: middle;
       }

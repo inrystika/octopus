@@ -5,15 +5,19 @@ package baseserver.api.v1;
 option go_package = "server/base-server/api/v1;v1";
 
 
-
+import "server/common/api/v1/configkey.proto";
 import "validate/validate.proto";
 
-service User {
+service UserService {
   rpc ListUser (ListUserRequest) returns (ListUserReply);
   rpc FindUser (FindUserRequest) returns (FindUserReply);
   rpc AddUser (AddUserRequest) returns (AddUserReply);
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
   rpc ListUserInCond (ListUserInCondRequest) returns (ListUserInCondReply);
+
+  rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply);
+  rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
+  rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
 }
 
 enum UserStatus
@@ -101,4 +105,29 @@ message ListUserInCondRequest {
 
 message ListUserInCondReply {
   repeated UserItem users = 1;
+}
+
+message ListUserConfigKeyRequest {
+
+}
+
+message ListUserConfigKeyReply {
+  repeated common.api.v1.ConfigKey  configKeys = 1;
+}
+
+message GetUserConfigRequest {
+  string userId = 1;
+}
+
+message GetUserConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdateUserConfigRequest {
+  string userId = 1[(validate.rules).string = {min_len: 1}];
+  map<string, string> config = 2[(validate.rules).map.min_pairs = 1];
+}
+
+message UpdateUserConfigReply {
+
 }

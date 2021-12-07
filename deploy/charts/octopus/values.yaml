@@ -12,8 +12,23 @@ global:
       address: "swr.cn-south-1.myhuaweicloud.com"
       pathname: "/openioctopus"
     pullPolicy: IfNotPresent
-  nodeSelector:
+  nodeSelector: &nodeSelector
     octopus.openi.pcl.cn/node: "server"
+  affinity: &affinity
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values: ["amd64", "x64", "x86-64", "x86_64"]
 
 common:
   resourceTagKey: octopus.pcl.ac.cn/type
@@ -23,6 +38,7 @@ ingress:
   enabled: true
   adminserverPath: /adminserver
   openaiserverPath: /openaiserver
+  platformserverPath: /platformserver
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
@@ -113,9 +129,15 @@ baseserver:
     redis:
       username: ""
       password: "abcde"
+    jointCloud:  #需要修改为实际的值
+      baseUrl: jointCloudBaseUrl
+      username: jointCloudUsername
+      password: jointCloudPassword
+      sessionExpirySec: 540 #实际有效期为600
   service:
     billingPeriodSec: 1800
     develop:
+      jpyCommand: "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='/code' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
       autoStopIntervalSec: 7200
   administrator:
     username: "admin"
@@ -137,7 +159,28 @@ openaiserver:
     redis:
       username: ""
       password: "abcde"
-        
+  service:
+    webConfig:
+      logoAddr:
+      #格式如#94070a
+      themeColor:
+      systemNameEn:
+      systemNameZh:
+      organization:
+
+# platform-server
+platformserver:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "platform-server"
+  app:
+    logLevel: info
+  data:
+    redis:
+      username: ""
+      password: "abcde"
 
 # admin-server
 adminserver:
@@ -192,12 +235,14 @@ logger:
   filebeat:
     resources: {}
   logstash:
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
   httpd:
     replicaCount: 1
     image:
       pullPolicy: Always
-    nodeSelector: {}
+    nodeSelector:
+      <<: *nodeSelector
 
 
 # minio
@@ -222,21 +267,10 @@ minio:
     type: NodePort
     nodePort: "31311"
     port: "9000"
+  nodeSelector:
+    <<: *nodeSelector
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+    <<: *affinity
 
 
 # mysql
@@ -261,21 +295,10 @@ mysql:
       - name: mysql-initdb
         configMap:
           name: mysql-initdb-config
+    nodeSelector:
+      <<: *nodeSelector
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
 
 
 # redis
@@ -288,21 +311,10 @@ redis:
     persistence:
       size: "50Gi"
       existingClaim: "octopus-redis-pvc"
+    nodeSelector:
+      <<: *nodeSelector
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
   auth:
     enabled: true
     password: "abcde"
@@ -318,40 +330,22 @@ nginx-ingress-controller:
   nodeSelector:
     nginx-ingress: "yes"
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+    <<: *affinity
   defaultBackend:
     affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
-        - weight: 100
-          preference:
-            matchExpressions:
-            - key: beta.kubernetes.io/arch
-              operator: In
-              values: ["amd64", "x64", "x86-64", "x86_64"]
+      <<: *affinity
 
 # influxdb
 influxdb:
   replicaCount: 1
+  livenessProbe:
+    initialDelaySeconds: 300
+  readinessProbe:
+    initialDelaySeconds: 300
+  config:
+    data:
+      max-series-per-database: 0
+      max-values-per-tag: 0
   setDefaultUser:
     user:
       username: "octopus"
@@ -367,22 +361,11 @@ influxdb:
   - name: influxdb-initdb
     mountPath: /docker-entrypoint-initdb.d
     readOnly: true
+  nodeSelector:
+    <<: *nodeSelector
   affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-  
+    <<: *affinity
+
 
 # grafana
 grafana:
@@ -410,7 +393,8 @@ grafana:
     path: /grafana
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 #prometheus
 prometheus:
@@ -428,7 +412,8 @@ prometheus:
     targetPort: "9090"
   resources: {}
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    <<: *nodeSelector
 
 # apidoc
 apidoc:
@@ -437,3 +422,12 @@ apidoc:
     address: ""
     pathname: ""
     name: "api-doc"
+
+nodeagent:
+  image:
+    pullPolicy: ""
+    address: ""
+    pathname: ""
+    name: "node-agent"
+  resources: {}
+  nodeSelector: {}

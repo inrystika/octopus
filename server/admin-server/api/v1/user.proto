@@ -9,6 +9,7 @@ option go_package = "server/admin-server/api/v1;v1";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
 import "server/admin-server/api/v1/workspace.proto";
+import "server/common/api/v1/configkey.proto";
 
 service User {
     rpc ListUser (ListUserRequest) returns (ListUserReply) {
@@ -41,6 +42,26 @@ service User {
     rpc ThawUser (ThawUserRequest) returns (ThawUserReply) {
       option (google.api.http) = {
         post: "/v1/usermanage/user/{userId}/thaw"
+      };
+    };
+    // 查询配置key列表
+    rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply) {
+      option (google.api.http) = {
+        get: "/v1/usermanage/userconfigkey"
+      };
+    }
+    // 查询用户配置
+    rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply) {
+      option (google.api.http) = {
+        get: "/v1/usermanage/user/{userId}/config"
+      };
+    };
+
+    // 更新用户配置
+    rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/config"
+        body: "*"
       };
     };
 }
@@ -123,4 +144,29 @@ message ThawUserRequest {
 
 message ThawUserReply {
   int64 thawedAt = 1;
+}
+
+message ListUserConfigKeyRequest {
+
+}
+
+message ListUserConfigKeyReply {
+  repeated common.api.v1.ConfigKey  configKeys = 1;
+}
+
+message GetUserConfigRequest {
+  string userId = 1;
+}
+
+message GetUserConfigReply {
+  map<string, string> config = 1;
+}
+
+message UpdateUserConfigRequest {
+  string userId = 1[(validate.rules).string = {min_len: 1}];
+  map<string, string> config = 2[(validate.rules).map.min_pairs = 1];
+}
+
+message UpdateUserConfigReply {
+
 }

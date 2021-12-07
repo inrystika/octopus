@@ -17,9 +17,10 @@ import (
 
 	"server/common/log"
 
+	"server/common/third_party/kratos/config"
+	"server/common/third_party/kratos/config/file"
+
 	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"gopkg.in/yaml.v2"
 
@@ -48,6 +49,7 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "", "config path, eg: -conf config.yaml")
 }
 
+// marshalJson error, when values contains map[interface{}]interface{}. 临时修改代码后放入third_party, 后续升级kratos解决
 func main() {
 	flag.Parse()
 	if v {
@@ -112,7 +114,7 @@ func newApp(ctx context.Context, logger log.Logger, hs *http.Server, gs *grpc.Se
 
 // initApp init kratos application.
 func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*kratos.App, func(), error) {
-	data, close, err := data.NewData(bc.Data, logger)
+	data, close, err := data.NewData(bc, logger)
 	if err != nil {
 		return nil, nil, err
 	}

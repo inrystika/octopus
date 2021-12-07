@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	innerapi "server/base-server/api/v1"
 	innterapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
@@ -30,19 +31,20 @@ func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 }
 
 // 查询算法类型列表
-func (s *AlgorithmService) ListAlgorithmType(ctx context.Context, req *api.ListAlgorithmTypeRequest) (*api.ListAlgorithmTypeReply, error) {
-	innerReq := &innterapi.ListAlgorithmTypeRequest{}
-	err := copier.Copy(innerReq, req)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+func (s *AlgorithmService) ListAlgorithmApply(ctx context.Context, req *api.ListAlgorithmApplyRequest) (*api.ListAlgorithmApplyReply, error) {
+	innerReq := &innterapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_APPLY),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
 	}
 
-	innerReply, err := s.data.AlgorithmClient.ListAlgorithmType(ctx, innerReq)
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
-	reply := &api.ListAlgorithmTypeReply{}
+	reply := &api.ListAlgorithmApplyReply{}
 	err = copier.Copy(reply, innerReply)
 	if err != nil {
 		return nil, err
@@ -53,13 +55,14 @@ func (s *AlgorithmService) ListAlgorithmType(ctx context.Context, req *api.ListA
 
 // 查询算法类型框架
 func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
-	innerReq := &innterapi.ListAlgorithmFrameworkRequest{}
-	err := copier.Copy(innerReq, req)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	innerReq := &innterapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
 	}
 
-	innerReply, err := s.data.AlgorithmClient.ListAlgorithmFramework(ctx, innerReq)
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
@@ -415,8 +418,6 @@ func (s *AlgorithmService) CopyAlgorithmVersion(ctx context.Context, req *api.Co
 		Version:           req.Version,
 		NewAlgorithmName:  req.NewAlgorithmName,
 		AlgorithmDescript: req.AlgorithmDescript,
-		TypeId:            req.TypeId,
-		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -460,7 +461,7 @@ func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlg
 		AlgorithmName:     req.AlgorithmName,
 		ModelName:         req.ModelName,
 		AlgorithmDescript: req.AlgorithmDescript,
-		TypeId:            req.TypeId,
+		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
@@ -562,6 +563,55 @@ func (s *AlgorithmService) BatchQueryAlgorithm(ctx context.Context, req *api.Bat
 	}, nil
 }
 
+// 修改我的算法
+func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.UpdateMyAlgorithmRequest) (*api.UpdateMyAlgorithmReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		AlgorithmId:       req.AlgorithmId,
+		IsPrefab:          false,
+		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+// 修改我的算法版本
+func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdateMyAlgorithmVersionRequest) (*api.UpdateMyAlgorithmVersionReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		IsPrefab:          false,
+		AlgorithmId:       req.AlgorithmId,
+		Version:           req.Version,
+		AlgorithmDescript: req.AlgorithmDescript,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmVersionReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
 func (s *AlgorithmService) algorithmInfoTransfer(algorithm *innterapi.AlgorithmInfo) *api.AlgorithmInfo {
 
 	return &api.AlgorithmInfo{
@@ -585,8 +635,8 @@ func (s *AlgorithmService) algorithmTransfer(ctx context.Context, algorithm *inn
 		FileStatus:        algorithm.FileStatus,
 		IsPrefab:          algorithm.IsPrefab,
 		CreatedAt:         algorithm.CreatedAt,
-		TypeId:            algorithm.TypeId,
-		TypeName:          algorithm.TypeName,
+		ApplyId:           algorithm.ApplyId,
+		ApplyName:         algorithm.ApplyName,
 		FrameworkId:       algorithm.FrameworkId,
 		FrameworkName:     algorithm.FrameworkName,
 	}

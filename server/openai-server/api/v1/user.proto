@@ -26,6 +26,12 @@ service User {
             body: "*"
         };
     };
+    // 查询用户配置
+    rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply) {
+      option (google.api.http) = {
+        get: "/v1/usermanage/config"
+      };
+    };
 }
 
 message UserItem {
@@ -77,3 +83,9 @@ message PutUserWorkspaceReply {
 
 }
 
+message GetUserConfigRequest {
+}
+
+message GetUserConfigReply {
+  map<string, string> config = 1;
+}

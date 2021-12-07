@@ -35,14 +35,9 @@
                     <span>{{ scope.row.sourceType===2?scope.row.imageAddr:'' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.imageType===1?'NoteBook类型':'训练类型' }}</span>
-                </template>
-            </el-table-column>
             <el-table-column label="镜像来源" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.sourceType===1?'上传':'远程' }}</span>
+                    <span>{{ sourceType(scope.row.sourceType) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="创建时间" align="center">
@@ -262,6 +257,16 @@
                         return '制作失败'
                 }
             },
+            sourceType(value) {
+                switch (value) {
+                    case 1:
+                        return '上传'
+                    case 2:
+                        return '远程'
+                    default:
+                        return '保存'
+                }
+            },
             // 修改描述
             open(val) {
                 const data = val
@@ -306,18 +311,6 @@
                     });
                 });
             }
-            // 群组详情
-            // getGroupDetail(id) {
-            //     groupDetail(id).then(response => {
-            //         if (response.success) {
-            //             console.log(response.data.workspace.name)
-            //             return response.data.workspace.name
-            //         }
-            //         else { return '' }
-
-            //     })
-            // }
-
         }
     }
 </script>

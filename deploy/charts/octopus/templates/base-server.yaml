@@ -136,6 +136,11 @@ data:
         username: {{ .Values.influxdb.setDefaultUser.user.username }}
         password: {{ .Values.influxdb.setDefaultUser.user.password }}
         database: octopus
+      jointCloud:
+        baseUrl: {{ .Values.baseserver.data.jointCloud.baseUrl }}
+        username: {{ .Values.baseserver.data.jointCloud.username }}
+        password: {{ .Values.baseserver.data.jointCloud.password }}
+        sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
@@ -145,6 +150,7 @@ data:
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       develop:
+        jpyCommand: {{ .Values.baseserver.service.develop.jpyCommand }}
         jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
       resource:

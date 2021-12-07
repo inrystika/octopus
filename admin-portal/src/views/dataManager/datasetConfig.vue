@@ -1,215 +1,75 @@
-<!-- <template>
-    <div>
-        <el-tag :key="tag.id" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="handleClose(tag)"
-            @click="changeValue(tag)">
-            {{tag.typeDesc }}
-        </el-tag>
-        <el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small"
-            @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
-        </el-input>
-        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增类型</el-button>
-        <star-input-tag v-model=" dynamicTags" theme="添加新标签" />
-    </div>
-</template>
-<script>
-    import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType } from "@/api/dataManager"
-    import { getErrorMsg } from '@/error/index'
-    export default {
-        name: 'datasetConfig',
-        data() {
-            return {
-                dynamicTags: [],
-                inputVisible: false,
-                inputValue: '',
-                tempTag: '',
-                // 是否改变原来的值
-                isChange: false,
-                tempId: '',
-
-            };
-        },
-        created() {
-            this.getType();
-        },
-        methods: {
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
-            handleClose(tag) {
-                deleteDatasetType(tag.id).then(response => {
-                    if (response.success) {
-                        this.getType()
-                    }
-                    else {
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
-                        });
-                    }
-                })
-            },
-            showInput() {
-                this.tempTag = ''
-                this.inputVisible = true;
-                this.inputValue = ''
-                this.isChange = false
-                this.$nextTick(_ => {
-                    this.$refs.saveTagInput.$refs.input.focus();
-                });
-            },
-            handleInputConfirm() {
-                let inputValue = this.inputValue;
-                inputValue = inputValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
-                if (this.isChange) {
-                    updateDatasetType({ id: this.tempId, typeDesc: inputValue }).then(
-                        response => {
-                            if (response.success) {
-                                this.getType()
-                            }
-                            else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
-                            }
-                        }
-                    )
-
-                }
-                // 点击添加时，追加
-                if (inputValue) {
-                    if (inputValue) {
-                        addDatasetType(inputValue).then(response => {
-                            if (response.success) {
-                                this.getType()
-                            }
-                            else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
-                            }
-                        })
-
-                    }
-                }
-                this.inputVisible = false;
-                this.inputValue = '';
-            },
-            getType() {
-                datasetType({ pageIndex: 1, pageSize: 20 }).then(
-                    response => {
-                        if (response.success) {
-                            this.dynamicTags = response.data.datasetTypes
-                            if (this.dynamicTags == null) {
-                                this.dynamicTags = []
-                            }
-                        }
-                        else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    }
-                )
-            },
-            changeValue(tag) {
-                this.inputVisible = true
-                this.$nextTick(_ => {
-                    this.$refs.saveTagInput.$refs.input.focus();
-                });
-                this.inputValue = tag.typeDesc
-                this.tempTag = tag.typeDesc
-                this.tempId = tag.id
-                this.isChange = true
-            }
-        }
-    }
-</script>
-<style>
-    .el-tag+.el-tag {
-        margin-left: 10px;
-    }
-
-    .button-new-tag {
-        margin-left: 10px;
-        height: 32px;
-        line-height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    .input-new-tag {
-        width: 90px;
-        margin-left: 10px;
-        vertical-align: bottom;
-    }
-</style> -->
 <template>
     <div>
-        <el-tag v-for="(tag,index) in dynamicTags" :key="index" closable :disable-transitions="false"
-            @click="editTag(tag,index)" @close="handleClose(tag)">
-            <span v-if="index!=num"> {{tag.typeDesc }}</span>
-            <input class="custom_input" type="text" v-model="inputValue" v-if="index==num" ref="editInput"
-                @keyup.enter.native="handleInput(tag)" @blur="handleInput(tag)">
-        </el-tag>
-        <el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small"
-            @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
-        </el-input>
-        <el-button v-else class="button-new-tag" size="small" @click="showInput">{{'+ 新标签'}}</el-button>
+        <div class="title">数据类型</div>
+        <div>
+            <el-tag v-for="(tag,index) in dynamicType" :key="index" :closable="tag.sourceType!==1"
+                :disable-transitions="false" @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
+                <span v-if="index!=typeNum"> {{tag.lableDesc }}</span>
+                <input class="custom_input" type="text" v-model="typeValue" v-if="index==typeNum" ref="editeTypeInput"
+                    @keyup.enter.native="handleInput(tag,'TYPE')" @blur="handleInput(tag,'TYPE')">
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputTypeVisible" v-model="typeValue" ref="saveTypeInput" size="small"
+                @keyup.enter.native="handleInputConfirm('TYPE')" @blur="handleInputConfirm('TYPE')">
+            </el-input>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput('TYPE')">{{'+ 新标签'}}</el-button>
+        </div>
+        <el-divider></el-divider>
+        <div class="title">标注类型</div>
+        <div>
+            <el-tag v-for="(tag,index) in dynamicFrame" :key="index" :closable="tag.sourceType!==1"
+                :disable-transitions="false" @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
+                <span v-if="index!=frameNum"> {{tag.lableDesc }}</span>
+                <input class="custom_input" type="text" v-model="frameValue" v-if="index==frameNum"
+                    ref="editeFrameInput" @keyup.enter.native="handleInput(tag,'FRAME')"
+                    @blur="handleInput(tag,'FRAME')">
+            </el-tag>
+            <el-input class="input-new-tag" v-if="inputFrameVisible" v-model="frameValue" ref="saveFrameInput"
+                size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+            </el-input>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">{{'+ 新标签'}}</el-button>
+        </div>
     </div>
 </template>
 <script>
-    import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType } from "@/api/dataManager"
+    import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType, datasetUse, addDatasetUse, deleteDatasetUse, updateDatasetUse } from "@/api/dataManager.js"
     import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
         created() {
-            this.getType();
+            this.datasetType();
+            this.datasetUse()
         },
         data() {
             return {
-                inputVisible: false,
-                inputValue: '',
-                id: '',
-                num: -1,
-                dynamicTags: []
+                //算法类型
+                inputTypeVisible: false,
+                typeValue: '',
+                typeId: '',
+                typeNum: -1,
+                dynamicType: [],
+                //算法框架
+                inputFrameVisible: false,
+                frameValue: '',
+                frameId: '',
+                frameNum: -1,
+                dynamicFrame: []
             }
         },
-
         methods: {
-            handleClose(tag) {
-                deleteDatasetType(tag.id).then(response => {
-                    if (response.success) {
-                        this.getType()
-                    }
-                    else {
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
-                        });
-                    }
-                })
-            },
-
-            showInput() {
-                this.inputVisible = true;
-                this.$nextTick(_ => {
-                    this.$refs.saveTagInput.$refs.input.focus();
-                });
-
-            },
-
-            handleInputConfirm() {
-                let inputValue = this.inputValue;
-                inputValue = inputValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
-                // 点击添加时，追加
-                if (inputValue) {
-                    if (inputValue) {
-                        addDatasetType(inputValue).then(response => {
+            handleClose(tag, val) {
+                this.$confirm('此操作将永久删除该标签, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    if (val === 'TYPE') {
+                        deleteDatasetType(tag.id).then(response => {
                             if (response.success) {
-                                this.getType()
+                                this.datasetType()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
                             }
                             else {
                                 this.$message({
@@ -218,25 +78,169 @@
                                 });
                             }
                         })
+                    }
+                    else {
+                        deleteDatasetUse(tag.id).then(response => {
+                            if (response.success) {
+                                this.datasetUse()
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
 
+            showInput(val) {
+                if (val === 'TYPE') {
+                    this.inputTypeVisible = true;
+                    this.$nextTick(_ => {
+                        this.$refs.saveTypeInput.$refs.input.focus();
+                    });
+                }
+                else {
+                    this.inputFrameVisible = true;
+                    this.$nextTick(_ => {
+                        this.$refs.saveFrameInput.$refs.input.focus();
+                    });
+                }
+
+
+            },
+
+            handleInputConfirm(val) {
+                if (val === 'TYPE') {
+                    let typeValue = this.typeValue;
+                    typeValue = typeValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+                    // 点击添加时，追加
+                    if (typeValue) {
+                        if (typeValue) {
+                            addDatasetType(typeValue).then(response => {
+                                if (response.success) {
+                                    this.datasetType()
+                                }
+                                else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
+
+                        }
+                    }
+                    this.inputTypeVisible = false;
+                    this.typeValue = '';
+                }
+                else {
+                    let frameValue = this.frameValue;
+                    frameValue = frameValue.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+                    // 点击添加时，追加
+                    if (frameValue) {
+                        if (frameValue) {
+                            addDatasetUse(frameValue).then(response => {
+                                if (response.success) {
+                                    this.datasetUse()
+                                }
+                                else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
+
+                        }
+                    }
+                    this.inputFrameVisible = false;
+                    this.frameValue = '';
+                }
+            },
+            editTag(tag, index, val) {
+                if (tag.sourceType == 1) {
+                    return
+                } else {
+                    if (val === 'TYPE') {
+                        this.typeNum = index;
+                        this.$nextTick(_ => {
+                            this.$refs.editeTypeInput[0].focus();
+                        });
+                        this.typeValue = tag.lableDesc;
+                        this.typeId = tag.id
+                    }
+                    else {
+                        this.frameNum = index;
+                        this.$nextTick(_ => {
+                            this.$refs.editeFrameInput[0].focus();
+                        });
+                        this.frameValue = tag.lableDesc;
+                        this.frameId = tag.id
                     }
                 }
-                this.inputVisible = false;
-                this.inputValue = '';
+
             },
-            editTag(tag, index) {
-                this.num = index;
-                this.$nextTick(_ => {
-                    this.$refs.editInput[0].focus();
-                });
-                this.inputValue = tag.typeDesc;
-                this.id = tag.id
+            handleInput(tag, val) {
+                if (val === 'TYPE') {
+                    updateDatasetType({ id: this.typeId, lableDesc: this.typeValue }).then(
+                        response => {
+                            if (response.success) {
+                                this.datasetType()
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                            this.typeValue = '';
+                            this.typeNum = -1;
+                        }
+                    )
+                }
+                else {
+                    updateDatasetUse({ id: this.frameId, lableDesc: this.frameValue }).then(
+                        response => {
+                            if (response.success) {
+                                this.datasetUse()
+                            }
+                            else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                            this.frameValue = '';
+                            this.frameNum = -1;
+                        }
+                    )
+                }
+
             },
-            handleInput(tag) {
-                updateDatasetType({ id: this.id, typeDesc: this.inputValue }).then(
+            getErrorMsg(code) {
+                return getErrorMsg(code)
+            },
+            datasetType() {
+                datasetType({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.getType()
+                            this.dynamicType = response.data.lables
+                            if (this.dynamicType == null) {
+                                this.dynamicType = []
+                            }
+
                         }
                         else {
                             this.$message({
@@ -244,22 +248,16 @@
                                 type: 'warning'
                             });
                         }
-                        this.inputValue = '';
-                        this.num = -1;
                     }
                 )
-
             },
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
-            getType() {
-                datasetType({ pageIndex: 1, pageSize: 20 }).then(
+            datasetUse() {
+                datasetUse({ pageIndex: 1, pageSize: 20 }).then(
                     response => {
                         if (response.success) {
-                            this.dynamicTags = response.data.datasetTypes
-                            if (this.dynamicTags == null) {
-                                this.dynamicTags = []
+                            this.dynamicFrame = response.data.lables
+                            if (this.dynamicFrame == null) {
+                                this.dynamicFrame = []
                             }
                         }
                         else {
@@ -301,5 +299,11 @@
         background-color: transparent;
         font-size: 12px;
         color: #E6A23C;
+    }
+
+    .title {
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 800;
     }
 </style>

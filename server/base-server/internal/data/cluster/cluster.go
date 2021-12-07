@@ -8,10 +8,20 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/rest"
+	nav1 "nodeagent/apis/agent/v1"
+	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 )
 
+type ClusterClient interface {
+	GetNodeInformer()       infov1.NodeInformer
+	GetPodInformer()        infov1.PodInformer
+	GetNodeActionInformer() nainformerv1.NodeActionInformer
+}
+
 type Cluster interface {
+	ClusterClient
 	GetClusterConfig() *rest.Config
 	GetAllNodes(ctx context.Context) (map[string]v1.Node, error)
 	GetRunningTasks(context.Context) (*v1.PodList, error)
@@ -33,6 +43,14 @@ type Cluster interface {
 	CreateAndListenJob(ctx context.Context, job *batchv1.Job, callback func(e error)) error
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
+	CreateSecret(ctx context.Context, secret *v1.Secret) (*v1.Secret, error)
+	DeletePersistentVolume(ctx context.Context, name string) error
+	DeletePersistentVolumeClaim(ctx context.Context, namespace string, name string) error
+	DeleteSecret(ctx context.Context, namespace string, name string) error
+	CreateNodeAction(ctx context.Context, namespace string, nodeAction *nav1.NodeAction) (*nav1.NodeAction, error)
+	GetNodeAction(ctx context.Context, namespace, name string) (*nav1.NodeAction, error)
+	DeleteNodeAction(ctx context.Context, namespace string, name string) error
+	GetPod(ctx context.Context, namespace string, name string) (*v1.Pod, error)
 	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
 	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
 	RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error

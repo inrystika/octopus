@@ -83,8 +83,8 @@ message Influxdb {
   string addr = 1;
   string username = 2;
   string password = 3;
-  string Database = 4;
-  string Precision = 5;
+  string database = 4;
+  string precision = 5;
 }
 
 message Ambassador {
@@ -99,12 +99,14 @@ message Data {
   Harbor harbor = 5;
   Redis redis = 6;
   Influxdb influxdb = 7;
-  Ambassador ambassador = 8;
+  JointCloud jointCloud = 8;
+  Ambassador ambassador = 9;
 }
 
 message Develop {
   string jpyBaseUrlEnv = 1;
   int64  autoStopIntervalSec = 2;
+  string jpyCommand = 3;
 }
 
 message Resource {
@@ -119,6 +121,13 @@ message Resource {
   string defaultPoolName = 9;
   string discoveryDuration = 10;
   string ignoreSystemResources = 11;
+}
+
+message JointCloud {
+  string baseUrl = 1;
+  string username = 2;
+  string password = 3;
+  int32 sessionExpirySec = 4;
 }
 
 message Service {

@@ -38,11 +38,11 @@ type trainJobService struct {
 	conf                *conf.Bootstrap
 	log                 *log.Helper
 	data                *data.Data
-	workspaceService    api.WorkspaceServer
-	algorithmService    api.AlgorithmServer
-	imageService        api.ImageServer
+	workspaceService    api.WorkspaceServiceServer
+	algorithmService    api.AlgorithmServiceServer
+	imageService        api.ImageServiceServer
 	datasetService      api.DatasetServiceServer
-	modelService        api.ModelServer
+	modelService        api.ModelServiceServer
 	resourceSpecService api.ResourceSpecServiceServer
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
@@ -55,8 +55,8 @@ type TrainJobService interface {
 }
 
 func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
-	workspaceService api.WorkspaceServer, algorithmService api.AlgorithmServer,
-	imageService api.ImageServer, datasetService api.DatasetServiceServer, modelService api.ModelServer,
+	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
+	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
 	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (TrainJobService, error) {
 	log := log.NewHelper("TrainJobService", logger)
@@ -999,10 +999,10 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		Status: info.Job.State,
 	}
 	if strings.EqualFold(info.Job.State, pipeline.RUNNING) {
-		update.StartedAt = &info.Job.StartAt.Time
+		update.StartedAt = &req.CurrentTime
 	} else if strings.EqualFold(info.Job.State, pipeline.FAILED) ||
 		strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
-		update.CompletedAt = &info.Job.FinishedAt.Time
+		update.CompletedAt = &req.CurrentTime
 	}
 
 	err = s.data.TrainJobDao.UpdateTrainJob(ctx, update)

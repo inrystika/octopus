@@ -108,6 +108,7 @@ func (s *billingService) RechargeUser(ctx context.Context, req *api.RechargeUser
 		OwnerId:   req.UserId,
 		OwnerType: innerapi.BillingOwnerType_BOT_USER,
 		Amount:    req.Amount,
+		Title:     req.Title,
 	})
 
 	if err != nil {
@@ -262,6 +263,7 @@ func (s *billingService) RechargeSpace(ctx context.Context, req *api.RechargeSpa
 		OwnerId:   req.SpaceId,
 		OwnerType: innerapi.BillingOwnerType_BOT_SPACE,
 		Amount:    req.Amount,
+		Title:     req.Title,
 	})
 
 	if err != nil {
@@ -295,6 +297,7 @@ func (s *billingService) ListSpacePayRecord(ctx context.Context, req *api.ListSp
 			return nil, err
 		}
 		r.SpaceId = i.OwnerId
+		r.UserId = i.ExtraInfo["userId"]
 		reply.Records = append(reply.Records, r)
 	}
 
@@ -401,6 +404,23 @@ func (s *billingService) assignSpacePayRecord(ctx context.Context, records []*ap
 		for _, i := range records {
 			if v, ok := spaceMap[i.SpaceId]; ok {
 				i.SpaceName = v.Name
+			}
+		}
+
+		userIds := make([]string, 0)
+		for _, i := range records {
+			userIds = append(userIds, i.UserId)
+		}
+
+		userMap, err := s.listUserInCond(ctx, set.NewStrings(userIds...).Values())
+		if err != nil {
+			return err
+		}
+
+		for _, i := range records {
+
+			if v, ok := userMap[i.UserId]; ok {
+				i.UserName = v.FullName
 			}
 		}
 	}

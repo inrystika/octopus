@@ -8,7 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 
-service Image {
+service ImageService {
   // 查询预置镜像列表
   rpc ListPreImage (ListPreImageRequest) returns (ListPreImageReply);
   // 查询用户镜像列表
@@ -37,18 +37,19 @@ service Image {
   rpc ListImageAccessInCond (ListImageAccessInCondRequest) returns (ListImageAccessInCondReply);
 }
 
-enum ImageType
-{
-    IMAGE_TYPE_PLACEHOLDER = 0;
-    IMAGE_TYPE_NOTEBOOK    = 1;
-    IMAGE_TYPE_TRAINING    = 2;
-}
+//enum ImageType
+//{
+//    IMAGE_TYPE_PLACEHOLDER = 0;
+//    IMAGE_TYPE_NOTEBOOK    = 1;
+//    IMAGE_TYPE_TRAINING    = 2;
+//}
 
 enum ImageSourceType
 {
     IMAGE_SOURCE_TYPE_PLACEHOLDER = 0;
     IMAGE_SOURCE_TYPE_UPLOADED    = 1;
     IMAGE_SOURCE_TYPE_REMOTE      = 2;
+    IMAGE_SOURCE_TYPE_SAVED       = 3;
 }
 
 enum ImageIsPrefab
@@ -70,17 +71,16 @@ enum ImageStatus
 message ImageDetail {
   string    id = 1;
   string    imageName = 2;
-  ImageType imageType = 3;
-  string    imageDesc = 4;
-  string    imageVersion = 5;
-  ImageSourceType sourceType = 6;
-  string    spaceId = 7;
-  string    userId = 8;
-  ImageIsPrefab   isPrefab = 9;
-  int64     createdAt = 10;
-  int64     updatedAt = 11;
-  ImageStatus     imageStatus = 12;
-  string    imageAddr = 13;
+  string    imageDesc = 3;
+  string    imageVersion = 4;
+  ImageSourceType sourceType = 5;
+  string    spaceId = 6;
+  string    userId = 7;
+  ImageIsPrefab   isPrefab = 8;
+  int64     createdAt = 9;
+  int64     updatedAt = 10;
+  ImageStatus     imageStatus = 11;
+  string    imageAddr = 12;
 }
 
 message ImageAccess {
@@ -114,11 +114,10 @@ message ListPreImageRequest {
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string imageVersion = 5[(validate.rules).string = {max_len: 50}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
-  ImageType imageType = 7 [(validate.rules).enum = {defined_only: true}];
-  ImageSourceType sourceType = 8 [(validate.rules).enum = {defined_only: true}];
-  ImageStatus imageStatus = 9 [(validate.rules).enum = {defined_only: true}];
-  string searchKey = 10 [(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 11[(validate.rules).string = {max_len: 50}];
+  ImageSourceType sourceType = 7 [(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 8 [(validate.rules).enum = {defined_only: true}];
+  string searchKey = 9 [(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 10[(validate.rules).string = {max_len: 50}];
 }
 
 message ListPreImageReply {
@@ -135,13 +134,12 @@ message ListUserImageRequest {
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
   string userId = 7[(validate.rules).string = {max_len: 36}];
   string spaceId = 8[(validate.rules).string = {max_len: 36}];
-  ImageType imageType = 9[(validate.rules).enum = {defined_only: true}];
-  ImageSourceType sourceType = 10[(validate.rules).enum = {defined_only: true}];
-  ImageStatus imageStatus = 11[(validate.rules).enum = {defined_only: true}];
-  string searchKey = 12[(validate.rules).string = {max_len: 50}];
-  string userNameLike = 13[(validate.rules).string = {max_len: 50}];
-  string spaceNameLike = 14[(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 15[(validate.rules).string = {max_len: 50}];
+  ImageSourceType sourceType = 9[(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 10[(validate.rules).enum = {defined_only: true}];
+  string searchKey = 11[(validate.rules).string = {max_len: 50}];
+  string userNameLike = 12[(validate.rules).string = {max_len: 50}];
+  string spaceNameLike = 13[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 14[(validate.rules).string = {max_len: 50}];
 }
 
 message ListUserImageReply {
@@ -157,11 +155,10 @@ message ListCommImageRequest {
   string imageVersion = 5[(validate.rules).string = {max_len: 50}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
   string spaceId = 7[(validate.rules).string = {max_len: 36}];
-  ImageType imageType = 8[(validate.rules).enum = {defined_only: true}];
-  ImageSourceType sourceType = 9[(validate.rules).enum = {defined_only: true}];
-  ImageStatus imageStatus = 10[(validate.rules).enum = {defined_only: true}];
-  string searchKey = 11[(validate.rules).string = {max_len: 50}];
-  string nameVerLike = 12[(validate.rules).string = {max_len: 50}];
+  ImageSourceType sourceType = 8[(validate.rules).enum = {defined_only: true}];
+  ImageStatus imageStatus = 9[(validate.rules).enum = {defined_only: true}];
+  string searchKey = 10[(validate.rules).string = {max_len: 50}];
+  string nameVerLike = 11[(validate.rules).string = {max_len: 50}];
 }
 
 message ListCommImageReply {
@@ -191,14 +188,13 @@ message CloseShareImageReply {
 
 message AddImageRequest {
   string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1,max_len: 50}];
-  ImageType imageType = 2[(validate.rules).enum = {in: [1,2]}];
-  string imageDesc = 3;
-  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", min_len: 1, max_len: 50}];
-  ImageSourceType sourceType = 5[(validate.rules).enum = {in: [1,2]}];
-  string spaceId = 6[(validate.rules).string = {max_len: 36}];
-  string userId = 7[(validate.rules).string = {max_len: 36}];
-  ImageIsPrefab isPrefab = 8[(validate.rules).enum = {in: [1,2]}];
-  string imageAddr = 9[(validate.rules).string = {max_len: 254}];
+  string imageDesc = 2;
+  string imageVersion = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", min_len: 1, max_len: 50}];
+  ImageSourceType sourceType = 4[(validate.rules).enum = {in: [1,2,3]}];
+  string spaceId = 5[(validate.rules).string = {max_len: 36}];
+  string userId = 6[(validate.rules).string = {max_len: 36}];
+  ImageIsPrefab isPrefab = 7[(validate.rules).enum = {in: [1,2]}];
+  string imageAddr = 8[(validate.rules).string = {max_len: 254}];
 }
 
 message AddImageReply {
@@ -220,10 +216,9 @@ message DeleteImageReply {
 message UpdateImageRequest {
   string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
   string imageName = 2[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len: 50}];
-  ImageType imageType = 3[(validate.rules).enum = {defined_only: true}];
-  string imageDesc = 4;
-  string imageVersion = 5[(validate.rules).string = {pattern: "^[a-zA-Z0-9][\\w|\\-|\\.]*$", max_len: 50}];
-  string imageAddr = 6[(validate.rules).string = {max_len: 254}];
+  string imageDesc = 3;
+  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z0-9][\\w|\\-|\\.]*$", max_len: 50}];
+  string imageAddr = 5[(validate.rules).string = {max_len: 254}];
   // ImageSourceType sourceType = 6;
   // string spaceId = 7;
   // string userId = 8;

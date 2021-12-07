@@ -139,6 +139,7 @@ func (s *billingService) ListSpacePayRecord(ctx context.Context, req *api.ListSp
 	}
 	innerReq.OwnerId = session.GetWorkspace()
 	innerReq.OwnerType = innerapi.BillingOwnerType_BOT_SPACE
+	innerReq.ExtraInfo = map[string]string{"userId": session.UserId}
 
 	innerReply, err := s.data.BillingClient.ListBillingPayRecord(ctx, innerReq)
 	if err != nil {

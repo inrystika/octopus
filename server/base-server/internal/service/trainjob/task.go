@@ -86,7 +86,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							}
 						}
 
-						//更新无效任务状态后再查询、计费
+						//删除后再查询
 						trainJobs, _, err = s.data.TrainJobDao.GetTrainJobList(ctx, &model.TrainJobListQuery{
 							PageIndex: pageIndex,
 							PageSize:  taskPageSize,

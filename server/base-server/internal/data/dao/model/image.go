@@ -11,20 +11,20 @@ import (
 // 镜像表
 type Image struct {
 	Id             string         `gorm:"type:varchar(100);not null;default:'';comment:'镜像Id';primaryKey"`
-	ImageName      string         `gorm:"type:varchar(100);not null;default:'';comment:'镜像名称';uniqueIndex:in_iv_it_sid_uid_da"`
-	ImageType      int32          `gorm:"type:int;not null;default:0;comment:'镜像类型';uniqueIndex:in_iv_it_sid_uid_da"`
+	ImageName      string         `gorm:"type:varchar(100);not null;default:'';comment:'镜像名称';index:in_iv_sid_uid_da"`
 	ImageDesc      string         `gorm:"type:text;comment:'镜像描述'"`
 	ImageAddr      string         `gorm:"type:varchar(255);comment:'镜像地址'"`
-	ImageVersion   string         `gorm:"type:varchar(100);not null;default:'';comment:'镜像版本号';uniqueIndex:in_iv_it_sid_uid_da"`
+	ImageVersion   string         `gorm:"type:varchar(100);not null;default:'';comment:'镜像版本号';index:in_iv_sid_uid_da"`
 	SourceType     int32          `gorm:"type:int;not null;default:0;comment:'来源类型（文件上传，远程镜像）'"`
 	SourceFilePath string         `gorm:"type:varchar(255);not null;default:'';comment:'来源文件存储路径'"`
-	SpaceId        string         `gorm:"type:varchar(100);not null;default:'';comment:'归属群组Id;index:spaceId_userId;uniqueIndex:in_iv_it_sid_uid_da"`
-	UserId         string         `gorm:"type:varchar(100);not null;default:'';comment:'归属用户';index:spaceId_userId;uniqueIndex:in_iv_it_sid_uid_da"`
+	SpaceId        string         `gorm:"type:varchar(100);not null;default:'';comment:'归属群组Id;index:spaceId_userId;index:in_iv_sid_uid_da"`
+	UserId         string         `gorm:"type:varchar(100);not null;default:'';comment:'归属用户';index:spaceId_userId;index:in_iv_sid_uid_da"`
 	IsPrefab       int32          `gorm:"not null;default:0;comment:'镜像是否为预置镜像（1:是预置镜像，2:不是预置镜像）'"`
 	Status         int32          `gorm:"not null;default:0;comment:'镜像状态（1:未制作 2:制作中 3.制作完成）'"`
 	Accesses       []*ImageAccess `gorm:"foreignKey:ImageId"`
 	dao.Model
-	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:in_iv_it_sid_uid_da"`
+	DeletedAt soft_delete.DeletedAt `gorm:"index:in_iv_sid_uid_da"`
+	ImageType int32                 `gorm:"type:int;not null;default:0;comment:'镜像类型'"` // deprecated
 }
 
 func (Image) TableName() string {
@@ -61,7 +61,6 @@ type ImageList struct {
 	UserNameLike  string
 	SpaceNameLike string
 	NameVerLike   string
-	ImageType     int32
 	SourceType    int32
 	SearchKey     string
 }
@@ -93,11 +92,6 @@ func (i ImageList) Where(db *gorm.DB) *gorm.DB {
 	if i.IsPrefab != 0 {
 		querySql += " and is_prefab = ? "
 		params = append(params, i.IsPrefab)
-	}
-
-	if i.ImageType != 0 {
-		querySql += " and image_type = ? "
-		params = append(params, i.ImageType)
 	}
 
 	if i.SourceType != 0 {
@@ -205,7 +199,6 @@ type ImageAdd struct {
 	Id           string
 	ImageName    string
 	ImageVersion string
-	ImageType    int32
 	ImageDesc    string
 	ImageAddr    string
 	SourceType   int32
@@ -218,7 +211,6 @@ type ImageAdd struct {
 type ImageUpdate struct {
 	ImageName      string
 	ImageVersion   string
-	ImageType      int32
 	ImageDesc      string
 	ImageAddr      string
 	Status         int32
@@ -261,7 +253,6 @@ type ImageAccessList struct {
 	Status        int32
 	UserId        string
 	SpaceId       string
-	ImageType     int32
 	SourceType    int32
 	SearchKey     string
 }
@@ -296,11 +287,6 @@ func (i ImageAccessList) JoinImageAccess(db *gorm.DB) *gorm.DB {
 	if i.IsPrefab != 0 {
 		querySql += " and image.is_prefab = ? "
 		params = append(params, i.IsPrefab)
-	}
-
-	if i.ImageType != 0 {
-		querySql += " and image.image_type = ? "
-		params = append(params, i.ImageType)
 	}
 
 	if i.SourceType != 0 {
@@ -363,11 +349,6 @@ func (i ImageAccessList) JoinImage(db *gorm.DB) *gorm.DB {
 	if i.IsPrefab != 0 {
 		querySql += " and image.is_prefab = ? "
 		params = append(params, i.IsPrefab)
-	}
-
-	if i.ImageType != 0 {
-		querySql += " and image.image_type = ? "
-		params = append(params, i.ImageType)
 	}
 
 	if i.SourceType != 0 {

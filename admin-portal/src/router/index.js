@@ -113,19 +113,19 @@ export const constantRoutes = [
         path: 'machine',
         name: 'machine',
         component: () => import('@/views/timeManager/machine'),
-        meta: { title: '机时', icon: 'dot' }
+        meta: { title: '机时列表', icon: 'dot' }
       },
       {
         path: 'recharge',
         name: 'recharge',
         component: () => import('@/views/timeManager/recharge'),
-        meta: { title: '充值', icon: 'dot' }
+        meta: { title: '充值记录', icon: 'dot' }
       },
       {
         path: 'consumption',
         name: 'consumption',
         component: () => import('@/views/timeManager/consumption'),
-        meta: { title: '消费', icon: 'dot' }
+        meta: { title: '消费记录', icon: 'dot' }
       }
     ]
   },
@@ -197,6 +197,30 @@ export const constantRoutes = [
         name: 'modelManager',
         component: () => import('@/views/modelManager/index'),
         meta: { title: '模型管理', icon: 'model2' }
+      }
+    ]
+  },
+  {
+    path: '/platformManager',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'platformManager',
+        component: () => import('@/views/platformManager/index'),
+        meta: { title: '平台管理', icon: 'platform' }
+      },
+    ]
+  },
+  {
+    path: '/cloudInterconnection',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'cloudInterconnection',
+        component: () => import('@/views/cloudInterconnection/index'),
+        meta: { title: '云际互联', icon: 'example' }
       }
     ]
   },

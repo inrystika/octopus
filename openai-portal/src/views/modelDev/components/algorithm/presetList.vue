@@ -23,12 +23,12 @@
           <span>{{ scope.row.algorithmVersion }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="算法类型">
+      <el-table-column label="模型类别">
         <template slot-scope="scope">
-          <span>{{ scope.row.typeName }}</span>
+          <span>{{ scope.row.applyName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="算法框架">
+      <el-table-column label="框架类型">
         <template slot-scope="scope">
           <span>{{ scope.row.frameworkName }}</span>
         </template>
@@ -41,11 +41,6 @@
       <el-table-column label="创建时间">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="提供者">
-        <template slot-scope="scope">
-          <span>{{ scope.row.userName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作">

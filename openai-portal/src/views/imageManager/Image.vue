@@ -26,16 +26,6 @@
                     <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageType(scope.row.imageType) }}</span>
-                </template>
-            </el-table-column>
-            <!-- <el-table-column label="镜像状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -62,7 +52,7 @@
             </el-table-column>
             <el-table-column v-if="flag" label="操作" align="center" :width="250">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
+                    <el-button v-if="(scope.row.imageStatus==1||scope.row.imageStatus==4)&&scope.row.sourceType==1" type="text"
                         @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
                     <el-button type="text" @click="open2(scope.row)"
@@ -243,8 +233,10 @@
                 switch (value) {
                     case 1:
                         return '上传'
-                    default:
+                    case 2:
                         return '远程'
+                    default:
+                        return '保存'
                 }
             },
             imageStatus(value) {

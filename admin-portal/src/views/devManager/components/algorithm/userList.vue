@@ -23,9 +23,9 @@
           <span>{{ scope.row.algorithmVersion }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="算法类型">
+      <el-table-column label="模型类别">
         <template slot-scope="scope">
-          <span>{{ scope.row.typeName }}</span>
+          <span>{{ scope.row.applyName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="算法框架">

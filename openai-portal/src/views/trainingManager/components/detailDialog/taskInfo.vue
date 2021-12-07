@@ -9,7 +9,7 @@
             </el-col>
         </el-row>
         <el-row>
-            <el-col v-if="data.isDistributed" :span="12">
+            <el-col v-if="showInfo" :span="12">
                 <el-form ref="ruleForm" :model="ruleForm">
                     <el-form-item prop="subTaskItem">
                         <div style="font-size: 15px">子任务名:
@@ -45,7 +45,6 @@
 
         <div class="block">
             <el-pagination
-                v-if="showInfo"
                 :current-page="pageIndex"
                 :page-sizes="[10, 20, 50, 80]"
                 :page-size="pageSize"
@@ -94,10 +93,7 @@
                     })
                 }
             }
-            if (!this.data.isDistributed) {
-                this.isDistributed = !this.data.isDistributed
-                this.selectedSubTaskOption()
-            }
+            this.selectedSubTaskOption()
         },
         methods: {
             selectedSubTaskOption() {
@@ -110,7 +106,7 @@
                 }
                 getTempalteInfo(param).then(response => {
                     if (response.success) {
-                        this.showInfo = response.payload.jobEvents.length
+                        this.showInfo = !this.data.isDistributed ? this.data.isDistributed : response.payload.jobEvents.length
                         this.total = response.payload.totalSize
                         let infoMessage = ""
                         response.payload.jobEvents.forEach(function(element) {
@@ -119,12 +115,31 @@
                             infoMessage += "\n" + "[" + title + "]"
                             infoMessage += "\n" + "[" + message + "]" + "\n"
                         })
+                        this.ruleForm.subTaskItem = this.row.config[0].replicaStates[0].key
                         this.subTaskInfo = infoMessage
                     } else {
-                        this.$message({
-                            message: "暂无相关运行信息",
-                            type: 'warning'
-                        });
+                        const data = {
+                            id: this.row.id,
+                            pageIndex: this.pageIndex,
+                            pageSize: this.pageSize,
+                            taskIndex: 0,
+                            replicaIndex: 0
+                        }
+                        getTempalteInfo(data).then(response => {
+                            if (response.success) {
+                                this.total = response.payload.totalSize
+                                let infoMessage = ""
+                                response.payload.jobEvents.forEach(function(element) {
+                                    const title = element.reason
+                                    const message = element.message
+                                    infoMessage += "\n" + "[" + title + "]"
+                                    infoMessage += "\n" + "[" + message + "]" + "\n"
+                                })
+                                this.subTaskInfo = infoMessage
+                            } else {
+                              this.subTaskInfo = "暂无相关运行信息"
+                            }
+                        })
                     }
                 }).catch(err => {
                     console.log("err:", err)

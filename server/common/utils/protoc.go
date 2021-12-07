@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -138,7 +139,10 @@ func GenSwagger() error {
 		return err
 	}
 
-	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"), filepath.Join(baseDir, "openai-server", "api", "v1")}
+	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"),
+		filepath.Join(baseDir, "openai-server", "api", "v1"),
+		filepath.Join(baseDir, "platform-server", "api", "v1"),
+	}
 	for _, dir := range dirs {
 		err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if ext := filepath.Ext(path); ext != ".proto" {
@@ -159,6 +163,8 @@ func GenSwagger() error {
 				"./",
 				"--openapiv2_opt",
 				"logtostderr=true",
+				"--openapiv2_opt",
+				"enums_as_ints=true",
 				name,
 			}
 
@@ -197,18 +203,23 @@ func GenSwagger() error {
 		if err != nil {
 			return err
 		}
-		swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, []byte(`
-		{
-		  "info": {
-			"title": "octopus api",
-			"version": ""
-		  }
-		}`))
+		baseBytes, err := ioutil.ReadFile(filepath.Join(dir, "base.swagger.json"))
+		if err != nil {
+			return err
+		}
+		swaggerBytes, err = jsonpatch.MergePatch(swaggerBytes, baseBytes)
 		if err != nil {
 			return err
 		}
 
-		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), swaggerBytes, 0755)
+		swaggerStr := strings.ReplaceAll(string(swaggerBytes), `,"default":{"description":"An unexpected error response.","schema":{"$ref":"#/definitions/rpcStatus"}}`, "")
+		reg := regexp.MustCompile(`{[^{]*"format":"(int64|uint64)"[\s\S]*?"type":"string"[^}]*}`)
+		swaggerStr = reg.ReplaceAllStringFunc(swaggerStr, func(s string) string { // proto json序列化64位序列化为字符串，octopus用的是标准库json序列化，这个修改为整型
+			s = strings.ReplaceAll(s, `"type":"string"`, `"type":"number"`)
+			r := regexp.MustCompile(`"format":"(int64|uint64)",`)
+			return r.ReplaceAllString(s, "")
+		})
+		err = ioutil.WriteFile(filepath.Join(dir, swaggerFileName), []byte(swaggerStr), 0755)
 		if err != nil {
 			return err
 		}

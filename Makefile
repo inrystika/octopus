@@ -42,7 +42,7 @@ LD_FLAGS=" \
 # 编译
 all_build: server_build
 
-server_build: base-server_build admin-server_build openai-server_build taskset_build
+server_build: base-server_build admin-server_build openai-server_build platform-server_build taskset_build
 
 init:
 	mkdir -p ${SERVER_BINARY_DIR}
@@ -62,6 +62,11 @@ openai-server_build: init
 
 	cd ./server/openai-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
+platform-server_build: init
+	cd ./server && go generate
+
+	cd ./server/platform-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
+
 taskset_build: pipeline_build vc-controller_build scheduler_build
 
 pipeline_build: init
@@ -78,7 +83,7 @@ api-doc_build: init
 # 运行
 all_run: server_run
 
-server_run: base-server_run admin-server_run openai-server_run taskset_run
+server_run: base-server_run admin-server_run openai-server_run platform-server_run taskset_run
 
 base-server_run:
 	cd server && ./bin/base-server -conf base-server/configs &
@@ -88,6 +93,9 @@ admin-server_run:
 
 openai-server_run:
 	cd server && ./bin/openai-server -conf openai-server/configs &
+
+platform-server_run:
+	cd server && ./bin/platform-server -conf platform-server/configs &
 
 taskset_run: pipeline_run vc-controller_run scheduler_run
 
@@ -114,6 +122,9 @@ admin-server_stop:
 openai-server_stop:
 	kill -9 `ps -ef|grep "openai-server" |grep -v grep |awk '{print $2}'`
 
+platform-server_stop:
+	kill -9 `ps -ef|grep "platform-server" |grep -v grep |awk '{print $2}'`
+
 taskset_stop: pipeline_stop vc-controller_stop scheduler_stop
 
 pipeline_stop:
@@ -128,13 +139,15 @@ scheduler_stop:
 # 重启
 all_stop: server_restart
 
-server_restart: base-server_restart admin-server_restart openai-server_restart taskset_restart
+server_restart: base-server_restart admin-server_restart openai-server_restart platform-server_restart taskset_restart
 
 base-server_restart: base-server_stop server_run
 
 admin-server_restart: admin-server_stop admin-server_run
 
 openai-server_restart: openai-server_stop openai-server_run
+
+platform-server_restart: platform-server_stop platform-server_run
 
 taskset_restart: pipeline_restart vc-controller_restart scheduler_restart
 
@@ -167,7 +180,7 @@ taskset_lint: lint_init
 	cd ./server/taskset && golangci-lint run ./...
 
 # 构建镜像
-images: base-server_image admin-server_image openai-server_image taskset_image admin-portal_image openai-portal_image api-doc_image
+images: base-server_image admin-server_image openai-server_image platform-server_image taskset_image admin-portal_image openai-portal_image api-doc_image node-agent_image
 
 base-server_image:
 	docker build --no-cache -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
@@ -177,6 +190,9 @@ admin-server_image:
 
 openai-server_image:
 	docker build --no-cache -t openai-server:${RELEASE_VER} -f ./build/application/openai-server/dockerfile .
+
+platform-server_image:
+	docker build --no-cache -t platform-server:${RELEASE_VER} -f ./build/application/platform-server/dockerfile .
 
 taskset_image: pipeline_image vc-controller_image scheduler_image
 
@@ -198,8 +214,11 @@ openai-portal_image:
 api-doc_image:
 	docker build --no-cache -t api-doc:${RELEASE_VER} -f ./build/application/api-doc/dockerfile .
 
+node-agent_image:
+	docker build --no-cache -t node-agent:${RELEASE_VER} -f ./build/application/nodeagent/dockerfile ./controller/nodeagent
+
 # 镜像推送
-images_push: base-server_image_push admin-server_image_push openai-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push
+images_push: base-server_image_push admin-server_image_push openai-server_image_push platform-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push node-agent_image_push
 
 image_push_init:
 	(echo ${DOCKER_HUB_PASSWD} | docker login ${DOCKER_HUB_HOST} -u ${DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
@@ -234,6 +253,17 @@ ifneq (${RELEASE_VER}, latest)
 ifeq (${NEED_LATEST}, TRUE)
 	docker tag openai-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:latest
 	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/openai-server:latest
+endif
+endif
+
+platform-server_image_push: image_push_init
+	docker tag platform-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:${RELEASE_VER}
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:${RELEASE_VER}
+
+ifneq (${RELEASE_VER}, latest)
+ifeq (${NEED_LATEST}, TRUE)
+	docker tag platform-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:latest
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:latest
 endif
 endif
 
@@ -306,12 +336,23 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
+node-agent_image_push: image_push_init
+	docker tag node-agent:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:${RELEASE_VER}
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:${RELEASE_VER}
+
+ifneq (${RELEASE_VER}, latest)
+ifeq (${NEED_LATEST}, TRUE)
+	docker tag node-agent:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:latest
+	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/node-agent:latest
+endif
+endif
+
 # helm chart
 charts: charts_build charts_push
 
 charts_build:
 	-mkdir -p ./tmp/charts
-	helm package ./deploy/charts/octopus  --version ${RELEASE_VER} --app-version ${RELEASE_VER} -d ./tmp/charts
+	helm package ./deploy/charts/octopus --version ${RELEASE_VER} --app-version ${RELEASE_VER} -d ./tmp/charts
 
 charts_push:
 	-helm repo add --ca-file=${HARBOR_HUB_CA_FILE} --cert-file=${HARBOR_HUB_CERT_FILE} --username=${HARBOR_HUB_USERNAME} --password=${HARBOR_HUB_PASSWD} chartrepo ${HARBOR_HUB_HOST}/chartrepo/${HARBOR_HUB_PROJECT}
