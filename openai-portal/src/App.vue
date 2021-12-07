@@ -28,13 +28,18 @@ export default {
             Vue.prototype.GLOBAL.THEME_TITLE_ZH = response.data.systemNameZh
             Vue.prototype.GLOBAL.THEME_TITLE_EN = response.data.systemNameEn
             Vue.prototype.GLOBAL.THEME_LOGO_ADDR = response.data.logoAddr
+            Vue.prototype.GLOBAL.THEME_ORG_NAME = response.data.organization
             this.mainColor = response.data.themeColor
+            document.title = response.data.systemNameZh // 修改网页标签的title
+            const link = document.querySelector('link[rel="icon"]')
+            link.href = response.data.logoAddr // 修改网页标签icon
             this.changeColor(this.mainColor)
           } else {
             Vue.prototype.GLOBAL.THEME_COLOR = ''
             Vue.prototype.GLOBAL.THEME_TITLE_ZH = ''
             Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
             Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
+            Vue.prototype.GLOBAL.THEME_ORG_NAME = ''
           }
           this.isShow = true
         }
@@ -44,6 +49,8 @@ export default {
         Vue.prototype.GLOBAL.THEME_TITLE_ZH = ''
         Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
         Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
+        Vue.prototype.GLOBAL.THEME_ORG_NAME = ''
+        this.isShow = true
       })
     },
     changeColor(newColor) {

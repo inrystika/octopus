@@ -251,3 +251,12 @@ export async function editeAlgorithm(params) {
   })
   return res
 }
+// notebook镜像保存
+export async function saveNoteBook(data) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${data.id}/save`,
+    method: "post",
+    data: { taskName: data.taskName, imageName: data.imageName, imageVersion: data.imageVersion, layerDescription: data.layerDescription }
+  })
+  return res
+}

@@ -21,6 +21,12 @@
           <span>{{ scope.row.image.name+":"+scope.row.image.version }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="状态" align="center">
+        <template slot-scope="scope">
+          <span :class="statusOption[scope.row.status][0]"></span>
+          <span>{{ statusOption[scope.row.status][1] }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt) }}</span>
