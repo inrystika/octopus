@@ -5,9 +5,13 @@ import (
 	pb "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
+	innerapi "server/base-server/api/v1"
 	innterapi "server/base-server/api/v1"
+	"server/common/errors"
 	"server/common/log"
 	"time"
+
+	"github.com/jinzhu/copier"
 )
 
 type UserService struct {
@@ -142,6 +146,19 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, err
 	}
 
+	// if updated password, reset session for user
+	if req.User.Password != "" {
+		userSession, err := s.data.SessionClient.Get(ctx, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		if userSession != nil {
+			if err = s.data.SessionClient.Delete(ctx, req.UserId); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &pb.UpdateUserReply{
 		User: &pb.UserItem{
 			Id:        result.User.Id,
@@ -200,4 +217,41 @@ func (s *UserService) ThawUser(ctx context.Context, req *pb.ThawUserRequest) (*p
 		}
 	}
 	return &pb.ThawUserReply{ThawedAt: time.Now().Unix()}, nil
+}
+
+func (s *UserService) ListUserConfigKey(ctx context.Context, req *pb.ListUserConfigKeyRequest) (*pb.ListUserConfigKeyReply, error) {
+	innerReq := &innerapi.ListUserConfigKeyRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.UserClient.ListUserConfigKey(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &pb.ListUserConfigKeyReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *UserService) GetUserConfig(ctx context.Context, req *pb.GetUserConfigRequest) (*pb.GetUserConfigReply, error) {
+	reply, err := s.data.UserClient.GetUserConfig(ctx, &innerapi.GetUserConfigRequest{UserId: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserConfigReply{Config: reply.Config}, nil
+}
+
+func (s *UserService) UpdateUserConfig(ctx context.Context, req *pb.UpdateUserConfigRequest) (*pb.UpdateUserConfigReply, error) {
+	_, err := s.data.UserClient.UpdateUserConfig(ctx, &innerapi.UpdateUserConfigRequest{UserId: req.UserId, Config: req.Config})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserConfigReply{}, nil
 }

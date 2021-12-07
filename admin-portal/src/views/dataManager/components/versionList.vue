@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="title" width="70%" :visible.sync="versionListVisible" :before-close="handleDialogClose"
+    <el-dialog :title="title" width="80%" :visible.sync="versionListVisible" :before-close="handleDialogClose"
       :close-on-click-modal="false">
       <el-table v-loading.fullscreen.lock="loading" label-width="100px" :data="versionList" style="width: 100%"
         height="350">
@@ -33,8 +33,8 @@
               v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               重新上传
             </el-button>
-            <el-button type="text" style="padding-right:10px" :disabled="scope.row.status === 3 ? false : true"
-              @click="handlePreview(scope.row)">
+            <el-button type="text" :disabled="scope.row.status === 3 ? false : true"
+              @click="handlePreview(scope.row)" style="margin-left: 0px;">
               预览
             </el-button>
             <el-button v-if="versionListType === 1 ? false : true" slot="reference" type="text"
@@ -95,7 +95,7 @@
     },
     created() {
       this.getVersionList()
-      this.timer = setInterval(() => { this.getVersionList() }, 1000)
+      this.timer = setInterval(() => { this.getVersionList() }, 2000)
 
     },
     destroyed() {
@@ -209,3 +209,9 @@
     }
   }
 </script>
+<style lang="scss" scoped>
+  .block {
+    float: right;
+    margin: 20px;
+  }
+</style>

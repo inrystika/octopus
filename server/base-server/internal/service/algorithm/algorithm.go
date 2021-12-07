@@ -10,19 +10,19 @@ import (
 )
 
 type AlgorithmService struct {
-	api.UnimplementedAlgorithmServer
+	api.UnimplementedAlgorithmServiceServer
 	conf   *conf.Bootstrap
 	log    *log.Helper
 	data   *data.Data
 	handle AlgorithmHandle
 }
 
-func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.AlgorithmServer {
+func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.AlgorithmServiceServer {
 	return &AlgorithmService{
 		conf:   conf,
 		log:    log.NewHelper("AlgorithmService", logger),
 		data:   data,
-		handle: NewAlgorithmHandle(conf, logger, data),
+		handle: NewAlgorithmHandle(conf, logger, data, lableService),
 	}
 }
 
@@ -106,6 +106,11 @@ func (s *AlgorithmService) ConfirmUploadAlgorithm(ctx context.Context, req *api.
 	return s.handle.ConfirmUploadAlgorithmHandle(ctx, req)
 }
 
+// 修改算法
+func (s *AlgorithmService) UpdateAlgorithm(ctx context.Context, req *api.UpdateAlgorithmRequest) (*api.UpdateAlgorithmReply, error) {
+	return s.handle.UpdateAlgorithmHandle(ctx, req)
+}
+
 // 新增我的算法版本
 func (s *AlgorithmService) AddMyAlgorithmVersion(ctx context.Context, req *api.AddMyAlgorithmVersionRequest) (*api.AddMyAlgorithmVersionReply, error) {
 	return s.handle.AddMyAlgorithmVersionHandle(ctx, req)
@@ -134,6 +139,11 @@ func (s *AlgorithmService) DeletePreAlgorithmVersion(ctx context.Context, req *a
 // 删除预置算法
 func (s *AlgorithmService) DeletePreAlgorithm(ctx context.Context, req *api.DeletePreAlgorithmRequest) (*api.DeletePreAlgorithmReply, error) {
 	return s.handle.DeletePreAlgorithmHandle(ctx, req)
+}
+
+// 修改算法版本
+func (s *AlgorithmService) UpdateAlgorithmVersion(ctx context.Context, req *api.UpdateAlgorithmVersionRequest) (*api.UpdateAlgorithmVersionReply, error) {
+	return s.handle.UpdateAlgorithmVersionHandle(ctx, req)
 }
 
 // 压缩算法版本包

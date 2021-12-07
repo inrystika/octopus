@@ -1,10 +1,15 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/common/dao"
 	"time"
 )
+
+type ExtraInfo map[string]string
 
 type BillingOwner struct {
 	dao.Model
@@ -29,6 +34,20 @@ type BillingPayRecord struct {
 	StartedAt *time.Time                 `gorm:"type:datetime(3);comment:计费起始时间"`
 	EndedAt   *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	Status    api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
+	ExtraInfo ExtraInfo                  `gorm:"type:json;comment:附加信息，可作为自定义字段"`
+}
+
+func (r ExtraInfo) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *ExtraInfo) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }
 
 func (BillingPayRecord) TableName() string {
@@ -41,6 +60,7 @@ type BillingRechargeRecord struct {
 	OwnerId   string               `gorm:"type:varchar(100);not null;index:ownerId;comment:归属用户id"`
 	OwnerType api.BillingOwnerType `gorm:"type:tinyint;not null;default:0;comment:归属用户类型1space 2user"`
 	Amount    float64              `gorm:"type:decimal(10,2);not null;default:0;comment:充值机时"`
+	Title     string               `gorm:"type:varchar(100);not null;default:'';comment:标题"`
 }
 
 func (BillingRechargeRecord) TableName() string {
@@ -60,22 +80,28 @@ type BillingOwnerKey struct {
 }
 
 type BillingPayRecordQuery struct {
-	PageIndex int
-	PageSize  int
-	SortBy    string
-	OrderBy   string
-	OwnerId   string
-	OwnerType api.BillingOwnerType
-	SearchKey string
+	PageIndex    int
+	PageSize     int
+	SortBy       string
+	OrderBy      string
+	OwnerId      string
+	OwnerType    api.BillingOwnerType
+	SearchKey    string
+	StartedAtGte int64
+	StartedAtLt  int64
+	ExtraInfo    map[string]string
 }
 
 type BillingRechargeRecordQuery struct {
-	PageIndex int
-	PageSize  int
-	SortBy    string
-	OrderBy   string
-	OwnerId   string
-	OwnerType api.BillingOwnerType
+	PageIndex    int
+	PageSize     int
+	SortBy       string
+	OrderBy      string
+	OwnerId      string
+	OwnerType    api.BillingOwnerType
+	CreatedAtGte int64
+	CreatedAtLt  int64
+	SearchKey    string
 }
 
 type BillingOwnerQuery struct {

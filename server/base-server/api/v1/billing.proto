@@ -93,6 +93,7 @@ message PayRequest {
   int64 startedAt = 7;  //计费开始时间 计费多次调用传相同值
   int64 endedAt = 8;  //计费截止时间  计费多次调用值递增
   BillingPayRecordStatus status = 9;  //计费状态
+  map<string, string> ExtraInfo = 10;
 }
 
 message PayReply {
@@ -103,6 +104,7 @@ message RechargeRequest {
   string ownerId = 1[(validate.rules).string = {min_len: 1}];
   BillingOwnerType ownerType = 2[(validate.rules).enum = {not_in: [0]}];
   double  amount = 3;
+  string title = 4;
 }
 
 message RechargeReply {
@@ -117,6 +119,9 @@ message ListBillingPayRecordRequest {
   string ownerId = 5;
   BillingOwnerType ownerType = 6[(validate.rules).enum = {not_in: [0]}];
   string searchKey = 7; //title等模糊查找
+  int64 startedAtGte = 8;
+  int64 startedAtLt = 9;
+  map<string, string> ExtraInfo = 10;
 }
 
 message BillingPayRecord {
@@ -128,10 +133,11 @@ message BillingPayRecord {
   double amount = 6;
   BillingBizType bizType = 7;
   string bizId = 8;
-  string Title = 9;
+  string title = 9;
   int64 startedAt = 10;
   int64 endedAt = 11;
   BillingPayRecordStatus status = 12;
+  map<string, string> ExtraInfo = 13;
 }
 
 message ListBillingPayRecordReply {
@@ -144,8 +150,11 @@ message ListBillingRechargeRecordRequest {
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
-  string ownerId = 5[(validate.rules).string = {min_len: 1}];
+  string ownerId = 5;
   BillingOwnerType ownerType = 6[(validate.rules).enum = {not_in: [0]}];
+  int64 createdAtGte = 7;
+  int64 createdAtLt = 8;
+  string searchKey = 9; //title等模糊查找
 }
 
 message BillingRechargeRecord {
@@ -155,6 +164,7 @@ message BillingRechargeRecord {
   string ownerId = 4;
   BillingOwnerType ownerType = 5;
   double amount = 6;
+  string title = 7;
 }
 
 message ListBillingRechargeRecordReply {

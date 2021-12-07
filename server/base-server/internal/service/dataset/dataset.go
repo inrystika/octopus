@@ -26,18 +26,20 @@ var (
 
 type datasetService struct {
 	api.UnimplementedDatasetServiceServer
-	conf *conf.Bootstrap
-	log  *log.Helper
-	data *data.Data
+	conf         *conf.Bootstrap
+	log          *log.Helper
+	data         *data.Data
+	lableService api.LableServiceServer
 }
 
-func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.DatasetServiceServer {
-	log := log.NewHelper("DevelopService", logger)
+func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.DatasetServiceServer {
+	log := log.NewHelper("DatasetService", logger)
 
 	s := &datasetService{
-		conf: conf,
-		log:  log,
-		data: data,
+		conf:         conf,
+		log:          log,
+		data:         data,
+		lableService: lableService,
 	}
 
 	return s
@@ -86,6 +88,25 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		return nil, err
 	}
 
+	// 检查数据类型id
+	if req.TypeId != "" {
+		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.TypeId})
+		if err != nil {
+			return nil, err
+		}
+		// 新增数据类型引用
+		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetType.Lable.Id})
+	}
+	// 检查数据用途id
+	if req.ApplyId != "" {
+		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
+		if err != nil {
+			return nil, err
+		}
+		// 新增数据用途引用
+		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetApply.Lable.Id})
+	}
+
 	return &api.CreateDatasetReply{
 		Id:      datasetId,
 		Version: version.Version,
@@ -124,6 +145,21 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 		dataset.CreatedAt = n.CreatedAt.Unix()
 		dataset.UpdatedAt = n.UpdatedAt.Unix()
 		dataset.LatestVersion = common.VersionStrBuild(idsV[n.Id])
+
+		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.TypeId})
+		if err != nil {
+			dataset.TypeDesc = ""
+		} else {
+			dataset.TypeDesc = datasetType.Lable.LableDesc
+		}
+
+		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.ApplyId})
+		if err != nil {
+			dataset.ApplyDesc = ""
+		} else {
+			dataset.ApplyDesc = datasetApply.Lable.LableDesc
+		}
+
 		datasets = append(datasets, dataset)
 	}
 
@@ -176,8 +212,22 @@ func (s *datasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 				SpaceId:   req.ShareSpaceId,
 			}])
 		}
-		datasets = append(datasets, dataset)
 
+		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.TypeId})
+		if err != nil {
+			dataset.TypeDesc = ""
+		} else {
+			dataset.TypeDesc = datasetType.Lable.LableDesc
+		}
+
+		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.ApplyId})
+		if err != nil {
+			dataset.ApplyDesc = ""
+		} else {
+			dataset.ApplyDesc = datasetApply.Lable.LableDesc
+		}
+
+		datasets = append(datasets, dataset)
 	}
 
 	return &api.ListCommDatasetReply{
@@ -503,7 +553,7 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 }
 
 func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatasetRequest) (*api.DeleteDatasetReply, error) {
-	_, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +584,42 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 		return nil, err
 	}
 
+	// 减小数据类型引用
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
+	// 减小数据用途引用
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
+
 	return &api.DeleteDatasetReply{DeletedAt: time.Now().Unix()}, nil
+}
+
+func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatasetRequest) (*api.UpdateDatasetReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if dataset.SpaceId != req.SpaceId || dataset.UserId != req.UserId || dataset.SourceType != int(req.SourceType) {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetNoPermission)
+	}
+
+	// 减小数据类型引用
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
+	// 减小数据用途引用
+	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
+
+	dataset.TypeId = req.TypeId
+	dataset.ApplyId = req.ApplyId
+	dataset.Desc = req.Desc
+	err = s.data.DatasetDao.UpdateDatasetSelective(ctx, dataset)
+	if err != nil {
+		return nil, err
+	}
+
+	// 增加数据类型引用
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.TypeId})
+	// 增加数据用途引用
+	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.ApplyId})
+
+	return &api.UpdateDatasetReply{UpdatedAt: time.Now().Unix()}, nil
 }
 
 func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.UploadDatasetVersionRequest) (*api.UploadDatasetVersionReply, error) {
@@ -631,6 +716,29 @@ func (s *datasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 	}
 
 	return reply, nil
+}
+
+func (s *datasetService) UpdateDatasetVersion(ctx context.Context, req *api.UpdateDatasetVersionRequest) (*api.UpdateDatasetVersionReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+	if dataset.SpaceId != req.SpaceId || dataset.UserId != req.UserId || dataset.SourceType != int(req.SourceType) {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetNoPermission)
+	}
+
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	version.Desc = req.Desc
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, version)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
 }
 
 func getTempMinioPath(dataset *model.Dataset, version string, fileName string) (bucketName string, objectName string) {

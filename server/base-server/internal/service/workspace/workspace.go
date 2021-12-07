@@ -19,13 +19,13 @@ import (
 )
 
 type WorkspaceService struct {
-	api.UnimplementedWorkspaceServer
+	api.UnimplementedWorkspaceServiceServer
 	conf *conf.Bootstrap
 	log  *log.Helper
 	data *data.Data
 }
 
-func NewWorkspaceService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.WorkspaceServer {
+func NewWorkspaceService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.WorkspaceServiceServer {
 	service := &WorkspaceService{
 		conf: conf,
 		log:  log.NewHelper("WorkspaceService", logger),
@@ -183,7 +183,7 @@ func (s *WorkspaceService) CreateWorkspace(ctx context.Context, req *api.CreateW
 		return nil, err
 	}
 	if existed > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceExisted)
+		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceResourcePoolBound)
 	}
 
 	wa := model.WorkspaceAdd{

@@ -13,7 +13,8 @@ type Dataset struct {
 	UserId     string                `gorm:"type:varchar(100);not null;default:'';index;uniqueIndex:name_userId_spaceId,priority:2;comment:归属用户Id"`
 	SourceType int                   `gorm:"type:tinyint;not null;default:0;comment:1预置数据集 2用户数据集"`
 	Name       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:名称"`
-	Type       string                `gorm:"type:varchar(100);not null;default:'';comment:类型"`
+	TypeId     string                `gorm:"type:varchar(100);not null;default:'';comment:数据类型"`
+	ApplyId    string                `gorm:"type:varchar(100);not null;default:'';comment:数据用途"`
 	Desc       string                `gorm:"type:varchar(1024);not null;default:'';comment:描述"`
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }

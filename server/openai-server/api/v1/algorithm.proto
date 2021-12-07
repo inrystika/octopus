@@ -10,6 +10,20 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service Algorithm {
+    // 查询算法用途列表
+    rpc ListAlgorithmApply (ListAlgorithmApplyRequest) returns (ListAlgorithmApplyReply) {
+      option (google.api.http) = {
+        get: "/v1/algorithmmanage/algorithmapply"
+      }; 
+    }
+
+        // 查询算法框架列表
+    rpc ListAlgorithmFramework (ListAlgorithmFrameworkRequest) returns (ListAlgorithmFrameworkReply) {
+      option (google.api.http) = {
+        get: "/v1/algorithmmanage/algorithmframework"
+      }; 
+    }
+
     // 查询预置算法列表
     rpc ListPreAlgorithm (ListPreAlgorithmRequest) returns (ListPreAlgorithmReply) {
         option (google.api.http) = {
@@ -138,6 +152,48 @@ service Algorithm {
             body: "*"
       };
     }
+
+    // 修改我的算法
+	  rpc UpdateMyAlgorithm(UpdateMyAlgorithmRequest) returns (UpdateMyAlgorithmReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/myalgorithm/{algorithmId}"
+            body: "*"
+      };
+    };
+
+    // 修改我的算法版本
+	  rpc UpdateMyAlgorithmVersion(UpdateMyAlgorithmVersionRequest) returns (UpdateMyAlgorithmVersionReply) {
+        option (google.api.http) = {
+            put: "/v1/algorithmmanage/myalgorithm/{algorithmId}/version/{version}"
+            body: "*"
+      };
+    };
+}
+
+message AlgorithmLable {
+  string id = 1;
+  string lableDesc = 2;
+  int32 sourceType = 3;
+}
+
+message ListAlgorithmApplyRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+}
+
+message ListAlgorithmApplyReply {
+  int64 totalSize = 1;
+  repeated AlgorithmLable lables = 2;
+}
+
+message ListAlgorithmFrameworkRequest {
+  int64 pageIndex = 1;
+  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+}
+
+message ListAlgorithmFrameworkReply {
+  int64 totalSize = 1;
+  repeated AlgorithmLable lables = 2;
 }
 
 message AlgorithmDetail {
@@ -155,6 +211,10 @@ message AlgorithmDetail {
   string path = 12;
   bool isPrefab = 13;
   int64 createdAt = 14;
+  string applyId = 15;
+  string applyName = 16;
+	string frameworkId = 17;
+  string frameworkName = 18;
 }
 
 message MyAlgorithmDetail {
@@ -300,13 +360,12 @@ message CopyAlgorithmVersionReply {
 }
 
 message AddMyAlgorithmRequest {
-  string spaceId = 1;
-  string userId = 2;
-  bool isPrefab = 3;
-  bool isEmpty = 4;
-  string algorithmName = 5[(validate.rules).string = {min_len:1,max_len:128}];
-  string modelName = 6[(validate.rules).string = {min_len:1,max_len:128}];
-  string algorithmDescript = 7;
+  bool isEmpty = 1;
+  string algorithmName = 2[(validate.rules).string = {min_len:1,max_len:128}];
+  string modelName = 3[(validate.rules).string = {min_len:1,max_len:128}];
+  string algorithmDescript = 4;
+  string applyId = 5;
+  string frameworkId = 6;
 }
 message AddMyAlgorithmReply {
   string algorithmId = 1;
@@ -366,4 +425,23 @@ message BatchQueryAlgorithmRequest {
 message BatchQueryAlgorithmReply {
   int64 totalSize = 1;
   repeated AlgorithmInfo algorithms = 2;
+}
+
+message UpdateMyAlgorithmRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string algorithmDescript = 2;
+  string applyId = 3;
+  string frameworkId = 4;
+}
+message UpdateMyAlgorithmReply {
+  int64 updatedAt = 1;
+}
+
+message UpdateMyAlgorithmVersionRequest {
+  string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
+  string version = 2[(validate.rules).string = {min_len:2,pattern:"^V[0-9]+$"}];
+  string algorithmDescript = 3;
+}
+message UpdateMyAlgorithmVersionReply {
+  int64 updatedAt = 1;
 }

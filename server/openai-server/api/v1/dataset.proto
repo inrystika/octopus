@@ -10,6 +10,20 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 
 service DatasetService {
+  // 查询数据集类型列表
+  rpc ListDatasetType (ListDatasetTypeRequest) returns (ListDatasetTypeReply) {
+    option (google.api.http) = {
+      get: "/v1/datasetmanage/datasettype"
+    }; 
+  }
+
+  // 查询数据集用途列表
+  rpc ListDatasetApply (ListDatasetApplyRequest) returns (ListDatasetApplyReply) {
+    option (google.api.http) = {
+      get: "/v1/datasetmanage/datasetapply"
+    }; 
+  }
+
   // 创建数据集
   rpc CreateDataset (CreateDatasetRequest) returns (CreateDatasetReply) {
     option (google.api.http) = {
@@ -94,12 +108,51 @@ service DatasetService {
       get: "/v1/datasetmanage/dataset/{datasetId}/version/{version}/file"
     };
   }
+    // 修改我的数据集
+  rpc UpdateMyDataset (UpdateMyDatasetRequest) returns (UpdateMyDatasetReply) {
+    option (google.api.http) = {
+      put: "/v1/datasetmanage/mydataset/{datasetId}"
+    };
+  }
+    // 修改我的数据集版本
+  rpc UpdateMyDatasetVersion (UpdateMyDatasetVersionRequest) returns (UpdateMyDatasetVersionReply) {
+    option (google.api.http) = {
+      put: "/v1/datasetmanage/mydataset/{datasetId}/version/{version}"
+    };
+  }
+}
+
+message DatasetLable {
+  string id = 1;
+  string lableDesc = 2;
+  int32 sourceType = 3;
+}
+
+message ListDatasetTypeRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListDatasetTypeReply {
+  int64 totalSize = 1;
+  repeated DatasetLable lables = 2;
+}
+
+message ListDatasetApplyRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+}
+
+message ListDatasetApplyReply {
+  int64 totalSize = 1;
+  repeated DatasetLable lables = 2;
 }
 
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
-  string type = 2[(validate.rules).string = {min_len: 1, max_len: 30}];
-  string desc = 3[(validate.rules).string = {max_len: 300}];
+  string typeId = 2;
+  string applyId = 3;
+  string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
 message CreateDatasetReply {
@@ -113,9 +166,13 @@ message Dataset {
   string id = 3;
   int32 sourceType = 6;
   string name = 7;
-  string type = 8;
-  string desc = 9;
-  string latestVersion = 10;
+  string typeId = 8;
+  string typeDesc = 9;
+  string applyId = 10;
+  string applyDesc = 11;
+  string desc = 12;
+  string latestVersion = 13;
+  string userName = 14;
 }
 
 message ListPreDatasetRequest {
@@ -271,4 +328,25 @@ message ListDatasetVersionFileReply {
     string path = 3;
   }
   repeated File files = 1;
+}
+
+message UpdateMyDatasetRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string typeId = 2;
+  string applyId = 3;
+  string desc = 4[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateMyDatasetReply {
+  int64 updatedAt  = 1;
+}
+
+message UpdateMyDatasetVersionRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+  string desc = 5[(validate.rules).string = {max_len: 300}];
+}
+
+message UpdateMyDatasetVersionReply {
+  int64 updatedAt  = 1;
 }

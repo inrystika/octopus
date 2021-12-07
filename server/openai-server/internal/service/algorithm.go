@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	innerapi "server/base-server/api/v1"
 	innterapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
@@ -10,6 +11,8 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
+
+	"github.com/jinzhu/copier"
 )
 
 type AlgorithmService struct {
@@ -25,6 +28,52 @@ func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 		log:  log.NewHelper("AlgorithmService", logger),
 		data: data,
 	}
+}
+
+// 查询算法类型列表
+func (s *AlgorithmService) ListAlgorithmApply(ctx context.Context, req *api.ListAlgorithmApplyRequest) (*api.ListAlgorithmApplyReply, error) {
+	innerReq := &innterapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_APPLY),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+	}
+
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmApplyReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+// 查询算法类型框架
+func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
+	innerReq := &innterapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+	}
+
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmFrameworkReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
 
 // 查询预置算法列表
@@ -412,6 +461,8 @@ func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlg
 		AlgorithmName:     req.AlgorithmName,
 		ModelName:         req.ModelName,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -512,6 +563,55 @@ func (s *AlgorithmService) BatchQueryAlgorithm(ctx context.Context, req *api.Bat
 	}, nil
 }
 
+// 修改我的算法
+func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.UpdateMyAlgorithmRequest) (*api.UpdateMyAlgorithmReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		AlgorithmId:       req.AlgorithmId,
+		IsPrefab:          false,
+		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+// 修改我的算法版本
+func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdateMyAlgorithmVersionRequest) (*api.UpdateMyAlgorithmVersionReply, error) {
+	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
+		SpaceId:           spaceId,
+		UserId:            userId,
+		IsPrefab:          false,
+		AlgorithmId:       req.AlgorithmId,
+		Version:           req.Version,
+		AlgorithmDescript: req.AlgorithmDescript,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateMyAlgorithmVersionReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
 func (s *AlgorithmService) algorithmInfoTransfer(algorithm *innterapi.AlgorithmInfo) *api.AlgorithmInfo {
 
 	return &api.AlgorithmInfo{
@@ -535,6 +635,10 @@ func (s *AlgorithmService) algorithmTransfer(ctx context.Context, algorithm *inn
 		FileStatus:        algorithm.FileStatus,
 		IsPrefab:          algorithm.IsPrefab,
 		CreatedAt:         algorithm.CreatedAt,
+		ApplyId:           algorithm.ApplyId,
+		ApplyName:         algorithm.ApplyName,
+		FrameworkId:       algorithm.FrameworkId,
+		FrameworkName:     algorithm.FrameworkName,
 	}
 
 	if algorithm.UserId != "" {

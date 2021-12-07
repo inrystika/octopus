@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"server/common/dao"
+
+	"gorm.io/gorm"
 )
 
 type AdminUser struct {
@@ -25,7 +26,7 @@ type AdminUserList struct {
 }
 
 type AdminUserQuery struct {
-	Username  string
+	Username string
 }
 
 func (u AdminUserQuery) Where(db *gorm.DB) *gorm.DB {

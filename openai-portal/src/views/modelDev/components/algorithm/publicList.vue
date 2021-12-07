@@ -23,6 +23,16 @@
           <span>{{ scope.row.algorithmVersion }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="模型类别">
+        <template slot-scope="scope">
+          <span>{{ scope.row.applyName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="框架类型">
+        <template slot-scope="scope">
+          <span>{{ scope.row.frameworkName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="算法描述" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.algorithmDescript }}</span>

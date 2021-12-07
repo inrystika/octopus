@@ -190,6 +190,10 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 								continue
 							}
 
+							extraInfo := make(map[string]string)
+							if ownerType == api.BillingOwnerType_BOT_SPACE {
+								extraInfo = common.GetExtraInfo(j.UserId)
+							}
 							_, err := s.billingService.Pay(ctx, &api.PayRequest{
 								OwnerId:   ownerId,
 								OwnerType: ownerType,
@@ -200,6 +204,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 								StartedAt: payStartAt,
 								EndedAt:   payEndAt,
 								Status:    payStatus,
+								ExtraInfo: extraInfo,
 							})
 							if err != nil {
 								s.log.Errorf(ctx, "Pay err: %s", err)

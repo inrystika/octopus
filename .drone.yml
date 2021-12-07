@@ -164,6 +164,54 @@ steps:
 
 ---
 kind: pipeline
+name: platform-server
+type: kubernetes
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+    - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/
+steps:
+  # - name: 代码检查
+  #   image: golangci/golangci-lint:v1.40.1
+  #   environment:
+  #     GO111MODULE: on
+  #     GOPROXY: https://goproxy.cn,direct
+  #   commands:
+  #     - make platform-server_lint
+
+  - name: 构建镜像
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/
+    commands:
+      - make platform-server_image tag=${DRONE_TAG}
+
+  - name: 镜像推送
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/
+    environment:
+      DOCKER_HUB_HOST:
+        from_secret: docker_hub_host
+      DOCKER_HUB_USERNAME:
+        from_secret: docker_hub_userame
+      DOCKER_HUB_PASSWD:
+        from_secret: docker_hub_passwd
+      DOCKER_HUB_PROJECT:
+        from_secret: docker_hub_project
+    commands:
+      - make platform-server_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+
+---
+kind: pipeline
 name: taskset/pipeline
 type: kubernetes
 platform:
@@ -475,3 +523,42 @@ steps:
         from_secret: docker_hub_project
     commands:
       - make api-doc_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD
+---
+kind: pipeline
+name: node-agent
+type: kubernetes
+platform:
+  os: linux
+  arch: amd64
+trigger:
+  event:
+    - tag
+volumes:
+  - name: docker
+    host:
+      path: /var/run/
+steps:
+  - name: 构建镜像
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/
+    commands:
+      - make node-agent_image tag=${DRONE_TAG}
+
+  - name: 镜像推送
+    image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
+    volumes:
+      - name: docker
+        path: /var/run/
+    environment:
+      DOCKER_HUB_HOST:
+        from_secret: docker_hub_host
+      DOCKER_HUB_USERNAME:
+        from_secret: docker_hub_userame
+      DOCKER_HUB_PASSWD:
+        from_secret: docker_hub_passwd
+      DOCKER_HUB_PROJECT:
+        from_secret: docker_hub_project
+    commands:
+      - make node-agent_image_push need_latest=FALSE tag=${DRONE_TAG} docker_hub_project=$DOCKER_HUB_PROJECT docker_hub_host=$DOCKER_HUB_HOST docker_hub_userame=$DOCKER_HUB_USERNAME docker_hub_passwd=$DOCKER_HUB_PASSWD

@@ -32,10 +32,10 @@ type modelAddHandle struct {
 	conf             *conf.Bootstrap
 	log              *log.Helper
 	data             *data.Data
-	algorithmService api.AlgorithmServer
+	algorithmService api.AlgorithmServiceServer
 }
 
-func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServer) ModelAddHandle {
+func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data, algorithmService api.AlgorithmServiceServer) ModelAddHandle {
 	return &modelAddHandle{
 		conf:             conf,
 		log:              log.NewHelper("ModelAddHandle", logger),
@@ -45,7 +45,7 @@ func NewModelAddHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 }
 
 const (
-	CREATE_MIN_TIME_INTERVAL int64 = 30 // 创建的最短时间间隔，用于防止重复创建
+	CREATE_MIN_TIME_INTERVAL int64 = 3 // 创建的最短时间间隔，用于防止重复创建
 )
 
 // 新增我的模型

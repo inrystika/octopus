@@ -41,7 +41,7 @@
         </div>
         <div>
             <el-row>
-                <el-input v-model="textarea" type="textarea" :rows="20" />
+                <el-input v-model="textarea" type="textarea" :rows="20" :readonly="true"  />
             </el-row>
         </div>
     </div>
@@ -88,7 +88,7 @@
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
-            this.href = window.location.protocol + '//' + window.location.host
+            this.href = this.GLOBAL.DOMAIN
             if (!this.data.isDistributed) {
                 // this.logName = this.data.config[0].name
                 this.subName = 'task0/0'
@@ -125,7 +125,7 @@
                             this.showLog = true
                             this.textarea = response.data
                         } else {
-                            this.textarea = ''
+                            this.textarea = '暂无相关日志'
                         }
                     })
                 } else {
@@ -151,7 +151,7 @@
                             this.timer2 = null;
                             clearTimeout(this.timer);
                             this.timer = null;
-                            this.textarea = ''
+                            this.textarea = '暂无相关日志'
                         }
                     })
                 }

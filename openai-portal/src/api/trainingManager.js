@@ -3,8 +3,8 @@ import requestLog from '@/utils/requestLog'
 // 训练任务接口
 export function getList(params) {
   const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  conditions.push(`pageSize=`+params.pageSize);
+  conditions.push(`pageIndex=`+params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
@@ -68,8 +68,8 @@ export function getTempalteInfo(params) {
 // 任务模板接口
 export function getTemplate(params) {
   const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  conditions.push(`pageSize=`+params.pageSize);
+  conditions.push(`pageIndex=`+params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;

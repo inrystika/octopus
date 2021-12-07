@@ -9,12 +9,6 @@
             :show-close="close"
         >
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
-                <el-form-item label="镜像类型" :label-width="formLabelWidth" prop="imageType">
-                    <el-select v-model="ruleForm.imageType" placeholder="请选择镜像类型" :disabled="!flag||showUpload">
-                        <el-option label="Notebook镜像" :value="1" />
-                        <el-option label="训练镜像" :value="2" />
-                    </el-select>
-                </el-form-item>
                 <el-form-item label="镜像名称" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="imageName">
                     <el-input v-model="ruleForm.imageName" :disabled="!flag||showUpload" />
                 </el-form-item>
@@ -43,7 +37,7 @@
             </el-form>
             <div v-if="ruleForm.sourceType===2" slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
-                <el-button type="primary" @click="submitAdd('ruleForm')">确 定</el-button>
+                <el-button type="primary" @click="submitAdd('ruleForm')" v-preventReClick>确 定</el-button>
             </div>
             <div v-if="ruleForm.sourceType===1&&!showUpload" slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
@@ -77,7 +71,7 @@
                 if (regName.test(value)) {
                     return callback();
                 }
-                callback(new Error("请输入合法的标签名称:首字母为大小写字母，其他大小写字母数字或者-"));
+                callback(new Error("请输入合法的镜像名称:首字母为大小写字母，其他大小写字母数字或者-"));
             };
             var checkLabel = (rule, value, callback) => {
                 const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;
@@ -95,9 +89,6 @@
                 uploadData: { data: {}, type: undefined },
                 CreateFormVisible: true,
                 rules: {
-                    imageType: [
-                        { required: true, message: '请选择镜像类型', trigger: 'change' }
-                    ],
                     imageName: [
                         { required: true, message: '请输入镜像名称', trigger: 'blur' },
                         { validator: checkName, trigger: "blur" }
@@ -136,14 +127,14 @@
 
         },
         created() {
-            const { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus } = this.row
+            const {  imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus } = this.row
             // 新建镜像
             if (this.flag) {
-                this.ruleForm = { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType: 2 }
+                this.ruleForm = {  imageDesc, imageName, imageVersion, imageAddr, sourceType: 2 }
             } else {
                 // 编辑镜像
                 this.id = this.row.id
-                this.ruleForm = { imageType, imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus }
+                this.ruleForm = {  imageDesc, imageName, imageVersion, imageAddr, sourceType, imageStatus }
                 if (this.ruleForm.imageStatus === 1 || this.ruleForm.imageStatus === 4) {
                     this.uploadData.data.id = this.id
                     this.uploadData.type = "imageManager"
@@ -161,7 +152,6 @@
                 imageName: "",
                 imageVersion: "",
                 imageDesc: "",
-                imageType: "",
                 sourceType: 2,
                 imageAddr: ""
             }

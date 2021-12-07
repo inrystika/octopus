@@ -4,12 +4,8 @@
             <el-button v-if="customize" type="primary" @click="add">增加资源</el-button>
         </div>
         <div>
-            <el-table
-                :data="tableData"
-                style="width: 100%;font-size: 15px;"
-                :header-cell-style="{'text-align':'left','color':'black'}"
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+                :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
                 <el-table-column label="资源名称" align="center">
                     <template slot-scope="scope">
                         <span>{{ scope.row.name }}</span>
@@ -46,12 +42,8 @@
                 </el-form-item>
                 <el-form-item v-if="customize" label="引用" prop="resourceRef" :label-width="formLabelWidth">
                     <el-select v-model="ruleForm.resourceRef" placeholder="请选择引用">
-                        <el-option
-                            v-for="item in resourceOption"
-                            :key="item.name"
-                            :label="item.name"
-                            :value="item.name"
-                        />
+                        <el-option v-for="item in resourceOption" :key="item.name" :label="item.name"
+                            :value="item.name" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="备注" :label-width="formLabelWidth">
@@ -65,7 +57,7 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="confirm">确 定</el-button>
+                <el-button type="primary" @click="confirm" v-preventReClick>确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -134,11 +126,16 @@
                 return getErrorMsg(code)
             },
             handleEdite(val) {
-                const temp = val.bindingNodes.split(',')
+                let temp = []
+                if (val.bindingNodes != null) {
+                    temp = val.bindingNodes.split(',')
+                }
                 this.ruleForm = JSON.parse(JSON.stringify(val))
                 this.ruleForm.bindingNodes = temp
                 this.flag = false
                 this.dialogVisible = true
+
+
             },
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {

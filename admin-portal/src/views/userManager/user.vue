@@ -1,21 +1,13 @@
 <template>
     <div>
-        <searchForm
-            :search-form="searchForm"
-            class="searchForm"
-            :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
-            @searchData="getSearchData"
-        />
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
+            @searchData="getSearchData" />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
             <el-button v-if="group" type="primary" @click="create">创建群组</el-button>
         </div>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column v-if="user" label="用户名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.fullName }}</span>
@@ -61,40 +53,27 @@
                     <el-button v-if="group" type="text" @click="handleEdite(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'用户详情':'群组详情' }}</el-button>
+                    <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 新增对话框 -->
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog
-            v-if="operateVisible"
-            :row="row"
-            :user-type="change"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-        />
+        <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
+            @close="close" />
+        <!-- 用户配置对话框 -->
+        <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
+            @confirm="confirm" @close="close">
+        </userConfig>
         <!-- 详情对话框 -->
-        <el-dialog
-            :title="user?'用户名' + userName:'群组名' + groupName"
-            :visible.sync="detailVisible"
-            width="30%"
-            center
-            class="title"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
+            class="title" :close-on-click-modal="false">
             <div v-if="user">
                 <el-tag v-for="item in detailData" :key="item.index" class="detailData">{{ item.name }}</el-tag>
             </div>
@@ -111,9 +90,11 @@
 
 <script>
     import { getUserList, groupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
+    import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import { parseTime } from '@/utils/index'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
+    import userConfig from "./components/userConfig.vue";
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
@@ -121,8 +102,8 @@
         components: {
             operateDialog,
             addDialog,
-            searchForm
-
+            searchForm,
+            userConfig
         },
         props: {
             userTabType: { type: Number, default: undefined }
@@ -134,6 +115,7 @@
                 CreateVisible: false,
                 operateVisible: false,
                 detailVisible: false,
+                userConfigVisible: false,
                 show: false,
                 user: false,
                 group: false,
@@ -150,7 +132,9 @@
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
-                }
+                },
+                conKey: [],
+                conValue: {}
             }
         },
         created() {
@@ -161,7 +145,8 @@
                     {
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '已冻结', value: 1 }, { label: '已激活', value: 2 }]
-                    }
+                    },
+                    { type: 'Input', label: '用户名', prop: 'fullName', placeholder: '请输入用户名' }
                 ]
                 this.flag = 'user'
             } else {
@@ -239,6 +224,11 @@
                 this.row = row
                 this.operateVisible = true
             },
+            handleUserConfig(row) {
+                this.row = row
+                this.getUserConfigKey(row)
+                // this.userConfigVisible = true
+            },
             handleDetail(row) {
                 if (this.user) {
                     this.id = row.id
@@ -278,16 +268,19 @@
             cancel(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             confirm(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             close(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
+                this.userConfigVisible = val
                 this.getList(this.searchData)
             },
             create() {
@@ -328,8 +321,31 @@
             // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
+            },
+            // 获取用户配置信息
+            getUserConfigKey(row) {
+                getUserConfigKey().then(response => {
+                    if (response.success) {
+                        this.conKey = response.data.configKeys
+                        getUserConfig(row.id).then(response => {
+                            if (response.success) {
+                                this.conValue = response.data.config
+                                this.userConfigVisible = true
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
             }
-
         }
     }
 </script>

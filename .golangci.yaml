@@ -73,3 +73,4 @@ run:
     - node.go
     - develop.go
     - train_job.go
+    - api/v1/configkey.go

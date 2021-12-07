@@ -1,0 +1,24 @@
+# permissions for end users to edit nodeactions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nodeaction-editor-role
+rules:
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - agent.octopus.openi.org.cn
+  resources:
+  - nodeactions/status
+  verbs:
+  - get

@@ -16,8 +16,6 @@ import (
 )
 
 type DatasetDao interface {
-	Transaction(ctx context.Context, fc func(ctx context.Context) error) error
-
 	CreateDataset(ctx context.Context, dataset *model.Dataset) error
 	ListDataset(ctx context.Context, query *model.DatasetQuery) ([]*model.Dataset, int64, error)
 	ListCommDataset(ctx context.Context, query *model.CommDatasetQuery) ([]*model.Dataset, int64, error)
@@ -56,10 +54,6 @@ func NewDatasetDao(db *gorm.DB, logger log.Logger) DatasetDao {
 			return transaction.GetDBFromCtx(ctx, db)
 		},
 	}
-}
-
-func (d *datasetDao) Transaction(ctx context.Context, fc func(ctx context.Context) error) error {
-	return transaction.Transaction(ctx, d.db(ctx), fc)
 }
 
 func (d *datasetDao) CreateDataset(ctx context.Context, dataset *model.Dataset) error {

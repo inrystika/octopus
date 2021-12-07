@@ -5,8 +5,11 @@ import (
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
+	innerapi "server/base-server/api/v1"
 	innterapi "server/base-server/api/v1"
 	"server/common/log"
+
+	"github.com/jinzhu/copier"
 )
 
 type AlgorithmService struct {
@@ -22,6 +25,162 @@ func NewAlgorithmService(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 		log:  log.NewHelper("AlgorithmService", logger),
 		data: data,
 	}
+}
+
+// 新增算法用途
+func (s *AlgorithmService) AddAlgorithmApply(ctx context.Context, req *api.AddAlgorithmApplyRequest) (*api.AddAlgorithmApplyReply, error) {
+	innerReq := &innerapi.AddLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_APPLY),
+		LableDesc:      req.LableDesc,
+	}
+
+	innerReply, err := s.data.LableClient.AddLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AddAlgorithmApplyReply{
+		Lable: &api.AlgorithmLable{
+			Id:         innerReply.Lable.Id,
+			LableDesc:  innerReply.Lable.LableDesc,
+			SourceType: innerReply.Lable.SourceType,
+		},
+	}, nil
+}
+
+// 查询算法用途列表
+func (s *AlgorithmService) ListAlgorithmApply(ctx context.Context, req *api.ListAlgorithmApplyRequest) (*api.ListAlgorithmApplyReply, error) {
+	innerReq := &innerapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_APPLY),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+	}
+
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmApplyReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+// 删除算法用途
+func (s *AlgorithmService) DeleteAlgorithmApply(ctx context.Context, req *api.DeleteAlgorithmApplyRequest) (*api.DeleteAlgorithmApplyReply, error) {
+	innerReq := &innerapi.DeleteLableRequest{
+		Id: req.Id,
+	}
+
+	innerReply, err := s.data.LableClient.DeleteLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeleteAlgorithmApplyReply{
+		DeletedAt: innerReply.DeletedAt,
+	}, nil
+}
+
+// 修改算法用途描述
+func (s *AlgorithmService) UpdateAlgorithmApply(ctx context.Context, req *api.UpdateAlgorithmApplyRequest) (*api.UpdateAlgorithmApplyReply, error) {
+	innerReq := &innerapi.UpdateLableRequest{
+		Id:        req.Id,
+		LableDesc: req.LableDesc,
+	}
+
+	innerReply, err := s.data.LableClient.UpdateLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateAlgorithmApplyReply{
+		UpdatedAt: innerReply.UpdatedAt,
+	}, nil
+}
+
+// 新增算法框架
+func (s *AlgorithmService) AddAlgorithmFramework(ctx context.Context, req *api.AddAlgorithmFrameworkRequest) (*api.AddAlgorithmFrameworkReply, error) {
+	innerReq := &innerapi.AddLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK),
+		LableDesc:      req.LableDesc,
+	}
+
+	innerReply, err := s.data.LableClient.AddLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AddAlgorithmFrameworkReply{
+		Lable: &api.AlgorithmLable{
+			Id:         innerReply.Lable.Id,
+			LableDesc:  innerReply.Lable.LableDesc,
+			SourceType: innerReply.Lable.SourceType,
+		},
+	}, nil
+}
+
+// 查询算法类型框架
+func (s *AlgorithmService) ListAlgorithmFramework(ctx context.Context, req *api.ListAlgorithmFrameworkRequest) (*api.ListAlgorithmFrameworkReply, error) {
+	innerReq := &innerapi.ListLableRequest{
+		RelegationType: int32(innerapi.Relegation_LABLE_RELEGATION_ALGORITHM),
+		LableType:      int32(innerapi.Type_LABLE_TYPE_ALGORITHM_FRAMEWORK),
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+	}
+
+	innerReply, err := s.data.LableClient.ListLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.ListAlgorithmFrameworkReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+// 删除算法框架
+func (s *AlgorithmService) DeleteAlgorithmFramework(ctx context.Context, req *api.DeleteAlgorithmFrameworkRequest) (*api.DeleteAlgorithmFrameworkReply, error) {
+	innerReq := &innerapi.DeleteLableRequest{
+		Id: req.Id,
+	}
+
+	innerReply, err := s.data.LableClient.DeleteLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.DeleteAlgorithmFrameworkReply{
+		DeletedAt: innerReply.DeletedAt,
+	}, nil
+}
+
+// 修改算法类型框架
+func (s *AlgorithmService) UpdateAlgorithmFramework(ctx context.Context, req *api.UpdateAlgorithmFrameworkRequest) (*api.UpdateAlgorithmFrameworkReply, error) {
+	innerReq := &innerapi.UpdateLableRequest{
+		Id:        req.Id,
+		LableDesc: req.LableDesc,
+	}
+
+	innerReply, err := s.data.LableClient.UpdateLable(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateAlgorithmFrameworkReply{
+		UpdatedAt: innerReply.UpdatedAt,
+	}, nil
 }
 
 // 查询预置算法列表
@@ -200,6 +359,8 @@ func (s *AlgorithmService) AddPreAlgorithm(ctx context.Context, req *api.AddAlgo
 		AlgorithmName:     req.AlgorithmName,
 		ModelName:         req.ModelName,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
 	})
 	if err != nil {
 		return nil, err
@@ -209,6 +370,45 @@ func (s *AlgorithmService) AddPreAlgorithm(ctx context.Context, req *api.AddAlgo
 		AlgorithmId: reply.AlgorithmId,
 		Version:     reply.Version,
 		CreatedAt:   reply.CreatedAt,
+	}, nil
+}
+
+// 修改预置算法
+func (s *AlgorithmService) UpdatePreAlgorithm(ctx context.Context, req *api.UpdatePreAlgorithmRequest) (*api.UpdatePreAlgorithmReply, error) {
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
+		SpaceId:           "",
+		UserId:            "",
+		IsPrefab:          true,
+		AlgorithmId:       req.AlgorithmId,
+		AlgorithmDescript: req.AlgorithmDescript,
+		ApplyId:           req.ApplyId,
+		FrameworkId:       req.FrameworkId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreAlgorithmReply{
+		UpdatedAt: reply.UpdatedAt,
+	}, nil
+}
+
+// 修改预置算法版本
+func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdatePreAlgorithmVersionRequest) (*api.UpdatePreAlgorithmVersionReply, error) {
+	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
+		SpaceId:           "",
+		UserId:            "",
+		AlgorithmId:       req.AlgorithmId,
+		Version:           req.Version,
+		IsPrefab:          true,
+		AlgorithmDescript: req.AlgorithmDescript,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdatePreAlgorithmVersionReply{
+		UpdatedAt: reply.UpdatedAt,
 	}, nil
 }
 
@@ -298,6 +498,10 @@ func (s *AlgorithmService) algorithmTransfer(ctx context.Context, algorithm *inn
 		FileStatus:        algorithm.FileStatus,
 		IsPrefab:          algorithm.IsPrefab,
 		CreatedAt:         algorithm.CreatedAt,
+		ApplyId:           algorithm.ApplyId,
+		ApplyName:         algorithm.ApplyName,
+		FrameworkId:       algorithm.FrameworkId,
+		FrameworkName:     algorithm.FrameworkName,
 	}
 
 	if algorithm.UserId != "" {

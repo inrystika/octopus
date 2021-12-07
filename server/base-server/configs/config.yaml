@@ -47,6 +47,11 @@ data:
     username: octopus
     password: octopus
     database: octopus
+  jointCloud:
+    baseUrl: http://192.168.207.141:8709
+    username: test
+    password: 7ee15bc8fee766cad1bd70ccf5f4dc14
+    sessionExpirySec: 540 #实际有效期为600
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset
@@ -55,6 +60,7 @@ service:
   resourceLabelKey: octopus.pcl.ac.cn/type
   billingPeriodSec: 60
   develop:
+    jpyCommand: "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='/code' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
     jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
     autoStopIntervalSec: 7200
   resource:

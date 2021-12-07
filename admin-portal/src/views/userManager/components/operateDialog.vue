@@ -1,12 +1,7 @@
 <template>
     <div>
-        <el-dialog
-            :title="userType==='user'?'重置密码':'编辑群组信息'"
-            width="35%"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="userType==='user'?'重置密码':'编辑群组信息'" width="35%" :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item v-if="user" label="用户名称" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.fullName" disabled />
@@ -26,12 +21,8 @@
                 </el-form-item>
                 <el-form-item v-if="group" label="用户列表" :label-width="formLabelWidth" prop="userIds">
                     <el-select v-model="ruleForm.userIds" placeholder="请选择用户列表" multiple>
-                        <el-option
-                            v-for="item in userOptions"
-                            :key="item.id"
-                            :label="item.fullName + ' ' + item.email"
-                            :value="item.id"
-                        />
+                        <el-option v-for="item in userOptions" :key="item.id" :label="item.fullName + ' ' + item.email"
+                            :value="item.id" />
                     </el-select>
                 </el-form-item>
                 <el-form-item v-if="group" label="资源池" :label-width="formLabelWidth" prop="resourcePoolId">
@@ -42,7 +33,7 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
-                <el-button type="primary" @click="confirm">确 定</el-button>
+                <el-button type="primary" @click="confirm" v-preventReClick>确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -50,7 +41,7 @@
 
 <script>
     import { editeUser, editeGroup, groupDetail, getUserList } from '@/api/userManager.js'
-    import { getResourcePool } from '@/api/resourceManager.js'
+    import { getResourcePool, getGroupResourcePool } from '@/api/resourceManager.js'
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "OperateDialog",
@@ -144,27 +135,64 @@
                         }
                     }
                 )
+
                 getResourcePool().then(response => {
                     if (response.success) {
                         if (response.data !== null && response.data.resourcePools !== null) {
-                            this.resourceOptions = response.data.resourcePools
+                            this.resourceOptions = response.data.resourcePools.filter(item => {
+                                if (!item.default) {
+                                    return item
+                                }
+                            })
                         }
+                        getGroupResourcePool().then(response => {
+                            if (response.success) {
+                                if (response.data.workspaces && response.data.workspaces.length != 0) {
+                                    this.resourceOptions.forEach(
+                                        item => {
+                                            response.data.workspaces.forEach(
+                                                Item => {
+                                                    if (item.id == Item.resourcePoolId) {
+                                                        item.flag = true
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    )
+                                    this.resourceOptions = this.resourceOptions.filter(
+                                        item => {
+                                            if (!item.flag) {
+                                                return item
+                                            }
+                                        }
+                                    )
+                                }
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+
+                        })
+
                     } else {
                         this.$message({
-                            message: response.error.message,
-                            type: 'error'
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
                         });
                     }
                 })
-                this.getUserList()
+                    ,
+                    this.getUserList()
             }
         },
         beforeDestroy() {
             this.ruleForm = {}
         },
         methods: {
-             // 错误码
-             getErrorMsg(code) {
+            // 错误码
+            getErrorMsg(code) {
                 return getErrorMsg(code)
             },
             cancel() {
@@ -204,11 +232,11 @@
                                         type: 'success'
                                     });
                                 } else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
                             })
                         }
                         this.$emit('confirm', false)

@@ -1,15 +1,20 @@
 package data
 
 import (
+	"context"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data/cluster"
 	"server/base-server/internal/data/dao"
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
+	platformModel "server/base-server/internal/data/dao/model/platform"
 	"server/base-server/internal/data/dao/model/resources"
+	platformDao "server/base-server/internal/data/dao/platform"
 	"server/base-server/internal/data/influxdb"
+	"server/base-server/internal/data/jointcloud"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/pipeline"
+	platform "server/base-server/internal/data/platform"
 	"server/base-server/internal/data/redis"
 	"server/base-server/internal/data/registry"
 
@@ -20,27 +25,34 @@ import (
 )
 
 type Data struct {
-	UserDao         dao.UserDao
-	AdminUserDao    dao.AdminUserDao
-	AlgorithmDao    algorithm_dao.AlgorithmDao
-	ResourceDao     dao.ResourceDao
-	ResourceSpecDao dao.ResourceSpecDao
-	DevelopDao      dao.DevelopDao
-	TrainJobDao     dao.TrainJobDao
-	ModelDao        dao.ModelDao
-	DatasetDao      dao.DatasetDao
-	WorkspaceDao    dao.WorkspaceDao
-	ImageDao        dao.ImageDao
-	BillingDao      dao.BillingDao
-	Pipeline        pipeline.Pipeline
-	Cluster         cluster.Cluster
-	Minio           minio.Minio
-	Registry        registry.ArtifactRegistry
-	Redis           redis.Redis
-	Influxdb        influxdb.Influxdb
+	UserDao             dao.UserDao
+	AdminUserDao        dao.AdminUserDao
+	AlgorithmDao        algorithm_dao.AlgorithmDao
+	ResourceDao         dao.ResourceDao
+	ResourceSpecDao     dao.ResourceSpecDao
+	DevelopDao          dao.DevelopDao
+	TrainJobDao         dao.TrainJobDao
+	ModelDao            dao.ModelDao
+	DatasetDao          dao.DatasetDao
+	WorkspaceDao        dao.WorkspaceDao
+	ImageDao            dao.ImageDao
+	BillingDao          dao.BillingDao
+	LableDao            dao.LableDao
+	PlatformTrainJobDao platformDao.PlatformTrainJobDao
+	Pipeline            pipeline.Pipeline
+	Cluster             cluster.Cluster
+	Minio               minio.Minio
+	Registry            registry.ArtifactRegistry
+	Redis               redis.Redis
+	Influxdb            influxdb.Influxdb
+	PlatformDao         platformDao.PlatformDao
+	Platform            platform.Platform
+	JointCloudDao       jointcloud.JointcloudDao
+	JointCloud          jointcloud.JointCloud
 }
 
-func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
+	confData := bc.Data
 	d := &Data{}
 
 	db, err := dbInit(confData)
@@ -50,8 +62,21 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 
 	influxdb, err := influxdb.NewInfluxdb(confData)
 	if err != nil {
+		if !bc.App.IsDev {
+			return nil, nil, err
+		}
+		log.Error(context.TODO(), err)
+	}
+
+	d.Minio = minio.NewMinio(confData, logger)
+	d.Registry = registry.NewRegistry(confData, logger)
+	redis, err := redis.NewRedis(confData, logger)
+	if err != nil {
 		return nil, nil, err
 	}
+	d.Redis = redis
+	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	d.Cluster = cluster
 
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
@@ -65,17 +90,16 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, func(), error) {
 	d.ImageDao = dao.NewImageDao(db, logger)
 	d.TrainJobDao = dao.NewTrainJobDao(db, influxdb, logger)
 	d.BillingDao = dao.NewBillingDao(db, logger)
+	d.LableDao = dao.NewLableDao(db, logger)
+	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
-	d.Cluster = cluster.NewCluster(confData, logger)
-	d.Minio = minio.NewMinio(confData, logger)
-	d.Registry = registry.NewRegistry(confData, logger)
-	redis, err := redis.NewRedis(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	d.Redis = redis
+	d.PlatformDao = platformDao.NewPlatformDao(db)
+	d.Platform = platform.NewPlatform()
+	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
+	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
 
 	return d, func() {
+		clusterCancel()
 		redis.Close()
 	}, nil
 }
@@ -97,6 +121,7 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = db.AutoMigrate(&model.Algorithm{})
 	if err != nil {
 		return nil, err
@@ -221,5 +246,41 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	err = db.AutoMigrate(&model.Lable{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&platformModel.Platform{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&platformModel.PlatformTrainJob{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&platformModel.PlatformStorageConfig{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&platformModel.PlatformConfig{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.UserConfig{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&jointcloud.TrainJob{})
+	if err != nil {
+		return nil, err
+	}
+
 	return db, err
 }

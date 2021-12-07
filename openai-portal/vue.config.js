@@ -1,6 +1,10 @@
 'use strict'
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
+const webpack = require('webpack')
+const ThemeColorReplacer = require('webpack-theme-color-replacer')
+const forElementUI = require('webpack-theme-color-replacer/forElementUI')
+const appConfig = require('./config/app-config')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -38,14 +42,14 @@ module.exports = {
     },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
-        target: 'http://192.168.202.73',
+        target: 'http://192.168.202.73/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: '/openaiserver'
         }
       },
       [process.env.VUE_APP_BASE_API2]: {
-        target: 'http://192.168.202.73',
+        target: 'http://192.168.202.73/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
@@ -57,6 +61,20 @@ module.exports = {
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
+    plugins: [
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      // 生成仅包含颜色的替换样式（主题色等）
+      new ThemeColorReplacer({
+        fileName: 'style/theme-colors.[contenthash:8].css',
+        matchColors: [
+          ...forElementUI.getElementUISeries(appConfig.themeColor), // element-ui主色系列
+          '#0cdd3a', // 自定义颜色
+          '#c655dd'
+        ],
+        changeSelector: forElementUI.changeSelector,
+        isJsUgly: process.env.NODE_ENV === 'production' ? true : undefined
+      })
+    ],
     name: name,
     resolve: {
       alias: {

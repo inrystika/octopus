@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"server/common/dao"
+	"server/common/sql"
 
 	"gorm.io/gorm"
 )
@@ -144,4 +145,14 @@ type UserUpdateCond struct {
 
 type UserListIn struct {
 	Ids []string
+}
+
+type UserConfig struct {
+	dao.Model
+	UserId string      `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:用户id"`
+	Config sql.SqlJson `gorm:"type:json;comment:配置"`
+}
+
+func (UserConfig) TableName() string {
+	return "user_config"
 }

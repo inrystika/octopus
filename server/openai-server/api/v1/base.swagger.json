@@ -1,0 +1,7 @@
+{
+  "info": {
+    "title": "octopus api",
+    "version": "",
+    "description": "鉴权采用Bearer Token，接口按照以下格式：\n\n成功格式：\n\n```json\n{\n    \"success\": true,\n    \"payload\": {},\n    \"error\": null\n}\n```\n\n失败格式：\n\n```json\n{\n    \"success\": false,\n    \"payload\": null,\n    \"error\": {\n        \"code\": 0,\n        \"subcode\": 0,\n        \"message\": \"\"\n    }\n}\n```\n"
+  }
+}

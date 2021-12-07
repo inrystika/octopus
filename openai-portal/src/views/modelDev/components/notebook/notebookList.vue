@@ -6,12 +6,8 @@
     <el-button type="primary" size="medium" class="create" @click="create">
       创建
     </el-button>
-    <el-table
-      :data="notebookList"
-      style="width: 100%;font-size: 15px;"
-      :header-cell-style="{'text-align':'left','color':'black'}"
-      :cell-style="{'text-align':'left'}"
-    >
+    <el-table :data="notebookList" style="width: 100%;font-size: 15px;"
+      :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
       <el-table-column label="名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
@@ -53,18 +49,28 @@
         <template slot-scope="scope">
           <!-- <div v-if="scope.row.status === '停止' ? true : false"> -->
           <div v-if="({'stopped':true,'succeeded':true,'failed':true})[scope.row.status] || false">
-            <el-button slot="reference" type="text" style="padding-right:10px" @click="confirmStart(scope.row)">
+            <el-button slot="reference" type="text" @click="confirmStart(scope.row)">
               启动
             </el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
             <!-- <el-button type="text" @click="saveAlgorithm(scope.row)">保存算法</el-button> -->
           </div>
-          <el-button
-            v-if="({'running':true})[scope.row.status] || false"
-            type="text"
-            style="padding-right:10px"
-            @click="jumpUrl(scope.row.url)"
-          >打开</el-button>
+          <el-popover
+            placement="top-start"
+          >
+            <div v-for="(item,index) in scope.row.tasks" :key="index">
+              <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button>
+              <!-- <el-button type="text" @click="jumpUrl(item.url)">子任务{{ index + 1 }}</el-button> -->
+            </div>
+            <el-button
+              v-if="({'running':true})[scope.row.status] || false"
+              type="text"
+              style="padding-right:10px"          
+              slot="reference"
+            >
+              打开
+            </el-button>
+          </el-popover>
           <el-button
             v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
             slot="reference"
@@ -73,6 +79,9 @@
           >
             停止
           </el-button>
+          <el-button slot="reference" type="text" @click="save(scope.row)">
+            保存
+          </el-button>
           <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
             详情
           </el-button>
@@ -80,25 +89,14 @@
       </el-table-column>
     </el-table>
     <div class="block">
-      <el-pagination
-        :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]"
-        :page-size="searchData.pageSize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
-    <detailDialog
-      v-if="detailVisible"
-      :detail-data="detailData"
-      @confirm="confirm"
-      @cancel="cancel"
-      @close="close"
-    />
+    <detailDialog v-if="detailVisible" :detail-data="detailData" @confirm="confirm" @cancel="cancel" @close="close" />
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
+    <saveDialog v-if="saveVisible" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -106,6 +104,7 @@
   import notebookCreation from "./notebookCreation.vue"
   import detailDialog from "./detailDialog.vue"
   import searchForm from '@/components/search/index.vue'
+  import saveDialog from "./saveDialog.vue"
   import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
@@ -115,6 +114,7 @@
     components: {
       notebookCreation,
       detailDialog,
+      saveDialog,
       searchForm
     },
     props: {
@@ -129,20 +129,13 @@
         detailData: {},
         notebookVisible: false,
         detailVisible: false,
+        saveVisible: false,
         total: undefined,
         notebookList: [],
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
           {
             type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
-            options: [
-              { label: '运行中', value: 'running' },
-              { label: '等待中', value: 'pending' },
-              { label: '已停止', value: 'stopped' },
-              { label: '成功', value: 'succeeded' },
-              { label: '失败', value: 'failed' },
-              { label: '初始中', value: 'preparing' }
-            ]
           }
         ],
         searchData: {
@@ -330,19 +323,26 @@
         this.notebookVisible = true;
       },
       close(val) {
+        this.saveVisible = val;
         this.notebookVisible = val;
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       cancel(val) {
+        this.saveVisible = val,
         this.notebookVisible = val;
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
       confirm(val) {
+        this.saveVisible = val
         this.notebookVisible = val
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
+      },
+      save(val) {
+        this.data = val,
+        this.saveVisible = true
       }
     }
   }

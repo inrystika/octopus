@@ -26,16 +26,6 @@
                     <span>{{ scope.row.imageDesc }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="镜像类型" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageType(scope.row.imageType) }}</span>
-                </template>
-            </el-table-column>
-            <!-- <el-table-column label="镜像状态" align="center">
-                <template slot-scope="scope">
-                    <span>{{ imageStatus(scope.row.imageStatus) }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ parseTime(scope.row.createdAt) }}</span>
@@ -147,7 +137,7 @@
 
             }
             if (this.imageTabType == 1) {
-                this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
+                this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             }
             if (this.image) {
                 this.FormVisible = true
@@ -195,6 +185,8 @@
                                 message: this.getErrorMsg(response.error.subcode),
                                 type: 'warning'
                             });
+                            clearInterval(this.timer)
+                            this.timer = null
                         }
                     })
                 }
@@ -406,7 +398,7 @@
                 });
             },
             cancelShare(val) {
-                cancelImage(val.id).then(response => {                
+                cancelImage(val.id).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '取消分享成功',

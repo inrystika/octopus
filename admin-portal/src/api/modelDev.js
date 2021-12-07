@@ -2,8 +2,8 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   const conditions = []
-  params.pageSize ? conditions.push(`pageSize=` + params.pageSize) : null;
-  params.pageIndex ? conditions.push(`pageIndex=` + params.pageIndex) : null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
@@ -29,6 +29,14 @@ export async function getNotebookInfo(params) {
     url: `/v1/developmanage/notebookevent`,
     method: 'get',
     params
+  })
+  return res
+}
+
+export async function getNotebookEventRecord(params) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${params.id}/eventrecord?pageSize=${params.pageSize}&pageIndex=${params.pageIndex}`,
+    method: 'get',
   })
   return res
 }
@@ -143,6 +151,77 @@ export async function deletePreAlgorithm(algorithmId) {
   const res = await request({
     url: `/v1/algorithmmanage/prealgorithm/${algorithmId}`,
     method: "delete"
+  })
+  return res
+}
+export async function algorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmapply`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addAlgorithmType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmapply`,
+    method: "post",
+    data: { lableDesc: data }
+  })
+  return res
+}
+export async function deleteAlgorithmType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmapply/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateAlgorithmType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmapply/${data.id}`,
+    method: "put",
+    data: data
+  })
+  return res
+}
+export async function frameType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "get",
+    params: params
+  })
+  return res
+}
+export async function addFrameType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework`,
+    method: "post",
+    data: { lableDesc: data }
+  })
+  return res
+}
+export async function deleteFrameType(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework/${params}`,
+    method: "delete"
+  })
+  return res
+}
+export async function updateFrameType(data) {
+  const res = await request({
+    url: `/v1/algorithmmanage/algorithmframework/${data.id}`,
+    method: "put",
+    data: data
+  })
+  return res
+}
+// 修改我的算法
+export async function editeAlgorithm(params) {
+  const res = await request({
+    url: `/v1/algorithmmanage/prealgorithm/${params.algorithmId}`,
+    method: "put",
+    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript }
   })
   return res
 }
