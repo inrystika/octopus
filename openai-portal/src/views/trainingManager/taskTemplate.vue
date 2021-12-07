@@ -17,7 +17,7 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" />
-                <el-table-column prop="name" label="任务模板名称" align="center" />
+                <el-table-column prop="name" label="任务名称" align="center" />
                 <el-table-column prop="algorithmName" label="算法名称" align="center" />>
                 <el-table-column prop="dataSetName" label="数据集名称" align="center" />
                 <el-table-column prop="desc" label="描述" align="center" :show-overflow-tooltip="true" />
