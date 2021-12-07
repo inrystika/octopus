@@ -74,12 +74,13 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 						}
 
 						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
-						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费。
-						for _, j := range trainJobs{
-							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status){
-								err = s.data.TrainJobDao.DeleteTrainJob(ctx, j.Id)
+						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
+						for _, j := range trainJobs {
+							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status) {
+								j.PayStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
+								err = s.data.TrainJobDao.UpdateTrainJob(ctx, j)
 								if err != nil {
-									s.log.Errorf(ctx, "Delete ineffective job: %s", err)
+									s.log.Errorf(ctx, "update ineffective job to completed err: %s", err)
 									break
 								}
 							}

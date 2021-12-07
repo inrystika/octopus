@@ -35,7 +35,6 @@
       </el-table-column>
       <el-table-column label="状态">
         <template slot-scope="scope">
-          <!-- <span>{{ scope.row.status }}</span> -->
           <span :class="statusText[scope.row.status][0]"></span>
           <span>{{ statusText[scope.row.status][1] }}</span>
         </template>
@@ -47,7 +46,6 @@
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <!-- <div v-if="scope.row.status === '停止' ? true : false"> -->
           <div v-if="({'stopped':true,'succeeded':true,'failed':true})[scope.row.status] || false">
             <el-button slot="reference" type="text" @click="confirmStart(scope.row)">
               启动
@@ -57,10 +55,13 @@
           <el-popover placement="top-start">
             <div v-for="(item,index) in scope.row.tasks" :key="index">
               <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button>
-              <!-- <el-button type="text" @click="jumpUrl(item.url)">子任务{{ index + 1 }}</el-button> -->
             </div>
-            <el-button v-if="({'running':true})[scope.row.status] || false" type="text" style="padding-right:10px"
-              slot="reference">
+            <el-button
+              v-show="({'running':true})[scope.row.status] || false"
+              type="text"
+              style="padding-right:10px"          
+              slot="reference"
+            >
               打开
             </el-button>
           </el-popover>
@@ -212,19 +213,6 @@
         });
       },
       handleStart(row) {
-        // this.resourceList.forEach(
-        //   item => {
-        //     if (item.id === row.id) {
-        //       if (item.price !== row.resourceSpecPrice) {
-        //         this.title = `<div>资源价格有变动,
-        //                     <strong>旧价格:${row.resourceSpecPrice}机时/h,</strong>
-        //                     <strong>新价格:${item.price}机时/h,</strong>
-        //                     是否启动Notebook？
-        //                     </div>`
-        //       }
-        //     }
-        //   }
-        // )
         startNotebook(row.id).then(response => {
           if (response.success) {
             this.$message.success("已启动");
@@ -316,6 +304,7 @@
         this.notebookVisible = val;
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
+        // this.reload()
       },
       cancel(val) {
         this.saveVisible = val,
