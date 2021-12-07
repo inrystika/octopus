@@ -52,9 +52,7 @@
             </el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
           </div>
-          <el-popover
-            placement="top-start"
-          >
+          <el-popover placement="top-start">
             <div v-for="(item,index) in scope.row.tasks" :key="index">
               <el-button type="text" @click="jumpUrl(item.url)">{{ item.name }}</el-button>
             </div>
@@ -67,15 +65,11 @@
               打开
             </el-button>
           </el-popover>
-          <el-button
-            v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
-            slot="reference"
-            type="text"
-            @click="confirmStop(scope.row)"
-          >
+          <el-button v-if="({'preparing':true,'pending':true,'running':true})[scope.row.status] || false"
+            slot="reference" type="text" @click="confirmStop(scope.row)">
             停止
           </el-button>
-          <el-button slot="reference" type="text" @click="save(scope.row)">
+          <el-button slot="reference" type="text" @click="save(scope.row)" v-if="scope.row.status==='running'">
             保存
           </el-button>
           <el-button slot="reference" type="text" @click="showNotebookInfo(scope.row)">
@@ -92,7 +86,7 @@
 
     <detailDialog v-if="detailVisible" :detail-data="detailData" @confirm="confirm" @cancel="cancel" @close="close" />
     <notebookCreation v-if="notebookVisible" @cancel="cancel" @confirm="confirm" @close="close" />
-    <saveDialog v-if="saveVisible" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <saveDialog v-if="saveVisible" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -314,7 +308,7 @@
       },
       cancel(val) {
         this.saveVisible = val,
-        this.notebookVisible = val;
+          this.notebookVisible = val;
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
       },
@@ -325,8 +319,8 @@
         this.getNotebookList(this.searchData);
       },
       save(val) {
-        this.data = val,
-        this.saveVisible = true
+        this.row = val,
+          this.saveVisible = true
       }
     }
   }
