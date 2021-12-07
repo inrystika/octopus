@@ -5,10 +5,12 @@
     <div class="right-menu">
       <el-row class="demo-avatar demo-basic">
         <el-dropdown>
-          <i class="el-icon-document" :style="{'color':fontColor?fontColor:'#666699'}" />
-          <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual" :style="{'color':fontColor}">使用手册</a>
-          <i class="el-icon-service" :style="{'color':fontColor?fontColor:'#666699'}" />
-          <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual" :style="{'color':fontColor}">问题意见</a>
+          <div v-show="!this.GLOBAL.THEME_MANUAL_INVISIBLE">
+            <i class="el-icon-document" :style="{'color':fontColor?fontColor:'#666699'}" />
+            <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual" :style="{'color':fontColor}">使用手册</a>
+            <i class="el-icon-service" :style="{'color':fontColor?fontColor:'#666699'}" />
+            <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual" :style="{'color':fontColor}">问题意见</a>
+          </div>
           <el-dropdown-menu slot="dropdown" />
         </el-dropdown>
         <el-avatar :src="circleUrl" :size="size" />

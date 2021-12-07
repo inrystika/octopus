@@ -29,6 +29,7 @@ export default {
             Vue.prototype.GLOBAL.THEME_TITLE_EN = response.data.systemNameEn
             Vue.prototype.GLOBAL.THEME_LOGO_ADDR = response.data.logoAddr
             Vue.prototype.GLOBAL.THEME_ORG_NAME = response.data.organization
+            Vue.prototype.GLOBAL.THEME_MANUAL_INVISIBLE = response.data.manualInvisible
             this.mainColor = response.data.themeColor
             document.title = response.data.systemNameZh // 修改网页标签的title
             const link = document.querySelector('link[rel="icon"]')
@@ -40,6 +41,7 @@ export default {
             Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
             Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
             Vue.prototype.GLOBAL.THEME_ORG_NAME = ''
+            Vue.prototype.GLOBAL.THEME_MANUAL_INVISIBLE = false
           }
           this.isShow = true
         }
@@ -50,6 +52,7 @@ export default {
         Vue.prototype.GLOBAL.THEME_TITLE_EN = ''
         Vue.prototype.GLOBAL.THEME_LOGO_ADDR = ''
         Vue.prototype.GLOBAL.THEME_ORG_NAME = ''
+        Vue.prototype.GLOBAL.THEME_MANUAL_INVISIBLE = false
         this.isShow = true
       })
     },
