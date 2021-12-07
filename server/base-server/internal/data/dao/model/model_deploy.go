@@ -32,7 +32,7 @@ type ModelDeploy struct {
 	PayEndedAt     *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus      api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:扣费状态 1扣费中 2扣费完成"`
 	ResourceSpecId string                     `gorm:"type:varchar(100);not null;default:'';comment:'资源Id'"`
-	ResSpecPrice   ResourceSpecPrices         `gorm:"type:json;comment:资源规格价格,每个键值对代表第i个子任务的资源规格单价"`
+	ResSpecPrice   float64                     `gorm:"type:json;comment:资源规格单价"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
