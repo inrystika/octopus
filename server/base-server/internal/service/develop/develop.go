@@ -22,6 +22,8 @@ import (
 
 	commapi "server/common/api/v1"
 
+	nav1 "nodeagent/apis/agent/v1"
+
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
@@ -29,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	nav1 "nodeagent/apis/agent/v1"
 	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
 )
 
@@ -54,11 +55,11 @@ type DevelopService interface {
 }
 
 const (
-	k8sTaskNamePrefix = "task"
-	servicePort       = 8888
-	shmResource       = "shm"
-	nodeActionLabelNotebookId   = "nodebook.octopus.dev/id"
-	nodeActionLabelImageId      = "image.octopus.dev/id"
+	k8sTaskNamePrefix         = "task"
+	servicePort               = 8888
+	shmResource               = "shm"
+	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
+	nodeActionLabelImageId    = "image.octopus.dev/id"
 )
 
 func buildTaskName(idx int) string {
@@ -638,10 +639,10 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Queue:         startJobInfo.queue,
 			SchedulerName: "volcano",
 			//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
-			//Plugins: map[string][]string{
-			//	"env": {},
-			//	"svc": {},
-			//},
+			Plugins: map[string][]string{
+				"env": {},
+				"svc": {"--disable-network-policy"},
+			},
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
@@ -957,7 +958,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	}
 	nodeAction = &nav1.NodeAction{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       podName,
+			Name: podName,
 			Labels: map[string]string{
 				nodeActionLabelNotebookId: req.NotebookId,
 				nodeActionLabelImageId:    req.ImageId,
@@ -985,7 +986,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	})
 	if err != nil {
 		s.log.Errorw(ctx, err)
-		return nil ,err
+		return nil, err
 	}
 	if _, err := s.data.Cluster.CreateNodeAction(ctx, notebook.UserId, nodeAction); err != nil {
 		return nil, err
@@ -996,7 +997,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 }
 
 func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, taskName string) string {
-	return  fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
+	return fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
 }
 
 func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, string, error) {
@@ -1007,9 +1008,9 @@ func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook 
 	if pod.Status.Phase != v1.PodRunning {
 		return "", "", errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
-	for _, cs :=range pod.Status.ContainerStatuses {
+	for _, cs := range pod.Status.ContainerStatuses {
 		if cs.Name == taskName {
-			return pod.Spec.NodeName, strings.TrimPrefix(cs.ContainerID,"docker://"), nil
+			return pod.Spec.NodeName, strings.TrimPrefix(cs.ContainerID, "docker://"), nil
 		}
 	}
 	return "", "", errors.Errorf(nil, errors.ErrorNotebookNoFoundRuntimeContainer)
