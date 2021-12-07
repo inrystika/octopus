@@ -49,6 +49,7 @@ message Service {
       string systemNameEn = 3;
       string systemNameZh = 4;
       string organization = 5;
+      bool manualInvisible = 6;
   }
   int64 tokenExpirationSec = 1;
   WebConfig webConfig = 2;
