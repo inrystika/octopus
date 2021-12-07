@@ -26,4 +26,5 @@ message GetWebConfigReply {
   string systemNameEn = 3;
   string systemNameZh = 4;
   string organization = 5;
+  bool manualInvisible = 6;
 }

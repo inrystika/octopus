@@ -304,7 +304,6 @@
         this.notebookVisible = val;
         this.detailVisible = val;
         this.getNotebookList(this.searchData);
-        // this.reload()
       },
       cancel(val) {
         this.saveVisible = val,
