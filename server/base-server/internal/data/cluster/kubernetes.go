@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
-m	"os"
+	"os"
 	"path/filepath"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -74,13 +74,18 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
 	c, cancel := context.WithCancel(context.Background())
 
+	seldonClientset, err := seldonclientset.NewForConfig(config)
+	if err != nil {
+		return nil,nil
+	}
+
 	kc := &kubernetesCluster{
 		ctx:        c,
 		nodes:      make(map[string]*v1.Node),
 		kubeclient: kubernetes.NewForConfigOrDie(config),
 		vcClient:   vcclient.NewForConfigOrDie(config),
 		naClient:   naclient.NewForConfigOrDie(config),
-		seldonClientset: seldonclientset.NewForConfig(config),
+		seldonClientset: seldonClientset,
 		log:        log.NewHelper("Cluster", logger),
 		config:     config,
 	}

@@ -47,8 +47,8 @@ type modelDeployService struct {
 	conf                *conf.Bootstrap
 	log                 *log.Helper
 	data                *data.Data
-	modelService        api.ModelServer
-	workspaceService    api.WorkspaceServer
+	modelService        api.ModelServiceServer
+	workspaceService    api.WorkspaceServiceServer
 	resourceSpecService api.ResourceSpecServiceServer
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
@@ -72,7 +72,7 @@ type startJobInfo struct {
 }
 
 func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
-	workspaceService api.WorkspaceServer, modelService api.ModelServer,
+	workspaceService api.WorkspaceServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
 	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (ModelDeployService, error) {
 	log := log.NewHelper("ModelDeployService", logger)
