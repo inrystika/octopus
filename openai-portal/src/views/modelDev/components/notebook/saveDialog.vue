@@ -53,6 +53,20 @@
       this.id = this.row.id
     },
     data() {
+       var checkName = (rule, value, callback) => {
+        const regName = /^[a-zA-Z][\w|-]*$/;
+        if (regName.test(value)) {
+          return callback();
+        }
+        callback(new Error("请输入合法的镜像名称:首字母为大小写字母，其他大小写字母数字或者-"));
+      };
+      var checkLabel = (rule, value, callback) => {
+        const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;
+        if (regLabel.test(value)) {
+          return callback();
+        }
+        callback(new Error("请输入合法的标签名称:首字母为英文,其他为英文数字.或者-"));
+      };
       return {
         dialogFormVisible: true,
         form: { imageName: '', imageVersion: '', desc: '' },
@@ -73,11 +87,11 @@
           ],
           imageName: [
             { required: true, message: '请输入镜像名称', trigger: 'blur' },
-
+            { validator: checkName, trigger: "blur" }
           ],
           imageVersion: [
             { required: true, message: '请输入镜像标签', trigger: 'blur' },
-
+            { validator: checkLabel, trigger: "blur" }
           ],
           LayerDescription: [
             { required: true, message: '请填写增量描述', trigger: 'blur' }
