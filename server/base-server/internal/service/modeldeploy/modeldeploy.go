@@ -8,9 +8,11 @@ import (
 	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -20,7 +22,9 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
+	"strings"
 	"time"
+	"unsafe"
 )
 
 const (
@@ -493,6 +497,39 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	return &api.DeleteDepReply{DeletedAt: time.Now().Unix()}, nil
+}
+
+//删除模型服务
+func (s *modelDeployService) ModelServiceInfer(ctx context.Context, req *api.ServiceRequest) (*api.ServiceReply, error) {
+	requestData := fmt.Sprintf("{ \"data\": { \"ndarray\": %s%s", req.Data.Ndarray, "}}")
+	request, err := http.NewRequest("POST", req.ServiceUrl, strings.NewReader(requestData))
+	if err != nil {
+		resp := &api.ServiceReply{
+			Response: "failed to post request",
+		}
+		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+	}
+	request.Header.Set("Content-Type", "application/json;charset=UTF-8") //添加请求头
+	client := http.Client{}                                              //创建客户端
+	resp, err := client.Do(request.WithContext(context.TODO()))          //发送请求
+	if err != nil {
+		resp := &api.ServiceReply{
+			Response: "failed to post request",
+		}
+		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+	}
+	defer resp.Body.Close() //程序在使用完回复后必须关闭回复的主体
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		resp := &api.ServiceReply{
+			Response: "failed to get response",
+		}
+		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+	}
+	respStr := (*string)(unsafe.Pointer(&respBytes))
+
+	return &api.ServiceReply{Response: *respStr}, nil
 }
 
 //获取模型服务详情

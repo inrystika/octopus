@@ -115,6 +115,31 @@ func (s *ModelDeployService) checkPermission(ctx context.Context, serviceIds []s
 	return nil
 }
 
+// 模型服务调用
+func (s *ModelDeployService) ModelServiceInfer(ctx context.Context, req *api.ServiceRequest) (*api.ServiceReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
+	innerReq := &innerapi.ServiceRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+	innerReq.UserId = session.UserId
+	innerReq.WorkspaceId = session.GetWorkspace()
+
+	innerReply, err := s.data.ModelDeployClient.ModelServiceInfer(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.ServiceReply{
+		Response: innerReply.Response,
+	}, nil
+}
+
 // 获取模型服务详情
 func (s *ModelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepInfoRequest) (*api.DepInfoReply, error) {
 

@@ -2,7 +2,7 @@ package data
 
 import (
 	"context"
-jin	"server/base-server/internal/conf"
+	"server/base-server/internal/conf"
 	"server/base-server/internal/data/cluster"
 	"server/base-server/internal/data/dao"
 	"server/base-server/internal/data/dao/algorithm_dao"
@@ -49,7 +49,7 @@ type Data struct {
 	Platform            platform.Platform
 	JointCloudDao       jointcloud.JointcloudDao
 	JointCloud          jointcloud.JointCloud
-	ModelDeployDao  dao.ModelDeployDao
+	ModelDeployDao      dao.ModelDeployDao
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
