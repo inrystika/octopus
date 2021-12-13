@@ -167,6 +167,7 @@ openaiserver:
       systemNameEn:
       systemNameZh:
       organization:
+      manualInvisible:
 
 # platform-server
 platformserver:
