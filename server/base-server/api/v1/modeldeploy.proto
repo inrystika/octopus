@@ -46,12 +46,9 @@ message ServiceRequest{
 }
 
 message ReqData{
-  repeated  DataElement ndarray = 1;
+  repeated  string ndarray = 1;
 }
 
-message DataElement{
-  repeated float
-}
 
 message ServiceReply{
   string response = 1;
