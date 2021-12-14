@@ -20,10 +20,11 @@ export default {
     this.themeChange()
   },
   methods: {
-    themeChange(){
+    themeChange() {
+      const reg = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/  // 传入颜色格式须为16进制
       themeChange().then(response => {
         if(response.success) {
-          if(response.data && response.data.themeColor){
+          if(response.data && response.data.themeColor && reg.test(response.data.themeColor)){
             Vue.prototype.GLOBAL.THEME_COLOR = response.data.themeColor
             Vue.prototype.GLOBAL.THEME_TITLE_ZH = response.data.systemNameZh
             Vue.prototype.GLOBAL.THEME_TITLE_EN = response.data.systemNameEn
