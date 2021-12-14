@@ -13,7 +13,7 @@ export function changeThemeColor(newColor) {
   return client.changer.changeColor(options, Promise)
     .then(() => {
       curColor = newColor
-      localStorage.setItem('theme_color', curColor)
+      // localStorage.setItem('theme_color', curColor)
     })
 }
 
