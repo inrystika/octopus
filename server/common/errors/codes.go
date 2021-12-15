@@ -206,8 +206,8 @@ const (
 	ErrorModelDeployForbidden    = 25001 // 部署使用计算框架不在权限范围内
 	ErrorModelDeployFailed       = 25002 // 创建模型部署服务失败
 	ErrorModelDeployDeleteFailed = 25003 // 删除模型部署服务失败
-	ErrorModelDInferRequest      = 25004 // 模型部署服务请求失败
-
+	ErrorModelInferRequest       = 25004 // 模型部署服务请求失败
+	ErrorModelAuthFailed         = 25005 // 模型权限校验失败
 )
 
 type codeMsg struct {
@@ -410,5 +410,6 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorModelDeployForbidden:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorModelDeployFailed:       {codeType: Internal, msg: "deploy seldon service failed"},
 	ErrorModelDeployDeleteFailed: {codeType: Internal, msg: "delete seldon service failed"},
-	ErrorModelDInferRequest:      {codeType: Internal, msg: "seldon service http request failed"},
+	ErrorModelInferRequest:       {codeType: Internal, msg: "seldon service http request failed"},
+	ErrorModelAuthFailed:         {codeType: Internal, msg: "model can`t access"},
 }

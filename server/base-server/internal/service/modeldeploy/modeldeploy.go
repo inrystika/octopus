@@ -93,7 +93,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 		billingService:      billingService,
 	}
 
-	//s.modelDepBilling(context.Background())
+	s.modelServiceBilling(context.Background())
 	ctx := context.Background()
 	s.data.Cluster.RegisterDeploymentInformerCallback(ctx,
 		func(obj interface{}) {},
@@ -310,9 +310,9 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	return resFunc, serviceUrl, nil
 }
 
-func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.ModelDeploy) (*startJobInfo, error) {
+func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.ModelDeploy) (*startJobInfo, error) {
 	//before commit job, check billing owner amount
-	ownerId, ownerType := s.getOwner(modelDeploy)
+	ownerId, ownerType := s.getOwner(deployJob)
 	owner, err := s.billingService.GetBillingOwner(ctx, &api.GetBillingOwnerRequest{
 		OwnerId:   ownerId,
 		OwnerType: ownerType,
@@ -327,14 +327,14 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 
 	//资源队列
 	queue := ""
-	if modelDeploy.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
+	if deployJob.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
 		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
 		if err != nil {
 			return nil, err
 		}
 		queue = pool.ResourcePool.Name
 	} else {
-		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: modelDeploy.WorkspaceId})
+		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: deployJob.WorkspaceId})
 		if err != nil {
 			return nil, err
 		}
@@ -342,15 +342,15 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 		queue = workspace.Workspace.ResourcePoolId
 	}
 	// 校验模型框架
-	modelFrameType := modelDeploy.ModelFrame
+	modelFrameType := deployJob.ModelFrame
 	if modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame {
 		return nil, errors.Errorf(err, errors.ErrorModelDeployForbidden)
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, modelDeploy.WorkspaceId, modelDeploy.UserId, modelDeploy.Id, modelDeploy.ModelVersion)
+	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.Id, deployJob.ModelVersion)
 	if queryModelVersionReply == nil || err != nil {
-		return nil, err
+		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
 	}
 
 	//资源规格信息
@@ -372,15 +372,23 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 	for _, i := range resourcesReply.Resources {
 		resourceMap[i.Name] = i
 	}
-	//提交任务所需的资源规格映射表及节点标签映射表
+
+	// 获取推理资源规格的价格
+	resSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: deployJob.ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	deployJob.ResSpecPrice = resSpec.ResourceSpec.Price
+
+	//以下，获取提交任务所需的资源规格映射表及节点标签映射表
 	resources := map[v1.ResourceName]resource.Quantity{}
 	nodeSelectors := map[string]string{}
-	//通过资源规格映射表，获取规格名称及价格
-	spec, ok := specMap[modelDeploy.ResourceSpecId]
+	//1st, 通过资源规格映射表，获取规格名称及价格
+	spec, ok := specMap[deployJob.ResourceSpecId]
 	if !ok {
 		return nil, errors.Errorf(err, errors.ErrorInvalidRequestParameter)
 	}
-	//解析资源规格包中的各项资源（cpu,gpu,memory等）的值
+	//2nd, 解析资源规格包中的各项资源（cpu,gpu,memory等）的值
 	for k, v := range spec.ResourceQuantity {
 		//获取资源规格包中的key及value
 		r, ok := resourceMap[k]
@@ -402,14 +410,14 @@ func (s *modelDeployService) checkParam(ctx context.Context, modelDeploy *model.
 		}
 	}
 
-	startJobSpecs[modelDeploy.ResourceSpecId] = &startJobInfoSpec{
+	startJobSpecs[deployJob.ResourceSpecId] = &startJobInfoSpec{
 		resources:     resources,
 		nodeSelectors: nodeSelectors,
 	}
 
 	startModelDeployInfo := &startJobInfo{
 		queue:     queue,
-		modelPath: s.getModelSubPath(modelDeploy),
+		modelPath: s.getModelSubPath(deployJob),
 		specs:     startJobSpecs,
 	}
 
@@ -507,7 +515,7 @@ func (s *modelDeployService) ModelServiceInfer(ctx context.Context, req *api.Ser
 		resp := &api.ServiceReply{
 			Response: "failed to post request",
 		}
-		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+		return resp, errors.Errorf(err, errors.ErrorModelInferRequest)
 	}
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8") //添加请求头
 	client := http.Client{}                                              //创建客户端
@@ -516,7 +524,7 @@ func (s *modelDeployService) ModelServiceInfer(ctx context.Context, req *api.Ser
 		resp := &api.ServiceReply{
 			Response: "failed to post request",
 		}
-		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+		return resp, errors.Errorf(err, errors.ErrorModelInferRequest)
 	}
 	defer resp.Body.Close() //程序在使用完回复后必须关闭回复的主体
 
@@ -525,7 +533,7 @@ func (s *modelDeployService) ModelServiceInfer(ctx context.Context, req *api.Ser
 		resp := &api.ServiceReply{
 			Response: "failed to get response",
 		}
-		return resp, errors.Errorf(err, errors.ErrorModelDInferRequest)
+		return resp, errors.Errorf(err, errors.ErrorModelInferRequest)
 	}
 	respStr := (*string)(unsafe.Pointer(&respBytes))
 
