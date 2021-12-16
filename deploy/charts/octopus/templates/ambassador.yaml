@@ -16,7 +16,7 @@ spec:
     - name: http
       protocol: TCP
       port: {{ template "ambassador.port" . }}
-      targetPort: {{ template "ambassador.port" . }}
+      targetPort: {{ template "ambassador.targetPort" . }}
   selector:
   {{ include "ambassador.select-labels" . | indent 8 }}
 

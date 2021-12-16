@@ -1002,22 +1002,11 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- end -}}
 
 {{- define "ambassador.labels" -}}
-{{ include "ambassador.common-labels" . }}
 {{ include "ambassador.select-labels" . }}
 {{- end -}}
 
-{{- define "ambassador.common-labels" -}}
-helm.sh/chart: {{ include "ambassador.chart" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end -}}
-
 {{- define "ambassador.select-labels" -}}
-app.kubernetes.io/name: {{ include "ambassador.name" . }}
-app.kubernetes.io/instance: {{ include "ambassador.fullname" . }}
-app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
+service: {{ printf "ambassador-admin" . }}
 {{- end -}}
 
 
@@ -1025,6 +1014,14 @@ app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
 {{- printf "%s" (include "ambassador.fullname" .)  -}}
 {{- end -}}
 
+{{- define "ambassador.port" -}}
+{{- printf "80" -}}
+{{- end -}}
+
+{{- define "ambassador.targetPort" -}}
+{{- printf "80" -}}
+{{- end -}}
+
 {{- define "ambassador.serviceAddr" -}}
-{{- printf "%s:31812" (include "ambassador.serviceName" .) -}}
+{{- printf "%s:%s" (include "ambassador.serviceName" .)  (include "ambassador.port" .) -}}
 {{- end -}}
