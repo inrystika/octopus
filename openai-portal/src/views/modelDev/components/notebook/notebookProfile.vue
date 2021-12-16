@@ -38,7 +38,7 @@
       <el-col :span="12">
         <div>
           是否分布式:
-          <span>否</span>
+          <span>{{ this.profileInfo.tasks.length > 1 ? '是' : '否' }}</span>
         </div>
       </el-col>
     </el-row>

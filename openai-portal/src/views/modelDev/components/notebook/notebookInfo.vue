@@ -6,7 +6,7 @@
           <div>任务名称:<span>{{ notebookInfo.name }}</span></div>
         </el-col>
         <el-col :span="12">
-          <div>是否分布式:<span>否</span></div>
+          <div>是否分布式:<span>{{ this.notebookInfo.tasks.length > 1 ? '是' : '否'}}</span></div>
         </el-col>
         <el-col v-if="show" :span="12">
           <div>

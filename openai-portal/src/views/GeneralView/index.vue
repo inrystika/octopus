@@ -64,7 +64,7 @@
             <div class="topHour">
               <!-- <el-button type="primary" size="small">机时充值</el-button> -->
               <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getConsumption">消费记录</el-button>
-              <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
+              <el-button v-show="billRecordVisible" :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
               <br>
               <div class="topHourInstrucTitle">
                 充值说明:
@@ -281,7 +281,7 @@
       </div>
     </el-card>
 
-    <record v-if="recordVisible" :group-name="groupName" :record-type="recordType" @close="close" />
+    <record v-if="recordRuleVisible" :group-name="groupName" :record-type="recordType" @close="close" />
   </div>
 </template>
 
@@ -306,7 +306,8 @@
         customColor: this.GLOBAL.THEME_COLOR?[{ color: this.GLOBAL.THEME_COLOR, percentage: 100 }]:[{ color: '#666699', percentage: 100 }],
         count: {},
         show: false,
-        recordVisible: false,
+        recordRuleVisible: false,
+        billRecordVisible: false,
         billAmount: undefined,
         groupName: undefined,
         recordType: undefined,
@@ -391,6 +392,7 @@
       getHour() {
         this.groupName = this.workspaceId
         if (this.workspaceId === "default-workspace") {
+          this.billRecordVisible = true  //充值记录按钮只在默认群组中展示
           getUserHour().then(response => {
             if (response.success) {
               this.billAmount = response.data.billingUser.amount
@@ -569,18 +571,18 @@
         })
       },
       getConsumption() {
-        this.recordVisible = true;
+        this.recordRuleVisible = true;
         this.recordType = 1
       },
       getRecharge() {
-        this.recordVisible = true;
+        this.recordRuleVisible = true;
         this.recordType = 2
       },
       view() {
-        this.recordVisible = true;
+        this.recordRuleVisible = true;
       },
       close(val) {
-        this.recordVisible = val;
+        this.recordRuleVisible = val;
       },
       create(param) {
         const data = {}

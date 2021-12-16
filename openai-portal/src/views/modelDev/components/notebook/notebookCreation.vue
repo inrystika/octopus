@@ -25,6 +25,9 @@
                             <el-option v-for="item in algorithmNameOption" :key="item.algorithmId+item.algorithmName"
                                 :label="item.algorithmName" :value="item.algorithmId" />
                         </el-select>
+                        <el-tooltip class="tipClass" effect="dark" :content="tipMessage" placement="top-start">
+                          <i class="el-icon-warning-outline"></i>
+                        </el-tooltip>
                     </el-form-item>
                     <el-form-item v-if="algorithmVersion" label="算法版本" prop="algorithmVersion"
                         style="display:inline-block;">
@@ -239,7 +242,8 @@
                 resourceList: [],
                 algorithmNameTemp: '',
                 imageTemp: '',
-                dataSetTemp: ''
+                dataSetTemp: '',
+                tipMessage:"创建Notebook任务时，算法只能从‘我的算法’中选择；请先在‘我的算法’中上传算法。"
             };
         },
         created() {
@@ -718,5 +722,10 @@
     }
     .block {
         display: block !important;
+    }
+    .tipClass {
+      margin-left: 5px;
+      font-size: 16px;
+      color: #409EFF;
     }
 </style>
