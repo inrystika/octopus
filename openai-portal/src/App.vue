@@ -13,7 +13,7 @@ export default {
   data() {
     return {
       isShow: false,
-      ainColor: curColor
+      mainColor: curColor
     }
   },
   created() {
