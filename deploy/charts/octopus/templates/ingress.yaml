@@ -11,7 +11,7 @@
 {{- $platformserverPath := .Values.ingress.platformserverPath -}}
 {{- $adminportalPath := trimSuffix "/" .Values.ingress.adminportalPath -}}
 {{- $openaiportalPath := trimSuffix "/" .Values.ingress.openaiportalPath -}}
-{{- $ambassadorPath := trimSuffix "/" .Values.ingress.$ambassadorPath -}}
+{{- $ambassadorPath := trimSuffix "/" .Values.ingress.ambassadorPath -}}
 {{- $ambassadorName := include "ambassador.fullname" . -}}
 {{- $minioName := include "minio.fullname" . -}}
 {{- $minioWebPath := .Values.ingress.minioPath.web -}}
