@@ -10,7 +10,6 @@ require (
 	github.com/evanphx/json-patch v4.11.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/go-dockerclient v1.7.2
-	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
 	github.com/go-oauth2/oauth2/v4 v4.4.2
 	github.com/go-oauth2/redis/v4 v4.1.1
@@ -68,10 +67,7 @@ replace (
 	k8s.io/kubelet => k8s.io/kubelet v0.18.18
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.18
 	k8s.io/metrics => k8s.io/metrics v0.18.18
-	k8s.io/node-api => k8s.io/node-api v0.18.18
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.18.18
-	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.18.18
-	k8s.io/sample-controller => k8s.io/sample-controller v0.18.18
 	nodeagent => ../controller/nodeagent
 	volcano.sh/volcano => ./taskset/pkg/volcano
 )
