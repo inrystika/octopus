@@ -90,7 +90,7 @@ spec:
               containerPort: {{ template "ambassador.port" . }}
           resources:
 {{ toYaml .Values.resources | indent 10 }}
-      {{- with .Values.global.nodeSelector }}
+{{- with .Values.global.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
       {{- end }}
