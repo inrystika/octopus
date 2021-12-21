@@ -10,7 +10,7 @@ kind: Service
 metadata:
   name: {{ template "ambassador.fullname" . }}
   labels:
-  {{ include "ambassador.labels" . | indent 4 }}
+{{ include "ambassador.labels" . | indent 4 }}
 spec:
   ports:
     - name: http
@@ -66,39 +66,39 @@ spec:
   selector:
     matchLabels:
   {{ include "ambassador.select-labels" . | indent 8 }}
-replicas: 1
-template:
-  metadata:
-    labels:
-  {{ include "ambassador.labels" . | indent 8 }}
-spec:
-  serviceAccountName: {{ template "ambassador.fullname" . }}
-  volumes:
-    - name: localtime
-      hostPath:
-        path: /etc/localtime
-  containers:
-    - name: {{ .Chart.Name }}
-      image: "datawire/ambassador:1.14.2"
-      imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-      args: []
-      volumeMounts:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+    {{ include "ambassador.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "ambassador.fullname" . }}
+      volumes:
         - name: localtime
-          mountPath: /etc/localtime
-      ports:
-        - name: {{ template "ambassador.name" . }}
-          containerPort: {{ template "ambassador.port" . }}
-      resources:
-  {{ toYaml .Values.resources | indent 10 }}
-  {{- with .Values.global.nodeSelector }}
-nodeSelector:
-  {{ toYaml . | indent 8 }}
-  {{- end }}
-  {{- with .Values.affinity }}
-affinity:
-  {{ toYaml . | indent 8 }}
-  {{- end }}
-  {{- with .Values.tolerations }}
-tolerations:
+          hostPath:
+            path: /etc/localtime
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "datawire/ambassador:1.14.2"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          args: []
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+          ports:
+            - name: {{ template "ambassador.name" . }}
+              containerPort: {{ template "ambassador.port" . }}
+          resources:
+      {{ toYaml .Values.resources | indent 10 }}
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+      {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
   {{ toYaml . | indent 8 }}
   {{- end }}
