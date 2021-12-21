@@ -18,7 +18,7 @@ spec:
       port: {{ template "ambassador.port" . }}
       targetPort: {{ template "ambassador.targetPort" . }}
   selector:
-  {{ include "ambassador.select-labels" . | indent 8 }}
+{{ include "ambassador.select-labels" . | indent 8 }}
 
 
 ---
@@ -65,12 +65,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-  {{ include "ambassador.select-labels" . | indent 8 }}
+{{ include "ambassador.select-labels" . | indent 8 }}
   replicas: 1
   template:
     metadata:
       labels:
-    {{ include "ambassador.labels" . | indent 8 }}
+{{ include "ambassador.labels" . | indent 8 }}
     spec:
       serviceAccountName: {{ template "ambassador.fullname" . }}
       volumes:
@@ -89,16 +89,16 @@ spec:
             - name: {{ template "ambassador.name" . }}
               containerPort: {{ template "ambassador.port" . }}
           resources:
-      {{ toYaml .Values.resources | indent 10 }}
+{{ toYaml .Values.resources | indent 10 }}
       {{- with .Values.global.nodeSelector }}
       nodeSelector:
-      {{ toYaml . | indent 8 }}
+{{ toYaml . | indent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
-      {{ toYaml . | indent 8 }}
+{{ toYaml . | indent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-  {{ toYaml . | indent 8 }}
-  {{- end }}
+{{ toYaml . | indent 8 }}
+{{- end }}
