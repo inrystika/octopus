@@ -1006,7 +1006,9 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- end -}}
 
 {{- define "ambassador.select-labels" -}}
-service: {{ printf "ambassador-admin" . }}
+app.kubernetes.io/name: {{ include "ambassador.name" . }}
+app.kubernetes.io/instance: {{ include "ambassador.fullname" . }}
+app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
 {{- end -}}
 
 

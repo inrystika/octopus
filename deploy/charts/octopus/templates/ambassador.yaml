@@ -28,9 +28,9 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "ambassador.fullname" . }}
 subjects:
-  - kind: ServiceAccount
-    name: {{ template "ambassador.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+- kind: ServiceAccount
+  name: {{ template "ambassador.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: cluster-admin
@@ -74,21 +74,21 @@ spec:
     spec:
       serviceAccountName: {{ template "ambassador.fullname" . }}
       volumes:
-        - name: localtime
-          hostPath:
+      - name: localtime
+        hostPath:
             path: /etc/localtime
       containers:
-        - name: {{ .Chart.Name }}
-          image: "datawire/ambassador:1.14.2"
-          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-          args: []
-          volumeMounts:
+      - name: {{ .Chart.Name }}
+        image: "datawire/ambassador:1.14.2"
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        args: []
+        volumeMounts:
             - name: localtime
               mountPath: /etc/localtime
-          ports:
+        ports:
             - name: {{ template "ambassador.name" . }}
               containerPort: {{ template "ambassador.port" . }}
-          resources:
+        resources:
 {{ toYaml .Values.resources | indent 10 }}
 {{- with .Values.global.nodeSelector }}
       nodeSelector:

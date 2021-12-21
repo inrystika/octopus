@@ -76,12 +76,12 @@ data:
           addr:  0.0.0.0:8004
           timeout: 60s
           jwtSecrect: asdf
-         
+
     data:
         baseServerAddr: {{ include "baseserver.grpcServiceAddr" . }}
         baseServerRequestTimeout: 30s
         redis:
-          addr: {{ include "redis.serviceAddr" . }} 
+          addr: {{ include "redis.serviceAddr" . }}
           username: {{ .Values.platformserver.data.redis.username }}
           password: {{ .Values.platformserver.data.redis.password }}
     service:
