@@ -15,7 +15,7 @@ import (
 
 	"server/common/log"
 
-	seldonclientset "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/clientset/versioned"
+	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/clientset/versioned"
 	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/informers/externalversions"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -74,20 +74,15 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
 	c, cancel := context.WithCancel(context.Background())
 
-	seldonClientSet, err := seldonclientset.NewForConfig(config)
-	if err != nil {
-		return nil, nil
-	}
-
 	kc := &kubernetesCluster{
-		ctx:             c,
-		nodes:           make(map[string]*v1.Node),
-		kubeclient:      kubernetes.NewForConfigOrDie(config),
-		vcClient:        vcclient.NewForConfigOrDie(config),
-		naClient:        naclient.NewForConfigOrDie(config),
-		seldonClientSet: seldonClientSet,
-		log:             log.NewHelper("Cluster", logger),
-		config:          config,
+		ctx:          c,
+		nodes:        make(map[string]*v1.Node),
+		kubeclient:   kubernetes.NewForConfigOrDie(config),
+		vcClient:     vcclient.NewForConfigOrDie(config),
+		naClient:     naclient.NewForConfigOrDie(config),
+		seldonClient: seldonclient.NewForConfigOrDie(config),
+		log:          log.NewHelper("Cluster", logger),
+		config:       config,
 	}
 
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
@@ -118,12 +113,12 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 
 type kubernetesCluster struct {
 	sync.Mutex
-	ctx             context.Context
-	log             *log.Helper
-	kubeclient      *kubernetes.Clientset
-	vcClient        *vcclient.Clientset
-	naClient        *naclient.Clientset
-	seldonClientSet *seldonclientset.Clientset
+	ctx          context.Context
+	log          *log.Helper
+	kubeclient   *kubernetes.Clientset
+	vcClient     *vcclient.Clientset
+	naClient     *naclient.Clientset
+	seldonClient *seldonclient.Clientset
 
 	nodeInformer       infov1.NodeInformer
 	nodeActionInformer nainformerv1.NodeActionInformer
@@ -506,7 +501,7 @@ func (kc *kubernetesCluster) GetPod(ctx context.Context, namespace string, name 
 }
 
 func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error) {
-	p, err := kc.seldonClientSet.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
+	p, err := kc.seldonClient.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -514,7 +509,7 @@ func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespa
 }
 
 func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error {
-	err := kc.seldonClientSet.MachinelearningV1alpha2().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
+	err := kc.seldonClient.MachinelearningV1alpha2().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -523,7 +518,7 @@ func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespa
 
 func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
 
-	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClientSet, 0)
+	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClient, 0)
 	deploymentInformer := informerFactory.Machinelearning().V1alpha2().SeldonDeployments().Informer()
 	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    onAdd,
