@@ -91,12 +91,12 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 						})
 
 						if err != nil {
-							s.log.Errorf(ctx, "List TrainJob err: %s", err)
+							s.log.Errorf(ctx, "List seldon service err: %s", err)
 							break
 						}
 
 						if len(seldonServices) == 0 {
-							s.log.Info(ctx, "There is no trainJob to pay!")
+							s.log.Info(ctx, "There is no seldon service to pay!")
 							break
 						}
 
@@ -110,7 +110,7 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 							payAmount := 0.0
 							//job已经启动，则以job的启动时间作为计费起始点。
 							payStartAt := j.StartedAt.Unix()
-							s.log.Info(ctx, "model deploy bill service try to calculate job pay amount, jobId is: "+j.Id)
+							s.log.Info(ctx, "model deploy bill service try to calculate seldon service pay amount, jobId is: "+j.Id)
 							now := time.Now().Unix()
 							var payEndAt int64
 							var payStatus api.BillingPayRecordStatus
@@ -124,7 +124,7 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 							}
 							//推理资源单价
 							resourcePrice := j.ResSpecPrice
-							payAmount += s.calAmount(payStartAt, payEndAt, resourcePrice)
+							payAmount = s.calAmount(payStartAt, payEndAt, resourcePrice)
 							ownerId, ownerType := s.getOwner(j)
 
 							payAmount = floats.Round(payAmount, common.BillingPrecision)
@@ -155,7 +155,7 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 								PayAmount:    payAmount,
 							})
 							if err != nil {
-								s.log.Errorf(ctx, "Update train job selective err: %s", err)
+								s.log.Errorf(ctx, "Update seldon service  selective err: %s", err)
 								continue
 							}
 						}

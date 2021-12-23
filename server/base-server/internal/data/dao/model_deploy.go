@@ -126,7 +126,7 @@ func (d *modelDeployDao) GetModelDeployServiceList(ctx context.Context, query *m
 	db = db.Where(querySql, params...)
 
 	var totalSize int64
-	res := db.Model(&model.TrainJobTemplate{}).Count(&totalSize)
+	res := db.Model(&model.ModelDeploy{}).Count(&totalSize)
 	if res.Error != nil {
 		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBCountFailed)
 	}

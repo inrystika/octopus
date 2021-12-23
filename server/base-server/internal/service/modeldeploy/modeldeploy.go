@@ -35,7 +35,8 @@ const (
 	PytorchFrame        = "pytorch"
 	ModelVolumePath     = "model_volume_path"
 	SeldonDockerWorkDir = "/app/models"
-	PredictorSpecName   = "default"
+	PredictorSpecName   = "seldon"
+	seldonNameSpace     = "seldon"
 	SeldonInUrl         = "/seldon/"
 	ServiceUrlSuffix    = "/api/v1.0/predictions"
 	UserModelDir        = "user_model_dir"
@@ -251,9 +252,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 				{
 					Name:         modelDeployName,
 					VolumeMounts: volumeMounts,
+					Resources: v1.ResourceRequirements{
+						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+					},
 				},
 			},
-			Volumes: volumes,
+			NodeSelector: startJobInfo.specs[modelDeploy.ResourceSpecId].nodeSelectors,
+			Volumes:      volumes,
 		},
 	}
 	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
@@ -292,14 +298,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      modelDeploy.UserId,
-			Namespace: modelDeploy.UserId,
+			Namespace: seldonNameSpace,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
 			Predictors: predictors,
 		},
 	}
 
-	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), modelDeploy.UserId, modelSeldonDep)
+	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), seldonNameSpace, modelSeldonDep)
 
 	if error != nil {
 		return nil, "", errors.Errorf(err, errors.ErrorModelDeployFailed)
@@ -348,7 +354,8 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.Id, deployJob.ModelVersion)
+	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
+		deployJob.ModelVersion)
 	if queryModelVersionReply == nil || err != nil {
 		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
 	}
@@ -436,13 +443,14 @@ func (s *modelDeployService) ModelAccessAuthCheck(ctx context.Context, spaceId s
 	if queryModelVersionReply.Model == nil {
 		return nil, errors.Errorf(nil, errors.ErrorModelVersionFileNotFound)
 	}
-	//非自己模型，非分享模型，则无权限发布成服务
-	if queryModelVersionReply.Model.SpaceId != spaceId || queryModelVersionReply.Model.UserId != userId || !queryModelVersionReply.Model.IsPrefab {
+	//预置模型、分享模型以及自己的模型可以直接分布成服务
+	//其他模型则无权限发布成服务
+	if queryModelVersionReply.Model.IsPrefab || (queryModelVersionReply.Model.SpaceId == spaceId || queryModelVersionReply.Model.UserId == userId) {
+		return queryModelVersionReply, nil
+	} else {
 		err := errors.Errorf(nil, errors.ErrorModelNoPermission)
 		return nil, err
 	}
-
-	return queryModelVersionReply, nil
 }
 
 //获取模型路径
@@ -457,7 +465,7 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 		return nil, err
 	}
 	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	serviceName := modelDep.ModelName
+	serviceName := modelDep.Name
 	seldonNameSpace := modelDep.UserId
 	//停止任务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
@@ -490,14 +498,14 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		serviceName := i.ModelName
+		serviceName := i.Name
 		seldonNameSpace := i.UserId
 		//删除服务前先停止服务
 		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
 		}
-		//软删除
+		//再对数据库进行软删除
 		err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
 		if err != nil {
 			return nil, err

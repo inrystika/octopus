@@ -63,11 +63,11 @@ message DepRequest {
   string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
   string desc = 2;
   string serviceType = 3;
-  string modelType = 4;
+  string modelFrame = 4;
   string modelId = 5[(validate.rules).string = {min_len: 1}];
   string modelVersion = 6[(validate.rules).string = {min_len: 1}];
   string resourceType = 7;
-  string resourceSpecName = 9;
+  string resourceSpecId = 9;
 }
 
 message DepReply {
