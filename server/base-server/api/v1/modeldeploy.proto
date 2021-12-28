@@ -71,14 +71,10 @@ message DepInfo {
 	int64 payStartedAt = 14;
 	int64 payEndedAt = 15;    
 	string payStatus = 16;
-	repeated ResSpecPrice resourceSpecPrices = 17;
+	int32 resourceSpecPrice = 17;
 	string modelFrame = 18;
 }
 
-message ResSpecPrice {
-  int64 task = 1;
-	int64 price = 2;
-}
 
 message DepReply {
   string serviceId = 1;

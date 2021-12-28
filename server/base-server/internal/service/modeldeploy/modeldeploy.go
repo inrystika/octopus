@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io/ioutil"
@@ -36,7 +35,6 @@ const (
 	ModelVolumePath     = "model_volume_path"
 	SeldonDockerWorkDir = "/app/models"
 	PredictorSpecName   = "seldon"
-	seldonNameSpace     = "seldon"
 	SeldonInUrl         = "/seldon/"
 	ServiceUrlSuffix    = "/api/v1.0/predictions"
 	UserModelDir        = "user_model_dir"
@@ -203,8 +201,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
 		{
-			Name:      "modelFilePath",
-			MountPath: s.conf.Service.DockerModelDeployPath,
+			Name:      "modelfilepath",
+			MountPath: s.conf.Service.DockerModelPath,
 			SubPath:   startJobInfo.modelPath,
 			ReadOnly:  false,
 		},
@@ -216,7 +214,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	volumes := []v1.Volume{
 		{
-			Name: "modelFilePath",
+			Name: "modelfilepath",
 			VolumeSource: v1.VolumeSource{
 				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 					ClaimName: common.GetStoragePersistentVolumeChaim(modelDeploy.UserId),
@@ -256,10 +254,13 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 					},
+					Image: "alpine",
 				},
 			},
 			NodeSelector: startJobInfo.specs[modelDeploy.ResourceSpecId].nodeSelectors,
 			Volumes:      volumes,
+			// 使用火山调度器
+			SchedulerName: "volcano",
 		},
 	}
 	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
@@ -291,27 +292,30 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	predictors = append(predictors, predictor)
 
 	//seldon deployment yaml
-	modelSeldonDep := &v1alpha2.SeldonDeployment{
+	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
+	modelSeldonDep := &seldonv1.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "machinelearning.seldon.io/v1alpha2",
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      modelDeploy.UserId,
-			Namespace: seldonNameSpace,
+			Name:      metaDataName,
+			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
 			Predictors: predictors,
 		},
 	}
 
-	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), seldonNameSpace, modelSeldonDep)
+	_, error := s.data.Cluster.CreateSeldonDeployment(context.TODO(), modelDeploy.UserId, modelSeldonDep)
 
 	if error != nil {
 		return nil, "", errors.Errorf(err, errors.ErrorModelDeployFailed)
 	}
 
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + modelDeploy.UserId + "/" + modelDeployName + ServiceUrlSuffix
+	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
+	//根据seldon-core官方格式，进行服务url路径拼接
+	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }

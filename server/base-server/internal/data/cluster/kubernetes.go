@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	//seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"os"
 	"path/filepath"
 	"server/base-server/internal/common"
@@ -15,8 +16,8 @@ import (
 
 	"server/common/log"
 
-	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/clientset/versioned"
-	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1alpha2/informers/externalversions"
+	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
+	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/informers/externalversions"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -500,8 +501,8 @@ func (kc *kubernetesCluster) GetPod(ctx context.Context, namespace string, name 
 	return pod, nil
 }
 
-func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error) {
-	p, err := kc.seldonClient.MachinelearningV1alpha2().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
+func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *seldonv1.SeldonDeployment) (*seldonv1.SeldonDeployment, error) {
+	p, err := kc.seldonClient.MachinelearningV1().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -509,7 +510,7 @@ func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespa
 }
 
 func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error {
-	err := kc.seldonClient.MachinelearningV1alpha2().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
+	err := kc.seldonClient.MachinelearningV1().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
@@ -519,7 +520,7 @@ func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespa
 func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
 
 	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClient, 0)
-	deploymentInformer := informerFactory.Machinelearning().V1alpha2().SeldonDeployments().Informer()
+	deploymentInformer := informerFactory.Machinelearning().V1().SeldonDeployments().Informer()
 	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    onAdd,
 		DeleteFunc: onDelete,
