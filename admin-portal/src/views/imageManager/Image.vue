@@ -42,7 +42,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -78,7 +78,6 @@
     import { getUserImage, getPreImage, deletePreImage, editePreImage } from '@/api/imageManager.js'
     // import { groupDetail } from '@/api/userManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
@@ -239,10 +238,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getImage(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 镜像状态
             imageStatus(value) {

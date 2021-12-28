@@ -18,7 +18,7 @@
                 </el-table-column>
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
+                        <span style="margin-left: 10px">{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="300px">
@@ -63,7 +63,6 @@
 <script>
     import previewDialog from './previewDialog.vue'
     import { getPublicList, getNoPublicList, downloadModel, deleteModelVersion, shareModel, cancelShareModel } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "VersionList",
@@ -229,9 +228,6 @@
                         }
                     })
                 }
-            }, // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 版本列表状态
             fileStatus(val) {

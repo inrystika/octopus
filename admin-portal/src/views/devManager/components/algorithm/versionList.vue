@@ -20,7 +20,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="算法状态">
@@ -65,7 +65,6 @@
 
 <script>
   import { getAlgorithmVersionList, queryAlgorithmVersion, compressAlgorithm, downloadAlgorithmVersion, deletePreAlgorithmVersion } from "@/api/modelDev";
-  import { parseTime } from '@/utils/index'
   import reuploadAlgorithm from "./reuploadAlgorithm.vue"
   import { getErrorMsg } from '@/error/index'
   import store from '@/store'
@@ -276,10 +275,6 @@
       },
       confirm(val) {
         this.myAlgorithmVisible = val
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       }
     }
 

@@ -13,7 +13,7 @@
                 <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
+                        <span style="margin-left: 10px">{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
@@ -39,7 +39,6 @@
 <script>
     import versionList from './components/versionList.vue'
     import { getMyModel, getPreModel, getPublicModel, deleteMyModel } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
@@ -177,10 +176,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getModel(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 删除确认
             open(val) {

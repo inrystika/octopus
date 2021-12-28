@@ -31,7 +31,7 @@
           </el-table-column>
           <el-table-column label="创建时间">
             <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.createTime) }}</span>
+              <span>{{ scope.row.createTime | parseTime }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -53,7 +53,6 @@
   </div>
 </template>
 <script>
-import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 import { getCloudTrainJobList } from "@/api/cloudInterconnection"
 export default {
@@ -101,9 +100,6 @@ export default {
     handleCurrentChange(val) {
       this.searchData.pageIndex = val
       this.getCloudTrainJobList(this.searchData)
-    },
-    parseTime(val) {
-      return parseTime(val)
     },
     getErrorMsg(code) {
       return getErrorMsg(code)

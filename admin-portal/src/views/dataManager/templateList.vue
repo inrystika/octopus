@@ -31,7 +31,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="数据集描述" :show-overflow-tooltip="true">
@@ -68,7 +68,6 @@
   import dataSetEdite from "./components/dataSetEdite.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getPresetDatasetList } from "@/api/dataManager"
-  import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   export default {
     name: "TemplateList",
@@ -205,10 +204,6 @@
         this.data = row;
         this.versionListVisible = true;
         this.versionListType = this.typeChange
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       },
       handleEdite(val) {
         this.editeDataSet = true

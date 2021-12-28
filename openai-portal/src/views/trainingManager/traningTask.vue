@@ -47,7 +47,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="运行时长" align="center">
@@ -97,7 +97,7 @@
     import detailDialog from "./components/detailDialog/index.vue";
     import { getList, stop, Delete, getTraningDetail } from '@/api/trainingManager'
     import searchForm from '@/components/search/index.vue'
-    import { parseTime, formatDuring } from '@/utils/index'
+    import { formatDuring } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningTask",
@@ -297,10 +297,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             formatDuring(val) {
                 return formatDuring(val)

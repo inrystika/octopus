@@ -41,7 +41,7 @@
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -96,7 +96,6 @@
   import searchForm from '@/components/search/index.vue'
   import saveDialog from "./saveDialog.vue"
   import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
-  import { parseTime } from '@/utils/index'
   import { getResourceList } from "@/api/trainingManager"
   import { getErrorMsg } from '@/error/index'
   export default {
@@ -291,10 +290,6 @@
             });
           }
         })
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       },
       create() {
         this.notebookVisible = true;

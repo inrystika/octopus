@@ -35,12 +35,12 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="修改时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.updatedAt) }}</span>
+                    <span>{{ scope.row.updatedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
@@ -91,7 +91,6 @@
 <script>
     import { getUserList, groupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
     import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
-    import { parseTime } from '@/utils/index'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
     import userConfig from "./components/userConfig.vue";
@@ -317,10 +316,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 获取用户配置信息
             getUserConfigKey(row) {
