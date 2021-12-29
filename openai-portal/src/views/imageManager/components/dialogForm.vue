@@ -47,7 +47,7 @@
     </div>
 </template>
 <script>
-    import { createImage, editeImage } from '@/api/imageManager.js'
+    import { createImage, editImage } from '@/api/imageManager.js'
     import upload from '@/components/upload/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
@@ -201,8 +201,8 @@
                     }
                 })
             },
-            editeImage(data) {
-                editeImage(data).then(response => {
+            editImage(data) {
+                editImage(data).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '编辑镜像成功',
@@ -224,7 +224,7 @@
                             this.createImage(this.ruleForm)
                         } else {
                             const data = { ...this.ruleForm, id: this.id }
-                            this.editeImage(data)
+                            this.editImage(data)
                         }
                     } else {
                         console.log('error submit!!');

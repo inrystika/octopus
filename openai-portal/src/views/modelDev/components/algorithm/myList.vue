@@ -43,7 +43,7 @@
           <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
           <el-button type="text" @click="copyAlgorithm(scope.row)">复制算法</el-button>
           <el-button type="text" style="padding-right:10px" @click="createNewVersion(scope.row)">创建新版本</el-button>
-          <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+          <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>     
         </template>
       </el-table-column>
@@ -59,7 +59,7 @@
     <algorithmCopy v-if="algorithmCopyVisible" :row="row" :algorithm-tab-type="typeChange" @close="close"
       @cancel="cancel" @confirm="confirm" />
     <versionList v-if="versionListVisible" :algorithm-tab-type="typeChange" :data="row" @close="close" />
-    <algotithmEdite v-if="editeAlgorithm" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
+    <algotithmEdit v-if="editAlgorithm" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -71,7 +71,7 @@
   import searchForm from '@/components/search/index.vue'
   import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
   import { getErrorMsg } from '@/error/index'
-  import algotithmEdite from "./algotithmEdite.vue";
+  import algotithmEdit from "./algotithmEdit.vue";
   export default {
     name: "MyList",
     components: {
@@ -80,7 +80,7 @@
       versionList,
       myAlgorithmCreation,
       searchForm,
-      algotithmEdite
+      algotithmEdit
     },
     props: {
       algorithmTabType: {
@@ -99,7 +99,7 @@
         algorithmCopyVisible: false,
         versionListVisible: false,
         creationVisible: false,
-        editeAlgorithm: false,
+        editAlgorithm: false,
         newVersionName: "",
         total: undefined,
         typeChange: undefined,
@@ -170,7 +170,7 @@
         this.creationVisible = true;
       },
       close(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.newVersionVisible = val;
         this.algorithmCopyVisible = val;
         this.versionListVisible = val;
@@ -178,7 +178,7 @@
         this.getAlgorithmList(this.searchData)
       },
       cancel(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.newVersionVisible = val;
         this.algorithmCopyVisible = val;
         this.creationVisible = val;
@@ -189,7 +189,7 @@
         this.row = row
       },
       confirm(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.algorithmCopyVisible = val
         this.newVersionVisible = val
         this.creationVisible = val
@@ -223,8 +223,8 @@
           }
         })
       },
-      handleEdite(val) {
-        this.editeAlgorithm = true
+      handleEdit(val) {
+        this.editAlgorithm = true
         this.row = val
       }
     }

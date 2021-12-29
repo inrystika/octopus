@@ -66,7 +66,7 @@
             </span>
         </el-dialog>
         <!-- 操作对话框 -->
-        <el-dialog :title="flag?'增加资源池':'编辑'" :visible.sync="editeDialog" width="40%" :close-on-click-modal="false">
+        <el-dialog :title="flag?'增加资源池':'编辑'" :visible.sync="editDialog" width="40%" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model="ruleForm.name" autocomplete="off" :disabled="disabled" />
@@ -96,7 +96,7 @@
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="editeDialog = false">取 消</el-button>
+                <el-button @click="editDialog = false">取 消</el-button>
                 <el-button type="primary" @click="confirm" v-preventReClick>确 定</el-button>
             </div>
         </el-dialog>
@@ -121,7 +121,7 @@
                 nodeDetail: false,
                 tableData: [],
                 detailDialog: false,
-                editeDialog: false,
+                editDialog: false,
                 formLabelWidth: '220px',
                 flag: false,
                 mapResourceSpecIdList: { debug: [], train: [], deploy: [] },
@@ -209,12 +209,12 @@
             add() {
                 this.ruleForm = { name: "", desc: "", bindingNodes: [], mapResourceSpecIdList: { debug: [], train: [], deploy: [] } }
                 this.flag = true
-                this.editeDialog = true
+                this.editDialog = true
                 this.disabled = false
             },
             handleEdit(val) {
                 this.flag = false
-                this.editeDialog = true
+                this.editDialog = true
                 this.disabled = true
                 this.id = val.id
                 this.ruleForm.name = val.name
@@ -266,7 +266,7 @@
                                         type: 'success'
                                     });
                                     this.getResourcePool()
-                                    this.editeDialog = false
+                                    this.editDialog = false
                                 } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
@@ -284,7 +284,7 @@
                                         type: 'success'
                                     });
                                     this.getResourcePool()
-                                    this.editeDialog = false
+                                    this.editDialog = false
                                 } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),

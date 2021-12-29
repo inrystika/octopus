@@ -66,7 +66,7 @@ export function deleteImage(params) {
   })
 }
 // 编辑我的镜像
-export function editeImage(data) {
+export function editImage(data) {
   return request({
     url: `/v1/imagemanage/image/${data.id}`,
     method: 'put',

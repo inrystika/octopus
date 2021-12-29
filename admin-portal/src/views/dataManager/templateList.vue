@@ -43,7 +43,7 @@
           <template slot-scope="scope">
             <el-button type="text" @click="getVersionList(scope.$index, scope.row)">版本列表</el-button>
             <el-button style="padding-right:10px" type="text" @click="createNewVersion(scope.row)">创建新版本</el-button>
-            <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+            <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -57,7 +57,7 @@
     <preDatasetCreation v-if="preDatasetVisible" @cancel="cancel" @close="close" @confirm="confirm" />
     <versionList v-if="versionListVisible" :data="data" :version-list-type="versionListType" @close="close" />
     <newVersion v-if="newVersionVisible" :row="data" @cancel="cancel" @confirm="confirm" @close="close" />
-    <dataSetEdite v-if="editeDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <dataSetEdit v-if="editDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -65,7 +65,7 @@
   import versionList from "./components/versionList.vue"
   import newVersion from "./components/newVersion.vue"
   import preDatasetCreation from "./components/preDatasetCreation.vue";
-  import dataSetEdite from "./components/dataSetEdite.vue";
+  import dataSetEdit from "./components/dataSetEdit.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getPresetDatasetList } from "@/api/dataManager"
   import { getErrorMsg } from '@/error/index'
@@ -76,7 +76,7 @@
       newVersion,
       preDatasetCreation,
       searchForm,
-      dataSetEdite
+      dataSetEdit
     },
     props: {
       payload: { type: Array, default: () => [] },
@@ -87,7 +87,7 @@
         input: "",
         data: undefined,
         versionListVisible: false,
-        editeDataSet: false,
+        editDataSet: false,
         versionListType: 1,
         total: undefined,
         newVersionVisible: false,
@@ -183,19 +183,19 @@
         })
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.preDatasetVisible = val
         this.newVersionVisible = val
         this.versionListVisible = val    
       },
       cancel(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.newVersionVisible = val;
         this.preDatasetVisible = val;
         this.getDataList(this.searchData)
       },
       confirm(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.preDatasetVisible = val
         this.newVersionVisible = val
         this.getDataList(this.searchData)
@@ -205,8 +205,8 @@
         this.versionListVisible = true;
         this.versionListType = this.typeChange
       },
-      handleEdite(val) {
-        this.editeDataSet = true
+      handleEdit(val) {
+        this.editDataSet = true
         this.data = val
       }
     }

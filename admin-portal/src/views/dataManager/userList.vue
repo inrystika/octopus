@@ -137,7 +137,7 @@
         this.getDataList(this.searchData)
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.versionListVisible = val;
       },
       getVersionList(index, row) {

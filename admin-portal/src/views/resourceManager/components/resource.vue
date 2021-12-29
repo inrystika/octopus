@@ -28,7 +28,7 @@
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+                        <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
                         <el-button v-if="customize" type="text" @click="handleDelete(scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
@@ -125,7 +125,7 @@
             getErrorMsg(code) {
                 return getErrorMsg(code)
             },
-            handleEdite(val) {
+            handleEdit(val) {
                 let temp = []
                 if (val.bindingNodes != null) {
                     temp = val.bindingNodes.split(',')

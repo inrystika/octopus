@@ -28,10 +28,10 @@
 </template>
 
 <script>
-  import { editeAlgorithm, algorithmType, frameType } from "@/api/modelDev";
+  import { editAlgorithm, algorithmType, frameType } from "@/api/modelDev";
   import { getErrorMsg } from '@/error/index'
   export default {
-    name: "dataSetEdite",
+    name: "algotithmEdit",
     props: {
       row: {
         type: Object,
@@ -96,7 +96,7 @@
         })
       },
       submit() {
-        editeAlgorithm(this.form).then(response => {
+        editAlgorithm(this.form).then(response => {
           if (response.success) {
             this.$message({
               message: '编辑成功',
