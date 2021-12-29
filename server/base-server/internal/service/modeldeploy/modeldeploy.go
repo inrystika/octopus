@@ -200,12 +200,12 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	modelDeployName := modelDeploy.Name
 
-	//mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
+	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
 		{
 			Name:      "modelfilepath",
-			MountPath: SeldonDockerWorkDir,
+			MountPath: mountPath,
 			SubPath:   startJobInfo.modelPath,
 			ReadOnly:  false,
 		},
