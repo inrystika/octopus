@@ -15,7 +15,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column v-if="algorithmTabType === 1 ? false :true" label="提供者">
@@ -73,7 +73,6 @@
 
 <script>
   import { getPubAlgorithmVersionList, getAlgorithmVersionList, queryAlgorithmVersion, compressAlgorithm, downloadAlgorithm, shareAlgorithmVersion, cancelShareAlgorithmVersion, deleteAlgorithmVersion } from "@/api/modelDev"
-  import { parseTime } from '@/utils/index'
   import reuploadAlgorithm from './reuploadAlgorithm.vue'
   import { getErrorMsg } from '@/error/index'
   import store from '@/store'
@@ -355,10 +354,6 @@
             });
           }
         })
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       },
       // 创建训练任务
       createTask(row) {

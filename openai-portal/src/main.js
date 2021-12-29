@@ -22,6 +22,11 @@ import directives from './directives'
 import install from './preventReClick'
 import './styles/element-variables.scss'
 import { initThemeColor } from './utils/themeColorClient'
+import { parseTime } from "@/utils/index"
+
+//设置为全局过滤器，避免冗余代码
+Vue.filter('parseTime', parseTime)
+
 Vue.prototype.GLOBAL = globalVariable
 
 initThemeColor()

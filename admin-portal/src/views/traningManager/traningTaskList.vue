@@ -40,7 +40,7 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="运行时长" align="center">
@@ -80,7 +80,7 @@
 <script>
     import detailDialog from "./components/index.vue";
     import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
-    import { parseTime, formatDuring } from '@/utils/index'
+    import { formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
     export default {
@@ -212,9 +212,6 @@
                 this.getTraining(this.searchData)
             },
             // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
             formatDuring(val) {
                 return formatDuring(val)
             }

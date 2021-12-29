@@ -40,7 +40,7 @@
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="群组">
@@ -84,7 +84,6 @@
 import { getUserAlgorithmList } from "@/api/modelDev"
 import versionList from "./versionList.vue"
 import searchForm from '@/components/search/index.vue'
-import { parseTime } from '@/utils/index'
 import { getErrorMsg } from '@/error/index'
 export default {
   name: "UserList",
@@ -158,10 +157,6 @@ export default {
     close(val) {
       this.versionListVisible = val
       this.getAlgorithmList(this.searchData);
-    },
-    // 时间戳转换日期
-    parseTime(val) {
-      return parseTime(val)
     }
   }
 }

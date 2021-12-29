@@ -28,7 +28,7 @@
                 </el-table-column>
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span>{{ parseTime(scope.row.createdAt) }}</span>
+                        <span>{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="250">
@@ -72,7 +72,6 @@
     import createDialog from "./components/createDialog/index.vue";
     import editeDialog from "./components/editeDialog/index.vue";
     import searchForm from '@/components/search/index.vue'
-    import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     export default {
         name: "PreImage",
@@ -274,10 +273,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getTemplate(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 删除确认
             open(val) {

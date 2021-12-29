@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column v-if="imageTabType==3" label="提供者" align="center">
@@ -83,7 +83,6 @@
     import searchForm from '@/components/search/index.vue'
     import dialogForm from "./components/dialogForm.vue";
     import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage, cancelImage } from '@/api/imageManager.js'
-    import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
@@ -317,10 +316,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getImage(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 修改描述
             open(val) {

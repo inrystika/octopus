@@ -35,7 +35,7 @@
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="350">
@@ -70,7 +70,6 @@
   import myAlgorithmCreation from "./myAlgorithmCreation.vue"
   import searchForm from '@/components/search/index.vue'
   import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
-  import { parseTime } from '@/utils/index'
   import { getErrorMsg } from '@/error/index'
   import algotithmEdite from "./algotithmEdite.vue";
   export default {
@@ -223,10 +222,6 @@
             });
           }
         })
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       },
       handleEdite(val) {
         this.editeAlgorithm = true

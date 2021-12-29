@@ -15,6 +15,11 @@ import '../theme/index.css'
 import '@/styles/dot.scss'
 import globalVariable from '@/api/globalVariable.js'
 import install from './preventReClick'
+import { parseTime } from "@/utils/index"
+
+//设置为全局过滤器，避免冗余代码
+Vue.filter('parseTime', parseTime)
+
 Vue.prototype.GLOBAL = globalVariable
 /**
  * If you don't want to use mock-server

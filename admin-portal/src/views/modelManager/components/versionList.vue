@@ -15,7 +15,7 @@
                 </el-table-column>
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
-                        {{ parseTime(scope.row.createdAt) }}</span>
+                        {{ scope.row.createdAt | parseTime }}
                     </template>
                 </el-table-column>
 
@@ -64,7 +64,6 @@
 
     import previewDialog from './previewDialog.vue'
     import { getModelList, downloadModel, deletePreModelVersion } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
     import { getErrorMsg } from '@/error/index'
     import reupload from './reupload.vue'
     import store from '@/store'
@@ -229,9 +228,6 @@
                         message: '已取消删除'
                     });
                 });
-            }, // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 版本列表状态
             fileStatus(val) {
