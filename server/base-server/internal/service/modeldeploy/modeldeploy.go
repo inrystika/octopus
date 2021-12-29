@@ -37,7 +37,9 @@ const (
 	PredictorSpecName   = "seldon"
 	SeldonInUrl         = "/seldon/"
 	ServiceUrlSuffix    = "/api/v1.0/predictions"
-	UserModelDir        = "user_model_dir"
+	ModelUserId         = "model_user_Id"
+	ModelId             = "model_Id"
+	ModelVersion        = "model_version"
 	STATE_PREPARING     = "Preparing"
 	STATE_AVAILABLE     = "Available"
 	STATE_CREATING      = "Creating"
@@ -198,11 +200,12 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	modelDeployName := modelDeploy.Name
 
+	//mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
 		{
 			Name:      "modelfilepath",
-			MountPath: s.conf.Service.DockerModelPath,
+			MountPath: SeldonDockerWorkDir,
 			SubPath:   startJobInfo.modelPath,
 			ReadOnly:  false,
 		},
@@ -237,9 +240,19 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Value: SeldonDockerWorkDir,
 		},
 		{
-			Name:  UserModelDir,
+			Name:  ModelUserId,
 			Type:  "STRING",
-			Value: startJobInfo.modelPath,
+			Value: modelDeploy.UserId,
+		},
+		{
+			Name:  ModelId,
+			Type:  "STRING",
+			Value: modelDeploy.ModelId,
+		},
+		{
+			Name:  ModelVersion,
+			Type:  "STRING",
+			Value: modelDeploy.ModelVersion,
 		},
 	}
 
@@ -254,11 +267,10 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 					},
-					Image: "alpine",
+					Image: "192.168.202.110:5000/train/pytorchserver:1.0.0",
 				},
 			},
-			NodeSelector: startJobInfo.specs[modelDeploy.ResourceSpecId].nodeSelectors,
-			Volumes:      volumes,
+			Volumes: volumes,
 			// 使用火山调度器
 			SchedulerName: "volcano",
 		},
@@ -363,6 +375,13 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	if queryModelVersionReply == nil || err != nil {
 		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
 	}
+	//获取模型路径
+	var modelFilePath string
+	if queryModelVersionReply.Model.IsPrefab {
+		modelFilePath = s.getPreFebModelSubPath(deployJob)
+	} else {
+		modelFilePath = s.getUserModelSubPath(deployJob)
+	}
 
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
@@ -428,7 +447,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 
 	startModelDeployInfo := &startJobInfo{
 		queue:     queue,
-		modelPath: s.getModelSubPath(deployJob),
+		modelPath: modelFilePath,
 		specs:     startJobSpecs,
 	}
 
@@ -457,8 +476,15 @@ func (s *modelDeployService) ModelAccessAuthCheck(ctx context.Context, spaceId s
 	}
 }
 
-//获取模型路径
-func (s *modelDeployService) getModelSubPath(model *model.ModelDeploy) string {
+//获取预置模型路径
+//拼接后的路径形如：octopus/models/global/modelId/version
+func (s *modelDeployService) getPreFebModelSubPath(model *model.ModelDeploy) string {
+	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioPreModelObject(model.ModelId, model.ModelVersion))
+}
+
+//获取用户模型路径
+//拼接后的路径形如：octopus/models/spaceId/userId/modelId/version
+func (s *modelDeployService) getUserModelSubPath(model *model.ModelDeploy) string {
 	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioModelObject(model.WorkspaceId, model.UserId, model.ModelId, model.ModelVersion))
 }
 
