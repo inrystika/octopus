@@ -89,11 +89,15 @@ export default {
           if (response.data !== null && response.data.resourcePools !== null) {
             this.resourcePools = response.data.resourcePools
             // 判断平台资源是否存在于获取的资源池列表中；若存在，则设为默认展示；若不存在，默认展示为空。
-            this.ruleForm.resourcePool = this.resourcePools.indexOf(this.platformDetail.resourcePool) ? this.platformDetail.resourcePool : ''
+            let resourcePool = this.resourcePools.find(item => item.name == this.platformDetail.resourcePool)
+            if(resourcePool) {
+              this.ruleForm.resourcePool = resourcePool.name
+            }
           }
           else {
             this.resourcePools = []
           }
+          this.ruleForm = {...this.ruleForm}
         } else {
           this.$message({
             message: this.getErrorMsg(response.error.subcode),
