@@ -98,7 +98,7 @@ export function getResourceList() {
   })
 }
 // 编辑任务模板
-export function editeTemplate(params) {
+export function editTemplate(params) {
   return request({
     url: `/v1/trainmanage/trainjobtemplate/${params.id}`,
     method: 'put',

@@ -82,7 +82,7 @@
 <script>
     import searchForm from '@/components/search/index.vue'
     import dialogForm from "./components/dialogForm.vue";
-    import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editeImage, cancelImage } from '@/api/imageManager.js'
+    import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editImage, cancelImage } from '@/api/imageManager.js'
     import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
@@ -325,7 +325,7 @@
                     cancelButtonText: '取消',
                     closeOnClickModal: false
                 }).then(({ value }) => {
-                    editeImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
+                    editImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
                         if (response.success) {
                             this.$message({
                                 message: '编辑描述成功',

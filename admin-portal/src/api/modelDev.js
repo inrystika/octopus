@@ -217,7 +217,7 @@ export async function updateFrameType(data) {
   return res
 }
 // 修改我的算法
-export async function editeAlgorithm(params) {
+export async function editAlgorithm(params) {
   const res = await request({
     url: `/v1/algorithmmanage/prealgorithm/${params.algorithmId}`,
     method: "put",

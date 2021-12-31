@@ -26,7 +26,7 @@ export function createPreImage(data) {
   })
 }
 // 编辑预置镜像
-export function editePreImage(data) {
+export function editPreImage(data) {
   return request({
     url: `/v1/imagemanage/preimage/${data.id}`,
     method: 'put',

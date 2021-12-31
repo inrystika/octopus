@@ -75,7 +75,7 @@
 </template>
 <script>
     import dialogForm from "./components/dialogForm.vue";
-    import { getUserImage, getPreImage, deletePreImage, editePreImage } from '@/api/imageManager.js'
+    import { getUserImage, getPreImage, deletePreImage, editPreImage } from '@/api/imageManager.js'
     // import { groupDetail } from '@/api/userManager.js'
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
@@ -269,7 +269,7 @@
                     confirmButtonText: '确定',
                     cancelButtonText: '取消'
                 }).then(({ value }) => {
-                    editePreImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
+                    editPreImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
                         if (response.success) {
                             this.$message({
                                 message: '编辑描述成功',

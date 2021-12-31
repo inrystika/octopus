@@ -50,7 +50,7 @@
                     <el-button v-if="scope.row.status===1 && user" type="text" @click="handleThaw( scope.row)">激活
                     </el-button>
                     <el-button v-if="user" type="text" @click="handleReset(scope.row)">重置密码</el-button>
-                    <el-button v-if="group" type="text" @click="handleEdite(scope.row)">编辑</el-button>
+                    <el-button v-if="group" type="text" @click="handleEdit(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'用户详情':'群组详情' }}</el-button>
                     <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
@@ -199,7 +199,7 @@
                     }
                 })
             },
-            handleEdite(row) {
+            handleEdit(row) {
                 this.row = row
                 this.operateVisible = true
             },
