@@ -29,7 +29,6 @@
 </template>
 <script>
   import { getNotebookEventRecord } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: 'notebookEventRecord',
     props: {
@@ -92,9 +91,6 @@
       handleCurrentChange(val) {
         this.pageIndex = val
         this.getNotebookEventRecord()
-      },
-      getErrorMsg(code) {
-        return getErrorMsg(code)
       }
     }
   }

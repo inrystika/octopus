@@ -39,7 +39,6 @@
 <script>
     import { createPreImage, editPreImage } from '@/api/imageManager.js'
     import upload from '@/components/upload/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DialogCreateForm",
         components: {
@@ -131,10 +130,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             submitUpload() {
                 if (this.ruleForm.sourceType === 1) {
                     delete this.rules.imageAddr

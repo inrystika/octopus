@@ -53,7 +53,6 @@
   </div>
 </template>
 <script>
-import { getErrorMsg } from '@/error/index'
 import { getCloudTrainJobList } from "@/api/cloudInterconnection"
 export default {
   name: "cloudInterconnection",
@@ -100,10 +99,7 @@ export default {
     handleCurrentChange(val) {
       this.searchData.pageIndex = val
       this.getCloudTrainJobList(this.searchData)
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
+    }
   }
 }
 </script>

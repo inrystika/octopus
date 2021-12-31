@@ -49,7 +49,6 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { addMyAlgorithm, algorithmType,algorithmFrame } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "MyAlgorithmCreation",
     components: {
@@ -117,9 +116,6 @@
       this.algorithmFrame()
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleDialogClose() {
         this.$emit("close", false);
       },

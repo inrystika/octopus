@@ -96,7 +96,6 @@ import editDialog from "./components/editDialog.vue"
 import platformConfig from "./components/platformConfig.vue"
 import storageConfigList from "./components/storageConfigList.vue"
 import { getPlatformList } from "@/api/platformManager"
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformList",
   components: {
@@ -126,9 +125,6 @@ export default {
     this.getPlatformList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getPlatformList(param){
       getPlatformList(param).then(response => {
           if(response.success){

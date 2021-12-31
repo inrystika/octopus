@@ -115,7 +115,6 @@
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from "@/api/datasetManager";
     import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
     import { getResourceList } from "@/api/trainingManager";
-    import { getErrorMsg } from "@/error/index";
     export default {
         name: "NotebookCreation",
         directives: {
@@ -251,9 +250,6 @@
             // this.getAlgorithmNameList();
         },
         methods: {
-            getErrorMsg(code) {
-                return getErrorMsg(code);
-            },
             handleDialogClose() {
                 this.$emit("close", false);
             },

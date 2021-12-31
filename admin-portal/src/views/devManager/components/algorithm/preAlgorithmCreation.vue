@@ -40,7 +40,6 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { addPreAlgorithm, algorithmType, frameType } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreAlgorithmCreation",
     components: {
@@ -112,9 +111,6 @@
       this.algorithmFrame()
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleDialogClose() {
         this.$emit('close', false)
       },

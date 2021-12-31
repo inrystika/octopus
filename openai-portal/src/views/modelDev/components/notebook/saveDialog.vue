@@ -37,7 +37,6 @@
 </template>
 <script>
   import { saveNoteBook } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     props: {
       row: {
@@ -101,9 +100,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       cancel() {
         this.$emit("cancel", false);
       },

@@ -71,7 +71,6 @@
 <script>
 import storageConfigCreation from "./storageConfigCreation.vue"
 import storageConfigDetails from "./storageConfigDetails.vue"
-import { getErrorMsg } from '@/error/index'
 import { getStorageConfigList, deleteStorageConfig } from "@/api/platformManager"
 export default {
   name: "storageConfigList",
@@ -123,9 +122,6 @@ export default {
     handleCurrentChange(val) {
       this.searchData.pageIndex = val
       this.getStorageConfigList()
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
     },
     handleDialogClose() {
       this.$emit('close', false)

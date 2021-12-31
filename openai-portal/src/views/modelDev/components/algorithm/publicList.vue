@@ -89,7 +89,6 @@ import algorithmCopy from "./algorithmCopy.vue";
 import versionList from "./versionList.vue";
 import searchForm from '@/components/search/index.vue'
 import { getPublicAlgorithmList } from "@/api/modelDev"
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "PublicList",
   components: {
@@ -122,9 +121,6 @@ export default {
     this.getAlgorithmList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getSearchData(val) {
       this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
       this.searchData = Object.assign(val, this.searchData)

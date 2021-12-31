@@ -29,7 +29,6 @@
 
 <script>
   import { editAlgorithm, algorithmType, frameType } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "algotithmEdit",
     props: {
@@ -56,9 +55,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       cancel() {
         this.$emit("cancel", false);
       },

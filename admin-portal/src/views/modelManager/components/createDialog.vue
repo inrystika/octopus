@@ -54,7 +54,6 @@
     import { getPresetAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev.js'
     import { addPreModel, addPreList } from '@/api/modelManager.js'
     import upload from '@/components/upload/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "CreateDialog",
         components: {
@@ -133,10 +132,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             changeAlgorithmName() {
                 this.algorithmVersion = true
                 this.algorithmCount = 1

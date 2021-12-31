@@ -95,7 +95,6 @@
     import addDialog from "./components/addDialog.vue";
     import userConfig from "./components/userConfig.vue";
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "UserList",
         components: {
@@ -163,10 +162,6 @@
         //     this.timer = null;
         // },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleFreeze(row) {
                 freeze(row.id).then(response => {
                     if (response.success) {

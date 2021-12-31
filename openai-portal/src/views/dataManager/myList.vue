@@ -74,7 +74,6 @@
   import dataSetEdit from "./components/dataSetEdit.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getMyDatasetList } from "@/api/datasetManager";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "MyList",
     components: {
@@ -125,9 +124,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)

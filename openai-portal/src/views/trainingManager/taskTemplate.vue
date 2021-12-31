@@ -72,7 +72,6 @@
     import createDialog from "./components/createDialog/index.vue";
     import editDialog from "./components/editDialog/index.vue";
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "PreImage",
         components: {
@@ -118,10 +117,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getTemplate(data) {
                 if (data.time && data.time.length !== 0) {
                     data.createAtGte = data.time[0] / 1000

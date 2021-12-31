@@ -64,7 +64,6 @@
 </template>
 <script>
     import { getResourceList, deleteResource, updateResource, getNodeList, createCustomizeResource } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "Resource",
         props: {
@@ -121,10 +120,6 @@
             this.getNodeList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleEdit(val) {
                 let temp = []
                 if (val.bindingNodes != null) {

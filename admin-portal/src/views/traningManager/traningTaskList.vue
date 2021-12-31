@@ -82,7 +82,6 @@
     import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
     import { formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningTask",
         components: {
@@ -121,10 +120,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handledetail(row) {
                 trainingDetail(row.id).then(response => {
                     if (response.success) {

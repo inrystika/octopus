@@ -84,7 +84,6 @@
 import { getUserAlgorithmList } from "@/api/modelDev"
 import versionList from "./versionList.vue"
 import searchForm from '@/components/search/index.vue'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "UserList",
   components: {
@@ -115,9 +114,6 @@ export default {
     this.getAlgorithmList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleSizeChange(val) {
       this.searchData.pageSize = val
       this.getAlgorithmList(this.searchData)

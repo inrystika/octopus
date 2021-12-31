@@ -68,7 +68,6 @@
   import preAlgorithmVersionCreation from "./preAlgorithmVersionCreation.vue"
   import preAlgorithmCreation from './preAlgorithmCreation.vue'
   import searchForm from '@/components/search/index.vue'
-  import { getErrorMsg } from '@/error/index'
   import algotithmEdit from "./algotithmEdit.vue";
   export default {
     name: "TemplateList",
@@ -107,9 +106,6 @@
       this.getAlgorithmList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getAlgorithmList(this.searchData)

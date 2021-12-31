@@ -65,7 +65,6 @@
   import versionList from "./components/versionList.vue";
   import searchForm from '@/components/search/index.vue'
   import { getPublicDatasetList } from "@/api/datasetManager";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PublicList",
     components: {
@@ -103,9 +102,6 @@
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)

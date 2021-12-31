@@ -51,7 +51,6 @@
     import createDialog from './components/createDialog.vue'
     import { getMyModel, getPreModel, deletePreModel } from '@/api/modelManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "MyModel",
         components: {
@@ -90,10 +89,6 @@
             // this.timer = setInterval(this.getModel, 1000);
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getModel(this.searchData)

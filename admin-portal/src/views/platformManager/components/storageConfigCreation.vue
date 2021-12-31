@@ -40,7 +40,6 @@
   </div>
 </template>
 <script>
-import { getErrorMsg } from '@/error/index'
 import { createStorageConfig } from "@/api/platformManager"
 export default {
   name: "storageConfig",
@@ -72,9 +71,6 @@ export default {
     }
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit('close', false)
     },
