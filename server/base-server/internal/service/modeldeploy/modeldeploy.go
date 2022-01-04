@@ -27,24 +27,25 @@ import (
 )
 
 const (
-	deployJobKind       = "deploy_job"
-	deployJobNum        = 1
-	MetaNamePrefix      = "deploy-"
-	TensorFlowFrame     = "tensorflow"
-	PytorchFrame        = "pytorch"
-	ModelVolumePath     = "model_volume_path"
-	SeldonDockerWorkDir = "/app/models"
-	PredictorSpecName   = "seldon"
-	SeldonInUrl         = "/seldon/"
-	ServiceUrlSuffix    = "/api/v1.0/predictions"
-	ModelUserId         = "model_user_Id"
-	ModelId             = "model_Id"
-	ModelVersion        = "model_version"
-	STATE_PREPARING     = "Preparing"
-	STATE_AVAILABLE     = "Available"
-	STATE_CREATING      = "Creating"
-	STATE_FAILED        = "Failed"
-	STATE_STOPPED       = "Stopped"
+	deployJobKind        = "deploy_job"
+	deployJobNum         = 1
+	MetaNamePrefix       = "deploy-"
+	TensorFlowFrame      = "tensorflow"
+	PytorchFrame         = "pytorch"
+	ModelVolumePath      = "model_volume_path"
+	SeldonDockerWorkDir  = "/app/models"
+	PredictorSpecName    = "seldon"
+	SeldonInUrl          = "/seldon/"
+	ServiceUrlSuffix     = "/api/v1.0/predictions"
+	ModelUserId          = "model_user_Id"
+	ModelId              = "model_Id"
+	ModelVersion         = "model_version"
+	PytorchServerVersion = "192.168.202.110:5000/train/pytorchserver:1.0.1"
+	STATE_PREPARING      = "Preparing"
+	STATE_AVAILABLE      = "Available"
+	STATE_CREATING       = "Creating"
+	STATE_FAILED         = "Failed"
+	STATE_STOPPED        = "Stopped"
 )
 
 type modelDeployService struct {
@@ -199,7 +200,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}()
 
 	modelDeployName := modelDeploy.Name
-
+	//容器中的模型挂载路径
 	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
@@ -267,7 +268,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 					},
-					Image: "192.168.202.110:5000/train/pytorchserver:1.0.0",
+					Image: PytorchServerVersion,
 				},
 			},
 			Volumes: volumes,
