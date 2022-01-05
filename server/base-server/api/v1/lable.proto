@@ -71,6 +71,7 @@ message ListLableRequest {
   int32 lableType = 3;
   int64 pageIndex = 4;
   int64 pageSize = 5[(validate.rules).int64 = {gte:1,lt:100}];
+  repeated string ids = 6;
 }
 
 message ListLableReply {
