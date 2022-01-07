@@ -305,11 +305,13 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 			IsPrefab:     imageAdd.IsPrefab,
 		}
 		imageAdd.ImageAddr = s.generateImageRepositoryPath(&im)
+		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
 	} else if req.SourceType == pb.ImageSourceType_IMAGE_SOURCE_TYPE_REMOTE {
 		// 远程镜像类型，无需上传，保存镜像地址
 		if imageAdd.ImageAddr == "" {
 			return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 		}
+		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_MADE)
 	} else if req.SourceType == pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED {
 		im := model.Image{
 			SpaceId:      imageAdd.SpaceId,
@@ -319,11 +321,11 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 			IsPrefab:     imageAdd.IsPrefab,
 		}
 		imageAdd.ImageAddr = s.generateImageRepositoryPath(&im)
+		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
 	} else {
 		return nil, errors.Errorf(nil, errors.ErrorImageSourceType)
 	}
 
-	imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
 	image, err := s.data.ImageDao.Add(ctx, imageAdd)
 	if err != nil {
 		return nil, err
