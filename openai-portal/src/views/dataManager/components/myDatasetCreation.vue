@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="标注类型" :label-width="formLabelWidth">
-          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择标注类型">
+          <el-select v-model="ruleForm.applyIds" :disabled="disabled" placeholder="请选择标注类型" multiple>
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -63,7 +63,7 @@
           desc: '',
           typeId: '',
           path: '',
-          applyId: ''
+          applyIds: []
         },
         rules: {
           name: [
@@ -104,7 +104,7 @@
               name: this.ruleForm.name,
               typeId: this.ruleForm.typeId,
               desc: this.ruleForm.desc,
-              applyId:this.ruleForm.applyId
+              applyIds: this.ruleForm.applyIds
             }
             createMyDataset(param).then(response => {
               if (response.success) {

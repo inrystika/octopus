@@ -1,35 +1,36 @@
 <template>
     <div>
         <searchForm :search-form="searchForm" :blur-name="'任务名称 搜索'" @searchData="getSearchData" />
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
-            <el-table-column label="任务名称">
+        <el-table :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+            <el-table-column label="用户名">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="算法名称">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.algorithmName }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="数据集名称">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.dataSetName }}</span>
-                </template>
-            </el-table-column>
             <el-table-column label="群组">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.workspaceName==""?'默认群组':scope.row.workspaceName }}</span>
+                    <span>{{ scope.row.workspaceId }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="用户名">
+            <el-table-column label="模型名称">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.userName }}</span>
+                    <span>{{ scope.row.modelName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="版本">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.modelVersion }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="模型描述">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.desc }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="URL">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.serviceUrl }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
@@ -40,36 +41,23 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="运行时长" align="center">
-                <template slot-scope="scope">
-                    <span>{{ formatDuring(scope.row.runSec) }}</span>
+                    <span>{{ parseTime(scope.row.startedAt) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button
                         v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
-                        type="text"
-                        @click="open(scope.row)"
-                    >停止
+                        type="text" @click="open(scope.row)">停止
                     </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 30,50]"
-                :page-size="searchData.pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 30,50]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 详情对话框 -->
         <detailDialog v-if="detailDialog" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
@@ -78,7 +66,7 @@
 
 <script>
     import detailDialog from "./components/index.vue";
-    import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
+    import { getDeployList } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     import { getErrorMsg } from '@/error/index'
@@ -91,20 +79,11 @@
         data() {
             return {
                 total: undefined,
-                tableData: [],
-                state: undefined,
+                tableData: [{}],
                 detailDialog: false,
-                // 训练详情
                 data: {},
-                statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] },
+                statusText: { 'preparing': ['status-ready', '初始中'], 'available': ['status-agent', '可部署'], 'creating': ['status-running', '创建中'], 'failed': ['status-danger', '失败'], 'stopped': ['status-stopping', '已停止'] },
                 searchForm: [
-                    { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' },
-                    {
-                        type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
-                        options: [{ label: '成功', value: 'succeeded' }, { label: '失败', value: 'failed' }, { label: '运行中', value: 'running' }, { label: '等待中', value: 'pending' }, { label: '已停止', value: 'stopped' }, { label: '初始中', value: 'preparing' }]
-                    },
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
-
                 ],
                 searchData: {
                     pageIndex: 1,
@@ -114,7 +93,7 @@
             }
         },
         created() {
-            this.getTraining(this.searchData)
+            // this.getDeployList(this.searchData)
         },
         beforeDestroy() {
 
@@ -124,11 +103,16 @@
             getErrorMsg(code) {
                 return getErrorMsg(code)
             },
-            handledetail(row) {
-                trainingDetail(row.id).then(response => {
+            getDeployList(data) {
+                if (data.time && data.time.length !== 0) {
+                    data.createAtGte = data.time[0] / 1000
+                    data.createAtLt = data.time[1] / 1000
+                    delete data.time
+                }
+                getDeployList(data).then(response => {
                     if (response.success) {
-                        this.data = response.data.trainJob
-                        this.detailDialog = true
+                        this.tableData = response.data.trainJobs
+                        this.total = response.data.totalSize
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
@@ -137,8 +121,22 @@
                     }
                 })
             },
+            handledetail(row) {
+                this.detailDialog = true
+                // deployDetail(row.id).then(response => {
+                //     if (response.success) {
+                //         this.data = response.data.trainJob
+                //         this.detailDialog = true
+                //     } else {
+                //         this.$message({
+                //             message: this.getErrorMsg(response.error.subcode),
+                //             type: 'warning'
+                //         });
+                //     }
+                // })
+            },
             open(val) {
-                this.$confirm('此操作将停止运行该训练任务, 是否继续?', '提示', {
+                this.$confirm('此操作将停止改模型部署, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
@@ -152,7 +150,7 @@
                 });
             },
             handleStop(row) {
-                stopTraining(row.id).then(response => {
+                stopDeploy(row.id).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '停止成功',
@@ -164,58 +162,37 @@
                             type: 'warning'
                         });
                     }
-                    this.getTraining(this.searchData)
+                    this.getDeployList(this.searchData)
                 })
             },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
-                this.getTraining(this.searchData)
+                this.getDeployList(this.searchData)
             },
             handleCurrentChange(val) {
                 this.searchData.pageIndex = val
-                this.getTraining(this.searchData)
+                this.getDeployList(this.searchData)
             },
             cancel(val) {
                 this.detailDialog = val
-                this.getTraining(this.searchData)
+                this.getDeployList(this.searchData)
             },
             confirm(val) {
                 this.detailDialog = val
-                this.getTraining(this.searchData)
+                this.getDeployList(this.searchData)
             },
             close(val) {
                 this.detailDialog = val
-                this.getTraining(this.searchData)
-            },
-            getTraining(data) {
-                if (data.time && data.time.length !== 0) {
-                    data.createAtGte = data.time[0] / 1000
-                    data.createAtLt = data.time[1] / 1000
-                    delete data.time
-                }
-                getTraining(data).then(response => {
-                    if (response.success) {
-                        this.tableData = response.data.trainJobs
-                        this.total = response.data.totalSize
-                    } else {
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
-                        });
-                    }
-                })
+                this.getDeployList(this.searchData)
             },
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
-                this.getTraining(this.searchData)
+                this.getDeployList(this.searchData)
             },
             // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
-            },
-            formatDuring(val) {
-                return formatDuring(val)
             }
         }
     }

@@ -20,7 +20,6 @@
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
                         <el-button v-if="type===1" type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button v-if="type===3" type="text" @click="deploy(scope.row)">部署</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -197,11 +196,6 @@
                     });
                 });
             },
-            // 预制模型部署
-            deploy(val) {
-                this.$router.push({ name: 'modelDeploy', params: { data: val } })
-            }
-
         }
     }
 </script>
