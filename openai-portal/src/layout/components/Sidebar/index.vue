@@ -32,7 +32,6 @@ import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
 import { getUserConfig } from '@/api/Home'
-import { getErrorMsg } from '@/error/index'
 
 export default {
   components: { SidebarItem, Logo },
@@ -45,9 +44,6 @@ export default {
     this.getUserConfig()
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getUserConfig() {
       getUserConfig().then(response => {
         if (response.success) {

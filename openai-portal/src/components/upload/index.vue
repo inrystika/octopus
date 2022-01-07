@@ -20,7 +20,6 @@
   import { uploadMyDataset, myDatasetFinishUpload, uploadNewVersion, newVersionFinishUpload } from "@/api/datasetManager.js"
   import { uploadMyAlgorithm, myAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { minIO } from '@/utils/minIO'
-  import { getErrorMsg } from '@/error/index'
   import { mapGetters } from 'vuex'
   import store from '@/store'
   export default {
@@ -80,9 +79,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       beforeUpload() {
         sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);
       },

@@ -43,7 +43,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -67,8 +67,6 @@
   import versionList from "./components/versionList.vue"
   import searchForm from '@/components/search/index.vue'
   import { getUserDatasetList } from "@/api/dataManager"
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "UserList",
     components: {
@@ -102,9 +100,6 @@
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
@@ -138,18 +133,14 @@
         this.getDataList(this.searchData)
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.versionListVisible = val;
       },
       getVersionList(index, row) {
         this.row = row;
         this.versionListVisible = true;
         this.versionListType = this.typeChange
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
-      }   
+      }  
     }
   }
 </script>

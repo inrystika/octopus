@@ -50,7 +50,7 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 
 	datasetId := utils.GetUUIDWithoutSeparator()
 	dataset := &model.Dataset{}
-	err := copier.Copy(dataset, req)
+	err := copier.CopyWithOption(dataset, req, copier.Option{DeepCopy: true})
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
@@ -98,8 +98,8 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: datasetType.Lable.Id})
 	}
 	// 检查数据用途id
-	if req.ApplyId != "" {
-		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: req.ApplyId})
+	for _, id := range req.ApplyIds {
+		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: id})
 		if err != nil {
 			return nil, err
 		}
@@ -153,11 +153,17 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 			dataset.TypeDesc = datasetType.Lable.LableDesc
 		}
 
-		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.ApplyId})
-		if err != nil {
-			dataset.ApplyDesc = ""
-		} else {
-			dataset.ApplyDesc = datasetApply.Lable.LableDesc
+		if len(n.ApplyIds) > 0 {
+			datasetApply, err := s.lableService.ListLable(ctx, &api.ListLableRequest{PageIndex: 1, PageSize: int64(len(n.ApplyIds)), Ids: n.ApplyIds})
+			if err != nil {
+				return nil, err
+			}
+			for _, a := range datasetApply.Lables {
+				dataset.Applies = append(dataset.Applies, &api.Dataset_Apply{
+					Id:   a.Id,
+					Desc: a.LableDesc,
+				})
+			}
 		}
 
 		datasets = append(datasets, dataset)
@@ -220,11 +226,17 @@ func (s *datasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 			dataset.TypeDesc = datasetType.Lable.LableDesc
 		}
 
-		datasetApply, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.ApplyId})
-		if err != nil {
-			dataset.ApplyDesc = ""
-		} else {
-			dataset.ApplyDesc = datasetApply.Lable.LableDesc
+		if len(n.ApplyIds) > 0 {
+			datasetApply, err := s.lableService.ListLable(ctx, &api.ListLableRequest{PageIndex: 1, PageSize: int64(len(n.ApplyIds)), Ids: n.ApplyIds})
+			if err != nil {
+				return nil, err
+			}
+			for _, a := range datasetApply.Lables {
+				dataset.Applies = append(dataset.Applies, &api.Dataset_Apply{
+					Id:   a.Id,
+					Desc: a.LableDesc,
+				})
+			}
 		}
 
 		datasets = append(datasets, dataset)
@@ -586,8 +598,10 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
-	// 减小数据用途引用
-	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
+	for _, id := range dataset.ApplyIds {
+		// 减小数据用途引用
+		_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: id})
+	}
 
 	return &api.DeleteDatasetReply{DeletedAt: time.Now().Unix()}, nil
 }
@@ -603,11 +617,13 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
-	// 减小数据用途引用
-	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.ApplyId})
+	for _, id := range dataset.ApplyIds {
+		// 减小数据用途引用
+		_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: id})
+	}
 
 	dataset.TypeId = req.TypeId
-	dataset.ApplyId = req.ApplyId
+	dataset.ApplyIds = req.ApplyIds
 	dataset.Desc = req.Desc
 	err = s.data.DatasetDao.UpdateDatasetSelective(ctx, dataset)
 	if err != nil {
@@ -617,7 +633,10 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 	// 增加数据类型引用
 	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.TypeId})
 	// 增加数据用途引用
-	_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: dataset.ApplyId})
+	for _, id := range dataset.ApplyIds {
+		// 新增数据用途引用
+		_, _ = s.lableService.IncreaseLableReferTimes(ctx, &api.IncreaseLableReferTimesRequest{Id: id})
+	}
 
 	return &api.UpdateDatasetReply{UpdatedAt: time.Now().Unix()}, nil
 }

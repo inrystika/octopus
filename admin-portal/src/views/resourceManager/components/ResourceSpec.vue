@@ -82,7 +82,6 @@
 
 <script>
     import { getResource, deleteSpecification, createResource, getResourceList } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "Resource",
         components: {},
@@ -118,10 +117,6 @@
             this.getResourceList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleDelete(val) {
                 deleteSpecification(val.id).then(response => {
                     if (response.success) {

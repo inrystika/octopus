@@ -126,13 +126,12 @@
 
 <script>
     import traningList from './traningList.vue'
-    import { createTask, getResourceList, editeTemplate } from '@/api/trainingManager'
+    import { createTask, getResourceList, editTemplate } from '@/api/trainingManager'
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
     import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from '@/api/datasetManager'
-    import { getErrorMsg } from '@/error/index'
     export default {
-        name: "DialogEditeForm",
+        name: "DialogEditForm",
         components: {
             traningList
 
@@ -320,10 +319,6 @@
             this.getResourceList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             // 获取资源规格
             getResourceList() {
                 getResourceList().then(response => {
@@ -472,7 +467,7 @@
                                 })
                             }
                             if (val === 'save') {
-                                editeTemplate({ data: data, id: this.id }).then(response => {
+                                editTemplate({ data: data, id: this.id }).then(response => {
                                     if (response.success) {
                                         this.$message({
                                             message: '保存成功',

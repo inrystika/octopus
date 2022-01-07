@@ -40,7 +40,7 @@
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="提供者">
@@ -89,8 +89,6 @@ import algorithmCopy from "./algorithmCopy.vue";
 import versionList from "./versionList.vue";
 import searchForm from '@/components/search/index.vue'
 import { getPublicAlgorithmList } from "@/api/modelDev"
-import { parseTime } from '@/utils/index'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "PublicList",
   components: {
@@ -123,9 +121,6 @@ export default {
     this.getAlgorithmList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getSearchData(val) {
       this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
       this.searchData = Object.assign(val, this.searchData)
@@ -179,10 +174,6 @@ export default {
     confirm(val) {
       this.algorithmCopyVisible = val
       this.getAlgorithmList(this.searchData)
-    },
-    // 时间戳转换日期
-    parseTime(val) {
-      return parseTime(val)
     }
   }
 }

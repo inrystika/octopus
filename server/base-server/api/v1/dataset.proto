@@ -67,7 +67,7 @@ message CreateDatasetRequest {
   DatasetSourceType sourceType = 3[(validate.rules).enum = {in: [1,2]}];
   string name = 4[(validate.rules).string = {min_len: 1}];
   string typeId = 5;
-  string applyId = 6;
+  repeated string applyIds = 6;
   string desc = 7[(validate.rules).string = {max_len: 300}];
 }
 
@@ -92,6 +92,10 @@ message ListDatasetRequest {
 }
 
 message Dataset {
+  message Apply {
+    string id = 1;
+    string desc = 2;
+  }
   int64 createdAt = 1;
   int64 updatedAt = 2;
   string id = 3;
@@ -101,8 +105,7 @@ message Dataset {
   string name = 7;
   string typeId = 8;
   string typeDesc = 9;
-  string applyId = 10;
-  string applyDesc = 11;
+  repeated Apply applies = 10;
   string desc = 12;
   string latestVersion = 13;
 }
@@ -197,7 +200,7 @@ message UpdateDatasetRequest {
   string id = 3[(validate.rules).string = {min_len: 1}];
   DatasetSourceType sourceType = 4;
   string typeId = 5;
-  string applyId = 6;
+  repeated string applyIds = 6;
   string desc = 7[(validate.rules).string = {max_len: 300}];
 }
 

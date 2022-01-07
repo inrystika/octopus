@@ -40,9 +40,8 @@
 </template>
 
 <script>
-    import { editeUser, editeGroup, groupDetail, getUserList } from '@/api/userManager.js'
+    import { editUser, editGroup, groupDetail, getUserList } from '@/api/userManager.js'
     import { getResourcePool, getGroupResourcePool } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "OperateDialog",
         props: {
@@ -191,10 +190,6 @@
             this.ruleForm = {}
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             cancel() {
                 this.$emit('cancel', false)
             },
@@ -204,7 +199,7 @@
                         if (this.userType === 'user') {
                             if (this.ruleForm.confirm === this.ruleForm.password) {
                                 const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id }
-                                editeUser(data).then(response => {
+                                editUser(data).then(response => {
                                     if (response.success) {
                                         this.$message({
                                             message: '修改成功',
@@ -225,7 +220,7 @@
                             }
                         } else {
                             const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, id: this.id, userIds: this.ruleForm.userIds }
-                            editeGroup(data).then(response => {
+                            editGroup(data).then(response => {
                                 if (response.success) {
                                     this.$message({
                                         message: '修改成功',

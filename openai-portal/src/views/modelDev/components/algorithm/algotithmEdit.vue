@@ -28,10 +28,9 @@
 </template>
 
 <script>
-  import { editeAlgorithm, algorithmType, frameType } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
+  import { editAlgorithm, algorithmType, algorithmFrame } from "@/api/modelDev";
   export default {
-    name: "dataSetEdite",
+    name: "algotithmEdit",
     props: {
       row: {
         type: Object,
@@ -44,7 +43,7 @@
       this.form.frameworkId = this.row.frameworkId
       this.form.desc = this.row.desc
       this.algorithmType()
-      this.frameType()
+      this.algorithmFrame()
     },
     data() {
       return {
@@ -56,9 +55,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       cancel() {
         this.$emit("cancel", false);
       },
@@ -83,8 +79,8 @@
         })
       },
       // 获取算法框架
-      frameType() {
-        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
+      algorithmFrame() {
+        algorithmFrame({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
           } else {
@@ -96,7 +92,7 @@
         })
       },
       submit() {
-        editeAlgorithm(this.form).then(response => {
+        editAlgorithm(this.form).then(response => {
           if (response.success) {
             this.$message({
               message: '编辑成功',

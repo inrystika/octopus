@@ -151,7 +151,7 @@ message ListDatasetApplyReply {
 message CreateDatasetRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
   string typeId = 2;
-  string applyId = 3;
+  repeated string applyIds = 3;
   string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
@@ -161,6 +161,10 @@ message CreateDatasetReply {
 }
 
 message Dataset {
+  message Apply {
+    string id = 1;
+    string desc = 2;
+  }
   int64 createdAt = 1;
   int64 updatedAt = 2;
   string id = 3;
@@ -168,8 +172,7 @@ message Dataset {
   string name = 7;
   string typeId = 8;
   string typeDesc = 9;
-  string applyId = 10;
-  string applyDesc = 11;
+  repeated Apply applies = 10;
   string desc = 12;
   string latestVersion = 13;
   string userName = 14;
@@ -333,7 +336,7 @@ message ListDatasetVersionFileReply {
 message UpdateMyDatasetRequest {
   string datasetId = 1[(validate.rules).string = {min_len: 1}];
   string typeId = 2;
-  string applyId = 3;
+  repeated string applyIds = 3;
   string desc = 4[(validate.rules).string = {max_len: 300}];
 }
 
