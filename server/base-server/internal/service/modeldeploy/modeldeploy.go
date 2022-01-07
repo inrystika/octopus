@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io/ioutil"
@@ -28,22 +27,25 @@ import (
 )
 
 const (
-	deployJobKind       = "deploy_job"
-	deployJobNum        = 1
-	MetaNamePrefix      = "deploy-"
-	TensorFlowFrame     = "tensorflow"
-	PytorchFrame        = "pytorch"
-	ModelVolumePath     = "model_volume_path"
-	SeldonDockerWorkDir = "/app/models"
-	PredictorSpecName   = "default"
-	SeldonInUrl         = "/seldon/"
-	ServiceUrlSuffix    = "/api/v1.0/predictions"
-	UserModelDir        = "user_model_dir"
-	STATE_PREPARING     = "Preparing"
-	STATE_AVAILABLE     = "Available"
-	STATE_CREATING      = "Creating"
-	STATE_FAILED        = "Failed"
-	STATE_STOPPED       = "Stopped"
+	deployJobKind        = "deploy_job"
+	deployJobNum         = 1
+	MetaNamePrefix       = "deploy-"
+	TensorFlowFrame      = "tensorflow"
+	PytorchFrame         = "pytorch"
+	ModelVolumePath      = "model_volume_path"
+	SeldonDockerWorkDir  = "/app/models"
+	PredictorSpecName    = "seldon"
+	SeldonInUrl          = "/seldon/"
+	ServiceUrlSuffix     = "/api/v1.0/predictions"
+	ModelUserId          = "model_user_Id"
+	ModelId              = "model_Id"
+	ModelVersion         = "model_version"
+	PytorchServerVersion = "192.168.202.110:5000/train/pytorchserver:1.0.1"
+	STATE_PREPARING      = "Preparing"
+	STATE_AVAILABLE      = "Available"
+	STATE_CREATING       = "Creating"
+	STATE_FAILED         = "Failed"
+	STATE_STOPPED        = "Stopped"
 )
 
 type modelDeployService struct {
@@ -198,12 +200,13 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}()
 
 	modelDeployName := modelDeploy.Name
-
+	//容器中的模型挂载路径
+	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
 	//挂载卷
 	volumeMounts := []v1.VolumeMount{
 		{
-			Name:      "modelFilePath",
-			MountPath: s.conf.Service.DockerModelDeployPath,
+			Name:      "modelfilepath",
+			MountPath: mountPath,
 			SubPath:   startJobInfo.modelPath,
 			ReadOnly:  false,
 		},
@@ -215,7 +218,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	volumes := []v1.Volume{
 		{
-			Name: "modelFilePath",
+			Name: "modelfilepath",
 			VolumeSource: v1.VolumeSource{
 				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 					ClaimName: common.GetStoragePersistentVolumeChaim(modelDeploy.UserId),
@@ -238,9 +241,19 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Value: SeldonDockerWorkDir,
 		},
 		{
-			Name:  UserModelDir,
+			Name:  ModelUserId,
 			Type:  "STRING",
-			Value: startJobInfo.modelPath,
+			Value: modelDeploy.UserId,
+		},
+		{
+			Name:  ModelId,
+			Type:  "STRING",
+			Value: modelDeploy.ModelId,
+		},
+		{
+			Name:  ModelVersion,
+			Type:  "STRING",
+			Value: modelDeploy.ModelVersion,
 		},
 	}
 
@@ -251,9 +264,16 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 				{
 					Name:         modelDeployName,
 					VolumeMounts: volumeMounts,
+					Resources: v1.ResourceRequirements{
+						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+					},
+					Image: PytorchServerVersion,
 				},
 			},
 			Volumes: volumes,
+			// 使用火山调度器
+			SchedulerName: "volcano",
 		},
 	}
 	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
@@ -285,13 +305,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	predictors = append(predictors, predictor)
 
 	//seldon deployment yaml
-	modelSeldonDep := &v1alpha2.SeldonDeployment{
+	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
+	modelSeldonDep := &seldonv1.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "machinelearning.seldon.io/v1alpha2",
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      modelDeploy.UserId,
+			Name:      metaDataName,
 			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
@@ -305,7 +326,9 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		return nil, "", errors.Errorf(err, errors.ErrorModelDeployFailed)
 	}
 
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + modelDeploy.UserId + "/" + modelDeployName + ServiceUrlSuffix
+	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
+	//根据seldon-core官方格式，进行服务url路径拼接
+	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }
@@ -348,9 +371,17 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.Id, deployJob.ModelVersion)
+	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
+		deployJob.ModelVersion)
 	if queryModelVersionReply == nil || err != nil {
 		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+	}
+	//获取模型路径
+	var modelFilePath string
+	if queryModelVersionReply.Model.IsPrefab {
+		modelFilePath = s.getPreFebModelSubPath(deployJob)
+	} else {
+		modelFilePath = s.getUserModelSubPath(deployJob)
 	}
 
 	//资源规格信息
@@ -417,7 +448,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 
 	startModelDeployInfo := &startJobInfo{
 		queue:     queue,
-		modelPath: s.getModelSubPath(deployJob),
+		modelPath: modelFilePath,
 		specs:     startJobSpecs,
 	}
 
@@ -436,17 +467,25 @@ func (s *modelDeployService) ModelAccessAuthCheck(ctx context.Context, spaceId s
 	if queryModelVersionReply.Model == nil {
 		return nil, errors.Errorf(nil, errors.ErrorModelVersionFileNotFound)
 	}
-	//非自己模型，非分享模型，则无权限发布成服务
-	if queryModelVersionReply.Model.SpaceId != spaceId || queryModelVersionReply.Model.UserId != userId || !queryModelVersionReply.Model.IsPrefab {
+	//预置模型、分享模型以及自己的模型可以直接分布成服务
+	//其他模型则无权限发布成服务
+	if queryModelVersionReply.Model.IsPrefab || (queryModelVersionReply.Model.SpaceId == spaceId || queryModelVersionReply.Model.UserId == userId) {
+		return queryModelVersionReply, nil
+	} else {
 		err := errors.Errorf(nil, errors.ErrorModelNoPermission)
 		return nil, err
 	}
-
-	return queryModelVersionReply, nil
 }
 
-//获取模型路径
-func (s *modelDeployService) getModelSubPath(model *model.ModelDeploy) string {
+//获取预置模型路径
+//拼接后的路径形如：octopus/models/global/modelId/version
+func (s *modelDeployService) getPreFebModelSubPath(model *model.ModelDeploy) string {
+	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioPreModelObject(model.ModelId, model.ModelVersion))
+}
+
+//获取用户模型路径
+//拼接后的路径形如：octopus/models/spaceId/userId/modelId/version
+func (s *modelDeployService) getUserModelSubPath(model *model.ModelDeploy) string {
 	return fmt.Sprintf("%s/%s", common.GetMinioBucket(), common.GetMinioModelObject(model.WorkspaceId, model.UserId, model.ModelId, model.ModelVersion))
 }
 
@@ -457,7 +496,7 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 		return nil, err
 	}
 	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	serviceName := modelDep.ModelName
+	serviceName := modelDep.Name
 	seldonNameSpace := modelDep.UserId
 	//停止任务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
@@ -490,14 +529,14 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		serviceName := i.ModelName
+		serviceName := i.Name
 		seldonNameSpace := i.UserId
 		//删除服务前先停止服务
 		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
 		}
-		//软删除
+		//再对数据库进行软删除
 		err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
 		if err != nil {
 			return nil, err

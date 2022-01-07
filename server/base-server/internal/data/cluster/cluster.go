@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"context"
-	"github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"server/base-server/internal/common"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -15,8 +15,8 @@ import (
 )
 
 type ClusterClient interface {
-	GetNodeInformer()       infov1.NodeInformer
-	GetPodInformer()        infov1.PodInformer
+	GetNodeInformer() infov1.NodeInformer
+	GetPodInformer() infov1.PodInformer
 	GetNodeActionInformer() nainformerv1.NodeActionInformer
 }
 
@@ -51,7 +51,7 @@ type Cluster interface {
 	GetNodeAction(ctx context.Context, namespace, name string) (*nav1.NodeAction, error)
 	DeleteNodeAction(ctx context.Context, namespace string, name string) error
 	GetPod(ctx context.Context, namespace string, name string) (*v1.Pod, error)
-	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *v1alpha2.SeldonDeployment) (*v1alpha2.SeldonDeployment, error)
+	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *seldonv1.SeldonDeployment) (*seldonv1.SeldonDeployment, error)
 	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
 	RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error
 }

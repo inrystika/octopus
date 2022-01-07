@@ -28,11 +28,11 @@ message DepRequest {
   string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
   string desc = 2;
   string serviceType = 3;
-  string modelType = 4;
+  string modelFrame = 4;
   string modelId = 5[(validate.rules).string = {min_len: 1}];
   string modelVersion = 6[(validate.rules).string = {min_len: 1}];
   string resourceType = 7;
-  string resourceSpecName = 8;
+  string resourceSpecId = 8;
   string userId = 9;
   string workspaceId = 10;
 }
@@ -46,7 +46,7 @@ message ServiceRequest{
 }
 
 message ReqData{
-  repeated  string ndarray = 1;
+  repeated string ndarray = 1;
 }
 
 
@@ -71,14 +71,10 @@ message DepInfo {
 	int64 payStartedAt = 14;
 	int64 payEndedAt = 15;    
 	string payStatus = 16;
-	repeated ResSpecPrice resourceSpecPrices = 17;
+	int32 resourceSpecPrice = 17;
 	string modelFrame = 18;
 }
 
-message ResSpecPrice {
-  int64 task = 1;
-	int64 price = 2;
-}
 
 message DepReply {
   string serviceId = 1;

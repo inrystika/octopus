@@ -20,8 +20,7 @@ type ModelDeploy struct {
 	Desc           string                     `gorm:"type:varchar(1024);not null;default:'';comment:'描述'"`
 	ModelId        string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型Id'"`
 	ModelVersion   string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型版本'"`
-	ModelName      string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型名称''"`
-	ModelFrame     string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型名称''"`
+	ModelFrame     string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型框架名称''"`
 	ServiceUrl     string                     `gorm:"type:varchar(256);not null;default:'';comment:'服务url路径''"`
 	Operation      string                     `gorm:"type:varchar(100);not null;default:''"`
 	Status         string                     `gorm:"type:varchar(100);not null;comment:'preparing/pending/running/stopped/succeeded/failed'"`
@@ -32,7 +31,7 @@ type ModelDeploy struct {
 	PayEndedAt     *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus      api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:扣费状态 1扣费中 2扣费完成"`
 	ResourceSpecId string                     `gorm:"type:varchar(100);not null;default:'';comment:'资源Id'"`
-	ResSpecPrice   uint32                     `gorm:"type:json;comment:资源规格单价"`
+	ResSpecPrice   uint32                     `gorm:"type:int unsigned;comment:资源规格单价"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }

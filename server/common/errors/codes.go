@@ -203,7 +203,7 @@ const (
 	ErrorJointCloudNoPermission  = 21002 // 无权限访问
 
 	/* 25001~25000 训练管理错误*/
-	ErrorModelDeployForbidden    = 25001 // 部署使用计算框架不在权限范围内
+	ErrorModelDeployForbidden    = 25001 // 部署使用计算框架非TF或者PT
 	ErrorModelDeployFailed       = 25002 // 创建模型部署服务失败
 	ErrorModelDeployDeleteFailed = 25003 // 删除模型部署服务失败
 	ErrorModelInferRequest       = 25004 // 模型部署服务请求失败
@@ -407,7 +407,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorJointCloudNoPermission:  {codeType: PermissionDenied, msg: "no permission"},
 
 	/* 25001~26000 数据集管理错误*/
-	ErrorModelDeployForbidden:    {codeType: PermissionDenied, msg: "no permission"},
+	ErrorModelDeployForbidden:    {codeType: PermissionDenied, msg: "modelframe  uncorrect"},
 	ErrorModelDeployFailed:       {codeType: Internal, msg: "deploy seldon service failed"},
 	ErrorModelDeployDeleteFailed: {codeType: Internal, msg: "delete seldon service failed"},
 	ErrorModelInferRequest:       {codeType: Internal, msg: "seldon service http request failed"},
