@@ -224,7 +224,7 @@ message MyAlgorithmDetail {
 
 message ListPreAlgorithmRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
@@ -240,7 +240,7 @@ message ListPreAlgorithmReply {
 
 message ListMyAlgorithmRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
@@ -256,7 +256,7 @@ message ListMyAlgorithmReply {
 
 message ListCommAlgorithmRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string algorithmVersion = 5[(validate.rules).string = {max_len: 50}];
@@ -273,7 +273,7 @@ message ListCommAlgorithmReply {
 message ListAlgorithmVersionRequest {
   string algorithmId = 1[(validate.rules).string = {min_len:32,pattern:"^[A-Za-z0-9]+$"}];
   int64 pageIndex = 2[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lte:100}];
   int64 fileStatus = 4;
 }
 message ListAlgorithmVersionReply {
@@ -284,7 +284,7 @@ message ListAlgorithmVersionReply {
 message ListCommAlgorithmVersionRequest {
   string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
   int64 pageIndex = 2[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 3[(validate.rules).int64 = {gte:1,lte:100}];
   int64 fileStatus = 4;
 }
 message ListCommAlgorithmVersionReply {
