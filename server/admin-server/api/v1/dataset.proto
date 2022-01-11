@@ -250,7 +250,7 @@ message Dataset {
 
 message ListPreDatasetRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
   int64 createdAtGte = 5;
@@ -265,7 +265,7 @@ message ListPreDatasetReply {
 
 message ListUserDatasetRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
   int64 createdAtGte = 5;
@@ -310,7 +310,7 @@ message DatasetVersion {
 
 message ListDatasetVersionRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string datasetId = 3[(validate.rules).string = {min_len: 1}];
   string status = 5;
 }
