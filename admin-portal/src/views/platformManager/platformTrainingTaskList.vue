@@ -29,7 +29,7 @@
       </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
     </el-table>
@@ -51,8 +51,6 @@
 <script>
 import searchForm from '@/components/search/index.vue'
 import { getPlatformTrainingTaskList } from "@/api/platformManager"
-import { parseTime } from '@/utils/index'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformTrainingTaskList",
   components: {
@@ -80,9 +78,6 @@ export default {
     this.getPlatformTrainingTaskList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getPlatformTrainingTaskList(param){
       getPlatformTrainingTaskList(param).then(response => {
         if(response.success){
@@ -103,10 +98,6 @@ export default {
     handleCurrentChange(val) {
       this.searchData.pageIndex = val
       this.getPlatformTrainingTaskList(this.searchData)
-    },
-    //时间戳转换日期
-    parseTime(val) {
-      return parseTime(val)
     }
   }
 }

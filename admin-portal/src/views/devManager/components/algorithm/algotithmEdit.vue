@@ -3,20 +3,20 @@
     <el-dialog title="编辑" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
       :close-on-click-modal="false">
       <el-form :model="form">
-        <el-form-item label="数据类型:" :label-width="formLabelWidth">
-          <el-select v-model="form.typeId" placeholder="请选择">
+        <el-form-item label="模型类别:" :label-width="formLabelWidth">
+          <el-select v-model="form.applyId" placeholder="请选择">
             <el-option v-for="item in typeOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="标注类型:" :label-width="formLabelWidth">
-          <el-select v-model="form.applyId" placeholder="请选择">
+        <el-form-item label="框架类型:" :label-width="formLabelWidth">
+          <el-select v-model="form.frameworkId" placeholder="请选择">
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="数据集描述:" :label-width="formLabelWidth">
-          <el-input v-model="form.desc" autocomplete="off" width="100px"></el-input>
+        <el-form-item label="算法描述:" :label-width="formLabelWidth">
+          <el-input v-model="form.algorithmDescript" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -28,27 +28,26 @@
 </template>
 
 <script>
-  import { editeDataSet, datasetType, datasetUse } from "@/api/dataManager.js"
-  import { getErrorMsg } from '@/error/index'
+  import { editAlgorithm, algorithmType, frameType } from "@/api/modelDev";
   export default {
-    name: "dataSetEdite",
+    name: "algotithmEdit",
     props: {
-      data: {
+      row: {
         type: Object,
         default: {}
       }
     },
     created() {
-      this.form.datasetId = this.data.id
-      this.form.typeId = this.data.typeId
-      this.form.applyId = this.data.applyId
-      this.form.desc = this.data.desc
-      this.datasetType()
-      this.datasetUse()
+      this.form.algorithmId = this.row.algorithmId
+      this.form.applyId = this.row.applyId
+      this.form.frameworkId = this.row.frameworkId
+      this.form.desc = this.row.desc
+      this.algorithmType()
+      this.frameType()
     },
     data() {
       return {
-        form: { datasetId: '', typeId: '', applyId: '', desc: '' },
+        form: { algorithmId: '', frameworkId: '', applyId: '', desc: '' },
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],
@@ -56,9 +55,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       cancel() {
         this.$emit("cancel", false);
       },
@@ -68,9 +64,9 @@
       confirm(val) {
         this.$emit("confirm", val);
       },
-      // 获取数据集类型
-      datasetType() {
-        datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
+      // 获取算法类型
+      algorithmType() {
+        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
           } else {
@@ -82,9 +78,9 @@
           }
         })
       },
-      // 获取数据集用途
-      datasetUse() {
-        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+      // 获取算法框架
+      frameType() {
+        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
           } else {
@@ -96,7 +92,7 @@
         })
       },
       submit() {
-        editeDataSet(this.form).then(response => {
+        editAlgorithm(this.form).then(response => {
           if (response.success) {
             this.$message({
               message: '编辑成功',

@@ -4,7 +4,7 @@
       :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
       <el-table-column label="时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.time) }}</span>
+          <span>{{ scope.row.time | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="事件类型">
@@ -29,8 +29,6 @@
 </template>
 <script>
   import { getNotebookEventRecord } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
-  import { parseTime } from '@/utils/index'
   export default {
     name: 'notebookEventRecord',
     props: {
@@ -93,12 +91,6 @@
       handleCurrentChange(val) {
         this.pageIndex = val
         this.getNotebookEventRecord()
-      },
-      parseTime(val) {
-        return parseTime(val)
-      },
-      getErrorMsg(code) {
-        return getErrorMsg(code)
       }
     }
   }

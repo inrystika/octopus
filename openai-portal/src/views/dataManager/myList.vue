@@ -36,7 +36,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -44,7 +44,7 @@
             <!-- <el-button type="text">预览</el-button> -->
             <el-button type="text" @click="createNewVersion(scope.row)">创建新版本
             </el-button>
-            <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+            <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="text" style="padding-right:10px" @click="getVersionList(scope.$index, scope.row)">版本列表
             </el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
@@ -63,7 +63,7 @@
       @close="close" />
     <versionList v-if="versionListVisible" :data="data" :type-change="typeChange" @cancel="cancel" @confirm="confirm"
       @close="close" />
-    <dataSetEdite v-if="editeDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <dataSetEdit v-if="editDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -71,18 +71,16 @@
   import newVersionCreation from "./components/newVersionCreation.vue";
   import myDatasetCreation from "./components/myDatasetCreation.vue"
   import versionList from "./components/versionList.vue";
-  import dataSetEdite from "./components/dataSetEdite.vue";
+  import dataSetEdit from "./components/dataSetEdit.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getMyDatasetList } from "@/api/datasetManager";
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "MyList",
     components: {
       newVersionCreation,
       versionList,
       myDatasetCreation,
-      dataSetEdite,
+      dataSetEdit,
       searchForm
     },
     props: {
@@ -101,7 +99,7 @@
         input: "",
         data: undefined,
         newVersionCreationVisible: false,
-        editeDataSet: false,
+        editDataSet: false,
         formLabelWidth: "120px",
         versionListVisible: false,
         myDatasetVisible: false,
@@ -126,9 +124,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
@@ -173,20 +168,20 @@
         this.myDatasetVisible = true;
       },
       cancel(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.newVersionCreationVisible = val;
         this.versionListVisible = val;
         this.myDatasetVisible = val
       },
       confirm(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.newVersionCreationVisible = val;
         this.versionListVisible = val;
         this.myDatasetVisible = val
         this.getDataList(this.searchData)
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.newVersionCreationVisible = val;
         this.versionListVisible = val;
         this.myDatasetVisible = val
@@ -223,12 +218,8 @@
           }
         })
       },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
-      },
-      handleEdite(val) {
-        this.editeDataSet = true
+      handleEdit(val) {
+        this.editDataSet = true
         this.data = val
       }
     }

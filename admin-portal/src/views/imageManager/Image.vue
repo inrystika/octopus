@@ -42,7 +42,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -75,11 +75,9 @@
 </template>
 <script>
     import dialogForm from "./components/dialogForm.vue";
-    import { getUserImage, getPreImage, deletePreImage, editePreImage } from '@/api/imageManager.js'
+    import { getUserImage, getPreImage, deletePreImage, editPreImage } from '@/api/imageManager.js'
     // import { groupDetail } from '@/api/userManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { parseTime } from '@/utils/index'
-    import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -148,10 +146,6 @@
             this.timer = null
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getImage(data) {
                 this.type = this.imageTabType
                 if (this.type === 1) {
@@ -240,10 +234,6 @@
                 this.searchData = Object.assign(val, this.searchData)
                 this.getImage(this.searchData)
             },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
             // 镜像状态
             imageStatus(value) {
                 switch (value) {
@@ -274,7 +264,7 @@
                     confirmButtonText: '确定',
                     cancelButtonText: '取消'
                 }).then(({ value }) => {
-                    editePreImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
+                    editPreImage({ id: data.id, imageName: data.imageName, imageVersion: data.imageVersion, imageType: data.imageType, imageAddr: data.imageAddr, imageDesc: value }).then(response => {
                         if (response.success) {
                             this.$message({
                                 message: '编辑描述成功',

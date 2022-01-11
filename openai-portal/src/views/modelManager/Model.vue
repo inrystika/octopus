@@ -13,14 +13,13 @@
                 <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
+                        <span style="margin-left: 10px">{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
                         <el-button v-if="type===1" type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button v-if="type===3" type="text" @click="deploy(scope.row)">部署</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -39,9 +38,7 @@
 <script>
     import versionList from './components/versionList.vue'
     import { getMyModel, getPreModel, getPublicModel, deleteMyModel } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "MyModel",
         components: {
@@ -75,10 +72,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getModel(this.searchData)
@@ -178,10 +171,6 @@
                 this.searchData = Object.assign(val, this.searchData)
                 this.getModel(this.searchData)
             },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
             // 删除确认
             open(val) {
                 this.$confirm('此操作将永久删除该模型(如该模型已分享，则分享模型也会被删除)，是否继续?', '提示', {
@@ -197,11 +186,6 @@
                     });
                 });
             },
-            // 预制模型部署
-            deploy(val) {
-                this.$router.push({ name: 'modelDeploy', params: { data: val } })
-            }
-
         }
     }
 </script>

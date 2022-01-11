@@ -2,14 +2,14 @@ import request from '@/utils/request'
 
 export function judgeParam(params) {
   let conditions = []
-  conditions.push(`pageSize=`+params.pageSize);
-  conditions.push(`pageIndex=`+params.pageIndex);
-  params.orderBy?conditions.push(`orderBy=`+params.orderBy):null;
-  params.sortBy?conditions.push(`sortBy=`+params.sortBy):null;
-  params.searchKey?conditions.push(`searchKey=`+params.searchKey):null;
-  params.createdAtGte?conditions.push(`createdAtGte=`+params.createdAtGte):null;
-  params.createdAtLt?conditions.push(`createdAtLt=`+params.createdAtLt):null;
-  params.path?conditions.push(`path=`+params.path):null;
+  conditions.push(`pageSize=` + params.pageSize);
+  conditions.push(`pageIndex=` + params.pageIndex);
+  params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
+  params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
+  params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
+  params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
+  params.path ? conditions.push(`path=` + params.path) : null;
   return conditions
 }
 
@@ -193,11 +193,11 @@ export async function updateDatasetUse(data) {
   return res
 }
 // 修改数据集
-export async function editeDataSet(params) {
+export async function editeDataSet(data) {
   const res = await request({
-    url: `/v1/datasetmanage/predataset/${params.datasetId}`,
+    url: `/v1/datasetmanage/predataset/${data.datasetId}`,
     method: "put",
-    params: { typeId: params.typeId, applyId: params.applyId, desc: params.desc }
+    params: { typeId: data.typeId, applyIds: data.applyIds, desc: data.desc }
   })
   return res
 }

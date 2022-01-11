@@ -18,12 +18,12 @@
             </el-table-column>
             <el-table-column label="开始时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="结束时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.endedAt) }}</span>
+                    <span>{{ scope.row.endedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="类型" align="center" v-if="type=='user'">
@@ -42,8 +42,6 @@
 <script>
     import { getUserPay, getGroupPay } from '@/api/machineManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
-    import { parseTime, formatDuring } from '@/utils/index'
     export default {
         name: "UserMachineTime",
         components: {
@@ -80,10 +78,6 @@
         },
 
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.pageSize = val
                 this.getPay()
@@ -125,11 +119,6 @@
                     })
                 }
             },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
-
             getSearchData(val) {
                 let data = {}
                 data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })

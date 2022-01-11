@@ -69,7 +69,6 @@
 
 <script>
     import { getResourceList } from '@/api/trainingManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DistributedTask",
         props: {
@@ -155,10 +154,6 @@
             this.ruleForm = {}
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             addItem() {
                 if (this.ruleForm.parameters) {
                     this.ruleForm.parameters.push({

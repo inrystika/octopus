@@ -46,7 +46,6 @@
 
 <script>
 import { getAlgorithmVersionList, createNewAlgorithmVersion } from "@/api/modelDev.js";
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "NewVersionCreation",
   props: {
@@ -86,9 +85,6 @@ export default {
     this.ruleForm.name = this.row.algorithmName
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit("close", false);
     },

@@ -8,6 +8,7 @@
                 <div class="login-container">
                     <div class="grid-content">
                         <el-form
+                            @submit.native.prevent
                             ref="loginForm"
                             :model="loginForm"
                             :rules="rules"
@@ -35,7 +36,7 @@
                                 />
                             </el-form-item>
                             <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" :style="{'background':colorChange,'border-color':colorChange}" :loading="logining" @click="handleLogin">
+                                <el-button type="primary" style="width:100%;" native-type='submit' :style="{'background':colorChange,'border-color':colorChange}" :loading="logining" @click="handleLogin">
                                     登录
                                 </el-button>
                             </el-form-item>

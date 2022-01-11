@@ -40,7 +40,7 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="运行时长" align="center">
@@ -54,8 +54,7 @@
                         v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
                         type="text"
                         @click="open(scope.row)"
-                    >
-                        停止
+                    >停止
                     </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
@@ -80,9 +79,8 @@
 <script>
     import detailDialog from "./components/index.vue";
     import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
-    import { parseTime, formatDuring } from '@/utils/index'
+    import { formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningTask",
         components: {
@@ -121,10 +119,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handledetail(row) {
                 trainingDetail(row.id).then(response => {
                     if (response.success) {
@@ -212,9 +206,6 @@
                 this.getTraining(this.searchData)
             },
             // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
             formatDuring(val) {
                 return formatDuring(val)
             }

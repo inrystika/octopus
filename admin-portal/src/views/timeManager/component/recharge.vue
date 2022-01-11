@@ -17,7 +17,7 @@
             </el-table-column>
             <el-table-column label="充值时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column prop="title" label="充值说明"> </el-table-column>
@@ -32,8 +32,6 @@
 <script>
     import { getUserRecharge, getGroupRecharge } from '@/api/machineManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
-    import { parseTime, formatDuring } from '@/utils/index'
     export default {
         name: "UserMachineTime",
         components: {
@@ -71,10 +69,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.pageSize = val
                 this.Recharge()
@@ -110,10 +104,6 @@
                         }
                     })
                 }
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             getSearchData(val) {
                 let data = {}

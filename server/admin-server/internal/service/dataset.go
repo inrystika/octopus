@@ -250,7 +250,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		SourceType: innerapi.DatasetSourceType_DST_PRE,
 		Name:       req.Name,
 		TypeId:     req.TypeId,
-		ApplyId:    req.ApplyId,
+		ApplyIds:   req.ApplyIds,
 		Desc:       req.Desc,
 	}
 
@@ -358,7 +358,7 @@ func (s *DatasetService) UpdatePreDataset(ctx context.Context, req *api.UpdatePr
 		Id:         req.DatasetId,
 		SourceType: innerapi.DatasetSourceType_DST_PRE,
 		TypeId:     req.TypeId,
-		ApplyId:    req.ApplyId,
+		ApplyIds:   req.ApplyIds,
 		Desc:       req.Desc,
 	})
 	if err != nil {

@@ -175,11 +175,11 @@ export async function datasetUse(params) {
   return res
 }
 // 修改数据集
-export async function editeDataSet(params) {
+export async function editDataSet(params) {
   const res = await request({
     url: `/v1/datasetmanage/mydataset/${params.datasetId}`,
     method: "put",
-    params: { typeId: params.typeId, applyId: params.applyId, desc: params.desc }
+    params: { typeId: params.typeId, applyIds: params.applyIds, desc: params.desc }
   })
   return res
 }

@@ -227,7 +227,6 @@
   </div>
 </template>
 <script>
-import { getErrorMsg } from '@/error/index'
 import { 
   createCloudTrainJob,
   getCloudDatasetList,
@@ -470,9 +469,6 @@ export default {
     },
     changeMountPath(){
       this.mountPathVisible = true
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
     },
     handleDialogClose() {
       this.$emit("close", false);

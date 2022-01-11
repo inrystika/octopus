@@ -169,13 +169,27 @@ const error = {
   21001: '云际请求失败',
   21002: '无权限访问'
 }
-export function getErrorMsg(errorCode) {
-  let message = ''
-  for (var p in error) {
-    if (String(errorCode) === p) {
-      message = error[p]
-      return message
+// export function getErrorMsg(errorCode) {
+//   let message = ''
+//   for (var p in error) {
+//     if (String(errorCode) === p) {
+//       message = error[p]
+//       return message
+//     }
+//   }
+//   return '系统错误'
+// }
+export const mixin = {
+  methods:{
+    getErrorMsg(errorCode){
+      let message = ''
+      for (var p in error) {
+        if (String(errorCode) === p) {
+          message = error[p]
+          return message
+        }
+      }
+      return '系统错误'
     }
   }
-  return '系统错误'
 }

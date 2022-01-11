@@ -35,7 +35,7 @@
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -43,7 +43,7 @@
           <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
           <el-button type="text" style="padding-right:10px" @click="createNewVersion(scope.row)">创建新版本</el-button>
           <!-- <el-button type="text" @click="editAlgorithm(scope.row)" v-if="algorithmTabType === 1 ? false : true">编辑</el-button> -->
-          <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+          <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -58,7 +58,7 @@
     <preAlgorithmVersionCreation v-if="standardDialogVisible" :row="row" :dialog-type="dialogType" @close="close"
       @cancel="cancel" @confirm="confirm" />
     <preAlgorithmCreation v-if="creationVisible" @cancel="cancel" @close="close" @confirm="confirm" />
-    <algotithmEdite v-if="editeAlgorithm" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
+    <algotithmEdit v-if="editAlgorithm" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -68,9 +68,7 @@
   import preAlgorithmVersionCreation from "./preAlgorithmVersionCreation.vue"
   import preAlgorithmCreation from './preAlgorithmCreation.vue'
   import searchForm from '@/components/search/index.vue'
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
-  import algotithmEdite from "./algotithmEdite.vue";
+  import algotithmEdit from "./algotithmEdit.vue";
   export default {
     name: "TemplateList",
     components: {
@@ -78,7 +76,7 @@
       preAlgorithmVersionCreation,
       preAlgorithmCreation,
       searchForm,
-      algotithmEdite
+      algotithmEdit
     },
     props: {
       algorithmTabType: { type: Number, default: undefined }
@@ -92,7 +90,7 @@
         algorithmName: "",
         dialogType: false,
         creationVisible: false,
-        editeAlgorithm: false,
+        editAlgorithm: false,
         typeChange: undefined,
         algorithmList: [],
         searchForm: [
@@ -108,9 +106,6 @@
       this.getAlgorithmList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getAlgorithmList(this.searchData)
@@ -151,7 +146,7 @@
         this.creationVisible = true;
       },
       close(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.versionListVisible = val
         this.standardDialogVisible = val
         this.creationVisible = val
@@ -167,12 +162,12 @@
         this.dialogType = true
       },
       cancel(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.standardDialogVisible = val
         this.creationVisible = val
       },
       confirm(val) {
-        this.editeAlgorithm = val
+        this.editAlgorithm = val
         this.standardDialogVisible = val
         this.creationVisible = val
         this.getAlgorithmList(this.searchData);
@@ -205,12 +200,8 @@
           }
         })
       },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
-      },
-      handleEdite(val) {
-        this.editeAlgorithm = true
+      handleEdit(val) {
+        this.editAlgorithm = true
         this.row = val
       }
     }

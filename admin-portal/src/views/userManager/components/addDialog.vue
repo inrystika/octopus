@@ -45,7 +45,6 @@
 <script>
     import { createUser, createGroup, getUserList } from '@/api/userManager.js'
     import { getResourcePool, getGroupResourcePool } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "CreateDialog",
         directives: {
@@ -145,10 +144,6 @@
             this.ruleForm = {}
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getUserList() {
                 getUserList({ pageSize: this.pageSize, pageIndex: this.userCount }).then(response => {
                     if (response.success) {

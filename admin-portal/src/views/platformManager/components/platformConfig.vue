@@ -45,7 +45,6 @@
 </template>
 <script>
 import { getPlatformConfigKey, getPlatformConfigValue, updatePlatformConfig } from "@/api/platformManager"
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformConfig",
   props: {
@@ -73,9 +72,6 @@ export default {
     this.getPlatformConfigKey()
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit('close', false)
     },

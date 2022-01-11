@@ -26,7 +26,7 @@
       </el-table-column>
       <el-table-column label="创建时间" align="center">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt) }}</span>
+          <span>{{ scope.row.createdAt | parseTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center">
@@ -96,8 +96,6 @@ import editDialog from "./components/editDialog.vue"
 import platformConfig from "./components/platformConfig.vue"
 import storageConfigList from "./components/storageConfigList.vue"
 import { getPlatformList } from "@/api/platformManager"
-import { parseTime } from '@/utils/index'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformList",
   components: {
@@ -127,9 +125,6 @@ export default {
     this.getPlatformList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getPlatformList(param){
       getPlatformList(param).then(response => {
           if(response.success){
@@ -191,10 +186,6 @@ export default {
     showStorageConfigList(row) {
       this.platformDetail = row
       this.storageConfigListVisible = true
-    },
-    //时间戳转换日期
-    parseTime(val) {
-      return parseTime(val)
     }
   }
 }

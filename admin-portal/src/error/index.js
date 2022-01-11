@@ -182,13 +182,27 @@ const error = {
   19503: '标签不合法',
   19504: '预置标签不可更改'
 }
-export function getErrorMsg(errorCode) {
-  let message = ''
-  for (var p in error) {
-    if (String(errorCode) === p) {
-      message = error[p]
-      return message
+// export function getErrorMsg(errorCode) {
+//   let message = ''
+//   for (var p in error) {
+//     if (String(errorCode) === p) {
+//       message = error[p]
+//       return message
+//     }
+//   }
+//   return '系统错误'
+// }
+export const mixin = {
+  methods:{
+    getErrorMsg(errorCode){
+      let message = ''
+      for (var p in error) {
+        if (String(errorCode) === p) {
+          message = error[p]
+          return message
+        }
+      }
+      return '系统错误'
     }
   }
-  return '系统错误'
 }

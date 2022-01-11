@@ -16,7 +16,7 @@
         </el-table-column>
         <el-table-column label="创建时间" props="createdAt">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="数据集状态" v-if="typeChange===1">
@@ -64,10 +64,8 @@
 
 <script>
   import { shareDatasetVersion, cancelShareDatasetVersion, deleteDatasetVersion, getVersionList } from "@/api/datasetManager";
-  import { parseTime } from '@/utils/index'
   import preview from './preview.vue'
   import reuploadDataset from "./reuploadDataset.vue"
-  import { getErrorMsg } from '@/error/index'
   import store from '@/store'
   export default {
     name: "VersionList",
@@ -124,9 +122,6 @@
       this.timer = null
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       reupload(row) {
         this.myDatasetVisible = true
         this.versionData = row,
@@ -281,10 +276,6 @@
             this.loading = false
           }
         })
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       }
     }
   };

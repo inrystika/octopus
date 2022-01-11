@@ -24,7 +24,7 @@ export function createUser(data) {
   })
 }
 // 修改用户信息
-export function editeUser(data) {
+export function editUser(data) {
   return request({
     url: `/v1/usermanage/user/${data.id}`,
     method: 'put',
@@ -61,7 +61,7 @@ export function createGroup(data) {
   })
 }
 // 编辑群组
-export function editeGroup(data) {
+export function editGroup(data) {
   return request({
     url: `/v1/usermanage/workspace/${data.id}`,
     method: 'put',
