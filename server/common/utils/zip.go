@@ -113,15 +113,16 @@ func Unzip(zipFile string, destDir string) error {
 			if err != nil {
 				return errors.Errorf(err, errors.ErrorUnzipFailed)
 			}
-			defer inFile.Close()
 
 			outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
+				inFile.Close()
 				return errors.Errorf(err, errors.ErrorUnzipFailed)
 			}
-			defer outFile.Close()
 
 			_, err = io.Copy(outFile, inFile)
+			inFile.Close()
+			outFile.Close()
 			if err != nil {
 				return errors.Errorf(err, errors.ErrorUnzipFailed)
 			}
