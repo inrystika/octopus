@@ -29,7 +29,6 @@
 
 <script>
   import { editDataSet, datasetType, datasetUse } from "@/api/dataManager.js"
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "dataSetEdit",
     props: {
@@ -56,9 +55,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       cancel() {
         this.$emit("cancel", false);
       },

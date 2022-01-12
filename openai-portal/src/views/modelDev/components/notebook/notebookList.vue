@@ -97,7 +97,6 @@
   import saveDialog from "./saveDialog.vue"
   import { getNotebookList, stopNotebook, deleteNotebook, startNotebook } from "@/api/modelDev";
   import { getResourceList } from "@/api/trainingManager"
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "NotebookList",
     components: {
@@ -151,9 +150,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       jumpUrl(url) {
         const jumpUrl = this.GLOBAL.DOMAIN + url
         window.open(jumpUrl)

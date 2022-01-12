@@ -294,8 +294,6 @@
   import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
   import { getUserHour, getGroupHour } from "@/api/generalView";
   import record from './components/record.vue'
-  import { getErrorMsg } from '@/error/index'
-
   export default {
     name: "Dashboard",
     components: {
@@ -352,9 +350,6 @@
 
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       async getTrainingTask() {
         const statusList = {
           preparing: 'preparing',

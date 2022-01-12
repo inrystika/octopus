@@ -20,7 +20,6 @@
   import { uploadPreAlgorithm, preAlgorithmFinishUpload } from "@/api/modelDev.js";
   import { uploadModel, modelFinishUpload } from '@/api/modelManager.js'
   import { minIO } from '@/utils/minIO'
-  import { getErrorMsg } from '@/error/index'
   import { mapGetters } from 'vuex'
   import store from '@/store'
   export default {
@@ -79,9 +78,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       beforeUpload(file, fileList) {
 
         // sessionStorage.setItem(JSON.stringify(store.state.user.progressId), 0);

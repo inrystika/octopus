@@ -75,7 +75,6 @@
   </div>
 </template>
 <script>
-import { getErrorMsg } from '@/error/index'
 import trainingTaskCreate from './trainingTaskCreate.vue'
 import { getCloudTrainJobList, stopCloudTrainJob } from "@/api/cloudInterconnection"
 export default {
@@ -170,10 +169,7 @@ export default {
     confirm(val) {
       this.createVisible = val
       this.getCloudTrainJobList(this.searchData)
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
+    }
   }
 }
 </script>

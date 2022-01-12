@@ -46,7 +46,6 @@
 
 <script>
 import { getAlgorithmVersionList, getPubAlgorithmVersionList, copyAlgorithm } from "@/api/modelDev.js";
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "AlgorithmCopy",
   props: {
@@ -88,9 +87,6 @@ export default {
     }
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit("close", false);
     },

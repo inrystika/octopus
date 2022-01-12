@@ -64,7 +64,6 @@
 
     import previewDialog from './previewDialog.vue'
     import { getModelList, downloadModel, deletePreModelVersion } from '@/api/modelManager.js'
-    import { getErrorMsg } from '@/error/index'
     import reupload from './reupload.vue'
     import store from '@/store'
     export default {
@@ -105,10 +104,6 @@
             this.timer = null
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handlePreview(row) {
                 this.preVisible = true
                 this.data.modelId = row.modelId

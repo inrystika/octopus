@@ -18,7 +18,6 @@
 
 <script>
     import { preview } from '@/api/modelManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "PreviewDialog",
         props: {
@@ -40,10 +39,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getPreList() {
                 preview(this.row).then(response => {
                     if (response.success) {

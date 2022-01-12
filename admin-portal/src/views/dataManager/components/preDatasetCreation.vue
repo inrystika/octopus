@@ -37,7 +37,6 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { createPreDataset, datasetType,datasetUse } from "@/api/dataManager"
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreDatasetCreation",
     components: {
@@ -82,9 +81,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       nextStep(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {

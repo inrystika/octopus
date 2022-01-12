@@ -69,6 +69,10 @@ spec:
         - name: config-volume
           configMap:
             name: eventrouter-cm
+{{- with .Values.global.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

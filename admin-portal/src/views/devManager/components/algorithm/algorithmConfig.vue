@@ -32,7 +32,6 @@
 </template>
 <script>
     import { algorithmType, addAlgorithmType, deleteAlgorithmType, updateAlgorithmType, frameType, addFrameType, deleteFrameType, updateFrameType } from "@/api/modelDev"
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
         created() {
@@ -229,9 +228,6 @@
                     )
                 }
 
-            },
-            getErrorMsg(code) {
-                return getErrorMsg(code)
             },
             algorithmType() {
                 algorithmType({ pageIndex: 1, pageSize: 20 }).then(

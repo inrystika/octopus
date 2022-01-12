@@ -97,7 +97,6 @@
 import detailDialog from "./detailDialog.vue"
 import searchForm from '@/components/search/index.vue'
 import { getNotebookList, stopNotebook } from "@/api/modelDev"
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "NotebookList",
   components: {
@@ -143,9 +142,6 @@ export default {
     this.getNotebookList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleSizeChange(val) {
       this.searchData.pageSize = val
       this.getNotebookList(this.searchData)

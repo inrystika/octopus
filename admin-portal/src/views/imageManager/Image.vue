@@ -78,7 +78,6 @@
     import { getUserImage, getPreImage, deletePreImage, editPreImage } from '@/api/imageManager.js'
     // import { groupDetail } from '@/api/userManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -147,10 +146,6 @@
             this.timer = null
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getImage(data) {
                 this.type = this.imageTabType
                 if (this.type === 1) {

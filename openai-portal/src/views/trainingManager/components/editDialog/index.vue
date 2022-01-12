@@ -195,7 +195,6 @@
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
     import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from '@/api/datasetManager'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DialogEditForm",
         components: {
@@ -375,10 +374,6 @@
             this.getResourceList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             // 获取资源规格
             getResourceList() {
                 getResourceList().then(response => {

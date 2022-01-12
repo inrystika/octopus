@@ -20,7 +20,6 @@
 
 <script>
     import upload from '@/components/upload/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "CreateDialog",
         components: {
@@ -59,10 +58,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             confirm(val) { this.$emit('confirm', val) },
             cancel(val) { this.$emit('cancel', val) },
             handleDialogClose() {

@@ -74,7 +74,6 @@
 <script>
     import { getNodeList } from '@/api/resourceManager.js'
     import { formatSize } from '@/utils/index.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "NodeList",
         components: {
@@ -94,10 +93,6 @@
             this.getNodeList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleDetail(val) {
                 this.title = val.name
                 this.data = []

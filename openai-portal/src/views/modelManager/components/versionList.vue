@@ -63,7 +63,6 @@
 <script>
     import previewDialog from './previewDialog.vue'
     import { getPublicList, getNoPublicList, downloadModel, deleteModelVersion, shareModel, cancelShareModel } from '@/api/modelManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "VersionList",
         components: {
@@ -98,10 +97,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handlePreview(row) {
                 this.preVisible = true
                 this.data = row

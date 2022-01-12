@@ -32,7 +32,6 @@
 </template>
 <script>
     import { datasetType, addDatasetType, deleteDatasetType, updateDatasetType, datasetUse, addDatasetUse, deleteDatasetUse, updateDatasetUse } from "@/api/dataManager.js"
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
         created() {
@@ -228,9 +227,6 @@
                     )
                 }
 
-            },
-            getErrorMsg(code) {
-                return getErrorMsg(code)
             },
             datasetType() {
                 datasetType({ pageIndex: 1, pageSize: 20 }).then(

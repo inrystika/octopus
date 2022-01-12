@@ -83,7 +83,6 @@
     import searchForm from '@/components/search/index.vue'
     import dialogForm from "./components/dialogForm.vue";
     import { getMyImage, getPublicImage, getPreImage, deleteImage, shareImage, editImage, cancelImage } from '@/api/imageManager.js'
-    import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -156,10 +155,6 @@
             this.timer = null
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getImage(data) {
                 this.type = this.imageTabType
                 if (this.type === 1) {
