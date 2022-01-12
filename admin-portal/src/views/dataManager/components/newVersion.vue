@@ -25,7 +25,6 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { createNewVersion } from "@/api/dataManager.js";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "NewVersion",
     components: {
@@ -63,9 +62,6 @@
       this.ruleForm = { name, type }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleDialogClose() {
         this.$emit("close", false);
       },

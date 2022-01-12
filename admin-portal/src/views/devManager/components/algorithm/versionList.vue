@@ -66,7 +66,6 @@
 <script>
   import { getAlgorithmVersionList, queryAlgorithmVersion, compressAlgorithm, downloadAlgorithmVersion, deletePreAlgorithmVersion } from "@/api/modelDev";
   import reuploadAlgorithm from "./reuploadAlgorithm.vue"
-  import { getErrorMsg } from '@/error/index'
   import store from '@/store'
   export default {
     name: "VersionList",
@@ -104,9 +103,6 @@
       this.timer = null
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       reupload(row) {
         store.commit('user/SET_PROGRESSID', row.algorithmId + row.algorithmVersion)
         this.myAlgorithmVisible = true

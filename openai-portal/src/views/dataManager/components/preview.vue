@@ -16,7 +16,6 @@
 
 <script>
 import { previewDataset } from '@/api/datasetManager.js'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "Preview",
   props: {
@@ -37,9 +36,6 @@ export default {
     this.getPreList()
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getPreList() {
       const param = {
         datasetId: this.data.datasetId,

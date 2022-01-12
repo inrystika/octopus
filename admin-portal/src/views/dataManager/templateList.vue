@@ -68,7 +68,6 @@
   import dataSetEdit from "./components/dataSetEdit.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getPresetDatasetList } from "@/api/dataManager"
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "TemplateList",
     components: {
@@ -108,9 +107,6 @@
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)

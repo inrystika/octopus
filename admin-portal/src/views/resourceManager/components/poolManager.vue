@@ -106,7 +106,6 @@
 
 <script>
     import { getResourcePool, deleteResourcePool, createResourcePool, updateResourcePool, getNodeList, getResource } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "ResourcePool",
         data() {
@@ -158,10 +157,6 @@
             clearInterval(this.timer);
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleDetail(val) {
                 this.detailDialog = true
                 const mapResourceSpecIdList = JSON.parse(JSON.stringify(val.mapResourceSpecIdList))

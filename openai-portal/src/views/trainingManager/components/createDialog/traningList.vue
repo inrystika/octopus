@@ -52,7 +52,6 @@
 <script>
     import distributedTask from './distributedTask.vue'
     import { getResourceList } from "@/api/trainingManager"
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningList",
         components: {
@@ -88,10 +87,6 @@
             this.getResourceList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             add() {
                 this.FormVisible = true
                 this.flag = true

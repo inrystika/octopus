@@ -75,7 +75,6 @@
 
 <script>
   import { getUserConsumptionRecord, getGroupConsumptionRecord, getUserRechargeRecord, getGroupRechargeRecord } from "@/api/generalView";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "Record",
     props: {
@@ -105,9 +104,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       changeType(value) {
         switch (value) {
           case 1:

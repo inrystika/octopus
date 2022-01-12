@@ -32,7 +32,6 @@
 </template>
 <script>
   import { getUserConfigKey, getUserConfig, updateUserConfig } from '@/api/userManager.js'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "userConfig",
     props: {
@@ -74,9 +73,6 @@
       },
       cancel() {
         this.$emit('cancel', false)
-      },
-      getErrorMsg(code) {
-        return getErrorMsg(code)
       },
       judgeObjectEmpty(obj) {
         if (obj && Object.getOwnPropertyNames(obj).length) {

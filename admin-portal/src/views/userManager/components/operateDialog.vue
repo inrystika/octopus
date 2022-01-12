@@ -42,7 +42,6 @@
 <script>
     import { editUser, editGroup, groupDetail, getUserList } from '@/api/userManager.js'
     import { getResourcePool, getGroupResourcePool } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "OperateDialog",
         props: {
@@ -191,10 +190,6 @@
             this.ruleForm = {}
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             cancel() {
                 this.$emit('cancel', false)
             },

@@ -70,7 +70,6 @@
   import myAlgorithmCreation from "./myAlgorithmCreation.vue"
   import searchForm from '@/components/search/index.vue'
   import { getMyAlgorithmList, deleteMyAlgorithm } from "@/api/modelDev"
-  import { getErrorMsg } from '@/error/index'
   import algotithmEdit from "./algotithmEdit.vue";
   export default {
     name: "MyList",
@@ -121,9 +120,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       getSearchData(val) {
         this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
         this.searchData = Object.assign(val, this.searchData)

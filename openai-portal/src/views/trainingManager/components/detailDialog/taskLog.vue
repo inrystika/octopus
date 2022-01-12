@@ -49,7 +49,6 @@
 
 <script>
     import { showLog, getTraningDetail } from '@/api/trainingManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TaskLog",
         props: {
@@ -109,10 +108,6 @@
             this.timer = null;
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             selectLog() {
                 this.subName = this.value
                 this.getState()

@@ -66,7 +66,6 @@
   import { shareDatasetVersion, cancelShareDatasetVersion, deleteDatasetVersion, getVersionList } from "@/api/datasetManager";
   import preview from './preview.vue'
   import reuploadDataset from "./reuploadDataset.vue"
-  import { getErrorMsg } from '@/error/index'
   import store from '@/store'
   export default {
     name: "VersionList",
@@ -123,9 +122,6 @@
       this.timer = null
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       reupload(row) {
         this.myDatasetVisible = true
         this.versionData = row,

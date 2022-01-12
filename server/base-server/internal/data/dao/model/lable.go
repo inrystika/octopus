@@ -27,6 +27,7 @@ type LableListQuery struct {
 	LableType      int
 	PageIndex      int
 	PageSize       int
+	Ids            []string
 }
 
 type LableQuery struct {

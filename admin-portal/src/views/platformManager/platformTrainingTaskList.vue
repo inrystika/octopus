@@ -51,7 +51,6 @@
 <script>
 import searchForm from '@/components/search/index.vue'
 import { getPlatformTrainingTaskList } from "@/api/platformManager"
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "platformTrainingTaskList",
   components: {
@@ -79,9 +78,6 @@ export default {
     this.getPlatformTrainingTaskList(this.searchData);
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     getPlatformTrainingTaskList(param){
       getPlatformTrainingTaskList(param).then(response => {
         if(response.success){

@@ -42,7 +42,6 @@
 <script>
     import { getUserPay, getGroupPay } from '@/api/machineManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "UserMachineTime",
         components: {
@@ -79,10 +78,6 @@
         },
 
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.pageSize = val
                 this.getPay()
