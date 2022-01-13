@@ -27,25 +27,24 @@ import (
 )
 
 const (
-	deployJobKind        = "deploy_job"
-	deployJobNum         = 1
-	MetaNamePrefix       = "deploy-"
-	TensorFlowFrame      = "tensorflow"
-	PytorchFrame         = "pytorch"
-	ModelVolumePath      = "model_volume_path"
-	SeldonDockerWorkDir  = "/app/models"
-	PredictorSpecName    = "seldon"
-	SeldonInUrl          = "/seldon/"
-	ServiceUrlSuffix     = "/api/v1.0/predictions"
-	ModelUserId          = "model_user_Id"
-	ModelId              = "model_Id"
-	ModelVersion         = "model_version"
-	PytorchServerVersion = "192.168.202.110:5000/train/pytorchserver:1.0.1"
-	STATE_PREPARING      = "Preparing"
-	STATE_AVAILABLE      = "Available"
-	STATE_CREATING       = "Creating"
-	STATE_FAILED         = "Failed"
-	STATE_STOPPED        = "Stopped"
+	deployJobNum             = 1
+	TensorFlowFrame          = "tensorflow"
+	PytorchFrame             = "pytorch"
+	ModelVolumePath          = "model_volume_path"
+	SeldonDockerWorkDir      = "/app/models"
+	PredictorSpecName        = "default"
+	modelDeployContainerName = "model"
+	SeldonInUrl              = "/seldon/"
+	ServiceUrlSuffix         = "/api/v1.0/predictions"
+	ModelUserId              = "model_user_Id"
+	ModelId                  = "model_Id"
+	ModelVersion             = "model_version"
+	PytorchServerVersion     = "192.168.202.110:5000/train/pytorchserver:2.0.0"
+	STATE_PREPARING          = "Preparing"
+	STATE_AVAILABLE          = "Available"
+	STATE_CREATING           = "Creating"
+	STATE_FAILED             = "Failed"
+	STATE_STOPPED            = "Stopped"
 )
 
 type modelDeployService struct {
@@ -199,7 +198,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		}
 	}()
 
-	modelDeployName := modelDeploy.Name
+	modelDeployContainerName := modelDeployContainerName
 	//容器中的模型挂载路径
 	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
 	//挂载卷
@@ -262,7 +261,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
-					Name:         modelDeployName,
+					Name:         modelDeployContainerName,
 					VolumeMounts: volumeMounts,
 					Resources: v1.ResourceRequirements{
 						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
@@ -285,9 +284,12 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		modelServer = "PYTORCH_SERVER"
 	}
 
+	var graphType seldonv1.PredictiveUnitType
+	graphType = "MODEL"
 	graph := seldonv1.PredictiveUnit{
-		Name:           modelDeployName,
+		Name:           modelDeployContainerName,
 		Children:       nil,
+		Type:           &graphType,
 		Implementation: &modelServer,
 		//todo 此处可以修改为pvc挂载
 		ModelURI:   "gs:seldon-models/sklearn/iris",
@@ -305,14 +307,13 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	predictors = append(predictors, predictor)
 
 	//seldon deployment yaml
-	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
 	modelSeldonDep := &seldonv1.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "machinelearning.seldon.io/v1alpha2",
+			APIVersion: "machinelearning.seldon.io/v1",
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      metaDataName,
+			Name:      modelDeploy.Id,
 			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
@@ -328,6 +329,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
+	//metaDataName: 服务id-default-0-model
+	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
 	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
@@ -546,7 +549,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	return &api.DeleteDepReply{DeletedAt: time.Now().Unix()}, nil
 }
 
-//删除模型服务
+//模型推理
 func (s *modelDeployService) ModelServiceInfer(ctx context.Context, req *api.ServiceRequest) (*api.ServiceReply, error) {
 	requestData := fmt.Sprintf("{ \"data\": { \"ndarray\": %s%s", req.Data.Ndarray, "}}")
 	request, err := http.NewRequest("POST", req.ServiceUrl, strings.NewReader(requestData))
