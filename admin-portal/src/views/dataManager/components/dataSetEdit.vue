@@ -40,13 +40,14 @@
     created() {
       this.form.datasetId = this.data.id
       this.form.typeId = this.data.typeId
-      this.data.applies.forEach(
-        item => {
-          this.form.applyIds.push(item.id)
-        }
-      )
-      this.form.desc = this.data.desc
-
+      if (this.data.applies) {
+        this.data.applies.forEach(
+          item => {
+            this.form.applyIds.push(item.id)
+          }
+        )
+        this.form.desc = this.data.desc
+      }
       this.datasetType()
       this.datasetUse()
     },
