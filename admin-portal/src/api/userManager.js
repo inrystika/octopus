@@ -69,7 +69,7 @@ export function editGroup(data) {
   })
 }
 // 群组列表
-export function groupList(params) {
+export function getGroupList(params) {
   return request({
     url: '/v1/usermanage/workspace',
     method: 'get',
