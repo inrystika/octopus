@@ -16,9 +16,9 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标注类型">
+        <el-table-column label="标注类型" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.applyDesc }}</span>
+            <span>{{ getLabels(scope.row.applies) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -88,12 +88,13 @@
         datasetList: [],
         typeChange: undefined,
         searchForm: [
-          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }
+          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }
         ],
         searchData: {
           pageIndex: 1,
           pageSize: 10
-        }
+        },
       }
     },
     created() {
@@ -140,7 +141,16 @@
         this.row = row;
         this.versionListVisible = true;
         this.versionListType = this.typeChange
-      }  
+      },
+      getLabels: function (val) {
+        if (val) {
+          let label = ''
+          val.forEach(item => {
+            label += item.desc + ' '
+          })
+          return label
+        }
+      }
     }
   }
 </script>

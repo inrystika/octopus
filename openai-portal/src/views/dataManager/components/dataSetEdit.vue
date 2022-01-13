@@ -40,7 +40,11 @@
     created() {
       this.form.datasetId = this.data.id
       this.form.typeId = this.data.typeId
-      this.form.applyIds = this.data.applyIds
+      this.data.applies.forEach(
+        item => {
+          this.form.applyIds.push(item.id)
+        }
+      )
       this.form.desc = this.data.desc
       this.datasetType()
       this.datasetUse()

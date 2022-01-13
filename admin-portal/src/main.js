@@ -17,7 +17,7 @@ import globalVariable from '@/api/globalVariable.js'
 import install from './preventReClick'
 import { parseTime } from "@/utils/index"
 import { mixin } from '@/error/index'
-
+import directives from './directives'
 //设置为全局过滤器，避免冗余代码
 Vue.filter('parseTime', parseTime)
 // 将多个子组件公用的getErrorMsg函数，提取成一个全局混入对象
@@ -42,6 +42,7 @@ Vue.use(ElementUI, { zhLocale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
 Vue.use(VueAwesomeSwiper /* { default global options } */)
+Vue.use(directives)
 Vue.use(install)
 Vue.config.productionTip = false
 
