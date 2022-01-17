@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="编辑" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" v-if="show">
       <el-form :model="form">
         <el-form-item label="数据类型:" :label-width="formLabelWidth">
           <el-select v-model="form.typeId" placeholder="请选择">
@@ -40,15 +40,28 @@
     created() {
       this.form.datasetId = this.data.id
       this.form.typeId = this.data.typeId
-      this.data.applies.forEach(
-        item => {
-          this.form.applyIds.push(item.id)
-        }
-      )
-      this.form.desc = this.data.desc
-
+      if (this.data.applies) {
+        this.data.applies.forEach(
+          item => {
+            this.form.applyIds.push(item.id)
+          }
+        )
+        this.form.desc = this.data.desc
+      }
       this.datasetType()
       this.datasetUse()
+    },
+    watch: {
+      apply() {
+        if (this.apply && this.type) {
+          this.show = true
+        }
+      },
+      type() {
+        if (this.apply && this.type) {
+          this.show = true
+        }
+      }
     },
     data() {
       return {
@@ -56,7 +69,10 @@
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],
-        useOptions: []
+        useOptions: [],
+        show: false,
+        apply: false,
+        type: false
       };
     },
     methods: {
@@ -74,6 +90,7 @@
         datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
+            this.type = true
           } else {
             // this.showUpload = false
             this.$message({
@@ -88,6 +105,7 @@
         datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
+            this.apply = true
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),

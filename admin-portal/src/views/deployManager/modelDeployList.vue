@@ -69,7 +69,6 @@
     import { getDeployList } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningTask",
         components: {
@@ -93,7 +92,7 @@
             }
         },
         created() {
-            // this.getDeployList(this.searchData)
+            this.getDeployList(this.searchData)
         },
         beforeDestroy() {
 

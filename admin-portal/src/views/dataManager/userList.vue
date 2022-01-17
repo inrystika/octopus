@@ -146,8 +146,10 @@
         if (val) {
           let label = ''
           val.forEach(item => {
-            label += item.desc + ' '
+            label += item.desc + ','
           })
+          var reg = /,$/gi;
+          label = label.replace(reg, "");
           return label
         }
       }

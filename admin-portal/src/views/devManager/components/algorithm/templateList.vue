@@ -42,7 +42,6 @@
         <template slot-scope="scope">
           <el-button type="text" @click="getAlgorithmVersionList(scope.row)">版本列表</el-button>
           <el-button type="text" style="padding-right:10px" @click="createNewVersion(scope.row)">创建新版本</el-button>
-          <!-- <el-button type="text" @click="editAlgorithm(scope.row)" v-if="algorithmTabType === 1 ? false : true">编辑</el-button> -->
           <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
         </template>
@@ -155,11 +154,6 @@
       createNewVersion(row) {
         this.row = row
         this.standardDialogVisible = true;
-      },
-      editAlgorithm(row) {
-        this.algorithmName = row.AlgorithmName
-        this.standardDialogVisible = true;
-        this.dialogType = true
       },
       cancel(val) {
         this.editAlgorithm = val

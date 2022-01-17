@@ -88,7 +88,8 @@ message VersionDetail {
 
 message ListPreModelRequest {
   int64 pageIndex = 1;
-  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {lte:100}];
   string searchKey = 3[(validate.rules).string = {max_len:512}];
 }
 message ListPreModelReply {
@@ -100,7 +101,8 @@ message ListMyModelRequest {
   string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
   string userId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
   int64 pageIndex = 3;
-  int64 pageSize = 4[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 4[(validate.rules).int64 = {lte:100}];
   string searchKey = 5[(validate.rules).string = {max_len:512}];
 }
 message ListMyModelReply {
@@ -111,7 +113,8 @@ message ListMyModelReply {
 message ListCommModelRequest {
   string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
   int64 pageIndex = 2;
-  int64 pageSize = 3[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 3[(validate.rules).int64 = {lte:100}];
   string searchKey = 4[(validate.rules).string = {max_len:512}];
 }
 message ListCommModelReply {
@@ -121,7 +124,8 @@ message ListCommModelReply {
 
 message ListAllUserModelRequest {
   int64 pageIndex = 1;
-  int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {lte:100}];
   string searchKey = 3[(validate.rules).string = {max_len:512}];
 }
 message ListAllUserModelReply {
@@ -132,7 +136,8 @@ message ListAllUserModelReply {
 message ListModelVersionRequest {
   string modelId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
   int64 pageIndex = 2;
-  int64 pageSize = 3[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 3[(validate.rules).int64 = {lte:100}];
 }
 message ListModelVersionReply {
   int64 totalSize = 1;
@@ -143,7 +148,8 @@ message ListCommModelVersionRequest {
   string spaceId = 1[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9-_]+$"}];
   string modelId = 2[(validate.rules).string = {min_len:1,max_len:32,pattern:"^[A-Za-z0-9]+$"}];
   int64 pageIndex = 3;
-  int64 pageSize = 4[(validate.rules).int64 = {lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 4[(validate.rules).int64 = {lte:100}];
 }
 message ListCommModelVersionReply {
   int64 totalSize = 1;
