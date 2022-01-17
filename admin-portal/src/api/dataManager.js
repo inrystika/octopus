@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 export function judgeParam(params) {
-  let conditions = []
+  const conditions = []
   conditions.push(`pageSize=` + params.pageSize);
   conditions.push(`pageIndex=` + params.pageIndex);
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
@@ -10,6 +10,7 @@ export function judgeParam(params) {
   params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
   params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
   params.path ? conditions.push(`path=` + params.path) : null;
+  params.userId ? conditions.push(`userId=` + params.userId) : null;
   return conditions
 }
 
@@ -197,7 +198,7 @@ export async function editeDataSet(data) {
   const res = await request({
     url: `/v1/datasetmanage/predataset/${data.datasetId}`,
     method: "put",
-    params: { typeId: data.typeId, applyIds: data.applyIds, desc: data.desc }
+    data: { typeId: data.typeId, applyIds: data.applyIds, desc: data.desc }
   })
   return res
 }
