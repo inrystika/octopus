@@ -253,6 +253,7 @@
                 algorithmNameTemp: '',
                 imageTemp: '',
                 dataSetTemp: '',
+                name: ''
 
             }
         },
@@ -262,21 +263,15 @@
                     case 2:
                         this.showTemplate = true
                         this.showTraning = false
+                        this.name = '模版名称'
                         return '创建任务模板'
                         break
                     default:
                         this.showTraning = true
                         this.showTemplate = true
+                        this.name = '任务名称'
                         return '创建训练任务'
-                }
-            },
-            name: function () {
-                switch (this.flag) {
-                    case 2:
-                        return '模版名称'
-                        break
-                    default:
-                        return '任务名称'
+
                 }
             },
             showArg: function () {

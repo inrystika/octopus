@@ -110,7 +110,8 @@ message DeleteNotebookReply {
 
 message ListNotebookRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte: 1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte: 1, lt: 100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte: 1, lte: 100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
   int64 createdAtGte = 5;
@@ -164,7 +165,7 @@ message NotebookEventListRequest {
   // 页码，从1开始
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
   // 页大小，最小1条，最大100条
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   //任务ID
   string id = 3[(validate.rules).string = {min_len: 1}];
   //子任务序号，从0开始
@@ -211,7 +212,8 @@ message NotebookEventRecord {
 
 message ListNotebookEventRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string notebookId = 3[(validate.rules).string = {min_len: 1}];
 }
 

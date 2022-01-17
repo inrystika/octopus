@@ -64,7 +64,6 @@
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
     import { parseTime } from '@/utils/index'
-    import { getErrorMsg } from '@/error/index'
     import store from '@/store'
     export default {
         name: "PreImage",

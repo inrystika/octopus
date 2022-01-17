@@ -29,7 +29,6 @@
 </template>
 <script>
     import { deployEvent } from "@/api/modelDev";
-    import { getErrorMsg } from '@/error/index'
     import { parseTime } from '@/utils/index'
     export default {
         name: 'notebookEventRecord',

@@ -72,7 +72,6 @@
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
     import upload from '@/components/upload/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DialogCreateForm",
         components: {
