@@ -10,7 +10,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="标注类型:" :label-width="formLabelWidth">
-          <el-select v-model="form.applyId" placeholder="请选择">
+          <el-select v-model="form.applyIds" placeholder="请选择" multiple>
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-  import { editDataSet, datasetType, datasetUse } from "@/api/dataManager.js"
+  import { editeDataSet, datasetType, datasetUse } from "@/api/dataManager.js"
   export default {
     name: "dataSetEdit",
     props: {
@@ -40,14 +40,20 @@
     created() {
       this.form.datasetId = this.data.id
       this.form.typeId = this.data.typeId
-      this.form.applyId = this.data.applyId
-      this.form.desc = this.data.desc
+      if (this.data.applies) {
+        this.data.applies.forEach(
+          item => {
+            this.form.applyIds.push(item.id)
+          }
+        )
+        this.form.desc = this.data.desc
+      }
       this.datasetType()
       this.datasetUse()
     },
     data() {
       return {
-        form: { datasetId: '', typeId: '', applyId: '', desc: '' },
+        form: { datasetId: '', typeId: '', applyIds: [], desc: '' },
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],
@@ -92,7 +98,7 @@
         })
       },
       submit() {
-        editDataSet(this.form).then(response => {
+        editeDataSet(this.form).then(response => {
           if (response.success) {
             this.$message({
               message: '编辑成功',

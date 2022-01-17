@@ -1,7 +1,7 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
-            @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户/邮箱 搜索':'群组 搜索'"
+            @searchData="getSearchData"/>
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
             <el-button v-if="group" type="primary" @click="create">创建群组</el-button>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-    import { getUserList, groupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
+    import { getUserList, getGroupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
     import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
@@ -147,6 +147,7 @@
                     { type: 'Input', label: '用户名', prop: 'fullName', placeholder: '请输入用户名' }
                 ]
                 this.flag = 'user'
+              
             } else {
                 this.user = false
                 this.group = true
@@ -294,7 +295,7 @@
                         }
                     })
                 } else {
-                    groupList(data).then(response => {
+                    getGroupList(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.workspaces

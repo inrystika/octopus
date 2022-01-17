@@ -54,8 +54,7 @@
                         v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
                         type="text"
                         @click="open(scope.row)"
-                    >
-                        停止
+                    >停止
                     </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
@@ -103,7 +102,8 @@
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '成功', value: 'succeeded' }, { label: '失败', value: 'failed' }, { label: '运行中', value: 'running' }, { label: '等待中', value: 'pending' }, { label: '已停止', value: 'stopped' }, { label: '初始中', value: 'preparing' }]
                     },
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
+                    { type: 'InputSelectUser', label: '用户名', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组名', prop: 'workspaceId', placeholder: '请输入群组名' }
 
                 ],
                 searchData: {
