@@ -1021,7 +1021,7 @@ app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
 {{- end -}}
 
 {{- define "ambassador.targetPort" -}}
-{{- printf "80" -}}
+{{- printf "8080" -}}
 {{- end -}}
 
 {{- define "ambassador.serviceAddr" -}}
