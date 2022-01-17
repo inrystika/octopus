@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="保存环境" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
+    <el-dialog title="保存" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
       :close-on-click-modal="false">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
         <el-form-item label="原镜像名称:" :label-width="formLabelWidth">
