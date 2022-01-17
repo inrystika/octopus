@@ -8,6 +8,7 @@ import (
 	innerapi "server/base-server/api/v1"
 	"server/common/errors"
 	"server/common/log"
+	"server/common/utils"
 
 	"github.com/jinzhu/copier"
 )
@@ -71,6 +72,20 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		return reply, nil
 	}
 
+	if reply.DepInfos == nil {
+		reply := &api.DepListReply{
+			TotalSize: 0,
+			DepInfos:  nil,
+		}
+		return reply, nil
+	} else {
+		err = s.assignValue(ctx, reply.DepInfos)
+		if err != nil {
+			return nil, err
+		}
+		return reply, nil
+	}
+
 	return reply, nil
 }
 
@@ -93,4 +108,45 @@ func (s *ModelDeployService) ListDepEvent(ctx context.Context, req *api.DepEvent
 		return nil, err
 	}
 	return reply, nil
+}
+
+func (s *ModelDeployService) assignValue(ctx context.Context, depInfos []*api.DepInfo) error {
+	userIdMap := map[string]interface{}{}
+	spaceIdMap := map[string]interface{}{}
+	for _, i := range depInfos {
+		userIdMap[i.UserId] = true
+	}
+
+	users, err := s.data.UserClient.ListUserInCond(ctx, &innerapi.ListUserInCondRequest{Ids: utils.MapKeyToSlice(userIdMap)})
+	if err != nil {
+		return err
+	}
+	userMap := map[string]*innerapi.UserItem{}
+	for _, i := range users.Users {
+		userMap[i.Id] = i
+	}
+
+	spaces, err := s.data.WorkspaceClient.ListWorkspaceInCond(ctx, &innerapi.ListWorkspaceInCondRequest{
+		Ids: utils.MapKeyToSlice(spaceIdMap),
+	})
+	if err != nil {
+		return err
+	}
+	spaceMap := map[string]*innerapi.WorkspaceItem{}
+	for _, i := range spaces.Workspaces {
+		spaceMap[i.Id] = i
+	}
+
+	for _, i := range depInfos {
+
+		if v, ok := userMap[i.UserId]; ok {
+			i.UserName = v.FullName
+		}
+
+		if v, ok := spaceMap[i.WorkspaceId]; ok {
+			i.WorkspaceName = v.Name
+		}
+	}
+
+	return nil
 }
