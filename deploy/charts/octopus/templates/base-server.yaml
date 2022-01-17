@@ -142,7 +142,7 @@ data:
         password: {{ .Values.baseserver.data.jointCloud.password }}
         sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
       ambassador:
-        addr:  {{ include "ambassador.serviceAddr" . }}
+        addr:  {{ .Values.baseserver.data.ambassador.baseUrl }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
