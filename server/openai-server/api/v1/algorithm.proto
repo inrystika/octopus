@@ -178,6 +178,7 @@ message AlgorithmLable {
 
 message ListAlgorithmApplyRequest {
   int64 pageIndex = 1;
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 
@@ -188,6 +189,7 @@ message ListAlgorithmApplyReply {
 
 message ListAlgorithmFrameworkRequest {
   int64 pageIndex = 1;
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {lt:100}];
 }
 

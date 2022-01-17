@@ -64,6 +64,7 @@ message GetBillingUserReply {
 
 message ListUserPayRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
@@ -90,6 +91,7 @@ message ListUserPayRecordReply {
 
 message ListUserRechargeRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
@@ -125,6 +127,7 @@ message GetBillingSpaceReply {
 
 message ListSpacePayRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
@@ -151,6 +154,7 @@ message ListSpacePayRecordReply {
 
 message ListSpaceRechargeRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大99条
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
