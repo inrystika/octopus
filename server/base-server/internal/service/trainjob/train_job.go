@@ -623,7 +623,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 }
 
 func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) (*api.StopJobReply, error) {
-	_, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	job, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -643,6 +643,11 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.addModel(ctx, job)
+	if err != nil {
+		s.log.Error(ctx, err)
 	}
 
 	return &api.StopJobReply{StoppedAt: time.Now().Unix()}, nil
@@ -985,23 +990,17 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	info, err := s.data.Pipeline.GetJobDetail(ctx, req.Id)
-	if err != nil {
-		return common.PipeLineCallbackRE
-	}
-
-	if pipeline.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, info.Job.State) {
+	if pipeline.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, req.CurrentState) {
 		return common.PipeLineCallbackOK
 	}
 
 	update := &model.TrainJob{
 		Id:     req.Id,
-		Status: info.Job.State,
+		Status: req.CurrentState,
 	}
-	if strings.EqualFold(info.Job.State, pipeline.RUNNING) {
+	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
 		update.StartedAt = &req.CurrentTime
-	} else if strings.EqualFold(info.Job.State, pipeline.FAILED) ||
-		strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
+	} else if pipeline.IsCompletedState(req.CurrentState) {
 		update.CompletedAt = &req.CurrentTime
 	}
 
@@ -1010,19 +1009,23 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
-		strings.EqualFold(info.Job.State, pipeline.FAILED) {
-		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-			SpaceId:          trainJob.WorkspaceId,
-			UserId:           trainJob.UserId,
-			AlgorithmId:      trainJob.AlgorithmId,
-			AlgorithmVersion: trainJob.AlgorithmVersion,
-			FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
-		})
+	if pipeline.IsCompletedState(req.CurrentState) {
+		err = s.addModel(ctx, trainJob)
 		s.log.Error(ctx, err)
 	}
 
 	return common.PipeLineCallbackOK
+}
+
+func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
+	_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+		SpaceId:          trainJob.WorkspaceId,
+		UserId:           trainJob.UserId,
+		AlgorithmId:      trainJob.AlgorithmId,
+		AlgorithmVersion: trainJob.AlgorithmVersion,
+		FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
+	})
+	return err
 }
 
 func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
