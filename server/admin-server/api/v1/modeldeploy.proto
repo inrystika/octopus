@@ -51,6 +51,10 @@ message DepInfo {
 	int64 payEndedAt = 15;    
 	string payStatus = 16;
 	repeated ResSpecPrice resourceSpecPrices = 17;
+  //用户名
+  string userName = 18;
+  //工作空间名
+  string workspaceName = 19;
 }
 
 message ResSpecPrice {

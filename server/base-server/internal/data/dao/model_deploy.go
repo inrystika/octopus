@@ -123,7 +123,14 @@ func (d *modelDeployDao) GetModelDeployServiceList(ctx context.Context, query *m
 		params = append(params, query.Ids)
 	}
 
-	db = db.Where(querySql, params...)
+	if query.UserNameLike != "" {
+		joinSql := "INNER JOIN user ON model_deploy.user_id = user.id"
+		querySql += " and user.full_name like ?"
+		params = append(params, query.UserNameLike+"%")
+		db = db.Joins(joinSql).Where(querySql, params...)
+	} else {
+		db = db.Where(querySql, params...)
+	}
 
 	var totalSize int64
 	res := db.Model(&model.ModelDeploy{}).Count(&totalSize)
@@ -135,7 +142,7 @@ func (d *modelDeployDao) GetModelDeployServiceList(ctx context.Context, query *m
 		db = db.Limit(query.PageSize).Offset((query.PageIndex - 1) * query.PageSize)
 	}
 
-	sortBy := "created_at"
+	sortBy := "model_deploy.created_at"
 	orderBy := "desc"
 	if query.SortBy != "" {
 		sortBy = utils.CamelToSnake(query.SortBy)
@@ -147,7 +154,7 @@ func (d *modelDeployDao) GetModelDeployServiceList(ctx context.Context, query *m
 
 	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
 
-	res = db.Find(&modelDeployments)
+	res = db.Select("model_deploy.*").Find(&modelDeployments)
 	if res.Error != nil {
 		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
 	}
