@@ -12,28 +12,28 @@ service ModelDeployService {
   // 创建部署服务
   rpc DeployModel (DepRequest) returns (DepReply) {
     option (google.api.http) = {
-      post: "/v1/deploymanage/deploymodel"
+      post: "/v1/deploymanage/modeldeploy"
       body: "*"
     };
   };
   //停止部署服务
   rpc StopDepModel (StopDepRequest) returns (StopDepReply) {
     option (google.api.http) = {
-      post: "/v1/deploymanage/deploymodel/{id}/stop"
+      post: "/v1/deploymanage/modeldeploy/{id}/stop"
       body: "*"
     };
   };
   //删除部署服务
   rpc DeleteDepModel (DeleteDepRequest) returns (DeleteDepReply) {
     option (google.api.http) = {
-      delete: "/v1/deploymanage/deploymodel"
+      delete: "/v1/deploymanage/modeldeploy"
     };
   };
 
   //模型服务调用
   rpc DepServiceInvoke (ServiceRequest) returns (StopDepReply) {
     option (google.api.http) = {
-      post: "/v1/deploymanage/deploymodel/infer"
+      post: "/v1/deploymanage/modeldeploy/infer"
     };
   };
 
