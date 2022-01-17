@@ -21,6 +21,7 @@ export function deployDetail(params) {
 export function deployEvent(params) {
     return request({
         url: `/v1/deploymanage/modeldeployevent`,
-        method: 'get'
+        method: 'get',
+        params
     })
 }
