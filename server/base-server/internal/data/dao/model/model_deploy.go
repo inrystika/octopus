@@ -19,6 +19,7 @@ type ModelDeploy struct {
 	Name           string                     `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:'名称'"`
 	Desc           string                     `gorm:"type:varchar(1024);not null;default:'';comment:'描述'"`
 	ModelId        string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型Id'"`
+	ModelName      string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型名称'"`
 	ModelVersion   string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型版本'"`
 	ModelFrame     string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型框架名称''"`
 	ServiceUrl     string                     `gorm:"type:varchar(256);not null;default:'';comment:'服务url路径''"`

@@ -85,8 +85,15 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		}
 		return reply, nil
 	}
+}
 
-	return reply, nil
+func (s *ModelDeployService) StopJob(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
+	reply, err := s.data.ModelDeployClient.StopDepModel(ctx, &innerapi.StopDepRequest{Id: req.Id, Operation: "admin stop job"})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.StopDepReply{StoppedAt: reply.StoppedAt}, nil
 }
 
 // 模型服务事件列表

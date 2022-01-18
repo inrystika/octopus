@@ -123,12 +123,7 @@ message DepInfo {
 	string serviceUrl = 9;    					
 	string status = 10;                       
 	int64 completedAt = 11;                    
-	int64 startedAt = 12;             
-	float payAmount = 13;                     
-	int64 payStartedAt = 14;
-	int64 payEndedAt = 15;    
-	string payStatus = 16;
-	int32 resourceSpecPrice = 17;
+	int64 startedAt = 12;
 }
 
 message DepInfoRequest {

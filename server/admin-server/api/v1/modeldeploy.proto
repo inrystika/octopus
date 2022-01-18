@@ -24,6 +24,15 @@ service ModelDeployService {
        };
     };
 
+    //停止模型部署服务
+    rpc StopDepModel (StopDepRequest) returns (StopDepReply) {
+      option (google.api.http) = {
+        post: "/v1/deploymanage/modeldeploy/{id}/stop"
+        body: "*"
+      };
+    };
+
+
     // 获取模型部署事件列表
     rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply) {
       option (google.api.http) = {
@@ -45,16 +54,11 @@ message DepInfo {
 	string serviceUrl = 9;    					
 	string status = 10;                       
 	int64 completedAt = 11;                    
-	int64 startedAt = 12;             
-	float payAmount = 13;                     
-	int64 payStartedAt = 14;
-	int64 payEndedAt = 15;    
-	string payStatus = 16;
-	repeated ResSpecPrice resourceSpecPrices = 17;
+	int64 startedAt = 12;
   //用户名
-  string userName = 18;
+  string userName = 13;
   //工作空间名
-  string workspaceName = 19;
+  string workspaceName = 14;
 }
 
 message ResSpecPrice {
@@ -111,4 +115,14 @@ message DepEvent{
   string reason = 3;
   //消息
   string message = 4;
+}
+
+message  StopDepRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StopDepReply {
+  //停止时间
+  int64 stoppedAt = 1;
 }

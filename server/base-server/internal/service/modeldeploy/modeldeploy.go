@@ -305,7 +305,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		Graph:          graph,
 	}
 	predictors = append(predictors, predictor)
-
+	metaDataName := fmt.Sprintf("%s-sdep", modelDeploy.Id)
 	//seldon deployment yaml
 	modelSeldonDep := &seldonv1.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
@@ -313,7 +313,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      modelDeploy.Id,
+			Name:      metaDataName,
 			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
@@ -329,8 +329,6 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
-	//metaDataName: 服务id-default-0-model
-	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
 	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
@@ -386,7 +384,8 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	} else {
 		modelFilePath = s.getUserModelSubPath(deployJob)
 	}
-
+	//模型名称
+	deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
