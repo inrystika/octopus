@@ -17,6 +17,7 @@ spec:
       protocol: TCP
       port: {{ template "ambassador.port" . }}
       targetPort: {{ template "ambassador.targetPort" . }}
+      nodePort: {{ template "ambassador.nodePort" . }}
   selector:
 {{ include "ambassador.select-labels" . | indent 8 }}
 
