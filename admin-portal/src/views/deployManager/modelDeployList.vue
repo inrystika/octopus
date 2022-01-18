@@ -1,16 +1,16 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" :blur-name="'任务名称 搜索'" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" :blur-name="'模型名称 搜索'" @searchData="getSearchData" />
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="用户名">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.name }}</span>
+                    <span>{{ scope.row.userName }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="群组">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.workspaceId }}</span>
+                    <span>{{ scope.row.workspaceName }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="模型名称">
@@ -41,15 +41,11 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.startedAt) }}</span>
+                    <span>{{ parseTime(scope.row.completedAt) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button
-                        v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
-                        type="text" @click="open(scope.row)">停止
-                    </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
             </el-table-column>
@@ -66,7 +62,7 @@
 
 <script>
     import detailDialog from "./components/index.vue";
-    import { getDeployList } from '@/api/deployManager.js'
+    import { getDeployList,deployDetail } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     export default {
@@ -81,7 +77,7 @@
                 tableData: [{}],
                 detailDialog: false,
                 data: {},
-                statusText: { 'preparing': ['status-ready', '初始中'], 'available': ['status-agent', '可部署'], 'creating': ['status-running', '创建中'], 'failed': ['status-danger', '失败'], 'stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Available': ['status-agent', '可部署'], 'Creating': ['status-running', '创建中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
                 searchForm: [
                 ],
                 searchData: {
@@ -110,7 +106,7 @@
                 }
                 getDeployList(data).then(response => {
                     if (response.success) {
-                        this.tableData = response.data.trainJobs
+                        this.tableData = response.data.depInfos
                         this.total = response.data.totalSize
                     } else {
                         this.$message({
@@ -121,49 +117,18 @@
                 })
             },
             handledetail(row) {
-                this.detailDialog = true
-                // deployDetail(row.id).then(response => {
-                //     if (response.success) {
-                //         this.data = response.data.trainJob
-                //         this.detailDialog = true
-                //     } else {
-                //         this.$message({
-                //             message: this.getErrorMsg(response.error.subcode),
-                //             type: 'warning'
-                //         });
-                //     }
-                // })
-            },
-            open(val) {
-                this.$confirm('此操作将停止改模型部署, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.handleStop(val)
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消操作'
-                    });
-                });
-            },
-            handleStop(row) {
-                stopDeploy(row.id).then(response => {
+                deployDetail(row.id).then(response => {
                     if (response.success) {
-                        this.$message({
-                            message: '停止成功',
-                            type: 'success'
-                        });
+                        this.data = response.data.depInfo
+                        this.detailDialog = true
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
                             type: 'warning'
                         });
                     }
-                    this.getDeployList(this.searchData)
                 })
-            },
+            },      
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getDeployList(this.searchData)

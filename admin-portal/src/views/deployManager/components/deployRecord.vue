@@ -1,37 +1,21 @@
 <template>
     <div>
-        <el-table :data="recordList" style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
-            <el-table-column label="时间">
-                <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.time) }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="事件类型">
-                <template slot-scope="scope">
-                    <span>{{ typeText[scope.row.type] }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="备注">
-                <template slot-scope="scope">
-                    <div v-if="scope.row.remark.state">{{ "状态 : "+scope.row.remark.state}}</div>
-                    <div v-if="scope.row.remark.reason">{{ "原因 : "+scope.row.remark.reason}}</div>
-                </template>
-            </el-table-column>
-        </el-table>
-
+        <div>
+            <el-input v-model="subTaskInfo" type="textarea" :readonly="true" :rows="20" />
+        </div>
         <div class="block">
             <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
                 layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" />
         </div>
+
+        <div slot="footer" class="dialog-footer" />
     </div>
 </template>
 <script>
-    import { deployEvent } from "@/api/modelDev";
-    import { parseTime } from '@/utils/index'
+    import { deployEvent } from "@/api/deployManager";
     export default {
-        name: 'notebookEventRecord',
+        name: "deployEvent",
         props: {
             id: {
                 type: String,
@@ -40,17 +24,10 @@
         },
         data() {
             return {
-                recordList: [],
+                subTaskInfo: "",
                 total: 0,
                 pageIndex: 1,
                 pageSize: 10,
-                typeText: {
-                    1: "创建",
-                    2: "重新启动",
-                    3: "开始运行",
-                    4: "停止",
-                    5: '保存环境'
-                },
             }
         },
         created() {
@@ -58,51 +35,64 @@
         },
         methods: {
             deployEvent() {
-                const params = {
+                const param = {
                     id: this.id,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize
                 }
-                deployEvent(params).then(response => {
+                deployEvent(param).then(response => {
                     if (response.success) {
-                        if (response.data.records == null) { response.data.records = [] }
-                        response.data.records.forEach(
-                            item => {
-                                if (item.remark !== '') {
-                                    item.remark = JSON.parse(item.remark)
-                                }
-
-                            }
-                        )
-                        this.recordList = response.data.records
-                        this.total = response.data.totalSize
-                    } else {
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
+                        this.total = response.payload.totalSize
+                        let infoMessage = ""
+                        response.data.depEvents.forEach(function (element) {
+                            const title = element.reason
+                            const message = element.message
+                            infoMessage += "\n" + "[" + title + "]"
+                            infoMessage += "\n" + "[" + message + "]" + "\n"
                         })
+                        this.subTaskInfo = infoMessage
+                    } else {
+                        this.subTaskInfo = "暂无相关运行信息"
                     }
-                })
+                }).catch(err => {
+                    console.log("err:", err)
+                    this.$message({
+                        message: "未知错误",
+                        type: 'warning'
+                    });
+                });
+            },
+            handleDialogClose() {
+                this.$emit('close', false)
             },
             handleSizeChange(val) {
                 this.pageSize = val
-                this.pageIndex = 1
                 this.deployEvent()
             },
             handleCurrentChange(val) {
                 this.pageIndex = val
                 this.deployEvent()
             },
-            parseTime(val) {
-                return parseTime(val)
-            },
-            getErrorMsg(code) {
-                return getErrorMsg(code)
+            selectLog() {
+                this.deployEvent()
             }
-        }
+        },
     }
 </script>
+
 <style lang="scss" scoped>
+    .el-col {
+        margin: 10px 0 20px 0;
+        font-size: 15px;
+        font-weight: 800;
+
+        span {
+            font-weight: 400;
+            margin-left: 20px
+        }
+    }
+
+
     .block {
         float: right;
         margin: 20px;

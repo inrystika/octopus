@@ -17,6 +17,14 @@
                     <div>URL:<span>{{ data.serviceUrl }}</span></div>
                 </el-col>
             </el-row>
+            <el-row>
+                <el-col :span="12">
+                    <div>任务状态:<span style="margin-left: 10px">{{ statusText[data.status][1] }}</span></div>
+                </el-col>
+                <el-col :span="12">
+                    <div></div>
+                </el-col>
+            </el-row>
         </div>
     </div>
 </template>
@@ -33,7 +41,7 @@
         data() {
             return {
                 data: {},
-                statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] }
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Pending': ['status-agent', '等待中'], 'Running': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Succeeded': ['status-success', '成功'], 'Stopped': ['status-stopping', '已停止'] }
             }
         },
         created() {
