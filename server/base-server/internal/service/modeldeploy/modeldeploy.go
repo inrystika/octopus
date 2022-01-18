@@ -34,7 +34,7 @@ const (
 	SeldonDockerWorkDir      = "/app/models"
 	PredictorSpecName        = "default"
 	modelDeployContainerName = "model"
-	SeldonInUrl              = "/seldon/"
+	SeldonInUrl              = "/deploy/seldon/"
 	ServiceUrlSuffix         = "/api/v1.0/predictions"
 	ModelUserId              = "model_user_Id"
 	ModelId                  = "model_Id"
@@ -498,13 +498,12 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	if err != nil {
 		return nil, err
 	}
-	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	serviceName := modelDep.Name
+	serviceName := modelDep.Id
 	seldonNameSpace := modelDep.UserId
 	//停止任务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+		return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
 	}
 
 	now := time.Now()
@@ -532,7 +531,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		serviceName := i.Name
+		serviceName := i.Id
 		seldonNameSpace := i.UserId
 		//删除服务前先停止服务
 		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
