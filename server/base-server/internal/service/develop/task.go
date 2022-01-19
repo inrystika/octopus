@@ -153,7 +153,7 @@ func (s *developService) startNotebookTask() {
 								for i := 0; i < nb.TaskNumber; i++ {
 									prices = append(prices, j.ResourceSpecPrice)
 								}
-								payAmount := common.CalculateAmount(ctx, detailMap[j.Id], prices)
+								payAmount, startTime := common.CalculateAmount(ctx, detailMap[j.Id], prices)
 								if payAmount > 0 {
 									extraInfo := make(map[string]string)
 									if ownerType == api.BillingOwnerType_BOT_SPACE {
@@ -166,7 +166,7 @@ func (s *developService) startNotebookTask() {
 										BizType:   api.BillingBizType_BBT_NOTEBOOK,
 										BizId:     j.Id,
 										Title:     nb.Name,
-										StartedAt: j.StartedAt.Unix(),
+										StartedAt: startTime.Unix(),
 										EndedAt:   payEndAt,
 										Status:    payStatus,
 										ExtraInfo: extraInfo,

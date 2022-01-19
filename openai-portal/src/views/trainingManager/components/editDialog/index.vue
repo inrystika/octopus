@@ -1,20 +1,10 @@
 <template>
     <div>
-        <el-dialog
-            :title="title"
-            width="55%"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            :close-on-click-modal="false"
-        >
-            <el-form
-                ref="ruleForm"
-                :model="ruleForm"
-                :rules="rules"
-                :label-width="formLabelWidth"
-                class="demo-ruleForm"
-            >
-                <el-form-item label="任务名称" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name">
+        <el-dialog :title="title" width="55%" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
+            :close-on-click-modal="false">
+            <el-form ref="ruleForm" :model="ruleForm" :rules="rules" :label-width="formLabelWidth"
+                class="demo-ruleForm">
+                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
                 <el-form-item label="任务描述" :label-width="formLabelWidth">
@@ -30,40 +20,20 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="algorithmName" label="算法名称" prop="algorithmId" style="display:inline-block;">
-                        <el-select
-                            v-model="ruleForm.algorithmId"
-                            v-loadmore="loadAlgorithmName"
-                            placeholder="请选择算法名称"
-                            filterable
-                            remote
-                            :remote-method="remoteAlgorithm"
-                            @change="changeAlgorithmName"
-                        >
-                            <el-option
-                                v-for="item in algorithmNameOption"
-                                :key="item.algorithmId"
-                                :label="item.algorithmName"
-                                :value="item.algorithmId"
-                            />
+                        <el-select v-model="ruleForm.algorithmId" v-loadmore="loadAlgorithmName" placeholder="请选择算法名称"
+                            filterable remote :remote-method="remoteAlgorithm" @change="changeAlgorithmName">
+                            <el-option v-for="item in algorithmNameOption" :key="item.algorithmId"
+                                :label="item.algorithmName" :value="item.algorithmId" />
                         </el-select>
                     </el-form-item>
-                    <el-form-item
-                        v-if="algorithmVersion"
-                        label="算法版本"
-                        prop="algorithmVersion"
-                        style="display:inline-block;"
-                    >
-                        <el-select
-                            v-model="ruleForm.algorithmVersion"
-                            v-loadmore="loadAlgorithmVersion"
-                            placeholder="请选择算法版本"
-                        >
-                            <el-option
-                                v-for="item in algorithmVersionOption"
+                    <el-form-item v-if="algorithmVersion" label="算法版本" prop="algorithmVersion"
+                        style="display:inline-block;">
+                        <el-select v-model="ruleForm.algorithmVersion" v-loadmore="loadAlgorithmVersion"
+                            placeholder="请选择算法版本">
+                            <el-option v-for="item in algorithmVersionOption"
                                 :key="item.algorithmDetail.algorithmId+item.algorithmDetail.algorithmVersion"
                                 :label="item.algorithmDetail.algorithmVersion"
-                                :value="item.algorithmDetail.algorithmVersion"
-                            />
+                                :value="item.algorithmDetail.algorithmVersion" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -77,21 +47,10 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="imageName" label="镜像名称" prop="imageId" style="display: inline-block;">
-                        <el-select
-                            v-model="ruleForm.imageId"
-                            v-loadmore="loadImageName"
-                            placeholder="请选择镜像名称"
-                            filterable
-                            remote
-                            :remote-method="remoteImage"
-                            @change="changeimageName"
-                        >
-                            <el-option
-                                v-for="item in imageNameOption"
-                                :key="item.id"
-                                :label="item.imageName+':'+item.imageVersion"
-                                :value="item.id"
-                            />
+                        <el-select v-model="ruleForm.imageId" v-loadmore="loadImageName" placeholder="请选择镜像名称"
+                            filterable remote :remote-method="remoteImage" @change="changeimageName">
+                            <el-option v-for="item in imageNameOption" :key="item.id"
+                                :label="item.imageName+':'+item.imageVersion" :value="item.id" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -105,40 +64,18 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="dataSetName" label="数据集名称" prop="dataSetId" style="display: inline-block;">
-                        <el-select
-                            v-model="ruleForm.dataSetId"
-                            v-loadmore="loadDataSetName"
-                            placeholder="请选择数据集名称"
-                            filterable
-                            remote
-                            :remote-method="remoteDataSet"
-                            @change="changeDataSetName"
-                        >
-                            <el-option
-                                v-for="item in dataSetNameOption"
-                                :key="item.id+item.name"
-                                :label="item.name"
-                                :value="item.id"
-                            />
+                        <el-select v-model="ruleForm.dataSetId" v-loadmore="loadDataSetName" placeholder="请选择数据集名称"
+                            filterable remote :remote-method="remoteDataSet" @change="changeDataSetName">
+                            <el-option v-for="item in dataSetNameOption" :key="item.id+item.name" :label="item.name"
+                                :value="item.id" />
                         </el-select>
                     </el-form-item>
-                    <el-form-item
-                        v-if="dataSetVersion"
-                        label="数据集版本"
-                        prop="dataSetVersion"
-                        style="display: inline-block;"
-                    >
-                        <el-select
-                            v-model="ruleForm.dataSetVersion"
-                            v-loadmore="loadDataSetVersion"
-                            placeholder="请选择数据集版本"
-                        >
-                            <el-option
-                                v-for="item in dataSetVersionOption"
-                                :key="item.datasetId+item.version"
-                                :label="item.version"
-                                :value="item.version"
-                            />
+                    <el-form-item v-if="dataSetVersion" label="数据集版本" prop="dataSetVersion"
+                        style="display: inline-block;">
+                        <el-select v-model="ruleForm.dataSetVersion" v-loadmore="loadDataSetVersion"
+                            placeholder="请选择数据集版本">
+                            <el-option v-for="item in dataSetVersionOption" :key="item.datasetId+item.version"
+                                :label="item.version" :value="item.version" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -167,12 +104,8 @@
                     </el-form-item>
                     <el-form-item label="资源规格" prop="resourceSpecId">
                         <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
-                            <el-option
-                                v-for="(item,index) in resourceOptions"
-                                :key="index"
-                                :label="item.label"
-                                :value="item.value"
-                            />
+                            <el-option v-for="(item,index) in resourceOptions" :key="index" :label="item.label"
+                                :value="item.value" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -181,8 +114,10 @@
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button v-if="showTraning" type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练</el-button>
-                <el-button v-if="!showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板</el-button>
+                <el-button v-if="showTraning" type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练
+                </el-button>
+                <el-button v-if="!showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
+                </el-button>
                 <el-button type="warning" @click="cancel">取消</el-button>
             </div>
         </el-dialog>
@@ -316,25 +251,28 @@
                 tip: false,
                 algorithmNameTemp: '',
                 imageTemp: '',
-                dataSetTemp: ''
+                dataSetTemp: '',
+                name: ''
 
             }
         },
         computed: {
-            title: function() {
+            title: function () {
                 switch (this.flag) {
                     case 1:
                         this.showTraning = false
+                        this.name = '模版名称'
                         return '编辑任务模板'
                         break
                     case 2:
                         this.showTraning = true
                         this.showTemplate = true
+                        this.name = '任务名称'
                         return '创建训练任务'
                         break
                 }
             },
-            showArg: function() {
+            showArg: function () {
                 let flag = true
                 if (this.ruleForm.config[0].parameters === null) {
                     return flag
@@ -356,7 +294,7 @@
         watch: {
             'ruleForm.isDistributed': {
                 deep: true,
-                handler: function(newV, oldV) {
+                handler: function (newV, oldV) {
                     if (newV === true && oldV === false) { this.show = false; } else if (newV === false && oldV === true) { this.show = true; }
                 }
 
@@ -446,7 +384,7 @@
                 });
             },
             nameIsRepeat(val) {
-                const isRepeat = function(arr) {
+                const isRepeat = function (arr) {
                     var hash = {};
                     for (var i in arr) {
                         if (hash[arr[i]]) { return true; }

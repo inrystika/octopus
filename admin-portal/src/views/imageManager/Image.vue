@@ -59,7 +59,8 @@
                     <el-button v-if="scope.row.imageStatus==1||scope.row.imageStatus==4" type="text"
                         @click="handleEdit(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">重新上传
                     </el-button>
-                    <el-button type="text" @click="open2(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
+                    <el-button type="text" @click="open2(scope.row)"
+                        :disabled="scope.row.progress&&scope.row.progress!=0">删除</el-button>
                     <el-button type="text" @click="open(scope.row)">修改描述</el-button>
                 </template>
             </el-table-column>
@@ -126,7 +127,7 @@
                 this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             } else {
                 this.searchForm.push(
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' },
+                    { type: 'Input', label: '提供者', prop: 'userNameLike', placeholder: '请输入用户名' },
                     { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
                 )
                 // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
@@ -232,6 +233,9 @@
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
+                if (this.searchData.spaceNameLike && (this.searchData.spaceNameLike == '默认群组')) {
+                    this.searchData.spaceNameLike = ''
+                }
                 this.getImage(this.searchData)
             },
             // 镜像状态

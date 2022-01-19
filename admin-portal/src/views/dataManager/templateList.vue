@@ -19,9 +19,9 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标注类型">
+        <el-table-column label="标注类型" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.applyDesc }}</span>
+            <span>{{ getLabels(scope.row.applies) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -204,6 +204,17 @@
       handleEdit(val) {
         this.editDataSet = true
         this.data = val
+      },
+      getLabels: function (val) {
+        if (val) {
+          let label = ''
+          val.forEach(item => {
+            label += item.desc + ','
+          })
+          var reg = /,$/gi;
+          label = label.replace(reg, "");
+          return label
+        }
       }
     }
   }
