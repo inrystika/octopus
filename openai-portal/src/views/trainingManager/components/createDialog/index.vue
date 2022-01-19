@@ -7,7 +7,7 @@
                 <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
-                <el-form-item label="任务描述" :label-width="formLabelWidth">
+                <el-form-item :label="desc" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.desc" type="textarea" maxlength="300" show-word-limit />
                 </el-form-item>
                 <!-- 算法三级框 -->
@@ -253,7 +253,8 @@
                 algorithmNameTemp: '',
                 imageTemp: '',
                 dataSetTemp: '',
-                name: ''
+                name: '',
+                desc: ''
 
             }
         },
@@ -264,12 +265,14 @@
                         this.showTemplate = true
                         this.showTraning = false
                         this.name = '模版名称'
+                        this.desc = '模版描述'
                         return '创建任务模板'
                         break
                     default:
                         this.showTraning = true
                         this.showTemplate = true
                         this.name = '任务名称'
+                        this.desc = '任务描述'
                         return '创建训练任务'
 
                 }
