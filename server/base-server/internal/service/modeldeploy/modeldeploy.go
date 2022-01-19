@@ -588,7 +588,7 @@ func (s *modelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepIn
 		return nil, err
 	}
 
-	depInfo := &api.DepInfo{}
+	depInfo, err := s.convertJobFromDb(deployService)
 	err = copier.Copy(depInfo, deployService)
 	if err != nil {
 		return nil, err
@@ -608,15 +608,14 @@ func (s *modelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		return nil, err
 	}
 
-	deployservices, totalSize, err := s.data.ModelDeployDao.GetModelDeployServiceList(ctx, query)
+	deployServices, totalSize, err := s.data.ModelDeployDao.GetModelDeployServiceList(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
 	deployInfos := make([]*api.DepInfo, 0)
-	for _, svc := range deployservices {
-
-		depInfo := &api.DepInfo{}
+	for _, svc := range deployServices {
+		depInfo, err := s.convertJobFromDb(svc)
 		err = copier.Copy(depInfo, svc)
 		if err != nil {
 			return nil, err
@@ -628,6 +627,28 @@ func (s *modelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		TotalSize: totalSize,
 		DepInfos:  deployInfos,
 	}, nil
+}
+
+func (s *modelDeployService) convertJobFromDb(jobDb *model.ModelDeploy) (*api.DepInfo, error) {
+	r := &api.DepInfo{}
+	r.CreatedAt = jobDb.CreatedAt.Unix()
+	r.UpdatedAt = jobDb.UpdatedAt.Unix()
+	if jobDb.StartedAt != nil {
+		r.StartedAt = jobDb.StartedAt.Unix()
+	}
+	if jobDb.CompletedAt != nil && jobDb.StartedAt != nil {
+		//任务启动正常，终止正常：运行时间 = 终止时间-启动时间
+		r.CompletedAt = jobDb.CompletedAt.Unix()
+		r.RunSec = r.CompletedAt - r.StartedAt
+	} else if jobDb.CompletedAt == nil && jobDb.StartedAt != nil {
+		//任务启动正常，且尚未终止：运行时间 = 当前时间-启动时间
+		r.RunSec = time.Now().Unix() - r.StartedAt
+	} else {
+		//其他情况，默认任务没有启动，不计算
+		r.RunSec = 0
+	}
+
+	return r, nil
 }
 
 //获取模型事件
