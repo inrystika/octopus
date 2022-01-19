@@ -70,14 +70,6 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 			DepInfos:  nil,
 		}
 		return reply, nil
-	}
-
-	if reply.DepInfos == nil {
-		reply := &api.DepListReply{
-			TotalSize: 0,
-			DepInfos:  nil,
-		}
-		return reply, nil
 	} else {
 		err = s.assignValue(ctx, reply.DepInfos)
 		if err != nil {
@@ -122,6 +114,7 @@ func (s *ModelDeployService) assignValue(ctx context.Context, depInfos []*api.De
 	spaceIdMap := map[string]interface{}{}
 	for _, i := range depInfos {
 		userIdMap[i.UserId] = true
+		spaceIdMap[i.WorkspaceId] = true
 	}
 
 	users, err := s.data.UserClient.ListUserInCond(ctx, &innerapi.ListUserInCondRequest{Ids: utils.MapKeyToSlice(userIdMap)})

@@ -43,22 +43,26 @@ service ModelDeployService {
 }
 
 message DepInfo {
-  string id = 1;      
-	string userId = 2;          
-	string workspaceId = 3;      
-	string name = 4;                      
-	string desc = 5;                             
-	string modelId = 6;      	                      
-	string modelVersion = 7;                          
-	string modelName = 8;                     
-	string serviceUrl = 9;    					
-	string status = 10;                       
-	int64 completedAt = 11;                    
-	int64 startedAt = 12;
+  string id = 1;
+  string userId = 2;
+  string workspaceId = 3;
+  string name = 4;
+  string desc = 5;
+  string modelId = 6;
+  string modelVersion = 7;
+  string modelName = 8;
+  string serviceUrl = 9;
+  string status = 10;
+  int64 completedAt = 11;
+  int64 startedAt = 12;
+  string modelFrame = 13;
+  int64 runSec = 14;
+  int64 createdAt = 15;
+  int64 updatedAt = 16;
   //用户名
-  string userName = 13;
+  string userName = 17;
   //工作空间名
-  string workspaceName = 14;
+  string workspaceName = 18;
 }
 
 message ResSpecPrice {

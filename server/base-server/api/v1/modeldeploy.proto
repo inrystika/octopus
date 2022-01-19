@@ -64,15 +64,13 @@ message DepInfo {
 	string modelVersion = 7;                          
 	string modelName = 8;                     
 	string serviceUrl = 9;    					
-	string status = 10;                       
+	string status = 10;
 	int64 completedAt = 11;                    
-	int64 startedAt = 12;             
-	float payAmount = 13;                     
-	int64 payStartedAt = 14;
-	int64 payEndedAt = 15;    
-	string payStatus = 16;
-	int32 resourceSpecPrice = 17;
-	string modelFrame = 18;
+	int64 startedAt = 12;
+	string modelFrame = 13;
+  int64 runSec = 14;
+  int64 createdAt = 15;
+  int64 updatedAt = 16;
 }
 
 
