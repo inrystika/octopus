@@ -532,7 +532,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	for _, i := range jobs {
 		serviceName := i.Id
 		seldonNameSpace := i.UserId
-		//删除服务前先停止服务
+		//删除服务
 		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
