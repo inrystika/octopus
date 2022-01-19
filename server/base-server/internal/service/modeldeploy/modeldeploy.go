@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
@@ -99,11 +98,12 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 	s.data.Cluster.RegisterDeploymentInformerCallback(ctx,
 		func(obj interface{}) {},
 		func(old, obj interface{}) {
-			objSeldon, ok := obj.(*seldonv2.SeldonDeployment)
+			objSeldon, ok := obj.(*seldonv1.SeldonDeployment)
 			if !ok {
 				return
 			}
-			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, objSeldon.Name)
+			seldonDepId := strings.Trim(objSeldon.Name, "-sdep")
+			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonDepId)
 			if err != nil {
 				return
 			}
@@ -112,7 +112,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 				return
 			}
 			update := &model.ModelDeploy{
-				Id:     objSeldon.Name,
+				Id:     seldonDepId,
 				Status: newState,
 			}
 			now := time.Now()
