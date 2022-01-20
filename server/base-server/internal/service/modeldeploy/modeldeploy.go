@@ -499,13 +499,14 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	}
 	serviceName := fmt.Sprintf("%s-sdep", modelDep.Id)
 	seldonNameSpace := modelDep.UserId
-	//停止任务
+	//停止任务前，要删除掉服务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
 	}
 
 	now := time.Now()
+	//再执行状态更新
 	err = s.data.ModelDeployDao.UpdateModelDeployService(ctx, &model.ModelDeploy{
 		Id:          req.Id,
 		Operation:   req.Operation,
@@ -532,16 +533,24 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	for _, i := range jobs {
 		serviceName := fmt.Sprintf("%s-sdep", i.Id)
 		seldonNameSpace := i.UserId
-		//删除服务
-		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+		//删除服务前，需要判断服务是否非失败和停止状态，否，则删除服务，再软删数据库；否，则直接删数据库。
+		if i.Status == STATE_AVAILABLE || i.Status == STATE_FAILED {
+			err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
+			if err != nil {
+				return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+			}
+			//再对数据库进行软删除
+			err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
+			if err != nil {
+				return nil, err
+			}
 		}
-		//再对数据库进行软删除
-		err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
-		if err != nil {
-			return nil, err
-		}
+
 	}
 
 	return &api.DeleteDepReply{DeletedAt: time.Now().Unix()}, nil
