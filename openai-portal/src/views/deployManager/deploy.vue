@@ -1,11 +1,16 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :search-form="searchForm" :blur-name="''" @searchData="getSearchData" />
+            <searchForm :search-form="searchForm" :blur-name="'请输入名称'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
+            <el-table-column label="名称" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="模型名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.modelName }}</span>
@@ -18,31 +23,31 @@
             </el-table-column>
             <el-table-column label="模型描述" align="center" :show-overflow-tooltip="true">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.sourceType===2?scope.row.imageAddr:'' }}</span>
+                    <span>{{ scope.row.desc }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.startedAt }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
                 <template slot-scope="scope">
-                    <span :class="statusText[scope.row.status][0]"></span>
-                    <span>{{ statusText[scope.row.status][1] }}</span>
+                    <span :class="statusText[scope.row.status][0]" v-if="statusText[scope.row.status][0]"></span>
+                    <span v-if="statusText[scope.row.status][1]">{{statusText[scope.row.status][1] }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
                     <el-button
-                        v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
-                        type="text" @click="open2(scope.row)">
+                        v-if="scope.row.status==='Pending'||scope.row.status==='Running'||scope.row.status==='Preparing'"
+                        type="text" @click="open2(scope.row.id)">
                         停止
                     </el-button>
                     <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
                     <el-button
-                        v-if="scope.row.status==='failed'||scope.row.status==='succeeded'||scope.row.status==='stopped'"
-                        type="text" @click="open(scope.row)">删除
+                        v-if="scope.row.status==='Failed'||scope.row.status==='Succeeded'||scope.row.status==='Stopped'"
+                        type="text" @click="open(scope.row.id)">删除
                     </el-button>
                 </template>
             </el-table-column>
@@ -53,9 +58,9 @@
                 @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 创建在线服务 -->
-        <dialogForm v-if="FormVisible" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
+        <dialogForm v-if="createDialog" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 详情对话框 -->
-        <detailDialog v-if="detailDialog" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+        <detailDialog v-if="detailDialog" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
     </div>
 </template>
 <script>
@@ -76,11 +81,10 @@
         },
         data() {
             return {
-                tableData: [{ name: 'test', id: '111', userId: '111', desc: '这是一条测试数据', modelId: 123, modelVersion: '1.0', modelName: '测试模型', status: 'pending' }],
-                row: {
-                },
+                tableData: [],
+                row: undefined,
                 total: undefined,
-                FormVisible: false,
+                createDialog: false,
                 detailDialog: false,
                 flag: true,
                 Logo: true,
@@ -89,15 +93,15 @@
                     pageIndex: 1,
                     pageSize: 10
                 },
-                statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Pending': ['status-agent', '等待中'], 'Running': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Succeeded': ['status-success', '成功'], 'Stopped': ['status-stopping', '已停止'] },
             }
         },
         created() {
             if (this.$route.params.flag) {
-                this.FormVisible = true
+                this.createDialog = true
                 this.row = this.$route.params.data
             }
-            // this.getList(this.searchData)
+            this.getList(this.searchData)
         },
         mounted() {
             window.addEventListener('beforeunload', e => {
@@ -111,10 +115,6 @@
             })
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getList(data) {
                 if (data.time && data.time.length !== 0) {
                     data.createAtGte = data.time[0] / 1000
@@ -123,7 +123,7 @@
                 }
                 getDeployList(data).then(response => {
                     if (response.success) {
-                        this.tableData = response.data.trainJobs
+                        this.tableData = response.data.depInfos
                         this.total = response.data.totalSize
                     } else {
                         this.$message({
@@ -149,9 +149,8 @@
                     this.getList(this.searchData)
                 })
             },
-            Delete(val) {
-                var jobIds = []
-                deleteDeploy({ jobIds }).then(response => {
+            Delete(val) {     
+                deleteDeploy({jobIds:val}).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '删除成功',
@@ -167,18 +166,17 @@
                 })
             },
             handleDetail(row) {
-                this.detailDialog = true
-                // deployDetail(row.id).then(response => {
-                //     if (response.success) {
-                //         this.data = response.data.trainJob
-                //         this.detailDialog = true
-                //     } else {
-                //         this.$message({
-                //             message: this.getErrorMsg(response.error.subcode),
-                //             type: 'warning'
-                //         });
-                //     }
-                // })
+                deployDetail(row.id).then(response => {
+                    if (response.success) {
+                        this.row = response.data.depInfo
+                        this.detailDialog = true
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
             },
             handleStop(row) {
                 this.stop(row.id);
@@ -210,7 +208,7 @@
                 this.detailDialog = val
             },
             create() {
-                this.FormVisible = true; this.row = {}
+                this.createDialog = true; this.row = {}
             },
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
@@ -226,8 +224,7 @@
             },
             // 删除确认
             open(val) {
-                let message = ''
-                if (val) { message = '此操作将永久删除该训练任务' } else { message = '此操作将永久批量删除该训练任务' }
+                let message = '此操作将永久删除该部署服务'
                 this.$confirm(message, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -243,7 +240,7 @@
             },
             // 停止确认
             open2(val) {
-                this.$confirm('此操作将停止运行该训练任务, 是否继续?', '提示', {
+                this.$confirm('此操作将停止运行该部署服务, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'

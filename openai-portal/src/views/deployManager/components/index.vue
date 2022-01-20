@@ -20,7 +20,7 @@
         name: "DetailDialog",
         components: { deployCall, deployRecord },
         props: {
-            data: {
+            row: {
                 type: Object,
                 default: () => { }
             }
@@ -29,7 +29,6 @@
         data() {
             return {
                 CreateFormVisible: true,
-                row: {},
                 activeName: 'menu1',
                 id: '',
                 tabRefresh: {
@@ -37,12 +36,13 @@
                     menu2: false,
                     menu3: false,
                     menu4: false
-                }
+                },
+                data: {}
             }
         },
-        created() {
-            this.row = this.data
-            this.id = this.data.id
+        mounted() {
+            this.data = this.row
+            this.id = this.row.id
         },
         beforeDestroy() {
 

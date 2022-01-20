@@ -13,6 +13,11 @@
                     <span>{{ scope.row.workspaceName }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="服务名称">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="模型名称">
                 <template slot-scope="scope">
                     <span>{{ scope.row.modelName }}</span>
@@ -74,7 +79,7 @@
         data() {
             return {
                 total: undefined,
-                tableData: [{}],
+                tableData: [],
                 detailDialog: false,
                 data: {},
                 statusText: { 'Preparing': ['status-ready', '初始中'], 'Available': ['status-agent', '可部署'], 'Creating': ['status-running', '创建中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
@@ -94,10 +99,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getDeployList(data) {
                 if (data.time && data.time.length !== 0) {
                     data.createAtGte = data.time[0] / 1000

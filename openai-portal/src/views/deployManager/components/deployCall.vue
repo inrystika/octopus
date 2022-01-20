@@ -20,10 +20,10 @@
             <el-row>
                 <el-col :span="12">
                     <div>模型服务调用:</div>
-                </el-col>        
+                </el-col>
             </el-row>
             <el-row>
-                <el-col :span="10">            
+                <el-col :span="10">
                     <el-input type="textarea" placeholder="请输入内容" v-model="textarea" :rows="20" style="width: 100%">
                     </el-input>
                 </el-col>
@@ -31,7 +31,7 @@
                     <el-button round>生成</el-button>
                 </el-col>
                 <el-col :span="12">
-                    <el-input type="textarea"  v-model="textarea" :rows="20" style="width: 80%">
+                    <el-input type="textarea" v-model="textarea" :rows="20" style="width: 80%">
                     </el-input>
                 </el-col>
             </el-row>
@@ -58,8 +58,7 @@
             }
         },
         created() {
-            this.data = JSON.parse(JSON.stringify(this.row))
-
+            this.data = this.row
         },
         methods: {
         }
