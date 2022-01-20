@@ -197,7 +197,7 @@ func (d *modelDeployDao) GetModelDeployEvents(deployEventQuery *model.DeployEven
 	PageSize := deployEventQuery.PageSize
 	events := make([]*model.ModelDeployEvent, 0)
 
-	objectName := fmt.Sprintf("%s-default-0-model", deployEventQuery.Id)
+	objectName := fmt.Sprintf("%s-sdep-default-0-model", deployEventQuery.Id)
 	countQuery := ""
 	if !deployEventQuery.IsMain {
 		countQuery = fmt.Sprintf("SELECT COUNT(%s) FROM octopus..events where object_name =~ /^%s/", keyMessage, objectName)

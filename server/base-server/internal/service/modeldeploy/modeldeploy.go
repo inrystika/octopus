@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
@@ -34,7 +33,7 @@ const (
 	SeldonDockerWorkDir      = "/app/models"
 	PredictorSpecName        = "default"
 	modelDeployContainerName = "model"
-	SeldonInUrl              = "/seldon/"
+	SeldonInUrl              = "/deploy/seldon/"
 	ServiceUrlSuffix         = "/api/v1.0/predictions"
 	ModelUserId              = "model_user_Id"
 	ModelId                  = "model_Id"
@@ -99,11 +98,12 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 	s.data.Cluster.RegisterDeploymentInformerCallback(ctx,
 		func(obj interface{}) {},
 		func(old, obj interface{}) {
-			objSeldon, ok := obj.(*seldonv2.SeldonDeployment)
+			objSeldon, ok := obj.(*seldonv1.SeldonDeployment)
 			if !ok {
 				return
 			}
-			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, objSeldon.Name)
+			seldonDepId := strings.Trim(objSeldon.Name, "-sdep")
+			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonDepId)
 			if err != nil {
 				return
 			}
@@ -112,7 +112,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 				return
 			}
 			update := &model.ModelDeploy{
-				Id:     objSeldon.Name,
+				Id:     seldonDepId,
 				Status: newState,
 			}
 			now := time.Now()
@@ -305,7 +305,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		Graph:          graph,
 	}
 	predictors = append(predictors, predictor)
-
+	metaDataName := fmt.Sprintf("%s-sdep", modelDeploy.Id)
 	//seldon deployment yaml
 	modelSeldonDep := &seldonv1.SeldonDeployment{
 		TypeMeta: metav1.TypeMeta{
@@ -313,7 +313,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Kind:       "SeldonDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      modelDeploy.Id,
+			Name:      metaDataName,
 			Namespace: modelDeploy.UserId,
 		},
 		Spec: seldonv1.SeldonDeploymentSpec{
@@ -329,8 +329,6 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
-	//metaDataName: 服务id-default-0-model
-	metaDataName := fmt.Sprintf("%s-default-0-model", modelDeploy.Id)
 	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
@@ -386,7 +384,8 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	} else {
 		modelFilePath = s.getUserModelSubPath(deployJob)
 	}
-
+	//模型名称
+	deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
@@ -498,16 +497,16 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	if err != nil {
 		return nil, err
 	}
-	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	serviceName := modelDep.Name
+	serviceName := fmt.Sprintf("%s-sdep", modelDep.Id)
 	seldonNameSpace := modelDep.UserId
-	//停止任务
+	//停止任务前，要删除掉服务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+		return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
 	}
 
 	now := time.Now()
+	//再执行状态更新
 	err = s.data.ModelDeployDao.UpdateModelDeployService(ctx, &model.ModelDeploy{
 		Id:          req.Id,
 		Operation:   req.Operation,
@@ -532,18 +531,26 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		serviceName := i.Name
+		serviceName := fmt.Sprintf("%s-sdep", i.Id)
 		seldonNameSpace := i.UserId
-		//删除服务前先停止服务
-		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+		//删除服务前，需要判断服务是否非失败和停止状态，否，则删除服务，再软删数据库；否，则直接删数据库。
+		if i.Status == STATE_AVAILABLE || i.Status == STATE_FAILED {
+			err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
+			if err != nil {
+				return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
+			}
+			//再对数据库进行软删除
+			err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
+			if err != nil {
+				return nil, err
+			}
 		}
-		//再对数据库进行软删除
-		err = s.data.ModelDeployDao.DeleteModelDeployService(ctx, i.Id)
-		if err != nil {
-			return nil, err
-		}
+
 	}
 
 	return &api.DeleteDepReply{DeletedAt: time.Now().Unix()}, nil
@@ -590,7 +597,7 @@ func (s *modelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepIn
 		return nil, err
 	}
 
-	depInfo := &api.DepInfo{}
+	depInfo, err := s.convertJobFromDb(deployService)
 	err = copier.Copy(depInfo, deployService)
 	if err != nil {
 		return nil, err
@@ -610,15 +617,14 @@ func (s *modelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		return nil, err
 	}
 
-	deployservices, totalSize, err := s.data.ModelDeployDao.GetModelDeployServiceList(ctx, query)
+	deployServices, totalSize, err := s.data.ModelDeployDao.GetModelDeployServiceList(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
 	deployInfos := make([]*api.DepInfo, 0)
-	for _, svc := range deployservices {
-
-		depInfo := &api.DepInfo{}
+	for _, svc := range deployServices {
+		depInfo, err := s.convertJobFromDb(svc)
 		err = copier.Copy(depInfo, svc)
 		if err != nil {
 			return nil, err
@@ -630,6 +636,28 @@ func (s *modelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		TotalSize: totalSize,
 		DepInfos:  deployInfos,
 	}, nil
+}
+
+func (s *modelDeployService) convertJobFromDb(jobDb *model.ModelDeploy) (*api.DepInfo, error) {
+	r := &api.DepInfo{}
+	r.CreatedAt = jobDb.CreatedAt.Unix()
+	r.UpdatedAt = jobDb.UpdatedAt.Unix()
+	if jobDb.StartedAt != nil {
+		r.StartedAt = jobDb.StartedAt.Unix()
+	}
+	if jobDb.CompletedAt != nil && jobDb.StartedAt != nil {
+		//任务启动正常，终止正常：运行时间 = 终止时间-启动时间
+		r.CompletedAt = jobDb.CompletedAt.Unix()
+		r.RunSec = r.CompletedAt - r.StartedAt
+	} else if jobDb.CompletedAt == nil && jobDb.StartedAt != nil {
+		//任务启动正常，且尚未终止：运行时间 = 当前时间-启动时间
+		r.RunSec = time.Now().Unix() - r.StartedAt
+	} else {
+		//其他情况，默认任务没有启动，不计算
+		r.RunSec = 0
+	}
+
+	return r, nil
 }
 
 //获取模型事件
