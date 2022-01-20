@@ -35,7 +35,7 @@
                         <el-select v-model="ruleForm.modelId" v-loadmore="loadModelName" placeholder="请选择模型名称"
                             filterable remote :remote-method="remoteModel" @change="changeModelName"
                             @click.native="getModelItem" :disabled="uncheckable">
-                            <el-option v-for="item in modelNameOption" :key="item.modelId" :label="item.modelName"
+                            <el-option v-for="item in modelNameOption" :key="item.modelId+item.modelName" :label="item.modelName"
                                 :value="item.modelId" />
                         </el-select>
                     </el-form-item>
@@ -68,7 +68,7 @@
     </div>
 </template>
 <script>
-    import { createImage, editeImage } from '@/api/imageManager.js'
+    import { createDeploy } from '@/api/deployManager.js'
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
     import upload from '@/components/upload/index.vue'
@@ -145,10 +145,7 @@
 
             }
         },
-        watch: {
-
-
-        },
+        watch: {},
         created() {
             if (JSON.stringify(this.row) !== '{}') {
                 this.uncheckable = true
@@ -166,16 +163,11 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             // 模型三级对话框实现
             changeModelSource() {
                 this.modelName = true
                 this.modelNameCount = 1
                 this.modelNameOption = []
-                this.getModel()
             },
             getModel(searchKey) {
                 if (this.ruleForm.modelSource == 1) {
@@ -359,7 +351,21 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        alert('submit!');
+                        createDeploy(this.ruleForm).then(response => {
+                            if (response.success) {
+                                this.$message({
+                                    message: '提交成功',
+                                    type: 'success'
+                                });
+                                this.$emit('confirm', false)
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+
                     } else {
                         console.log('error submit!!');
                         return false;

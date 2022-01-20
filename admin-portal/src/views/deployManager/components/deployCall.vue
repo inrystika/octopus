@@ -3,7 +3,7 @@
         <div>
             <el-row>
                 <el-col :span="12">
-                    <div>名称:<span>{{ data.name }}</span></div>
+                    <div>服务名称:<span>{{ data.name }}</span></div>
                 </el-col>
                 <el-col :span="12">
                     <div>描述: <span>{{ data.desc }}</span></div>
@@ -11,7 +11,7 @@
             </el-row>
             <el-row>
                 <el-col :span="12">
-                    <div>模型:<span>{{ data.modelName+ ":" + data.modelVersion }}</span></div>
+                    <div>模型名称:<span>{{ data.modelName+ ":" + data.modelVersion }}</span></div>
                 </el-col>
                 <el-col :span="12">
                     <div>URL:<span>{{ data.serviceUrl }}</span></div>
