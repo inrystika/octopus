@@ -534,7 +534,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 		serviceName := fmt.Sprintf("%s-sdep", i.Id)
 		seldonNameSpace := i.UserId
 		//删除服务前，需要判断服务是否非失败和停止状态，否，则删除服务，再软删数据库；否，则直接删数据库。
-		if i.Status == STATE_AVAILABLE || i.Status == STATE_FAILED {
+		if i.Status == STATE_PREPARING || i.Status == STATE_AVAILABLE || i.Status == STATE_FAILED {
 			err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 			if err != nil {
 				return nil, errors.Errorf(err, errors.ErrorModelDeployFailed)
