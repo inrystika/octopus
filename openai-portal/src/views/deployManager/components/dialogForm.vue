@@ -17,8 +17,8 @@
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
                     <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型">
-                        <el-option label="PyTorch" value="PyTorch"></el-option>
-                        <el-option label="TensorFlow" value="TensorFlow"></el-option>
+                        <el-option label="PyTorch" value="pytorch"></el-option>
+                        <el-option label="TensorFlow" value="tensorflow"></el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 模型三级框 -->
@@ -35,8 +35,8 @@
                         <el-select v-model="ruleForm.modelId" v-loadmore="loadModelName" placeholder="请选择模型名称"
                             filterable remote :remote-method="remoteModel" @change="changeModelName"
                             @click.native="getModelItem" :disabled="uncheckable">
-                            <el-option v-for="item in modelNameOption" :key="item.modelId+item.modelName" :label="item.modelName"
-                                :value="item.modelId" />
+                            <el-option v-for="item in modelNameOption" :key="item.modelId+item.modelName"
+                                :label="item.modelName" :value="item.modelId" />
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="modelVersion" label="模型版本" prop="modelVersion" style="display:inline-block;">
