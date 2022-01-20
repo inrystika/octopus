@@ -497,7 +497,7 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	if err != nil {
 		return nil, err
 	}
-	serviceName := modelDep.Id
+	serviceName := fmt.Sprintf("%s-sdep", modelDep.Id)
 	seldonNameSpace := modelDep.UserId
 	//停止任务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
@@ -530,7 +530,7 @@ func (s *modelDeployService) DeleteDepModel(ctx context.Context, req *api.Delete
 	}
 
 	for _, i := range jobs {
-		serviceName := i.Id
+		serviceName := fmt.Sprintf("%s-sdep", i.Id)
 		seldonNameSpace := i.UserId
 		//删除服务
 		err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
