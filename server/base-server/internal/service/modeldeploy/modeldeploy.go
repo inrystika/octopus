@@ -279,7 +279,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	var modelServer seldonv1.PredictiveUnitImplementation
 	if startJobInfo.modelFrame == TensorFlowFrame {
-		modelServer = "TENSORFLOW_SERVER"
+		modelServer = "tensorflow"
 	} else if startJobInfo.modelFrame == PytorchFrame {
 		modelServer = "PYTORCH_SERVER"
 	}
