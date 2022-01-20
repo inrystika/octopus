@@ -11,7 +11,7 @@ export function judgeParam(params) {
   params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
   params.path ? conditions.push(`path=` + params.path) : null;
   params.userId ? conditions.push(`userId=` + params.userId) : null;
-  params.spaceId ? conditions.push(` spaceId=` + params.spaceId) : null;
+  params.spaceId ? conditions.push(`spaceId=` + params.spaceId) : null;
   return conditions
 }
 
