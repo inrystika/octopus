@@ -89,7 +89,8 @@
         typeChange: undefined,
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
-          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }
+          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+          { type: 'InputSelectGroup', label: '群组名', prop: 'spaceId', placeholder: '请输入群组名' }
         ],
         searchData: {
           pageIndex: 1,

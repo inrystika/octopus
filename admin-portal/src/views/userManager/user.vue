@@ -1,7 +1,7 @@
 <template>
     <div>
         <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户/邮箱 搜索':'群组 搜索'"
-            @searchData="getSearchData"/>
+            @searchData="getSearchData" />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
             <el-button v-if="group" type="primary" @click="create">创建群组</el-button>
@@ -143,11 +143,10 @@
                     {
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '已冻结', value: 1 }, { label: '已激活', value: 2 }]
-                    },
-                    { type: 'Input', label: '用户名', prop: 'fullName', placeholder: '请输入用户名' }
+                    }
                 ]
                 this.flag = 'user'
-              
+
             } else {
                 this.user = false
                 this.group = true
