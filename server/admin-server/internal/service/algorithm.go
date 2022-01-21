@@ -222,6 +222,8 @@ func (s *AlgorithmService) ListAllAlgorithm(ctx context.Context, req *api.ListAl
 		AlgorithmVersion: req.AlgorithmVersion,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err

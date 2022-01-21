@@ -56,6 +56,8 @@ message ListNotebookRequest {
   int64 createdAtLt = 6;
   string status = 7;
   string searchKey = 8; //name等模糊查找
+  string userId = 9[(validate.rules).string = {max_len: 36}];
+  string workspaceId = 10[(validate.rules).string = {max_len: 36}];
 }
 
 message Notebook {

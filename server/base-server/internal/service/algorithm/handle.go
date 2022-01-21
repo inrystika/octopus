@@ -380,6 +380,8 @@ func (h *algorithmHandle) ListAllUserAlgorithmHandle(ctx context.Context, req *a
 		FileStatus:       int(req.FileStatus),
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
