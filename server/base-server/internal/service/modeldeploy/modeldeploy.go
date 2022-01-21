@@ -38,6 +38,8 @@ const (
 	ModelUserId              = "model_user_Id"
 	ModelId                  = "model_Id"
 	ModelVersion             = "model_version"
+	TFSignatureName          = "signature_name"
+	TFModelName              = "model_name"
 	PytorchServerVersion     = "192.168.202.110:5000/train/pytorchserver:2.0.0"
 	STATE_PREPARING          = "Preparing"
 	STATE_AVAILABLE          = "Available"
@@ -72,6 +74,7 @@ type startJobInfo struct {
 	queue      string
 	modelFrame string
 	modelPath  string
+	modelUrl   string
 	specs      map[string]*startJobInfoSpec
 }
 
@@ -150,6 +153,17 @@ func (s *modelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 	if err != nil {
 		return nil, err
 	}
+	// 获取模型路径
+	reply, err := s.modelService.DownloadModelVersion(ctx, &api.DownloadModelVersionRequest{
+		ModelId: req.ModelId,
+		Version: req.ModelVersion,
+		Domain:  req.Domain,
+	})
+	if err != nil {
+		return nil, err
+	}
+	startJobInfo.modelUrl = reply.DownloadUrl
+	startJobInfo.modelFrame = req.ModelFrame
 	//submit deploy job
 	closeFunc, modelInferServiceUrl, err := s.submitDeployJob(ctx, deployJob, startJobInfo)
 	defer func() { //如果出错 重要的资源需要删除
@@ -256,6 +270,19 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		},
 	}
 
+	tfGraphParameters := []seldonv1.Parameter{
+		{
+			Name:  TFSignatureName,
+			Type:  "STRING",
+			Value: SeldonDockerWorkDir,
+		},
+		{
+			Name:  TFModelName,
+			Type:  "STRING",
+			Value: fmt.Sprintf("%s", modelDeploy.Name),
+		},
+	}
+
 	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec, 0)
 	seldonPodSpec := &seldonv1.SeldonPodSpec{
 		Spec: v1.PodSpec{
@@ -278,22 +305,32 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
 
 	var modelServer seldonv1.PredictiveUnitImplementation
-	if startJobInfo.modelFrame == TensorFlowFrame {
-		modelServer = "tensorflow"
+	var graphType seldonv1.PredictiveUnitType
+	var graph seldonv1.PredictiveUnit
+	graphType = "MODEL"
+	if modelDeploy.ModelFrame == TensorFlowFrame {
+		modelServer = "TENSORFLOW_SERVER"
+		graph = seldonv1.PredictiveUnit{
+			Name:           modelDeployContainerName,
+			Children:       nil,
+			Type:           &graphType,
+			Implementation: &modelServer,
+			//tf服务器直接从此处下载文件
+			ModelURI:   startJobInfo.modelUrl,
+			Parameters: tfGraphParameters,
+		}
 	} else if startJobInfo.modelFrame == PytorchFrame {
 		modelServer = "PYTORCH_SERVER"
-	}
-
-	var graphType seldonv1.PredictiveUnitType
-	graphType = "MODEL"
-	graph := seldonv1.PredictiveUnit{
-		Name:           modelDeployContainerName,
-		Children:       nil,
-		Type:           &graphType,
-		Implementation: &modelServer,
-		//todo 此处可以修改为pvc挂载
-		ModelURI:   "gs:seldon-models/sklearn/iris",
-		Parameters: parameters,
+		graph = seldonv1.PredictiveUnit{
+			Name:           modelDeployContainerName,
+			Children:       nil,
+			Type:           &graphType,
+			Implementation: &modelServer,
+			//pytorch服务器，此处做初始化下载作用。
+			ModelURI: startJobInfo.modelUrl,
+			//ModelURI: "gs:seldon-models/sklearn/iris",
+			Parameters: parameters,
+		}
 	}
 
 	var replica int32 = deployJobNum

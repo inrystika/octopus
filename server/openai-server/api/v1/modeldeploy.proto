@@ -37,7 +37,6 @@ service ModelDeployService {
     };
   };
 
-
   // 获取模型部署详情
   rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply){
     option (google.api.http) = {
@@ -68,6 +67,8 @@ message DepRequest {
   string modelVersion = 6[(validate.rules).string = {min_len: 1}];
   string resourceType = 7;
   string resourceSpecId = 9;
+  // 域名，必须http或https开头，满足url的格式
+  string domain = 10[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
 }
 
 message DepReply {
