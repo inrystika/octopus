@@ -166,6 +166,8 @@ message ListAllUserAlgorithmRequest {
   string nameLike = 8[(validate.rules).string = {max_len:512}];
   int64 createdAtGte = 9;
   int64 createdAtLt = 10;
+  string userId = 11[(validate.rules).string = {max_len: 36}];
+  string spaceId = 12[(validate.rules).string = {max_len: 36}];
 }
 message ListAllUserAlgorithmReply {
   int64 totalSize = 1;

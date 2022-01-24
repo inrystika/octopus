@@ -76,6 +76,7 @@ message ImageDetail {
 
 message ListPreImageRequest {
   uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  // 页大小，最小1条，最大100条
   uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
   string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
@@ -96,6 +97,7 @@ message ListPreImageReply {
 
 message ListUserImageRequest {
   uint32 pageIndex = 1[(validate.rules).uint32 = {gte:1}];
+  // 页大小，最小1条，最大100条
   uint32 pageSize = 2[(validate.rules).uint32 = {gte:1,lte:100}];
   string sortBy = 3[(validate.rules).string = {in: ["", "asc", "desc"]}];
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
