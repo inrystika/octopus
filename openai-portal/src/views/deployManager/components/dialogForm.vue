@@ -11,8 +11,8 @@
                 </el-form-item>
                 <el-form-item label="服务类型" prop="serviceType">
                     <el-select v-model="ruleForm.serviceType" placeholder="请选择服务类型">
-                        <el-option label="HTTP模式" value="HTTP模式"></el-option>
-                        <el-option label="GRPC模式" value="GRPC模式" disabled></el-option>
+                        <el-option label="HTTP模式" value="http"></el-option>
+                        <el-option label="GRPC模式" value="grpc" disabled></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
@@ -43,7 +43,7 @@
                         <el-select v-model="ruleForm.modelVersion" v-loadmore="loadModelVersion" placeholder="请选择模型版本"
                             :disabled="uncheckable">
                             <el-option v-for="item in modelVersionOption" :key="item.modelId+item.version"
-                                :label="item.version" :value="item.modelId" />
+                                :label="item.version" :value="item.version" />
                         </el-select>
                     </el-form-item>
                 </div>
@@ -94,7 +94,8 @@
                     modelId: '',
                     modelVersion: '',
                     resourceType: '',
-                    resourceSpecId: ''
+                    resourceSpecId: '',
+                    domain: this.GLOBAL.DOMAIN
                 },
                 rules: {
                     name: [

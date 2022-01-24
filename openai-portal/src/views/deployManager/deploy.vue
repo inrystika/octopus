@@ -179,7 +179,7 @@
                 })
             },
             handleStop(row) {
-                this.stop(row.id);
+                this.stop(row);
             },
             handleDelete(val) {
                 this.Delete(val);

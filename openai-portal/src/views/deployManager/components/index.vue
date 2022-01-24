@@ -6,8 +6,8 @@
                 <el-tab-pane label="部署调用" name="menu1">
                     <deployCall v-if="tabRefresh.menu1" :row="data" />
                 </el-tab-pane>
-                <el-tab-pane label="事件记录" name="menu2">
-                    <deployRecord v-if="tabRefresh.menu2" :id="id" />
+                <el-tab-pane label="运行信息" name="menu2">
+                    <deployMessage v-if="tabRefresh.menu2" :id="id" />
                 </el-tab-pane>
             </el-tabs>
         </el-dialog>
@@ -15,10 +15,10 @@
 </template>
 <script>
     import deployCall from './deployCall.vue'
-    import deployRecord from './deployRecord.vue'
+    import deployMessage from './deployMessage.vue'
     export default {
         name: "DetailDialog",
-        components: { deployCall, deployRecord },
+        components: { deployCall, deployMessage },
         props: {
             row: {
                 type: Object,

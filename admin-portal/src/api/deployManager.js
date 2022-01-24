@@ -18,7 +18,7 @@ export function deployDetail(params) {
 }
 
 // 获取模型部署事件列表
-export function deployEvent(params) {
+export function deployMessage(params) {
     return request({
         url: `/v1/deploymanage/modeldeployevent`,
         method: 'get',

@@ -8,11 +8,11 @@ export function getDeployList(params) {
   })
 }
 // 删除部署服务
-export function deleteDeploy(data) {
+export function deleteDeploy(params) {
   return request({
     url: `/v1/deploymanage/modeldeploy`,
     method: 'delete',
-    data
+    params
   })
 }
 // 停止部署服务
@@ -29,8 +29,8 @@ export function deployDetail(id) {
     method: 'get'
   })
 }
-// 获取模型部署事件列表
-export function deployEvent(params) {
+// 获取模型部署运行信息
+export function deployMessage(params) {
   return request({
     url: `/v1/deploymanage/modeldeployevent`,
     method: 'get',
@@ -48,8 +48,8 @@ export function createDeploy(data) {
 // 模型服务调用
 export function startDeploy(data) {
   return request({
-    url: `/v1/deploymanage/deploymodel/infer`,
-    method: 'get',
+    url: `/v1/deploymanage/modeldeploy/infer`,
+    method: 'post',
     data
   })
 }

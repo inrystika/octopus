@@ -13,9 +13,9 @@
     </div>
 </template>
 <script>
-    import { deployEvent } from "@/api/deployManager";
+    import { deployMessage } from "@/api/deployManager";
     export default {
-        name: "deployEvent",
+        name: "deployMessage",
         props: {
             id: {
                 type: String,
@@ -31,16 +31,16 @@
             }
         },
         created() {
-            this.deployEvent()
+            this.deployMessage()
         },
         methods: {
-            deployEvent() {
+            deployMessage() {
                 const param = {
                     id: this.id,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize
                 }
-                deployEvent(param).then(response => {
+                deployMessage(param).then(response => {
                     if (response.success) {
                         this.total = response.payload.totalSize
                         let infoMessage = ""
@@ -67,14 +67,14 @@
             },
             handleSizeChange(val) {
                 this.pageSize = val
-                this.deployEvent()
+                this.deployMessage()
             },
             handleCurrentChange(val) {
                 this.pageIndex = val
-                this.deployEvent()
+                this.deployMessage()
             },
             selectLog() {
-                this.deployEvent()
+                this.deployMessage()
             }
         },
     }
