@@ -437,8 +437,9 @@ message BatchQueryAlgorithmReply {
 message UpdateMyAlgorithmRequest {
   string algorithmId = 1[(validate.rules).string = {len:32,pattern:"^[A-Za-z0-9]+$"}];
   string algorithmDescript = 2;
-  string applyId = 3;
-  string frameworkId = 4;
+  string modelName = 3;
+  string applyId = 4;
+  string frameworkId = 5;
 }
 message UpdateMyAlgorithmReply {
   int64 updatedAt = 1;
