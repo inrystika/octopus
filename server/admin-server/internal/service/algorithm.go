@@ -222,6 +222,8 @@ func (s *AlgorithmService) ListAllAlgorithm(ctx context.Context, req *api.ListAl
 		AlgorithmVersion: req.AlgorithmVersion,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -381,6 +383,7 @@ func (s *AlgorithmService) UpdatePreAlgorithm(ctx context.Context, req *api.Upda
 		IsPrefab:          true,
 		AlgorithmId:       req.AlgorithmId,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ModelName:         req.ModelName,
 		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 	})

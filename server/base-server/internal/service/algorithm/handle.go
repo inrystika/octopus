@@ -380,6 +380,8 @@ func (h *algorithmHandle) ListAllUserAlgorithmHandle(ctx context.Context, req *a
 		FileStatus:       int(req.FileStatus),
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -1007,6 +1009,7 @@ func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.Up
 	algorithm.ApplyId = req.ApplyId
 	algorithm.FrameworkId = req.FrameworkId
 	algorithm.AlgorithmDescript = req.AlgorithmDescript
+	algorithm.ModelName = req.ModelName
 	err = algorithmDao.UpdateAlgorithm(ctx, algorithm)
 	if err != nil {
 		return nil, err

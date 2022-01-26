@@ -12,6 +12,7 @@ export function judgeParam(params) {
   params.status ? conditions.push(`status=` + params.status) : null;
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
+  params.modelName ? conditions.push(`modelName` + params.modelName) : null;
   return conditions
 }
 
@@ -221,7 +222,7 @@ export async function editAlgorithm(params) {
   const res = await request({
     url: `/v1/algorithmmanage/prealgorithm/${params.algorithmId}`,
     method: "put",
-    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript }
+    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript, modelName: params.modelName }
   })
   return res
 }
