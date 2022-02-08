@@ -328,8 +328,9 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Type:           &graphType,
 			Implementation: &modelServer,
 			//pytorch服务器，此处做初始化下载作用。
-			ModelURI: startJobInfo.modelUrl,
-			//ModelURI: "gs:seldon-models/sklearn/iris",
+			//ModelURI: startJobInfo.modelUrl, 这里用了这行代码，反而导致pod初始化失败;那就依然采用如下代码，从gs下载一个模型作为初始化辅助。
+			//应该是seldon后台的模型文件解析问题。
+			ModelURI:   "gs:seldon-models/sklearn/iris",
 			Parameters: parameters,
 		}
 	}
