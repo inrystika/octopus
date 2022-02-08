@@ -105,8 +105,9 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 			if !ok {
 				return
 			}
-			seldonDepId := strings.Trim(objSeldon.Name, "-sdep")
-			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonDepId)
+			seldonNameArray := strings.Split(objSeldon.Name, "-sdep")
+			seldonServiceId := seldonNameArray[0]
+			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonServiceId)
 			if err != nil {
 				return
 			}
@@ -115,7 +116,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 				return
 			}
 			update := &model.ModelDeploy{
-				Id:     seldonDepId,
+				Id:     seldonServiceId,
 				Status: newState,
 			}
 			now := time.Now()
