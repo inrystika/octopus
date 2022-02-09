@@ -128,7 +128,7 @@
             } else {
                 this.searchForm.push(
                     { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
-                    { type: 'InputSelectGroup', label: '群组名', prop: 'spaceId', placeholder: '请输入群组名' }
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
                 )
                 // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             }

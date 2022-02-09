@@ -63,10 +63,10 @@
             this.Recharge()
             if (this.rechangeTabType === 1) {
                 this.type = 'user'
-                this.searchForm = [{ type: 'InputSelectUser', label: '用户名', prop: 'userId', placeholder: '请输入用户名' }]
+                this.searchForm = [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }]
             } else {
                 this.type = 'group',
-                    this.searchForm = [{ type: 'InputSelectGroup', label: '群组名', prop: 'spaceId', placeholder: '请输入群组名' }]
+                    this.searchForm = [{ type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }]
             }
         },
         methods: {
