@@ -1,9 +1,7 @@
 <template>
     <div>
-        <el-table :data="tableData" style="width: 100%;font-size: 15px"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left','height':'20px'}" row-key="id"
-            :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+        <el-table :data="tableData" style="width: 100%;font-size: 15px" :header-cell-style="{'color':'black'}"
+            :span-method="listSpanMethod" :row-style="{height:'5px'}" :cell-style="{padding:'5px 0'}">
             <el-table-column label="节点名字">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
@@ -24,32 +22,34 @@
                     <span>{{ scope.row.resourcePools }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="名称">
-                <template slot-scope="scope">
-                    <span style="color: #409eff">
-                        {{ scope.row.childName }}
-                    </span>
-                </template>
-            </el-table-column>
-            <el-table-column label="平台使用量">
-                <template slot-scope="scope">
-                    <span style="color: #409eff;">
-                        {{ scope.row.use }}
-                    </span>
-                </template>
-            </el-table-column>
-            <el-table-column label="总量">
-                <template slot-scope="scope">
-                    <span style="color: #409eff;">
-                        {{ scope.row.total }}
-                    </span>
-                </template>
-            </el-table-column>
-            <el-table-column label="使用百分比">
-                <template slot-scope="scope">
-                    <el-progress type="circle" :percentage="scope.row.percentage" :width="40" :height="40"
-                        v-if="!scope.row.children" />
-                </template>
+            <el-table-column label="节点信息" align="center">
+                <el-table-column label="名称">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff">
+                            {{ scope.row.childName }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="平台使用量">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff;">
+                            {{ scope.row.use }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="总量">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff;">
+                            {{ scope.row.total }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="使用百分比" align="center" width="100px">
+                    <template slot-scope="scope">
+                        <el-progress type="circle" :percentage="scope.row.percentage" :width="40" :height="40"
+                            v-if="!scope.row.children" />
+                    </template>
+                </el-table-column>
             </el-table-column>
         </el-table>
 
@@ -117,7 +117,7 @@
                                     else { item.children = [] }
                                 }
                             )
-                            this.tableData = response.data.nodes
+                            this.tableData = this.handleTableData(response.data.nodes)
                         }
                     } else {
                         this.$message({
@@ -126,8 +126,48 @@
                         });
                     }
                 })
-            }
+            },
+            //合并列
+            handleTableData(data) {
+                let arr = [];
+                let on = 0;
+                let spanNum = 0;
+                for (let i = 0; i < data.length; i++) {
+                    let node_info = data[i].children
+                    on++;
+                    for (let j = 0; j < node_info.length; j++) {
+                        let info = {
+                            on: on,
+                            span_num: j === 0 ? node_info.length : 0,
+                            childName: node_info[j].childName,
+                            use: node_info[j].use,
+                            total: node_info[j].total,
+                            percentage: node_info[j].percentage,
+                            name: data[i].name,
+                            ip: data[i].ip,
+                            status: data[i].status,
+                            resourcePools: data[i].resourcePools
+                        }
+                        arr.push(info)
+                    }
+                }
+                console.log(arr)
+                return arr
+            },
+            listSpanMethod({ row, column, rowIndex, columnIndex }) {
+                if (columnIndex < 4) {
+                    if (row.span_num > 0) {
+                        return {
+                            rowspan: row.span_num,
+                            colspan: 1
+                        };
 
+                    }
+                    else {
+                        return { rowspan: 0, colspan: 0 }
+                    }
+                }
+            },
         }
     }
 </script>
