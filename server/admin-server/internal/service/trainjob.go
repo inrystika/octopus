@@ -168,6 +168,7 @@ func (s *TrainJobService) assignValue(ctx context.Context, trainJobs []*api.Trai
 
 		if v, ok := userMap[i.UserId]; ok {
 			i.UserName = v.FullName
+			i.Email = v.Email
 		}
 
 		if v, ok := spaceMap[i.WorkspaceId]; ok {

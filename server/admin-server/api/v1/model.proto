@@ -103,6 +103,10 @@ message ModelDetail {
   string latestVersion = 9;
   // 模型创建时间(时间戳)
   int64 createdAt = 10;
+  // 用户邮箱
+  string email = 11;
+  // 用户id
+  string userId = 12;
 }
 
 message VersionDetail {

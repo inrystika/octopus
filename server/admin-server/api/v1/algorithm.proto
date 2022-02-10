@@ -269,8 +269,9 @@ message AlgorithmDetail {
   int64 createdAt = 14;
   string applyId = 15;
   string applyName = 16;
-	string frameworkId = 17;
+  string frameworkId = 17;
   string frameworkName = 18;
+  string email = 19;
 }
 
 message MyAlgorithmDetail {

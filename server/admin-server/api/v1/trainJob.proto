@@ -138,6 +138,8 @@ message TrainJob {
   string imageVersion = 23;
   //启动时间
   int64  startedAt = 24;
+  //用户邮箱
+  string email = 25;
 }
 
 message TrainJobListRequest {
