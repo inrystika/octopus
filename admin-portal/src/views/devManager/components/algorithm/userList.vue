@@ -1,18 +1,10 @@
 <template>
   <div>
     <div class="searchForm">
-      <searchForm
-        :search-form="searchForm"
-        :blur-name="'算法名称/描述 搜索'"
-        @searchData="getSearchData"
-      />
+      <searchForm :search-form="searchForm" :blur-name="'算法名称/描述 搜索'" @searchData="getSearchData" />
     </div>
-    <el-table
-      :data="algorithmList"
-      style="width: 100%;font-size: 15px;"
-      :header-cell-style="{'text-align':'left','color':'black'}"
-      :cell-style="{'text-align':'left'}"
-    >
+    <el-table :data="algorithmList" style="width: 100%;font-size: 15px;"
+      :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
       <el-table-column label="算法名称">
         <template slot-scope="scope">
           <span>{{ scope.row.algorithmName }}</span>
@@ -65,112 +57,105 @@
       </el-table-column>
     </el-table>
     <div class="block">
-      <el-pagination
-        :current-page="searchData.pageIndex"
-        :page-sizes="[10, 20, 50, 80]"
-        :page-size="searchData.pageSize"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+        :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 
-    <versionList
-      v-if="versionListVisible"
-      :row="row"
-      :algorithm-type="typeChange"
-      @close="close"
-    />
+    <versionList v-if="versionListVisible" :row="row" :algorithm-type="typeChange" @close="close" />
   </div>
 </template>
 
 <script>
-import { getUserAlgorithmList } from "@/api/modelDev"
-import versionList from "./versionList.vue"
-import searchForm from '@/components/search/index.vue'
-export default {
-  name: "UserList",
-  components: {
-    versionList,
-    searchForm
-  },
-  props: {
-    algorithmTabType: { type: Number, default: undefined }
-  },
-  data() {
-    return {
-      row: {},
-      total: undefined,
-      versionListVisible: false,
-      algorithmName: "",
-      typeChange: undefined,
-      algorithmList: [],
-      searchForm: [
-         { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }
-      ],
-      searchData: {
-        pageIndex: 1,
-        pageSize: 10
-      }
-    }
-  },
-  created() {
-    this.getAlgorithmList(this.searchData);
-  },
-  methods: {
-    handleSizeChange(val) {
-      this.searchData.pageSize = val
-      this.getAlgorithmList(this.searchData)
+  import { getUserAlgorithmList } from "@/api/modelDev"
+  import versionList from "./versionList.vue"
+  import searchForm from '@/components/search/index.vue'
+  export default {
+    name: "UserList",
+    components: {
+      versionList,
+      searchForm
     },
-    handleCurrentChange(val) {
-      this.searchData.pageIndex = val
-      this.getAlgorithmList(this.searchData)
+    props: {
+      algorithmTabType: { type: Number, default: undefined }
     },
-    getAlgorithmList(param) {
-      this.typeChange = this.algorithmTabType
-      getUserAlgorithmList(param).then(response => {
-        if (response.success) {
-          this.algorithmList = response.data.algorithms;
-          this.total = response.data.totalSize
-        } else {
-          this.$message({
-            message: this.getErrorMsg(response.error.subcode),
-            type: 'warning'
-          });
+    data() {
+      return {
+        row: {},
+        total: undefined,
+        versionListVisible: false,
+        algorithmName: "",
+        typeChange: undefined,
+        algorithmList: [],
+        searchForm: [
+          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+          { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
+        ],
+        searchData: {
+          pageIndex: 1,
+          pageSize: 10
         }
-      })
-    },
-    getSearchData(val) {
-      this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
-      this.searchData = Object.assign(val, this.searchData)
-      if (this.searchData.time) {
-        this.searchData.createdAtGte = this.searchData.time[0] / 1000
-        this.searchData.createdAtLt = this.searchData.time[1] / 1000
-        delete this.searchData.time
       }
-      this.getAlgorithmList(this.searchData)
     },
-    getAlgorithmVersionList(row) {
-      this.versionListVisible = true;
-      this.row = row
-    },
-    close(val) {
-      this.versionListVisible = val
+    created() {
       this.getAlgorithmList(this.searchData);
+    },
+    methods: {
+      handleSizeChange(val) {
+        this.searchData.pageSize = val
+        this.getAlgorithmList(this.searchData)
+      },
+      handleCurrentChange(val) {
+        this.searchData.pageIndex = val
+        this.getAlgorithmList(this.searchData)
+      },
+      getAlgorithmList(param) {
+        this.typeChange = this.algorithmTabType
+        getUserAlgorithmList(param).then(response => {
+          if (response.success) {
+            this.algorithmList = response.data.algorithms;
+            this.total = response.data.totalSize
+          } else {
+            this.$message({
+              message: this.getErrorMsg(response.error.subcode),
+              type: 'warning'
+            });
+          }
+        })
+      },
+      getSearchData(val) {
+        this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
+        this.searchData = Object.assign(val, this.searchData)
+        if (this.searchData.time) {
+          this.searchData.createdAtGte = this.searchData.time[0] / 1000
+          this.searchData.createdAtLt = this.searchData.time[1] / 1000
+          delete this.searchData.time
+        }
+        this.getAlgorithmList(this.searchData)
+      },
+      getAlgorithmVersionList(row) {
+        this.versionListVisible = true;
+        this.row = row
+      },
+      close(val) {
+        this.versionListVisible = val
+        this.getAlgorithmList(this.searchData);
+      }
     }
   }
-}
 </script>
 
 <style lang="scss" scoped>
   .Wrapper {
-    margin: 15px!important;
+    margin: 15px !important;
   }
+
   .block {
     float: right;
     margin: 20px;
   }
+
   .searchForm {
     display: inline-block;
   }
