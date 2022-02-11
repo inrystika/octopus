@@ -3,13 +3,7 @@ package modeldeploy
 import (
 	"context"
 	"fmt"
-	"github.com/jinzhu/copier"
-	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -23,6 +17,16 @@ import (
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/jinzhu/copier"
+	SeldonVersion "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	"google.golang.org/protobuf/types/known/emptypb"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -98,39 +102,49 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 
 	s.modelServiceBilling(context.Background())
 	ctx := context.Background()
-	s.data.Cluster.RegisterDeploymentInformerCallback(ctx,
+	s.data.Cluster.RegisterDeploymentInformerCallback(
 		func(obj interface{}) {},
 		func(old, obj interface{}) {
-			objSeldon, ok := obj.(*seldonv1.SeldonDeployment)
-			if !ok {
-				return
-			}
-			seldonNameArray := strings.Split(objSeldon.Name, "-sdep")
-			seldonServiceId := seldonNameArray[0]
-			deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonServiceId)
-			if err != nil {
-				return
-			}
-			newState := string(objSeldon.Status.State)
-			if newState == deployService.Status {
-				return
-			}
-			update := &model.ModelDeploy{
-				Id:     seldonServiceId,
-				Status: newState,
-			}
-			now := time.Now()
-			if newState == STATE_AVAILABLE {
-				update.StartedAt = &now
-			} else if newState == STATE_FAILED {
-				update.CompletedAt = &now
-			}
-			s.data.ModelDeployDao.UpdateModelDeployService(ctx, update)
+			s.updateDeployStatus(ctx, obj)
 		},
-		func(obj interface{}) {},
+		func(obj interface{}) {
+			s.updateDeployStatus(ctx, obj)
+		},
 	)
 
 	return s, nil
+}
+
+func (s *modelDeployService) updateDeployStatus(ctx context.Context, obj interface{}) {
+	objSeldon := &SeldonVersion.SeldonDeployment{}
+	err := runtime.DefaultUnstructuredConverter.
+		FromUnstructured(obj.(*unstructured.Unstructured).UnstructuredContent(), objSeldon)
+	if err != nil {
+		s.log.Errorf(ctx, "could not convert obj to SeldonDeployment")
+		s.log.Errorf(ctx, "err: %s", err)
+		return
+	}
+	seldonNameArray := strings.Split(objSeldon.Name, "-sdep")
+	seldonServiceId := seldonNameArray[0]
+	deployService, err := s.data.ModelDeployDao.GetModelDeployService(ctx, seldonServiceId)
+	if err != nil {
+		return
+	}
+	newState := string(objSeldon.Status.State)
+	if newState == deployService.Status {
+		return
+	}
+	update := &model.ModelDeploy{
+		Id:     seldonServiceId,
+		Status: newState,
+	}
+	now := time.Now()
+	if newState == STATE_AVAILABLE {
+		update.StartedAt = &now
+	} else if newState == STATE_FAILED {
+		update.CompletedAt = &now
+	}
+	s.data.ModelDeployDao.UpdateModelDeployService(ctx, update)
 }
 
 // 部署模型服务

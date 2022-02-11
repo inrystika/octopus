@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+
 	//seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"os"
 	"path/filepath"
@@ -16,24 +18,28 @@ import (
 
 	"server/common/log"
 
+	nav1 "nodeagent/apis/agent/v1"
+	naclient "nodeagent/clients/agent/clientset/versioned"
+	nainformer "nodeagent/clients/agent/informers/externalversions"
+	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
+
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
-	seldonfactory "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/informers/externalversions"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	nav1 "nodeagent/apis/agent/v1"
-	naclient "nodeagent/clients/agent/clientset/versioned"
-	nainformer "nodeagent/clients/agent/informers/externalversions"
-	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
 	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
 )
@@ -114,13 +120,13 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 
 type kubernetesCluster struct {
 	sync.Mutex
-	ctx          context.Context
-	log          *log.Helper
-	kubeclient   *kubernetes.Clientset
-	vcClient     *vcclient.Clientset
-	naClient     *naclient.Clientset
-	seldonClient *seldonclient.Clientset
-
+	ctx                context.Context
+	log                *log.Helper
+	kubeclient         *kubernetes.Clientset
+	vcClient           *vcclient.Clientset
+	naClient           *naclient.Clientset
+	seldonClient       *seldonclient.Clientset
+	seldonInformer     informers.GenericInformer
 	nodeInformer       infov1.NodeInformer
 	nodeActionInformer nainformerv1.NodeActionInformer
 
@@ -517,14 +523,50 @@ func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespa
 	return nil
 }
 
-func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
+func (kc *kubernetesCluster) GetDynamicInformer(resourceType string) (informers.GenericInformer, error) {
+	cfg := kc.GetClusterConfig()
+	dc, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dc, 0, corev1.NamespaceAll, nil)
+	gvr, _ := schema.ParseResourceArg(resourceType)
+	informer := factory.ForResource(*gvr)
+	return informer, nil
+}
 
-	informerFactory := seldonfactory.NewSharedInformerFactory(kc.seldonClient, 0)
-	deploymentInformer := informerFactory.Machinelearning().V1().SeldonDeployments().Informer()
-	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) {
+	kc.seldonInformer, _ = kc.GetDynamicInformer("seldondeployments.v1.machinelearning.seldon.io")
+	handlers := cache.ResourceEventHandlerFuncs{
 		AddFunc:    onAdd,
 		DeleteFunc: onDelete,
 		UpdateFunc: onUpdate,
+	}
+	kc.seldonInformer.Informer().AddEventHandler(handlers)
+	go kc.seldonInformer.Informer().Run(kc.ctx.Done())
+	cache.WaitForCacheSync(kc.ctx.Done(), func() []cache.InformerSynced {
+		informerSynced := []cache.InformerSynced{
+			kc.seldonInformer.Informer().HasSynced,
+		}
+		return informerSynced
+	}()...)
+}
+
+/*
+func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, namespace string, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
+	fmt.Println("00000000000000000")
+	kc.informerNamespace = namespace
+	kc.informerFactory = seldonfactory.NewSharedInformerFactory(kc.seldonClient, 0)
+	deploymentInformer := kc.informerFactory.InformerFor(&seldonv1.SeldonDeployment{}, kc.defaultInformer)
+	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			fmt.Println("AAAAAAAAAAAAAAAAAAA")
+		},
+		DeleteFunc: onDelete,
+		UpdateFunc: func(obj, obj2 interface{}) {
+			fmt.Println("BBBBBBBBBBBBBBBBBB")
+		},
 	})
 	return nil
 }
+*/
