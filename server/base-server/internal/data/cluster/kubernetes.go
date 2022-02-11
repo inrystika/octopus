@@ -551,22 +551,3 @@ func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(onAdd common.OnD
 		return informerSynced
 	}()...)
 }
-
-/*
-func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(ctx context.Context, namespace string, onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) error {
-	fmt.Println("00000000000000000")
-	kc.informerNamespace = namespace
-	kc.informerFactory = seldonfactory.NewSharedInformerFactory(kc.seldonClient, 0)
-	deploymentInformer := kc.informerFactory.InformerFor(&seldonv1.SeldonDeployment{}, kc.defaultInformer)
-	deploymentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			fmt.Println("AAAAAAAAAAAAAAAAAAA")
-		},
-		DeleteFunc: onDelete,
-		UpdateFunc: func(obj, obj2 interface{}) {
-			fmt.Println("BBBBBBBBBBBBBBBBBB")
-		},
-	})
-	return nil
-}
-*/
