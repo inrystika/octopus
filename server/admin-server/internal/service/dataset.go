@@ -432,6 +432,7 @@ func (s *DatasetService) assignValue(ctx context.Context, datasets []*api.Datase
 		for _, i := range datasets {
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 
 			if v, ok := spaceMap[i.SpaceId]; ok {
