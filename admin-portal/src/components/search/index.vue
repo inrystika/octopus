@@ -112,6 +112,7 @@
                     getUserList({
                         pageIndex: this.usersCount,
                         pageSize: 10,
+                        searchKey: this.userTemp
                     }).then(response => {
                         if (response.success) {
                             this.usersTotal = response.data.totalSize
