@@ -27,7 +27,9 @@
             </el-table-column>
             <el-table-column v-if="flag" label="提供者" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.username }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.username }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="镜像地址" align="center" :show-overflow-tooltip="true">
