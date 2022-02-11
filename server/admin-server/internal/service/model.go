@@ -8,6 +8,7 @@ import (
 	innterapi "server/base-server/api/v1"
 	"server/common/errors"
 	"server/common/log"
+	"server/common/utils/collections/set"
 
 	"github.com/jinzhu/copier"
 )
@@ -65,6 +66,11 @@ func (s *ModelService) ListUserModel(ctx context.Context, req *api.ListUserModel
 		return nil, err
 	}
 
+	userIds := []string{}
+	for _, i := range reply.Models {
+		userIds = append(userIds, i.UserId)
+	}
+
 	models := make([]*api.ModelDetail, 0)
 	for _, m := range reply.Models {
 		model, err := s.modelTransfer(ctx, m)
@@ -73,6 +79,23 @@ func (s *ModelService) ListUserModel(ctx context.Context, req *api.ListUserModel
 		}
 
 		models = append(models, model)
+	}
+
+	if len(userIds) > 0 {
+		userIds = set.NewStrings(userIds...).Values()
+		userReply, err := s.data.UserClient.ListUserInCond(ctx, &innterapi.ListUserInCondRequest{Ids: userIds})
+		if err != nil {
+			return nil, err
+		}
+
+		emailMap := make(map[string]string)
+		for _, u := range userReply.Users {
+			emailMap[u.Id] = u.Email
+		}
+
+		for _, model := range models {
+			model.UserEmail = emailMap[model.UserId]
+		}
 	}
 
 	return &api.ListUserModelReply{
