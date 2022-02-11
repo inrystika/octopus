@@ -104,7 +104,7 @@ message ModelDetail {
   // 模型创建时间(时间戳)
   int64 createdAt = 10;
   // 用户邮箱
-  string email = 11;
+  string userEmail = 11;
   // 用户id
   string userId = 12;
 }

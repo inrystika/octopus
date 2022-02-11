@@ -122,7 +122,7 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 
 		for _, image := range images {
 			image.Username = userMap[image.UserId]
-			image.Email = emailMap[image.UserId]
+			image.UserEmail = emailMap[image.UserId]
 		}
 	}
 	if len(workspaceIds) > 0 {

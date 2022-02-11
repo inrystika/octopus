@@ -253,7 +253,7 @@ func (s *AlgorithmService) ListAllAlgorithm(ctx context.Context, req *api.ListAl
 		}
 
 		for _, algorithm := range algorithms {
-			algorithm.Email = emailMap[algorithm.UserId]
+			algorithm.UserEmail = emailMap[algorithm.UserId]
 		}
 	}
 

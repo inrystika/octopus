@@ -249,7 +249,7 @@ message Dataset {
   string latestVersion = 13;
   string spaceName = 14;
   string userName = 15;
-  string email = 16;
+  string userEmail = 16;
 }
 
 message ListPreDatasetRequest {

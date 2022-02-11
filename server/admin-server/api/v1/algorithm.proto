@@ -271,7 +271,7 @@ message AlgorithmDetail {
   string applyName = 16;
   string frameworkId = 17;
   string frameworkName = 18;
-  string email = 19;
+  string userEmail = 19;
 }
 
 message MyAlgorithmDetail {

@@ -72,7 +72,7 @@ message ImageDetail {
   string username = 11;
   string imageVersion = 12;
   string spaceName = 13;
-  string email = 14;
+  string userEmail = 14;
 }
 
 message ListPreImageRequest {

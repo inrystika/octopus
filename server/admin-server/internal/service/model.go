@@ -94,7 +94,7 @@ func (s *ModelService) ListUserModel(ctx context.Context, req *api.ListUserModel
 		}
 
 		for _, model := range models {
-			model.Email = emailMap[model.UserId]
+			model.UserEmail = emailMap[model.UserId]
 		}
 	}
 

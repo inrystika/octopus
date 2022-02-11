@@ -89,7 +89,7 @@ message Notebook {
   string notebookJobId = 23;
   string imageVersion = 24;
   repeated Task tasks = 25;
-  string email = 26;
+  string userEmail = 26;
 }
 
 message ListNotebookReply {
