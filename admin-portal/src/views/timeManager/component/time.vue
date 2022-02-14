@@ -17,7 +17,9 @@
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
-                    <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    </el-tooltip>
                     <span v-if="type==='group'" style="margin-left: 10px">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
