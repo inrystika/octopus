@@ -27,7 +27,9 @@
             </el-table-column>
             <el-table-column v-if="flag" label="提供者" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.username }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.username }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="镜像地址" align="center" :show-overflow-tooltip="true">
@@ -127,8 +129,8 @@
                 this.timer = setInterval(() => { this.getImage(this.searchData) }, 2000)
             } else {
                 this.searchForm.push(
-                    { type: 'Input', label: '提供者', prop: 'userNameLike', placeholder: '请输入用户名' },
-                    { type: 'Input', label: '群组名', prop: 'spaceNameLike', placeholder: '请输入群组名' }
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
                 )
                 // this.timer = setInterval(() => { this.getImage(this.searchData) }, 1000)
             }

@@ -1009,6 +1009,7 @@ func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.Up
 	algorithm.ApplyId = req.ApplyId
 	algorithm.FrameworkId = req.FrameworkId
 	algorithm.AlgorithmDescript = req.AlgorithmDescript
+	algorithm.ModelName = req.ModelName
 	err = algorithmDao.UpdateAlgorithm(ctx, algorithm)
 	if err != nil {
 		return nil, err

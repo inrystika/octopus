@@ -17,7 +17,13 @@
                         <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column v-if="modelTabType===1" prop="userName" label="提供者" />
+                <el-table-column v-if="modelTabType===1" label="提供者">
+                    <template slot-scope="scope">
+                        <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                            <span>{{ scope.row.userName }}</span>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
                         <span>{{ scope.row.createdAt | parseTime }}</span>

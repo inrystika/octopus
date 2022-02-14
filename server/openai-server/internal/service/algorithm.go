@@ -576,6 +576,7 @@ func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.Updat
 		AlgorithmId:       req.AlgorithmId,
 		IsPrefab:          false,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ModelName:         req.ModelName,
 		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 	})

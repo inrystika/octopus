@@ -5,11 +5,19 @@
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type=='user'?'用户名':'群组名'" align="center">
                 <template slot-scope="scope">
-                    <span v-if="type=='user'">{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span v-if="type=='user'">{{ scope.row.userName }}</span>
+                    </el-tooltip>
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="userName" label="用户名" v-if="type=='group'"> </el-table-column>
+            <el-table-column label="用户名" v-if="type=='group'">
+                <template slot-scope="scope">
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
             <el-table-column prop="title" label="任务名称"> </el-table-column>
             <el-table-column label="消费机时(h)" align="center">
                 <template slot-scope="scope">
@@ -69,10 +77,10 @@
             this.getPay()
             if (this.consumptionTabType === 1) {
                 this.type = 'user'
-                this.searchForm = [{ type: 'InputSelectUser', label: '用户名', prop: 'userId', placeholder: '请输入用户名' }]
+                this.searchForm = [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }]
             } else {
                 this.type = 'group'
-                this.searchForm = [{ type: 'InputSelectGroup', label: '群组名', prop: 'spaceId', placeholder: '请输入群组名' }]
+                this.searchForm = [{ type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }]
             }
         },
 

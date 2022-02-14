@@ -406,6 +406,7 @@ func (s *AlgorithmService) UpdatePreAlgorithm(ctx context.Context, req *api.Upda
 		IsPrefab:          true,
 		AlgorithmId:       req.AlgorithmId,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ModelName:         req.ModelName,
 		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 	})

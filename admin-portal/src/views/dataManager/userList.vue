@@ -38,7 +38,9 @@
         </el-table-column>
         <el-table-column label="提供者">
           <template slot-scope="scope">
-            <span>{{ scope.row.userName }}</span>
+            <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+              <span>{{ scope.row.userName }}</span>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="创建时间">
@@ -89,7 +91,8 @@
         typeChange: undefined,
         searchForm: [
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
-          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }
+          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+          { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
         ],
         searchData: {
           pageIndex: 1,
