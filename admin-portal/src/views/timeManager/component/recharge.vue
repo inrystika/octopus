@@ -11,7 +11,6 @@
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            </el-table-column>
             <el-table-column label="充值机时(h)" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.amount }}</span>
