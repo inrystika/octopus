@@ -82,6 +82,7 @@ func (s *billingService) assignUser(ctx context.Context, billingUsers []*api.Bil
 
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 		}
 	}
@@ -359,6 +360,7 @@ func (s *billingService) assignUserPayRecord(ctx context.Context, records []*api
 
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 		}
 	}
@@ -382,6 +384,7 @@ func (s *billingService) assignUserRechargeRecord(ctx context.Context, records [
 
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 		}
 	}
