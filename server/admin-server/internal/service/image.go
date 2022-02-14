@@ -79,6 +79,8 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
 		SearchKey:     req.SearchKey,
+		UserId:        req.UserId,
+		SpaceId:       req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
