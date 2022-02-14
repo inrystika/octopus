@@ -215,6 +215,7 @@ message SpacePayRecord {
   string spaceName = 12;
   string userId = 13;
   string userName = 14;
+  string userEmail = 15;
 }
 
 message ListSpacePayRecordReply {
