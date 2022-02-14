@@ -424,6 +424,7 @@ func (s *billingService) assignSpacePayRecord(ctx context.Context, records []*ap
 
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 		}
 	}
