@@ -11,7 +11,13 @@
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="userName" label="用户名" v-if="type=='group'"> </el-table-column>
+            <el-table-column label="用户名" v-if="type=='group'">
+                <template slot-scope="scope">
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
             <el-table-column prop="title" label="任务名称"> </el-table-column>
             <el-table-column label="消费机时(h)" align="center">
                 <template slot-scope="scope">
@@ -35,7 +41,7 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize" :total="total"
                 layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" />
         </div>
@@ -54,21 +60,24 @@
         },
         data() {
             return {
-                pageIndex: 1,
-                pageSize: 10,
+                searchData: {
+                    pageIndex: 1,
+                    pageSize: 10
+                },
                 total: undefined,
                 tableData: [],
                 formLabelWidth: '120px',
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [],
-                type: ''
+                type: '',
+                searchKey:''
 
             }
         },
 
         created() {
-            this.getPay()
+            this.getPay(this.searchData)
             if (this.consumptionTabType === 1) {
                 this.type = 'user'
                 this.searchForm = [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }]
@@ -80,15 +89,17 @@
 
         methods: {
             handleSizeChange(val) {
-                this.pageSize = val
-                this.getPay()
+                this.searchData.pageSize = val
+                this.searchData.searchKey=this.searchKey
+                this.getPay(this.searchData)
             },
             handleCurrentChange(val) {
-                this.pageIndex = val
-                this.getPay()
+                this.searchData.pageIndex = val
+                this.searchData.searchKey=this.searchKey
+                this.getPay(this.searchData)
             },
             getPay(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (!data) { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize } }
                 if (data.time && data.time.length !== 0) {
                     data.startedAtGte = data.time[0] / 1000
                     data.startedAtLt = data.time[1] / 1000
@@ -122,8 +133,11 @@
             },
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
+                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
                 this.getPay(data)
+                if (val.searchKey) {
+                    this.searchKey = val.searchKey
+                }
             },
         }
     }

@@ -11,7 +11,6 @@
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            </el-table-column>
             <el-table-column label="充值机时(h)" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.amount }}</span>
@@ -25,9 +24,9 @@
             <el-table-column prop="title" label="充值说明"> </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
-                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-                @current-change="handleCurrentChange" />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
     </div>
 </template>
@@ -44,8 +43,10 @@
         },
         data() {
             return {
-                pageIndex: 1,
-                pageSize: 10,
+                searchData: {
+                    pageIndex: 1,
+                    pageSize: 10
+                },
                 total: undefined,
                 tableData: [],
                 formLabelWidth: '120px',
@@ -55,14 +56,15 @@
 
 
                 ],
-                type: ''
+                type: '',
+                searchKey: ''
                 // timer: null
 
             }
         },
 
         created() {
-            this.Recharge()
+            this.Recharge(this.searchData)
             if (this.rechangeTabType === 1) {
                 this.type = 'user'
                 this.searchForm = [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }]
@@ -73,15 +75,17 @@
         },
         methods: {
             handleSizeChange(val) {
-                this.pageSize = val
-                this.Recharge()
+                this.searchData.pageSize = val
+                this.searchData.searchKey=this.searchKey
+                this.Recharge(this.searchData)
             },
             handleCurrentChange(val) {
-                this.pageIndex = val
-                this.Recharge()
+                this.searchData.pageIndex = val
+                this.searchData.searchKey=this.searchKey
+                this.Recharge(this.searchData)
             },
             Recharge(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (!data) { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize } }
                 if (this.rechangeTabType === 1) {
                     getUserRecharge(data).then(response => {
                         if (response.success) {
@@ -110,8 +114,12 @@
             },
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
+                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
                 this.Recharge(data)
+                if (val.searchKey) {
+                    this.searchKey = val.searchKey
+                }
+
             },
         }
     }
