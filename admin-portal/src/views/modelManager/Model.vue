@@ -73,7 +73,11 @@
                 modelId: undefined,
                 type: undefined,
                 // timer: null,
-                searchForm: [],
+                searchForm: [
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
+
+                ],
                 CreateVisible: false,
                 row: {},
                 isList: true,
