@@ -2,12 +2,12 @@
     <div>
         <div>
             <el-select v-model="userId" filterable :filter-method="getUserOptions" v-loadmore="loadUserName"
-                @focus='userClick' v-if="type=='user'">
+                @focus='userClick' v-if="type=='user'" placeholder="用户">
                 <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
                     :value="op.id" />
             </el-select>
             <el-select v-model="spaceId" v-loadmore="loadGroupName"
-            @focus='groupClick' v-if="type=='group'">
+            @focus='groupClick' v-if="type=='group'" placeholder="群组">
                 <el-option v-for="op in groupOptions" :key="op.id" :label="op.name" :value="op.id" />
             </el-select>
             <el-button type="primary" @click="reset" class="reset">重置</el-button>
