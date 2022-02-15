@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-export function getMyModel(params) {
+export function getUserModel(params) {
   return request({
     url: '/v1/modelmanage/usermodel',
     method: 'get',
