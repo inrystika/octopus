@@ -188,6 +188,8 @@ func (h *modelQueryHandle) ListAllUserModelHandle(ctx context.Context, req *api.
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		UserId:         req.UserId,
+		SpaceId:        req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
