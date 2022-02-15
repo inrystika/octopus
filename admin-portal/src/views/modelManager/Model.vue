@@ -55,7 +55,7 @@
 <script>
     import versionList from './components/versionList.vue'
     import createDialog from './components/createDialog.vue'
-    import { getMyModel, getPreModel, deletePreModel } from '@/api/modelManager.js'
+    import { getUserModel, getPreModel, deletePreModel } from '@/api/modelManager.js'
     import searchForm from '@/components/search/index.vue'
     export default {
         name: "MyModel",
@@ -79,7 +79,11 @@
                 modelId: undefined,
                 type: undefined,
                 // timer: null,
-                searchForm: [],
+                searchForm: [
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
+
+                ],
                 CreateVisible: false,
                 row: {},
                 isList: true,
@@ -145,7 +149,7 @@
                 if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
                 this.type = this.modelTabType
                 if (this.type === 1) {
-                    getMyModel(data).then(response => {
+                    getUserModel(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.models
