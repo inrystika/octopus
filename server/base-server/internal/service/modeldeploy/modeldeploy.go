@@ -230,18 +230,35 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	modelDeployContainerName := modelDeployContainerName
 	//容器中的模型挂载路径
 	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
+	seldonDefaultMountPath := "/mnt/models"
 	//挂载卷
-	volumeMounts := []v1.VolumeMount{
-		{
-			Name:      "modelfilepath",
-			MountPath: mountPath,
-			SubPath:   startJobInfo.modelPath,
-			ReadOnly:  false,
-		},
-		{
-			Name:      "localtime",
-			MountPath: "/etc/localtime",
-		},
+	volumeMounts := make([]v1.VolumeMount, 0)
+	if startJobInfo.modelFrame == PytorchFrame {
+		volumeMounts = []v1.VolumeMount{
+			{
+				Name:      "modelfilepath",
+				MountPath: mountPath,
+				SubPath:   startJobInfo.modelPath,
+				ReadOnly:  false,
+			},
+			{
+				Name:      "localtime",
+				MountPath: "/etc/localtime",
+			},
+		}
+	} else {
+		volumeMounts = []v1.VolumeMount{
+			{
+				Name:      "modelfilepath",
+				MountPath: seldonDefaultMountPath,
+				SubPath:   startJobInfo.modelPath,
+				ReadOnly:  false,
+			},
+			{
+				Name:      "localtime",
+				MountPath: "/etc/localtime",
+			},
+		}
 	}
 
 	volumes := []v1.Volume{
@@ -299,25 +316,46 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	}
 
 	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec, 0)
-	seldonPodSpec := &seldonv1.SeldonPodSpec{
-		Spec: v1.PodSpec{
-			Containers: []v1.Container{
-				{
-					Name:         modelDeployContainerName,
-					VolumeMounts: volumeMounts,
-					Resources: v1.ResourceRequirements{
-						Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
-						Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+	if startJobInfo.modelFrame == PytorchFrame {
+		seldonPodSpec := &seldonv1.SeldonPodSpec{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:         modelDeployContainerName,
+						VolumeMounts: volumeMounts,
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+						},
+						Image: PytorchServerVersion,
 					},
-					Image: PytorchServerVersion,
 				},
+				Volumes: volumes,
+				// 使用火山调度器
+				SchedulerName: "volcano",
 			},
-			Volumes: volumes,
-			// 使用火山调度器
-			SchedulerName: "volcano",
-		},
+		}
+		seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
+	} else {
+		seldonPodSpec := &seldonv1.SeldonPodSpec{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:         modelDeployContainerName,
+						VolumeMounts: volumeMounts,
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
+						},
+					},
+				},
+				Volumes: volumes,
+				// 使用火山调度器
+				SchedulerName: "volcano",
+			},
+		}
+		seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
 	}
-	seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
 
 	var modelServer seldonv1.PredictiveUnitImplementation
 	var graphType seldonv1.PredictiveUnitType
