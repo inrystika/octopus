@@ -107,10 +107,6 @@
                 Logo: true,
                 searchForm: [{ type: 'Input', label: '镜像名称', prop: 'imageNameLike', placeholder: '请输入镜像名称' },
                 {
-                    type: 'Select', label: '镜像类型', prop: 'imageType', placeholder: '请选择镜像类型',
-                    options: [{ label: 'Notebook', value: 1 }, { label: '训练类型', value: 2 }]
-                },
-                {
                     type: 'Select', label: '状态', prop: 'imageStatus', placeholder: '请输入状态',
                     options: [{ label: '未制作', value: 1 }, { label: '制作中', value: 2 }, { label: '制作完成', value: 3 }, { label: '制作失败', value: 4 }]
                 },

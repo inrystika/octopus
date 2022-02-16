@@ -315,7 +315,7 @@
                     })
                 }
             },
-            userClick() { this.userOptions = [] },
+            userClick() {this.getUserOptions() },
             search() {
                 let data = {}
                 if (this.type == 'user') {
