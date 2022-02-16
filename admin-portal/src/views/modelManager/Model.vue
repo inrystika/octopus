@@ -12,7 +12,7 @@
                 <el-table-column prop="algorithmName" label="算法名称" />
                 <el-table-column prop="algorithmVersion" label="算法版本" />
                 <el-table-column prop="modelDescript" label="模型描述" />
-                <el-table-column label="群组名">
+                <el-table-column label="群组名" v-if="type===1">
                     <template slot-scope="scope">
                         <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
                     </template>
@@ -79,11 +79,7 @@
                 modelId: undefined,
                 type: undefined,
                 // timer: null,
-                searchForm: [
-                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
-                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
-
-                ],
+                searchForm: [],
                 CreateVisible: false,
                 row: {},
                 isList: true,
@@ -96,7 +92,15 @@
         },
         created() {
             this.getModel(this.searchData)
-            // this.timer = setInterval(this.getModel, 1000);
+            if (this.type == 1) {
+                this.searchForm = [
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
+                ]
+            }
+            else {
+                this.searchForm = []
+            }
         },
         methods: {
             handleSizeChange(val) {
