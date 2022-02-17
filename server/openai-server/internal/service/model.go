@@ -32,9 +32,11 @@ func NewModelService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) a
 // 查询预置模型列表
 func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRequest) (*api.ListPreModelReply, error) {
 	reply, err := s.data.ModelClient.ListPreModel(ctx, &innterapi.ListPreModelRequest{
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -64,11 +66,13 @@ func (s *ModelService) ListMyModel(ctx context.Context, req *api.ListMyModelRequ
 	}
 
 	reply, err := s.data.ModelClient.ListMyModel(ctx, &innterapi.ListMyModelRequest{
-		SpaceId:   spaceId,
-		UserId:    userId,
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		SpaceId:      spaceId,
+		UserId:       userId,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -98,10 +102,12 @@ func (s *ModelService) ListCommModel(ctx context.Context, req *api.ListCommModel
 	}
 
 	reply, err := s.data.ModelClient.ListCommModel(ctx, &innterapi.ListCommModelRequest{
-		SpaceId:   spaceId,
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		SpaceId:      spaceId,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
