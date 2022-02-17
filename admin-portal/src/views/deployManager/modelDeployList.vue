@@ -82,7 +82,7 @@
                 tableData: [],
                 detailDialog: false,
                 data: {},
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Available': ['status-agent', '可部署'], 'Creating': ['status-running', '创建中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'],'Stopped': ['status-stopping', '已停止'] },
                 searchForm: [
                 ],
                 searchData: {

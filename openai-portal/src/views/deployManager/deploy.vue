@@ -93,7 +93,7 @@
                     pageIndex: 1,
                     pageSize: 10
                 },
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Pending': ['status-agent', '等待中'], 'Running': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Succeeded': ['status-success', '成功'], 'Stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'],'Stopped': ['status-stopping', '已停止'] },
             }
         },
         created() {
