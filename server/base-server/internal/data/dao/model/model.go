@@ -108,6 +108,8 @@ type ModelList struct {
 	PageIndex             int
 	PageSize              int
 	Ids                   []string
+	CreatedAtGte          int64
+	CreatedAtLt           int64
 }
 
 // ModelVersion
@@ -135,6 +137,8 @@ type ModelAccessList struct {
 	PageIndex      int
 	PageSize       int
 	Ids            []string
+	CreatedAtGte   int64
+	CreatedAtLt    int64
 }
 
 // ModelAccessVersion
