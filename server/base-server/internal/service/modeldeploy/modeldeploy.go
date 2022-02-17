@@ -230,7 +230,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	modelDeployContainerName := modelDeployContainerName
 	//容器中的模型挂载路径
 	mountPath := fmt.Sprintf("%s/%s/%s/%s", SeldonDockerWorkDir, modelDeploy.UserId, modelDeploy.ModelId, modelDeploy.ModelVersion)
-	seldonDefaultMountPath := "/mnt/models"
+	seldonTFDefaultMountPath := "/mnt/models"
 	//挂载卷
 	volumeMounts := make([]v1.VolumeMount, 0)
 	if startJobInfo.modelFrame == PytorchFrame {
@@ -250,7 +250,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		volumeMounts = []v1.VolumeMount{
 			{
 				Name:      "modelfilepath",
-				MountPath: seldonDefaultMountPath,
+				MountPath: seldonTFDefaultMountPath,
 				SubPath:   startJobInfo.modelPath,
 				ReadOnly:  false,
 			},
@@ -278,7 +278,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 				}},
 		},
 	}
-
+	//自定义pytorch框架的服务器
 	parameters := []seldonv1.Parameter{
 		{
 			Name:  ModelVolumePath,
@@ -301,12 +301,12 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Value: modelDeploy.ModelVersion,
 		},
 	}
-
+	// tf 框架的服务器
 	tfGraphParameters := []seldonv1.Parameter{
 		{
 			Name:  TFSignatureName,
 			Type:  "STRING",
-			Value: SeldonDockerWorkDir,
+			Value: "predict_images",
 		},
 		{
 			Name:  TFModelName,
@@ -336,7 +336,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			},
 		}
 		seldonPodSpecs = append(seldonPodSpecs, seldonPodSpec)
-	} else {
+	} else if startJobInfo.modelFrame == TensorFlowFrame {
 		seldonPodSpec := &seldonv1.SeldonPodSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -347,6 +347,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 							Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						},
+						// 此处本可以不指定，不过外网中pull image的时间较长。将其放在章鱼镜像仓。
+						//Image: "seldonio/tfserving-proxy:1.12.0",
 					},
 				},
 				Volumes: volumes,
@@ -369,7 +371,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 			Type:           &graphType,
 			Implementation: &modelServer,
 			//tf服务器直接从此处下载文件
-			ModelURI:   startJobInfo.modelUrl,
+			//ModelURI:   "gs://seldon-models/tfserving/mnist-model",
+			ModelURI:   "gs:seldon-models/sklearn/iris",
 			Parameters: tfGraphParameters,
 		}
 	} else if startJobInfo.modelFrame == PytorchFrame {
