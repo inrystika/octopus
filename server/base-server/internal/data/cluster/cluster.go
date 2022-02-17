@@ -2,18 +2,23 @@ package cluster
 
 import (
 	"context"
+	"server/base-server/internal/common"
+
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+
+	nav1 "nodeagent/apis/agent/v1"
+	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
+
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/rest"
-	nav1 "nodeagent/apis/agent/v1"
-	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 )
 
 type ClusterClient interface {
-	GetNodeInformer()       infov1.NodeInformer
-	GetPodInformer()        infov1.PodInformer
+	GetNodeInformer() infov1.NodeInformer
+	GetPodInformer() infov1.PodInformer
 	GetNodeActionInformer() nainformerv1.NodeActionInformer
 }
 
@@ -48,4 +53,7 @@ type Cluster interface {
 	GetNodeAction(ctx context.Context, namespace, name string) (*nav1.NodeAction, error)
 	DeleteNodeAction(ctx context.Context, namespace string, name string) error
 	GetPod(ctx context.Context, namespace string, name string) (*v1.Pod, error)
+	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *seldonv1.SeldonDeployment) (*seldonv1.SeldonDeployment, error)
+	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
+	RegisterDeploymentInformerCallback(onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete)
 }

@@ -49,6 +49,7 @@ type Data struct {
 	Platform            platform.Platform
 	JointCloudDao       jointcloud.JointcloudDao
 	JointCloud          jointcloud.JointCloud
+	ModelDeployDao      dao.ModelDeployDao
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
@@ -85,6 +86,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.ResourceSpecDao = dao.NewResourceSpecDao(db, logger)
 	d.DevelopDao = dao.NewDevelopDao(db, influxdb, logger)
 	d.ModelDao = dao.NewModelDao(db, logger)
+	d.ModelDeployDao = dao.NewModelDeployDao(db, influxdb, logger)
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)
 	d.ImageDao = dao.NewImageDao(db, logger)
@@ -178,6 +180,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.TrainJobTemplate{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.ModelDeploy{})
 	if err != nil {
 		return nil, err
 	}

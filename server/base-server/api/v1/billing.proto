@@ -41,6 +41,7 @@ enum BillingBizType {
   BBT_PLACEHOLDER = 0;
   BBT_TRAIN_JOB = 1;
   BBT_NOTEBOOK = 2;
+  BBT_ModelDeploy = 3;
 }
 
 message CreateBillingOwnerRequest {

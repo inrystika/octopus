@@ -89,22 +89,22 @@ func GetMinioPreDataSetObject(dataSetId string, version string) string {
 		用户端相关目录获取
 **************************************/
 
-// 模型对象:models/spaceId/userId/models/modelId/version
+// 模型对象:models/spaceId/userId/modelId/version
 func GetMinioModelObject(spaceId string, userId string, modelId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s", MODEL_FOLDER, spaceId, userId, modelId, version)
 }
 
-// 算法对象:codes/spaceId/userId/codes/algorithmId/version
+// 算法对象:codes/spaceId/userId/algorithmId/version
 func GetMinioCodeObject(spaceId string, userId string, algorithmId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s", CODE_FOLDER, spaceId, userId, algorithmId, version)
 }
 
-// 数据集对象:dataSets/spaceId/userId/datasets/dataSetId/version
+// 数据集对象:dataSets/spaceId/userId/dataSetId/version
 func GetMinioDataSetObject(spaceId string, userId string, dataSetId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s", DATASET_FOLDER, spaceId, userId, dataSetId, version)
 }
 
-// 训练任务对象:trainJobs/spaceId/userId/trainJobs/trainJobId
+// 训练任务对象:trainJobs/spaceId/userId/trainJobId
 func GetMinioTrainJobObject(spaceId string, userId string, trainJobId string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", TRAIN_JOB_FOLDER, spaceId, userId, trainJobId)
 }

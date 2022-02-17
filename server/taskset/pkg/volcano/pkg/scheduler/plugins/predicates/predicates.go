@@ -31,6 +31,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/tainttoleration"
 	k8sframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
+	"volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
 	"volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/framework"
 	"volcano.sh/volcano/pkg/scheduler/plugins/util"
@@ -221,6 +222,18 @@ func (pp *predicatesPlugin) OnSessionOpen(ssn *framework.Session) {
 				}
 				if nodeSelectorMatched {
 					break
+				}
+			}
+			if !nodeSelectorMatched {
+				if q.Name == "default" {
+					rPoolBindingNodeLabelKey := fmt.Sprintf(v1beta1.PoolBindingNodeLabelKeyFormat, v1beta1.DefaultPoolName)
+					rPoolBindingNodeLabelValue := v1beta1.PoolBindingNodeLabelValue
+					for k, v := range node.Node.Labels {
+						if k == rPoolBindingNodeLabelKey && v == rPoolBindingNodeLabelValue {
+							nodeSelectorMatched = true
+							break
+						}
+					}
 				}
 			}
 		}
