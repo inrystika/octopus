@@ -58,6 +58,8 @@ func (h *modelQueryHandle) ListPreModelHandle(ctx context.Context, req *api.List
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -91,6 +93,8 @@ func (h *modelQueryHandle) ListMyModelHandle(ctx context.Context, req *api.ListM
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -129,6 +133,8 @@ func (h *modelQueryHandle) ListCommModelHandle(ctx context.Context, req *api.Lis
 		CreatedAtSort:  model.DESC,
 		PageIndex:      pageIndex,
 		PageSize:       pageSize,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -190,6 +196,8 @@ func (h *modelQueryHandle) ListAllUserModelHandle(ctx context.Context, req *api.
 		SearchKey:      req.SearchKey,
 		UserId:         req.UserId,
 		SpaceId:        req.SpaceId,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err

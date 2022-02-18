@@ -31,9 +31,11 @@ func NewModelService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) a
 // 查询预置模型列表
 func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRequest) (*api.ListPreModelReply, error) {
 	reply, err := s.data.ModelClient.ListPreModel(ctx, &innterapi.ListPreModelRequest{
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -58,11 +60,13 @@ func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRe
 // 查询用户模型列表
 func (s *ModelService) ListUserModel(ctx context.Context, req *api.ListUserModelRequest) (*api.ListUserModelReply, error) {
 	reply, err := s.data.ModelClient.ListAllUserModel(ctx, &innterapi.ListAllUserModelRequest{
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
-		UserId:    req.UserId,
-		SpaceId:   req.SpaceId,
+		PageIndex:      req.PageIndex,
+		PageSize:       req.PageSize,
+		SearchKey:      req.SearchKey,
+		UserId:         req.UserId,
+		SpaceId:        req.SpaceId,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
