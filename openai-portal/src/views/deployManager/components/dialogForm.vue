@@ -142,7 +142,8 @@
                 modelVersionTemp: '',
                 uncheckable: false,
                 //临时模型名称ID
-                tempId: undefined
+                tempId: undefined,
+                flag:false
 
             }
         },
@@ -156,6 +157,7 @@
                 this.ruleForm.modelId = this.row.modelName
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
+                this.flag=true
 
             }
             this.getResourceList()
@@ -352,6 +354,9 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        if(this.flag){
+                            this.ruleForm.modelId=this.tempId
+                        }
                         createDeploy(this.ruleForm).then(response => {
                             if (response.success) {
                                 this.$message({
