@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
+	"time"
 
 	"server/common/log"
 
@@ -100,6 +101,16 @@ func (d *modelDao) ListModel(ctx context.Context, req *model.ModelList) (int64, 
 	if len(req.Ids) != 0 {
 		querySql += " and id in ? "
 		params = append(params, req.Ids)
+	}
+
+	if req.CreatedAtGte != 0 {
+		querySql += " and created_at >= ? "
+		params = append(params, time.Unix(req.CreatedAtGte, 0))
+	}
+
+	if req.CreatedAtLt != 0 {
+		querySql += " and created_at < ? "
+		params = append(params, time.Unix(req.CreatedAtLt, 0))
 	}
 
 	// 模糊搜索

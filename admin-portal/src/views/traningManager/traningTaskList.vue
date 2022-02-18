@@ -58,7 +58,7 @@
                         @click="open(scope.row)"
                     >停止
                     </el-button>
-                    <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
+                    <el-button type="text" @click="handledetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
