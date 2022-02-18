@@ -40,7 +40,7 @@
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
                     <el-button
-                        v-if="scope.row.status==='Pending'||scope.row.status==='Running'||scope.row.status==='Preparing'"
+                        v-if="scope.row.status==='Available'"
                         type="text" @click="open2(scope.row.id)">
                         停止
                     </el-button>
