@@ -99,21 +99,6 @@
             },
             getVersionList(val) {
                 let frameworkName = ""
-                if (this.modelTabType === 1) {
-                    getMyAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
-                        if (response.success) {
-                            response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
-                            if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
-                                this.showDeploy = true
-                            }
-                            else { this.showDeploy = false }
-                            this.FormVisible = true;
-                            this.modelId = val.modelId
-                            this.modelName = val.modelName
-                        }
-
-                    })
-                }
                 if (this.modelTabType === 3) {
                     getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
                         if (response.success) {
@@ -128,14 +113,41 @@
                         }
                     })
                 }
-                if (this.modelTabType === 2) {
+                if (this.modelTabType === 2 || this.modelTabType == 1) {
                     getPublicAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
                         if (response.success) {
                             response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                             if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
                                 this.showDeploy = true
                             }
-                            else { this.showDeploy = false }
+                            else {
+                                getMyAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                                    if (response.success) {
+                                        response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                                        if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                            this.showDeploy = true
+                                        }
+                                        else {
+                                            getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                                                if (response.success) {
+                                                    response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                                                    if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                                        this.showDeploy = true
+                                                    }
+                                                    else { this.showDeploy = false }
+                                                    this.FormVisible = true;
+                                                    this.modelId = val.modelId
+                                                    this.modelName = val.modelName
+                                                }
+                                            })
+                                        }
+                                        this.FormVisible = true;
+                                        this.modelId = val.modelId
+                                        this.modelName = val.modelName
+                                    }
+
+                                })
+                            }
                             this.FormVisible = true;
                             this.modelId = val.modelId
                             this.modelName = val.modelName
