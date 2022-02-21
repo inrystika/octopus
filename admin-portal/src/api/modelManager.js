@@ -83,4 +83,3 @@ export function modelFinishUpload(data) {
     data: { fileName: data.fileName }
   })
 }
-
