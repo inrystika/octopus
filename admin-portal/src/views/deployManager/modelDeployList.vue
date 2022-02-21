@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" :blur-name="'模型名称 搜索'" @searchData="getSearchData" />
+        <searchForm :search-form="searchForm" :blur-name="'服务名称 搜索'" @searchData="getSearchData" />
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column label="用户名">
@@ -10,7 +10,7 @@
             </el-table-column>
             <el-table-column label="群组">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.workspaceName }}</span>
+                    <span>{{ scope.row.workspaceName==""?'默认群组':scope.row.workspaceName }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="服务名称">
@@ -46,7 +46,7 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.completedAt) }}</span>
+                    <span>{{ parseTime(scope.row.createdAt) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
@@ -67,7 +67,7 @@
 
 <script>
     import detailDialog from "./components/index.vue";
-    import { getDeployList,deployDetail } from '@/api/deployManager.js'
+    import { getDeployList, deployDetail } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     export default {
@@ -82,7 +82,7 @@
                 tableData: [],
                 detailDialog: false,
                 data: {},
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'],'Stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
                 searchForm: [
                 ],
                 searchData: {
@@ -129,7 +129,7 @@
                         });
                     }
                 })
-            },      
+            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getDeployList(this.searchData)
