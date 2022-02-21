@@ -4,7 +4,6 @@
             :close-on-click-modal="false">
             <el-table :data="tableData" height="300">
                 <el-table-column property="name" label="模型名称" />
-                <el-table-column property="contentType" label="内容类型" />
                 <el-table-column property="size" label="模型大小" />
                 <el-table-column label="最后修改时间">
                     <template slot-scope="scope">
