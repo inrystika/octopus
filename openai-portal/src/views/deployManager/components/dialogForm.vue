@@ -153,12 +153,11 @@
                 this.uncheckable = true
                 this.modelName = true
                 this.modelVersion = true
-                this.ruleForm.modelSource = '3'
+                this.ruleForm.modelSource = this.row.type.toString()       
                 this.ruleForm.modelId = this.row.modelName
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
                 this.flag=true
-
             }
             this.getResourceList()
         },

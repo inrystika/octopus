@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.startedAt }}</span>
+                    <span>{{ scope.row.startedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -68,7 +68,6 @@
     import dialogForm from "./components/dialogForm.vue";
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
-    import { parseTime } from '@/utils/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -214,10 +213,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             formatDuring(val) {
                 return formatDuring(val)
