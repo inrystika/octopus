@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :search-form="searchForm" :blur-name="'请输入名称'" @searchData="getSearchData" />
+            <searchForm :search-form="searchForm" :blur-name="'请输入服务名称'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"

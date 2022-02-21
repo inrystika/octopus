@@ -119,6 +119,9 @@
                             response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                             if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
                                 this.showDeploy = true
+                                this.FormVisible = true;
+                                this.modelId = val.modelId
+                                this.modelName = val.modelName
                             }
                             else {
                                 getMyAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
@@ -126,6 +129,9 @@
                                         response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                                         if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
                                             this.showDeploy = true
+                                            this.FormVisible = true;
+                                            this.modelId = val.modelId
+                                            this.modelName = val.modelName
                                         }
                                         else {
                                             getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
@@ -134,23 +140,19 @@
                                                     if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
                                                         this.showDeploy = true
                                                     }
-                                                    else { this.showDeploy = false }
-                                                    this.FormVisible = true;
-                                                    this.modelId = val.modelId
-                                                    this.modelName = val.modelName
+                                                    else {
+                                                        this.showDeploy = false; this.FormVisible = true;
+                                                        this.modelId = val.modelId
+                                                        this.modelName = val.modelName
+                                                    }
+
                                                 }
                                             })
                                         }
-                                        this.FormVisible = true;
-                                        this.modelId = val.modelId
-                                        this.modelName = val.modelName
                                     }
 
                                 })
                             }
-                            this.FormVisible = true;
-                            this.modelId = val.modelId
-                            this.modelName = val.modelName
                         }
                     })
 

@@ -337,7 +337,7 @@
             getResourceList() {
                 getResourceList().then(response => {
                     if (response.success) {
-                        response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
+                        response.data.mapResourceSpecIdList.deploy.resourceSpecs.forEach(
                             item => {
                                 this.resourceOptions.push({ label: item.name + ' ' + item.price + '机时/h', value: item.id })
                             }
