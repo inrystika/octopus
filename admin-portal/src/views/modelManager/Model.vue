@@ -95,12 +95,11 @@
             if (this.type == 1) {
                 this.searchForm = [
                     { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
-                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' },
-                    { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' }
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
                 ]
             }
             else {
-                this.searchForm = [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' }]
+                this.searchForm = []
             }
         },
         methods: {
@@ -151,11 +150,7 @@
                 })
             },
             getModel(data) {
-                if (data.time && data.time.length !== 0) {
-                    data.createAtGte = data.time[0] / 1000
-                    data.createAtLt = data.time[1] / 1000
-                    delete data.time
-                }
+                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
                 this.type = this.modelTabType
                 if (this.type === 1) {
                     getUserModel(data).then(response => {

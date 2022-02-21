@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="编辑" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
-      :close-on-click-modal="false" v-if="show">
+      :close-on-click-modal="false">
       <el-form :model="form">
         <el-form-item label="数据类型:" :label-width="formLabelWidth">
           <el-select v-model="form.typeId" placeholder="请选择">
@@ -51,28 +51,13 @@
       this.datasetType()
       this.datasetUse()
     },
-    watch: {
-      apply() {
-        if (this.apply && this.type) {
-          this.show = true
-        }
-      },
-      type() {
-        if (this.apply && this.type) {
-          this.show = true
-        }
-      }
-    },
     data() {
       return {
         form: { datasetId: '', typeId: '', applyIds: [], desc: '' },
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],
-        useOptions: [],
-        show: false,
-        apply: false,
-        type: false
+        useOptions: []
       };
     },
     methods: {
@@ -90,7 +75,6 @@
         datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
-            this.type = true
           } else {
             // this.showUpload = false
             this.$message({
@@ -105,7 +89,6 @@
         datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
-            this.apply = true
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
