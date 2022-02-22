@@ -197,7 +197,7 @@ func (kc *kubernetesCluster) GetAllNodes(ctx context.Context) (map[string]v1.Nod
 	return nodeMap, err
 }
 
-func (kc *kubernetesCluster) GetNodePods(ctx context.Context, nodeName string) (*v1.PodList, error) {
+func (kc *kubernetesCluster) GetNodeUnfinishedPods(ctx context.Context, nodeName string) (*v1.PodList, error) {
 	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + nodeName +
 		",status.phase!=" + string(v1.PodSucceeded) +
 		",status.phase!=" + string(v1.PodFailed))

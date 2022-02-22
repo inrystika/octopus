@@ -26,7 +26,7 @@ type Cluster interface {
 	ClusterClient
 	GetClusterConfig() *rest.Config
 	GetAllNodes(ctx context.Context) (map[string]v1.Node, error)
-	GetNodePods(ctx context.Context, nodeName string) (*v1.PodList, error)
+	GetNodeUnfinishedPods(ctx context.Context, nodeName string) (*v1.PodList, error)
 	CreateService(ctx context.Context, service *v1.Service) error
 	DeleteService(ctx context.Context, namespace string, name string) error
 	CreateIngress(ctx context.Context, ingress *v1beta1.Ingress) error

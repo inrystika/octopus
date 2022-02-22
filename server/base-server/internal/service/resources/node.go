@@ -73,7 +73,7 @@ func (nsvc *NodeService) ListNode(ctx context.Context, req *empty.Empty) (*api.N
 		}
 
 		allocatedResourceMap := make(map[string]*resource.Quantity)
-		pods, err := nsvc.data.Cluster.GetNodePods(ctx, nodename)
+		pods, err := nsvc.data.Cluster.GetNodeUnfinishedPods(ctx, nodename)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorListNode)
 		}

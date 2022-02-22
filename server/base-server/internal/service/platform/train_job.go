@@ -694,7 +694,7 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 		}
 
 		allocatedResourceMap := make(map[string]*resource.Quantity)
-		pods, err := s.data.Cluster.GetNodePods(ctx, nodename)
+		pods, err := s.data.Cluster.GetNodeUnfinishedPods(ctx, nodename)
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorListNode)
 		}
