@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/fields"
+
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
 	//seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -195,11 +197,16 @@ func (kc *kubernetesCluster) GetAllNodes(ctx context.Context) (map[string]v1.Nod
 	return nodeMap, err
 }
 
-func (kc *kubernetesCluster) GetRunningPods(ctx context.Context) (*v1.PodList, error) {
+func (kc *kubernetesCluster) GetNodePods(ctx context.Context, nodeName string) (*v1.PodList, error) {
+	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + nodeName +
+		",status.phase!=" + string(v1.PodSucceeded) +
+		",status.phase!=" + string(v1.PodFailed))
 
+	if err != nil {
+		return nil, err
+	}
 	pods, err := kc.kubeclient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
-		FieldSelector: "status.phase=Running",
-		//LabelSelector: "volcano.sh/job-name",
+		FieldSelector: fieldSelector.String(),
 	})
 
 	if err != nil {
