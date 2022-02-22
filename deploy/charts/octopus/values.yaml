@@ -42,7 +42,7 @@ ingress:
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
-  ambassadorPath: /deploy
+  ambassadorPath: /seldon
   minioPath:
     web: /minio
     api: /oss
