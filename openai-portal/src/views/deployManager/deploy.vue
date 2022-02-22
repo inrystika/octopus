@@ -16,7 +16,7 @@
                     <span>{{ scope.row.modelName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="版本" align="center">
+            <el-table-column label="模型版本" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.modelVersion }}</span>
                 </template>

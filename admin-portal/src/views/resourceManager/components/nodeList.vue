@@ -30,7 +30,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="平台使用量">
+                <el-table-column label="使用量">
                     <template slot-scope="scope">
                         <span style="color: #409eff;">
                             {{ scope.row.use }}
