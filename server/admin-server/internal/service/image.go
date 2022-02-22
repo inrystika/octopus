@@ -73,8 +73,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
-		UserNameLike:  req.UserNameLike,
-		SpaceNameLike: req.SpaceNameLike,
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
