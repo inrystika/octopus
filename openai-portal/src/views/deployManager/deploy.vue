@@ -40,7 +40,7 @@
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
                     <el-button
-                        v-if="scope.row.status==='Available'"
+                        v-if="scope.row.status==='Available'||scope.row.status==='Creating'"
                         type="text" @click="open2(scope.row.id)">
                         停止
                     </el-button>
@@ -218,21 +218,21 @@
                 return formatDuring(val)
             },
             // 删除确认
-            open(val) {
-                let message = '此操作将永久删除该部署服务'
-                this.$confirm(message, '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.handleDelete(val)
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
-            },
+            // open(val) {
+            //     let message = '此操作将永久删除该部署服务'
+            //     this.$confirm(message, '提示', {
+            //         confirmButtonText: '确定',
+            //         cancelButtonText: '取消',
+            //         type: 'warning'
+            //     }).then(() => {
+            //         this.handleDelete(val)
+            //     }).catch(() => {
+            //         this.$message({
+            //             type: 'info',
+            //             message: '已取消删除'
+            //         });
+            //     });
+            // },
             // 停止确认
             open2(val) {
                 this.$confirm('此操作将停止运行该部署服务, 是否继续?', '提示', {
