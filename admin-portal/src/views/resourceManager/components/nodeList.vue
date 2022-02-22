@@ -151,7 +151,6 @@
                         arr.push(info)
                     }
                 }
-                console.log(arr)
                 return arr
             },
             listSpanMethod({ row, column, rowIndex, columnIndex }) {
