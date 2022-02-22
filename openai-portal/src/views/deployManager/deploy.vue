@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="searchForm">
-            <searchForm :search-form="searchForm" :blur-name="'请输入名称'" @searchData="getSearchData" />
+            <searchForm :search-form="searchForm" :blur-name="'请输入服务名称'" @searchData="getSearchData" />
         </div>
         <el-button v-if="flag" type="primary" class="create" @click="create">创建</el-button>
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.startedAt }}</span>
+                    <span>{{ scope.row.startedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -40,7 +40,7 @@
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
                     <el-button
-                        v-if="scope.row.status==='Pending'||scope.row.status==='Running'||scope.row.status==='Preparing'"
+                        v-if="scope.row.status==='Available'"
                         type="text" @click="open2(scope.row.id)">
                         停止
                     </el-button>
@@ -68,7 +68,6 @@
     import dialogForm from "./components/dialogForm.vue";
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
-    import { parseTime } from '@/utils/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -93,7 +92,7 @@
                     pageIndex: 1,
                     pageSize: 10
                 },
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Pending': ['status-agent', '等待中'], 'Running': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Succeeded': ['status-success', '成功'], 'Stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'],'Stopped': ['status-stopping', '已停止'] },
             }
         },
         created() {
@@ -214,10 +213,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             formatDuring(val) {
                 return formatDuring(val)
