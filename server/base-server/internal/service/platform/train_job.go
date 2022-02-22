@@ -664,7 +664,7 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 		return nil, errors.Errorf(err, errors.ErrorListNode)
 	}
 
-	tasks, err := s.data.Cluster.GetRunningTasks(ctx)
+	tasks, err := s.data.Cluster.GetRunningPods(ctx)
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListNode)

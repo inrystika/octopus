@@ -42,7 +42,7 @@ func (nsvc *NodeService) ListNode(ctx context.Context, req *empty.Empty) (*api.N
 		return nil, errors.Errorf(err, errors.ErrorListNode)
 	}
 
-	tasks, err := nsvc.data.Cluster.GetRunningTasks(ctx)
+	tasks, err := nsvc.data.Cluster.GetRunningPods(ctx)
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListNode)

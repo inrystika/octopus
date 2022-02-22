@@ -195,11 +195,11 @@ func (kc *kubernetesCluster) GetAllNodes(ctx context.Context) (map[string]v1.Nod
 	return nodeMap, err
 }
 
-func (kc *kubernetesCluster) GetRunningTasks(ctx context.Context) (*v1.PodList, error) {
+func (kc *kubernetesCluster) GetRunningPods(ctx context.Context) (*v1.PodList, error) {
 
 	pods, err := kc.kubeclient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
 		FieldSelector: "status.phase=Running",
-		LabelSelector: "volcano.sh/job-name",
+		//LabelSelector: "volcano.sh/job-name",
 	})
 
 	if err != nil {
