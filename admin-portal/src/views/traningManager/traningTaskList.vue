@@ -29,7 +29,9 @@
             </el-table-column>
             <el-table-column label="用户名">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
@@ -56,7 +58,7 @@
                         @click="open(scope.row)"
                     >停止
                     </el-button>
-                    <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
+                    <el-button type="text" @click="handledetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -102,8 +104,8 @@
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '成功', value: 'succeeded' }, { label: '失败', value: 'failed' }, { label: '运行中', value: 'running' }, { label: '等待中', value: 'pending' }, { label: '已停止', value: 'stopped' }, { label: '初始中', value: 'preparing' }]
                     },
-                    { type: 'InputSelectUser', label: '用户名', prop: 'userId', placeholder: '请输入用户名' },
-                    { type: 'InputSelectGroup', label: '群组名', prop: 'workspaceId', placeholder: '请输入群组名' }
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'workspaceId', placeholder: '请输入群组名' }
 
                 ],
                 searchData: {

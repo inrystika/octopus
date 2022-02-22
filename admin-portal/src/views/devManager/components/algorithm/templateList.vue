@@ -13,6 +13,11 @@
           <span>{{ scope.row.algorithmName }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="模型名称">
+        <template slot-scope="scope">
+          <span>{{ scope.row.modelName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="当前版本号">
         <template slot-scope="scope">
           <span>{{ scope.row.algorithmVersion }}</span>

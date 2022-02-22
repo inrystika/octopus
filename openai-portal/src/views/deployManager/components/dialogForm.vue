@@ -142,7 +142,8 @@
                 modelVersionTemp: '',
                 uncheckable: false,
                 //临时模型名称ID
-                tempId: undefined
+                tempId: undefined,
+                flag:false
 
             }
         },
@@ -152,11 +153,11 @@
                 this.uncheckable = true
                 this.modelName = true
                 this.modelVersion = true
-                this.ruleForm.modelSource = '3'
+                this.ruleForm.modelSource = this.row.type.toString()       
                 this.ruleForm.modelId = this.row.modelName
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
-
+                this.flag=true
             }
             this.getResourceList()
         },
@@ -336,7 +337,7 @@
             getResourceList() {
                 getResourceList().then(response => {
                     if (response.success) {
-                        response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
+                        response.data.mapResourceSpecIdList.deploy.resourceSpecs.forEach(
                             item => {
                                 this.resourceOptions.push({ label: item.name + ' ' + item.price + '机时/h', value: item.id })
                             }
@@ -352,6 +353,9 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        if(this.flag){
+                            this.ruleForm.modelId=this.tempId
+                        }
                         createDeploy(this.ruleForm).then(response => {
                             if (response.success) {
                                 this.$message({

@@ -8,6 +8,7 @@ import (
 	innerapi "server/base-server/api/v1"
 	innterapi "server/base-server/api/v1"
 	"server/common/log"
+	"server/common/utils/collections/set"
 
 	"github.com/jinzhu/copier"
 )
@@ -222,14 +223,38 @@ func (s *AlgorithmService) ListAllAlgorithm(ctx context.Context, req *api.ListAl
 		AlgorithmVersion: req.AlgorithmVersion,
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	userIds := []string{}
+	for _, i := range reply.Algorithms {
+		userIds = append(userIds, i.UserId)
+	}
+
 	algorithms := make([]*api.AlgorithmDetail, 0)
 	for _, algorithm := range reply.Algorithms {
 		algorithms = append(algorithms, s.algorithmTransfer(ctx, algorithm))
+	}
+
+	if len(userIds) > 0 {
+		userIds = set.NewStrings(userIds...).Values()
+		userReply, err := s.data.UserClient.ListUserInCond(ctx, &innterapi.ListUserInCondRequest{Ids: userIds})
+		if err != nil {
+			return nil, err
+		}
+
+		emailMap := make(map[string]string)
+		for _, u := range userReply.Users {
+			emailMap[u.Id] = u.Email
+		}
+
+		for _, algorithm := range algorithms {
+			algorithm.UserEmail = emailMap[algorithm.UserId]
+		}
 	}
 
 	return &api.ListAllAlgorithmReply{
@@ -381,6 +406,7 @@ func (s *AlgorithmService) UpdatePreAlgorithm(ctx context.Context, req *api.Upda
 		IsPrefab:          true,
 		AlgorithmId:       req.AlgorithmId,
 		AlgorithmDescript: req.AlgorithmDescript,
+		ModelName:         req.ModelName,
 		ApplyId:           req.ApplyId,
 		FrameworkId:       req.FrameworkId,
 	})

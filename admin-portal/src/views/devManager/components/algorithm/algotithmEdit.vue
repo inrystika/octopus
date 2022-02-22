@@ -3,6 +3,9 @@
     <el-dialog title="编辑" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
       :close-on-click-modal="false" v-if="show">
       <el-form :model="form">
+        <el-form-item label="模型名称" :label-width="formLabelWidth">
+          <el-input v-model="form.modelName"></el-input>
+        </el-form-item>
         <el-form-item label="模型类别:" :label-width="formLabelWidth">
           <el-select v-model="form.applyId" placeholder="请选择">
             <el-option v-for="item in typeOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
@@ -41,13 +44,14 @@
       this.form.algorithmId = this.row.algorithmId
       this.form.applyId = this.row.applyId
       this.form.frameworkId = this.row.frameworkId
-      this.form.desc = this.row.desc
+      this.form.algorithmDescript = this.row.algorithmDescript
+      this.form.modelName = this.row.modelName
       this.algorithmType()
       this.frameType()
     },
     data() {
       return {
-        form: { algorithmId: '', frameworkId: '', applyId: '', desc: '' },
+        form: { algorithmId: '', frameworkId: '', applyId: '', algorithmDescript: '', modelName: '' },
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],

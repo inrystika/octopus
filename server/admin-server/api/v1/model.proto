@@ -103,6 +103,10 @@ message ModelDetail {
   string latestVersion = 9;
   // 模型创建时间(时间戳)
   int64 createdAt = 10;
+  // 用户邮箱
+  string userEmail = 11;
+  // 用户id
+  string userId = 12;
 }
 
 message VersionDetail {
@@ -125,6 +129,8 @@ message ListPreModelRequest {
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   // 模糊搜索字段，最大512个字符，非必填
   string searchKey = 3[(validate.rules).string = {max_len:512}];
+  int64 createdAtGte = 4;
+  int64 createdAtLt = 5;
 }
 message ListPreModelReply {
   // 符合条件的总条数
@@ -140,6 +146,10 @@ message ListUserModelRequest {
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   // 模糊搜索字段，最大512个字符，非必填
   string searchKey = 3[(validate.rules).string = {max_len:512}];
+  string userId = 4[(validate.rules).string = {max_len: 36}];
+  string spaceId = 5[(validate.rules).string = {max_len: 36}];
+  int64 createdAtGte = 6;
+  int64 createdAtLt = 7;
 }
 message ListUserModelReply {
   // 符合条件的总条数
