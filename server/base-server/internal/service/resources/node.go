@@ -34,22 +34,13 @@ func (nsvc *NodeService) ListNode(ctx context.Context, req *empty.Empty) (*api.N
 		Nodes: []*api.Node{},
 	}
 
-	resNodeAllcatedResourceMap := make(map[string]map[string]*resource.Quantity)
-
 	allNodeMap, err := nsvc.data.Cluster.GetAllNodes(ctx)
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListNode)
 	}
 
-	tasks, err := nsvc.data.Cluster.GetRunningPods(ctx)
-
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorListNode)
-	}
-
 	for nodename, node := range allNodeMap {
-		resNodeAllcatedResourceMap[nodename] = make(map[string]*resource.Quantity)
 		resNode := &api.Node{
 			Name:          nodename,
 			Status:        "NotReady",
@@ -81,6 +72,37 @@ func (nsvc *NodeService) ListNode(ctx context.Context, req *empty.Empty) (*api.N
 			}
 		}
 
+		allocatedResourceMap := make(map[string]*resource.Quantity)
+		pods, err := nsvc.data.Cluster.GetNodeUnfinishedPods(ctx, nodename)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorListNode)
+		}
+
+		for _, pod := range pods.Items {
+			for _, container := range pod.Spec.Containers {
+				for resname, quantity := range container.Resources.Requests {
+					if _, ok := allocatedResourceMap[resname.String()]; !ok {
+						newQ := quantity.DeepCopy()
+						allocatedResourceMap[resname.String()] = &newQ
+					} else {
+						allocatedResourceMap[resname.String()].Add(quantity)
+					}
+				}
+			}
+		}
+
+		for resname, quantity := range allocatedResourceMap {
+			if !strings.Contains(nsvc.conf.Service.Resource.IgnoreSystemResources, resname) {
+				resNode.Allocated[resname] = quantity.String()
+			}
+		}
+
+		for resname := range resNode.Capacity {
+			if _, ok := resNode.Allocated[resname]; !ok {
+				resNode.Allocated[resname] = "0"
+			}
+		}
+
 		for labelKey, labelValue := range node.ObjectMeta.Labels {
 			rPoolBindingNodeLabelKeyFormat := nsvc.conf.Service.Resource.PoolBindingNodeLabelKeyFormat
 			rPoolBindingNodeLabelValue := nsvc.conf.Service.Resource.PoolBindingNodeLabelValue
@@ -93,37 +115,6 @@ func (nsvc *NodeService) ListNode(ctx context.Context, req *empty.Empty) (*api.N
 		}
 
 		resNodeList.Nodes = append(resNodeList.Nodes, resNode)
-	}
-
-	for _, task := range tasks.Items {
-		taskNodeName := task.Spec.NodeName
-		oneNodeAllcatedResourceMap := resNodeAllcatedResourceMap[taskNodeName]
-
-		for _, container := range task.Spec.Containers {
-			for resname, quantity := range container.Resources.Requests {
-				if _, ok := oneNodeAllcatedResourceMap[resname.String()]; !ok {
-					newQ := quantity.DeepCopy()
-					oneNodeAllcatedResourceMap[resname.String()] = &newQ
-				} else {
-					oneNodeAllcatedResourceMap[resname.String()].Add(quantity)
-				}
-			}
-		}
-	}
-
-	for _, node := range resNodeList.Nodes {
-		nodeAllcatedResourceMap := resNodeAllcatedResourceMap[node.Name]
-		for resname, quantity := range nodeAllcatedResourceMap {
-			if !strings.Contains(nsvc.conf.Service.Resource.IgnoreSystemResources, resname) {
-				node.Allocated[resname] = quantity.String()
-			}
-		}
-
-		for resname := range node.Capacity {
-			if _, ok := node.Allocated[resname]; !ok {
-				node.Allocated[resname] = "0"
-			}
-		}
 	}
 
 	return resNodeList, nil

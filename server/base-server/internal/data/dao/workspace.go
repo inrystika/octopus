@@ -63,7 +63,6 @@ func (d *workspaceDao) Count(ctx context.Context, condition *model.WorkspaceList
 
 func (d *workspaceDao) Find(ctx context.Context, condition *model.WorkspaceQuery) (*model.Workspace, error) {
 	db := d.db
-
 	var workspace model.Workspace
 	result := db.Where(&model.Workspace{Id: condition.Id}).First(&workspace)
 	if result.Error != nil {

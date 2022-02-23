@@ -25,3 +25,10 @@ export function deployMessage(params) {
         params
     })
 }
+// 停止部署服务
+export function stopDeploy(data) {
+    return request({
+      url: `/v1/deploymanage/modeldeploy/${data}/stop`,
+      method: 'post'
+    })
+  }

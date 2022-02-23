@@ -23,7 +23,7 @@
                     <span>{{ scope.row.modelName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="版本">
+            <el-table-column label="模型版本">
                 <template slot-scope="scope">
                     <span>{{ scope.row.modelVersion }}</span>
                 </template>
@@ -31,11 +31,6 @@
             <el-table-column label="模型描述">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="URL">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.serviceUrl }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
@@ -51,6 +46,11 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
+                    <el-button
+                    v-if="scope.row.status==='Available'||scope.row.status==='Creating'"
+                    type="text" @click="open2(scope.row.id)">
+                    停止
+                </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
             </el-table-column>
@@ -67,7 +67,7 @@
 
 <script>
     import detailDialog from "./components/index.vue";
-    import { getDeployList, deployDetail } from '@/api/deployManager.js'
+    import { getDeployList, deployDetail,stopDeploy } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     export default {
@@ -158,6 +158,40 @@
             // 时间戳转换日期
             parseTime(val) {
                 return parseTime(val)
+            },
+            stop(id) {
+                stopDeploy(id).then(response => {
+                    if (response.success) {
+                        this.$message({
+                            message: '停止成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                    this.getDeployList(this.searchData)
+                })
+            },
+            handleStop(row) {
+                this.stop(row);
+            },
+             // 停止确认
+             open2(val) {
+                this.$confirm('此操作将停止运行该部署服务, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.handleStop(val)
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消操作'
+                    });
+                });
             }
         }
     }
