@@ -1,13 +1,7 @@
 <template>
     <div>
-        <el-dialog
-            :title="'版本列表/'+modelName"
-            width="70%"
-            :visible.sync="CreateFormVisible"
-            :before-close="handleDialogClose"
-            class="wrapper"
-            :close-on-click-modal="false"
-        >
+        <el-dialog :title="'版本列表/'+modelName" width="70%" :visible.sync="CreateFormVisible"
+            :before-close="handleDialogClose" class="wrapper" :close-on-click-modal="false">
             <el-table :data="tableData" style="width: 100%" height="500">
                 <el-table-column prop="version" label="模型版本" align="center" />
                 <el-table-column prop="descript" label="模型描述" align="center" />
@@ -23,32 +17,23 @@
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="300px">
                     <template slot-scope="scope">
+                        <el-button type="text" @click="deploy(scope.row)" v-if="show">部署</el-button>
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handlePreview(scope.row)">预览
                         </el-button>
                         <el-button v-if="!scope.row.isShared&&modelType===1" type="text" @click="open(scope.row)">分享
                         </el-button>
-                        <el-button
-                            v-if="scope.row.isShared&&scope.row.isShared&&modelType===1"
-                            type="text"
-                            @click="open(scope.row)"
-                        >取消分享</el-button>
+                        <el-button v-if="scope.row.isShared&&scope.row.isShared&&modelType===1" type="text"
+                            @click="open(scope.row)">取消分享</el-button>
                         <el-button v-if="modelType===1" type="text" @click="open2(scope.row)">删除</el-button>
-                        <!-- <el-button type="text" @click="handleDelete(scope.row)" v-if="modelType==1">删除</el-button> -->
                         <el-button type="text" :disabled="scope.row.fileStatus!==2" @click="handledDownload(scope.row)">
                             下载</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="block">
-                <el-pagination
-                    :current-page="pageIndex"
-                    :page-sizes="[10, 20, 50, 80]"
-                    :page-size="pageSize"
-                    layout="total, sizes, prev, pager, next, jumper"
-                    :total="total"
-                    @size-change="handleSizeChange"
-                    @current-change="handleCurrentChange"
-                />
+                <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange" />
             </div>
             <div slot="footer">
                 <!-- <el-button @click="cancel">取 消</el-button>
@@ -74,7 +59,8 @@
                 default: ""
             },
             modelType: { type: Number, default: undefined },
-            modelName: { type: String, default: "" }
+            modelName: { type: String, default: "" },
+            showDeploy: { type: Boolean, default: false }
         },
         data() {
             return {
@@ -86,11 +72,13 @@
                 pageSize: 10,
                 tableData: [],
                 row: { flag: undefined, data: undefined },
-                data: {}
+                data: {},
+                show: false
 
             }
         },
         created() {
+            this.show = this.showDeploy
             this.getList()
         },
         beforeDestroy() {
@@ -248,8 +236,8 @@
                     message = '分享至群组，群组内所有成员可见'
                     flag = true
                 } else {
-                  message = '取消分享'
-                  flag = false
+                    message = '取消分享'
+                    flag = false
                 }
                 var data = { modelId: val.modelId, version: val.version }
                 this.$confirm(message, '提示', {
@@ -313,6 +301,11 @@
                         }
                     })
                 }
+            },
+            // 预制模型部署
+            deploy(val) {
+                val = Object.assign(val, { modelName: this.modelName, type: this.modelType })
+                this.$router.push({ name: 'modelDeploy', params: { data: val, flag: true } })
             }
         }
 

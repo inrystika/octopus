@@ -656,22 +656,13 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 		Resources: []*api.PlatformNode{},
 	}
 
-	resNodeAllcatedResourceMap := make(map[string]map[string]*resource.Quantity)
-
 	allNodeMap, err := s.getNodesByResourcePool(ctx, req.ResourcePool)
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListNode)
 	}
 
-	tasks, err := s.data.Cluster.GetRunningTasks(ctx)
-
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorListNode)
-	}
-
 	for nodename, node := range allNodeMap {
-		resNodeAllcatedResourceMap[nodename] = make(map[string]*resource.Quantity)
 		resNode := &api.PlatformNode{
 			NodeName:  nodename,
 			Status:    "NotReady",
@@ -702,38 +693,38 @@ func (s *platformTrainJobService) PlatformResources(ctx context.Context, req *ap
 			}
 		}
 
-		resNodeList.Resources = append(resNodeList.Resources, resNode)
-	}
+		allocatedResourceMap := make(map[string]*resource.Quantity)
+		pods, err := s.data.Cluster.GetNodeUnfinishedPods(ctx, nodename)
+		if err != nil {
+			return nil, errors.Errorf(err, errors.ErrorListNode)
+		}
 
-	for _, task := range tasks.Items {
-		taskNodeName := task.Spec.NodeName
-		oneNodeAllcatedResourceMap := resNodeAllcatedResourceMap[taskNodeName]
-
-		for _, container := range task.Spec.Containers {
-			for resname, quantity := range container.Resources.Requests {
-				if _, ok := oneNodeAllcatedResourceMap[resname.String()]; !ok {
-					newQ := quantity.DeepCopy()
-					oneNodeAllcatedResourceMap[resname.String()] = &newQ
-				} else {
-					oneNodeAllcatedResourceMap[resname.String()].Add(quantity)
+		for _, pod := range pods.Items {
+			for _, container := range pod.Spec.Containers {
+				for resname, quantity := range container.Resources.Requests {
+					if _, ok := allocatedResourceMap[resname.String()]; !ok {
+						newQ := quantity.DeepCopy()
+						allocatedResourceMap[resname.String()] = &newQ
+					} else {
+						allocatedResourceMap[resname.String()].Add(quantity)
+					}
 				}
 			}
 		}
-	}
 
-	for _, node := range resNodeList.Resources {
-		nodeAllcatedResourceMap := resNodeAllcatedResourceMap[node.NodeName]
-		for resname, quantity := range nodeAllcatedResourceMap {
+		for resname, quantity := range allocatedResourceMap {
 			if !strings.Contains(s.conf.Service.Resource.IgnoreSystemResources, resname) {
-				node.Allocated[resname] = quantity.String()
+				resNode.Allocated[resname] = quantity.String()
 			}
 		}
 
-		for resname := range node.Capacity {
-			if _, ok := node.Allocated[resname]; !ok {
-				node.Allocated[resname] = "0"
+		for resname := range resNode.Capacity {
+			if _, ok := resNode.Allocated[resname]; !ok {
+				resNode.Allocated[resname] = "0"
 			}
 		}
+
+		resNodeList.Resources = append(resNodeList.Resources, resNode)
 	}
 
 	return resNodeList, nil

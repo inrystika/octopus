@@ -47,8 +47,6 @@ func (d *imageDao) List(ctx context.Context, condition *model.ImageList) ([]*mod
 	db = condition.Order(db)
 	db = condition.Where(db)
 	db = condition.Or(db)
-	db = condition.JoinUser(db)
-	db = condition.JoinWorkspace(db)
 
 	result := db.Select("image.*").Find(&images)
 	if result.Error != nil {
@@ -64,8 +62,6 @@ func (d *imageDao) Count(ctx context.Context, condition *model.ImageList) (int64
 
 	db = condition.Where(db)
 	db = condition.Or(db)
-	db = condition.JoinUser(db)
-	db = condition.JoinWorkspace(db)
 
 	result := db.Model(&model.Image{}).Count(&count)
 	if result.Error != nil {

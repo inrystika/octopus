@@ -13,14 +13,13 @@
                 <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ scope.row.createdAt | parseTime }}</span>
+                        <span>{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
                         <el-button v-if="type===1" type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button v-if="type===3" type="text" @click="deploy(scope.row)">部署</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -32,7 +31,7 @@
         </div>
         <!-- 版本列表对话框 -->
         <versionList v-if="FormVisible" :model-id="modelId" :model-type="type" :model-name="modelName" @close="close"
-            @cancel="cancel" @confirm="confirm" />
+            @cancel="cancel" @confirm="confirm" :showDeploy="showDeploy" />
     </div>
 </template>
 
@@ -40,6 +39,7 @@
     import versionList from './components/versionList.vue'
     import { getMyModel, getPreModel, getPublicModel, deleteMyModel } from '@/api/modelManager.js'
     import searchForm from '@/components/search/index.vue'
+    import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList } from '@/api/modelDev'
     export default {
         name: "MyModel",
         components: {
@@ -63,7 +63,8 @@
                     pageIndex: 1,
                     pageSize: 10
                 },
-                modelName: ''
+                modelName: '',
+                showDeploy: false
             }
         },
         created() {
@@ -97,9 +98,66 @@
                 this.getModel(this.searchData)
             },
             getVersionList(val) {
-                this.FormVisible = true;
-                this.modelId = val.modelId
-                this.modelName = val.modelName
+                let frameworkName = ""
+                if (this.modelTabType === 3) {
+                    getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                        if (response.success) {
+                            response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                            if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                this.showDeploy = true
+                            }
+                            else { this.showDeploy = false }
+                            this.FormVisible = true;
+                            this.modelId = val.modelId
+                            this.modelName = val.modelName
+                        }
+                    })
+                }
+                if (this.modelTabType === 2 || this.modelTabType == 1) {
+                    getPublicAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                        if (response.success) {
+                            response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                            if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                this.showDeploy = true
+                                this.FormVisible = true;
+                                this.modelId = val.modelId
+                                this.modelName = val.modelName
+                            }
+                            else {
+                                getMyAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                                    if (response.success) {
+                                        response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                                        if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                            this.showDeploy = true
+                                            this.FormVisible = true;
+                                            this.modelId = val.modelId
+                                            this.modelName = val.modelName
+                                        }
+                                        else {
+                                            getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                                                if (response.success) {
+                                                    response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
+                                                    if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
+                                                        this.showDeploy = true
+                                                    }
+                                                    else {
+                                                        this.showDeploy = false; this.FormVisible = true;
+                                                        this.modelId = val.modelId
+                                                        this.modelName = val.modelName
+                                                    }
+
+                                                }
+                                            })
+                                        }
+                                    }
+
+                                })
+                            }
+                        }
+                    })
+
+                }
+
             },
             handleDelete(row) {
                 const data = JSON.parse(JSON.stringify(row));
@@ -186,10 +244,6 @@
                         message: '已取消删除'
                     });
                 });
-            },
-            // 预制模型部署
-            deploy(val) {
-                this.$router.push({ name: 'modelDeploy', params: { data: val } })
             }
 
         }

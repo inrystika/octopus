@@ -4,8 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"k8s.io/apimachinery/pkg/fields"
+
+	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+
+	//seldonv2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	"os"
 	"path/filepath"
+	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/common/errors"
 	"sync"
@@ -13,22 +20,28 @@ import (
 
 	"server/common/log"
 
+	nav1 "nodeagent/apis/agent/v1"
+	naclient "nodeagent/clients/agent/clientset/versioned"
+	nainformer "nodeagent/clients/agent/informers/externalversions"
+	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
+
+	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	nav1 "nodeagent/apis/agent/v1"
-	naclient "nodeagent/clients/agent/clientset/versioned"
-	nainformer "nodeagent/clients/agent/informers/externalversions"
-	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
 	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
 )
@@ -69,14 +82,16 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 
 func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
 	c, cancel := context.WithCancel(context.Background())
+
 	kc := &kubernetesCluster{
-		ctx:        c,
-		nodes:      make(map[string]*v1.Node),
-		kubeclient: kubernetes.NewForConfigOrDie(config),
-		vcClient:   vcclient.NewForConfigOrDie(config),
-		naClient:   naclient.NewForConfigOrDie(config),
-		log:        log.NewHelper("Cluster", logger),
-		config:     config,
+		ctx:          c,
+		nodes:        make(map[string]*v1.Node),
+		kubeclient:   kubernetes.NewForConfigOrDie(config),
+		vcClient:     vcclient.NewForConfigOrDie(config),
+		naClient:     naclient.NewForConfigOrDie(config),
+		seldonClient: seldonclient.NewForConfigOrDie(config),
+		log:          log.NewHelper("Cluster", logger),
+		config:       config,
 	}
 
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
@@ -107,12 +122,13 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 
 type kubernetesCluster struct {
 	sync.Mutex
-	ctx        context.Context
-	log        *log.Helper
-	kubeclient *kubernetes.Clientset
-	vcClient   *vcclient.Clientset
-	naClient   *naclient.Clientset
-
+	ctx                context.Context
+	log                *log.Helper
+	kubeclient         *kubernetes.Clientset
+	vcClient           *vcclient.Clientset
+	naClient           *naclient.Clientset
+	seldonClient       *seldonclient.Clientset
+	seldonInformer     informers.GenericInformer
 	nodeInformer       infov1.NodeInformer
 	nodeActionInformer nainformerv1.NodeActionInformer
 
@@ -181,11 +197,16 @@ func (kc *kubernetesCluster) GetAllNodes(ctx context.Context) (map[string]v1.Nod
 	return nodeMap, err
 }
 
-func (kc *kubernetesCluster) GetRunningTasks(ctx context.Context) (*v1.PodList, error) {
+func (kc *kubernetesCluster) GetNodeUnfinishedPods(ctx context.Context, nodeName string) (*v1.PodList, error) {
+	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + nodeName +
+		",status.phase!=" + string(v1.PodSucceeded) +
+		",status.phase!=" + string(v1.PodFailed))
 
+	if err != nil {
+		return nil, err
+	}
 	pods, err := kc.kubeclient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
-		FieldSelector: "status.phase=Running",
-		LabelSelector: "volcano.sh/job-name",
+		FieldSelector: fieldSelector.String(),
 	})
 
 	if err != nil {
@@ -491,4 +512,49 @@ func (kc *kubernetesCluster) GetPod(ctx context.Context, namespace string, name 
 		}
 	}
 	return pod, nil
+}
+
+func (kc *kubernetesCluster) CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *seldonv1.SeldonDeployment) (*seldonv1.SeldonDeployment, error) {
+	p, err := kc.seldonClient.MachinelearningV1().SeldonDeployments(namespace).Create(ctx, seldonDeployment, metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error {
+	err := kc.seldonClient.MachinelearningV1().SeldonDeployments(namespace).Delete(ctx, serviceName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) GetDynamicInformer(resourceType string) (informers.GenericInformer, error) {
+	cfg := kc.GetClusterConfig()
+	dc, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dc, 0, corev1.NamespaceAll, nil)
+	gvr, _ := schema.ParseResourceArg(resourceType)
+	informer := factory.ForResource(*gvr)
+	return informer, nil
+}
+
+func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete) {
+	kc.seldonInformer, _ = kc.GetDynamicInformer("seldondeployments.v1.machinelearning.seldon.io")
+	handlers := cache.ResourceEventHandlerFuncs{
+		AddFunc:    onAdd,
+		DeleteFunc: onDelete,
+		UpdateFunc: onUpdate,
+	}
+	kc.seldonInformer.Informer().AddEventHandler(handlers)
+	go kc.seldonInformer.Informer().Run(kc.ctx.Done())
+	cache.WaitForCacheSync(kc.ctx.Done(), func() []cache.InformerSynced {
+		informerSynced := []cache.InformerSynced{
+			kc.seldonInformer.Informer().HasSynced,
+		}
+		return informerSynced
+	}()...)
 }
