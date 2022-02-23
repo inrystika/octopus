@@ -39,9 +39,9 @@
                     <span>{{ scope.row.status?statusText[scope.row.status][1]:'' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="创建时间">
+            <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">

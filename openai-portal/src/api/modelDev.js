@@ -13,7 +13,8 @@ export function judgeParam(params) {
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
   params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
-  params.modelName ? conditions.push(`modelName` + params.modelName) : null;
+  params.modelName ? conditions.push(`modelName=` + params.modelName) : null;
+  params.modelId ? conditions.push(`modelId=` + params.modelId) : null;
   return conditions
 }
 
