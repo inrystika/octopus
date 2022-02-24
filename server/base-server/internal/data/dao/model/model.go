@@ -94,6 +94,7 @@ type ModelList struct {
 	UserId                string
 	AlgorithmId           string
 	AlgorithmVersion      string
+	FrameWorkId           string
 	SpaceIdOrder          bool
 	SpaceIdSort           string
 	UserIdOrder           bool
@@ -139,6 +140,7 @@ type ModelAccessList struct {
 	Ids            []string
 	CreatedAtGte   int64
 	CreatedAtLt    int64
+	FrameWorkId    string
 }
 
 // ModelAccessVersion
