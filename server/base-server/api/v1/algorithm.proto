@@ -92,7 +92,7 @@ message AlgorithmDetail {
   string algorithmDescript = 9;
   string applyId = 10;
   string applyName = 11;
-	string frameworkId = 12;
+  string frameworkId = 12;
   string frameworkName = 13;
   string path = 14;
   bool isPrefab = 15;
