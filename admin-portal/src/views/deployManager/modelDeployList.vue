@@ -39,9 +39,9 @@
                     <span>{{ scope.row.status?statusText[scope.row.status][1]:'' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="创建时间">
+            <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
@@ -83,7 +83,8 @@
                 detailDialog: false,
                 data: {},
                 statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
-                searchForm: [
+                searchForm: [  { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'workspaceId', placeholder: '请输入群组名' }
                 ],
                 searchData: {
                     pageIndex: 1,
