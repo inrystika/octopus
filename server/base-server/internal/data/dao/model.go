@@ -122,10 +122,8 @@ func (d *modelDao) ListModel(ctx context.Context, req *model.ModelList) (int64, 
 	}
 
 	if req.FrameWorkId != "" {
-		joinSql := "Inner JOIN (select framework_id,algorithm_id from algorithm) al ON al.algorithm_id = model.algorithm_id "
-		querySql += " and al.framework_id = ?"
+		querySql += " and framework_id = ? "
 		params = append(params, req.FrameWorkId)
-		db = db.Joins(joinSql).Where(querySql, params...)
 	}
 
 	querySql += " and is_prefab = ? "
@@ -436,7 +434,7 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 	}
 
 	if req.FrameWorkId != "" {
-		joinSql := "Inner JOIN (select framework_id,algorithm_id from algorithm) al ON al.algorithm_id = model.algorithm_id "
+		joinSql := "Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
 		querySql += " and al.framework_id = ?"
 		params = append(params, req.FrameWorkId)
 		db = db.Joins(joinSql).Where(querySql, params...)
