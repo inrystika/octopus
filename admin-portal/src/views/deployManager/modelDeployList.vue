@@ -28,7 +28,7 @@
                     <span>{{ scope.row.modelVersion }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="模型描述">
+            <el-table-column label="服务描述">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
                 </template>
