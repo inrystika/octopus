@@ -128,6 +128,14 @@ func (s *UserService) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.
 		return nil, err
 	}
 
+	checkOrInitUser := &innterapi.CheckOrInitUserRequest{
+		Id: user.Id,
+	}
+	_, err = s.data.UserClient.CheckOrInitUser(ctx, checkOrInitUser)
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.AddUserReply{
 		Id: user.Id,
 	}, nil

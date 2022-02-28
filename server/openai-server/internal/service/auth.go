@@ -51,6 +51,15 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 		return nil, errors.Errorf(err, errors.ErrorAuthenticationFailed)
 	}
 
+	// to do check or init user account for old account
+	checkOrInitUser := &innterapi.CheckOrInitUserRequest{
+		Id: reply.User.Id,
+	}
+	_, err = s.data.UserClient.CheckOrInitUser(ctx, checkOrInitUser)
+	if err != nil {
+		return nil, err
+	}
+
 	token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 	if err != nil {
 		return nil, err

@@ -96,6 +96,7 @@ message Data {
   Redis redis = 6;
   Influxdb influxdb = 7;
   JointCloud jointCloud = 8;
+  sftpgo sftpgo = 9;
 }
 
 message Develop {
@@ -123,6 +124,12 @@ message JointCloud {
   string username = 2;
   string password = 3;
   int32 sessionExpirySec = 4;
+}
+
+message sftpgo {
+  string baseUrl = 1;
+  string username = 2;
+  string password = 3;
 }
 
 message Service {

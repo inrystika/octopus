@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package baseserver.api.v1;
+
+option go_package = "server/base-server/api/v1;v1";
+
+import "validate/validate.proto";
+
+service FtpProxyService {
+  rpc CreateOrUpdateAccount (CreateOrUpdateAccountRequest) returns (CreateOrUpdateAccountReply);
+}
+
+message CreateOrUpdateAccountRequest {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  string homeDir = 5;
+}
+
+message CreateOrUpdateAccountReply {
+}

@@ -52,6 +52,10 @@ data:
     username: test
     password: 7ee15bc8fee766cad1bd70ccf5f4dc14
     sessionExpirySec: 540 #实际有效期为600
+  sftpgo:
+    baseUrl: http://localhost:8080
+    username: admin
+    password: 123456789
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset

@@ -9,6 +9,7 @@ import (
 	"server/base-server/internal/service/billing"
 	"server/base-server/internal/service/dataset"
 	"server/base-server/internal/service/develop"
+	"server/base-server/internal/service/ftpproxy"
 	"server/base-server/internal/service/image"
 	"server/base-server/internal/service/jointcloud"
 	"server/base-server/internal/service/lable"
@@ -40,6 +41,7 @@ type Service struct {
 	PlatformService         api.PlatformServiceServer
 	PlatformTrainJobService platform.PlatformTrainJobService
 	JointCloudService       api.JointCloudServiceServer
+	FtpProxyService         api.FtpProxyServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -85,6 +87,6 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 	service.JointCloudService = jointcloud.NewJointCloudService(conf, data)
-
+	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, logger, data)
 	return service, nil
 }

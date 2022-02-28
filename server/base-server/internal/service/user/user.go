@@ -87,6 +87,18 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 	}, nil
 }
 
+// TODO
+func (s *UserService) CheckOrInitUser(ctx context.Context, req *api.CheckOrInitUserRequest) (*api.CheckOrInitUserReply, error) {
+	// to check or init user home storage bucket
+	err := s.data.Minio.CreateBucket(common.GetUserHomeBucket(req.Id))
+	if err != nil {
+		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
+			return nil, err
+		}
+	}
+	return &api.CheckOrInitUserReply{}, nil
+}
+
 func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*api.FindUserReply, error) {
 	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{
 		Id:    req.Id,

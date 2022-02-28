@@ -201,6 +201,9 @@ const (
 	/* 21001-22000 云际错误*/
 	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
 	ErrorJointCloudNoPermission  = 21002 // 无权限访问
+
+	/* 22001-23000 ftp服务错误*/
+	ErrorSFtpGOAPIRequestFailed = 22001 // 接口请求错误
 )
 
 type codeMsg struct {
@@ -398,4 +401,7 @@ var codeMsgMap = map[int]codeMsg{
 	/* 21001-22000 云际请求错误*/
 	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},
 	ErrorJointCloudNoPermission:  {codeType: PermissionDenied, msg: "no permission"},
+
+	/* 21001-22000 云际请求错误*/
+	ErrorSFtpGOAPIRequestFailed:  {codeType: Internal, msg: "sftpgo api request failed"},
 }
