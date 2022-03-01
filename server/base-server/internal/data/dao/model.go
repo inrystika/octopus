@@ -434,8 +434,8 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 	}
 
 	if req.FrameWorkId != "" {
-		joinSql := "Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
-		querySql += " and al.framework_id = ?"
+		joinSql := " Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
+		querySql += " and framework_id = ?"
 		params = append(params, req.FrameWorkId)
 		db = db.Joins(joinSql).Where(querySql, params...)
 	}
