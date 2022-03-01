@@ -37,7 +37,7 @@ const (
 	SeldonDockerWorkDir      = "/app/models"
 	PredictorSpecName        = "default"
 	modelDeployContainerName = "model"
-	SeldonInUrl              = "/seldon/seldon/"
+	SeldonInUrl              = "/seldon/"
 	ServiceUrlSuffix         = "/api/v1.0/predictions"
 	ModelUserId              = "model_user_Id"
 	ModelId                  = "model_Id"
