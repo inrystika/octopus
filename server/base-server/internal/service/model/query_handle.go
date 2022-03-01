@@ -56,6 +56,7 @@ func (h *modelQueryHandle) ListPreModelHandle(ctx context.Context, req *api.List
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		FrameWorkId:    req.FrameWorkId,
 		CreatedAtGte:   req.CreatedAtGte,
 		CreatedAtLt:    req.CreatedAtLt,
 	})
@@ -89,6 +90,7 @@ func (h *modelQueryHandle) ListMyModelHandle(ctx context.Context, req *api.ListM
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		FrameWorkId:    req.FrameWorkId,
 		CreatedAtGte:   req.CreatedAtGte,
 		CreatedAtLt:    req.CreatedAtLt,
 	})
@@ -129,6 +131,7 @@ func (h *modelQueryHandle) ListCommModelHandle(ctx context.Context, req *api.Lis
 		PageSize:       pageSize,
 		CreatedAtGte:   req.CreatedAtGte,
 		CreatedAtLt:    req.CreatedAtLt,
+		FrameWorkId:    req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err

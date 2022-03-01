@@ -25,6 +25,7 @@ type Model struct {
 	ModelDescript    string `gorm:"type:varchar(1024);not null;default:'';comment:'模型描述'"`
 	LatestVersion    string `gorm:"type:varchar(100);not null;default:'';comment:'最新版本Id'"`
 	DataVersion      int64  `gorm:"not null;default:0;comment:'数据版本号，乐观锁'"`
+	FrameworkId      string `gorm:"type:varchar(100);default:'';comment:'算法框架Id';"`
 	dao.Model
 	DeletedAt     soft_delete.DeletedAt `gorm:"uniqueIndex:spaceId_userId_algorithmId_algorithmVersion_isPrefab_deletedAt"`
 	ModelVersions []*ModelVersion
@@ -96,6 +97,7 @@ type ModelList struct {
 	AlgorithmVersion      string
 	AlgorithmVersionOrder bool
 	AlgorithmVersionSort  string
+	FrameWorkId           string
 	SearchKey             string
 	PageIndex             int
 	PageSize              int
@@ -129,6 +131,7 @@ type ModelAccessList struct {
 	CreatedAtLt    int64
 	SortBy         string
 	OrderBy        string
+	FrameWorkId    string
 }
 
 // ModelAccessVersion

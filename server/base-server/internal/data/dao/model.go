@@ -122,6 +122,11 @@ func (d *modelDao) ListModel(ctx context.Context, req *model.ModelList) (int64, 
 		params = append(params, "%"+req.SearchKey+"%")
 	}
 
+	if req.FrameWorkId != "" {
+		querySql += " and framework_id = ? "
+		params = append(params, req.FrameWorkId)
+	}
+
 	querySql += " and is_prefab = ? "
 	params = append(params, req.IsPrefab)
 
@@ -413,6 +418,13 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 	if len(req.Ids) != 0 {
 		querySql += " and id in ? "
 		params = append(params, req.Ids)
+	}
+
+	if req.FrameWorkId != "" {
+		joinSql := " Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
+		querySql += " and framework_id = ?"
+		params = append(params, req.FrameWorkId)
+		db = db.Joins(joinSql).Where(querySql, params...)
 	}
 
 	if len(params) == 0 {
