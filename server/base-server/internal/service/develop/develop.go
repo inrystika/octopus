@@ -952,7 +952,15 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 		return nil, err
 	}
 
-	newImage, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: req.ImageId})
+	imageReply, err := s.imageService.AddImage(ctx, &api.AddImageRequest{
+		ImageName:    req.ImageName,
+		ImageVersion: req.ImageVersion,
+		UserId:       notebook.UserId,
+		SpaceId:      notebook.WorkspaceId,
+		IsPrefab:     api.ImageIsPrefab_IMAGE_IS_PREFAB_NO,
+		SourceType:   api.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED,
+		ImageDesc:    req.LayerDescription,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -961,7 +969,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 			Name: podName,
 			Labels: map[string]string{
 				nodeActionLabelNotebookId: req.NotebookId,
-				nodeActionLabelImageId:    req.ImageId,
+				nodeActionLabelImageId:    imageReply.ImageId,
 			},
 		},
 		Spec: nav1.NodeActionSpec{
@@ -970,9 +978,9 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 				Docker: &nav1.DockerAction{
 					CommitAndPush: &nav1.DockerCommitCommand{
 						Container:  containerId,
-						Repository: fmt.Sprintf("%s/%s", s.conf.Data.Harbor.Host, newImage.ImageAddr),
-						Tag:        newImage.ImageVersion,
-						Author:     newImage.UserId,
+						Repository: fmt.Sprintf("%s/%s", s.conf.Data.Harbor.Host, imageReply.ImageAddr),
+						Tag:        req.ImageVersion,
+						Author:     notebook.UserId,
 						Message:    req.LayerDescription,
 						Changes:    []string{},
 					},
@@ -980,9 +988,9 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 			},
 		},
 	}
-	_, err = s.data.ImageDao.Update(ctx, &model.ImageUpdateCond{Id: newImage.Id}, &model.ImageUpdate{
-		Status:    int32(api.ImageStatus_IMAGE_STATUS_MAKING),
-		ImageDesc: req.LayerDescription,
+	_, err = s.imageService.UpdateImage(ctx, &api.UpdateImageRequest{
+		ImageId:     imageReply.ImageId,
+		ImageStatus: api.ImageStatus_IMAGE_STATUS_MAKING,
 	})
 	if err != nil {
 		s.log.Errorw(ctx, err)

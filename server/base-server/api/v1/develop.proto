@@ -162,8 +162,9 @@ message NotebookEvent{
 message SaveNotebookRequest {
   string notebookId = 1[(validate.rules).string = {min_len: 1}];
   string taskName = 2[(validate.rules).string = {min_len: 1}];
-  string imageId = 3[(validate.rules).string = {min_len: 1}];
-  string layerDescription = 4;
+  string imageName = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len:50}];
+  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", max_len: 50}];
+  string layerDescription = 5;
 }
 
 message SaveNotebookReply {
