@@ -16,12 +16,12 @@
             </el-row>
             <el-row>
                 <el-col :span="24">
-                    <div>URL:<span>{{ data.serviceUrl }}</span></div>
+                    <div>推理路径:<span>{{ data.serviceUrl }}</span></div>
                 </el-col>
             </el-row>
             <el-row>
                 <el-col :span="24">
-                    <div>swaggerURL:<span>{{ data.swaggerURL }}</span></div>
+                    <div>swagger推理路径:<span>{{ data.swaggerURL }}</span></div>
                 </el-col>
             </el-row>
             <el-row>
@@ -77,7 +77,7 @@
         },
         created() {
             this.data = this.row
-            this.data.swaggerURL = this.data.serviceUrl.replace("predictions", "doc")
+            this.data.swaggerURL = this.data.serviceUrl.replace("predictions", "doc/")
         },
         methods: {
             generate() {

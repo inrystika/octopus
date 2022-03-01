@@ -16,9 +16,9 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
-                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork">
-                        <el-option label="PyTorch" value="pytorch"></el-option>
-                        <el-option label="TensorFlow" value="tensorflow"></el-option>
+                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork" :disabled="chooseFrame">
+                        <el-option label="pytorch" value="pytorch"></el-option>
+                        <el-option label="tensorflow" value="tensorflow"></el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 模型三级框 -->
@@ -150,7 +150,8 @@
                     tensorflow: ''
 
                 },
-                frameWorkId: ''
+                frameWorkId: '',
+                chooseFrame:false
 
             }
         },
@@ -165,9 +166,11 @@
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
                 this.flag = true
+                this.modelType=true
+                this.ruleForm.modelFrame=this.row.modelFrame.toLowerCase()
+                this.chooseFrame=true
             }
             this.getResourceList()
-            this.algorithmFrame()
         },
         beforeDestroy() {
 
@@ -324,10 +327,11 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        let data=JSON.parse(JSON.stringify(this.ruleForm))
                         if (this.flag) {
-                            this.ruleForm.modelId = this.tempId
+                            data.modelId = this.tempId           
                         }
-                        createDeploy(this.ruleForm).then(response => {
+                        createDeploy(data).then(response => {
                             if (response.success) {
                                 this.$message({
                                     message: '提交成功',
@@ -358,33 +362,14 @@
             isCloseX(val) {
                 this.close = val
             },
-            // 获取算法框架
-            algorithmFrame() {
-                algorithmFrame({ pageIndex: 1, pageSize: 50 }).then(response => {
-                    if (response.success) {
-                        response.data.lables.forEach(
-                            item => {
-                                if (item.lableDesc === "Pytorch") {
-                                    this.option.pytorch = item.id
-                                }
-                                if (item.lableDesc === "TensorFlow") {
-                                    this.option.tensorflow = item.id
-                                }
-                            }
-                        )
-                    } else {
-                        // this.showUpload = false
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
-                        });
-                    }
-                })
-            },
             //选择算法类型下拉框
             changeFameWork() {
                 this.modelType = true
                 this.frameWorkId = this.option[this.ruleForm.modelFrame]
+                this.ruleForm.modelSource=""
+                this.ruleForm.modelId = ""
+                this.ruleForm.modelVersion=""
+                
             }
         }
     }
