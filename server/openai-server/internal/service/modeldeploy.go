@@ -159,11 +159,19 @@ func (s *ModelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepIn
 
 // 模型服务列表
 func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListRequest) (*api.DepListReply, error) {
+	session := session.SessionFromContext(ctx)
+	if session == nil {
+		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+	}
+
 	innerReq := &innerapi.DepListRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
+
+	innerReq.UserId = session.UserId
+	innerReq.WorkspaceId = session.GetWorkspace()
 
 	innerReply, err := s.data.ModelDeployClient.ListDepModel(ctx, innerReq)
 	if err != nil {

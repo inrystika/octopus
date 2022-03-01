@@ -79,7 +79,7 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 	}
 }
 
-func (s *ModelDeployService) StopJob(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
+func (s *ModelDeployService) StopDepModel(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
 	reply, err := s.data.ModelDeployClient.StopDepModel(ctx, &innerapi.StopDepRequest{Id: req.Id, Operation: "admin stop job"})
 	if err != nil {
 		return nil, err
