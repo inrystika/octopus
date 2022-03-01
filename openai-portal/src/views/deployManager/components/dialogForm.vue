@@ -171,6 +171,7 @@
                 this.chooseFrame=true
             }
             this.getResourceList()
+            this.algorithmFrame()
         },
         beforeDestroy() {
 
@@ -370,7 +371,29 @@
                 this.ruleForm.modelId = ""
                 this.ruleForm.modelVersion=""
                 
-            }
+            },
+             // 获取算法框架
+             algorithmFrame() {
+                algorithmFrame({ pageIndex: 1, pageSize: 50 }).then(response => {
+                    if (response.success) {
+                        response.data.lables.forEach(
+                            item => {
+                                if (item.lableDesc === "Pytorch") {
+                                    this.option.pytorch = item.id
+                                }
+                                if (item.lableDesc === "TensorFlow") {
+                                    this.option.tensorflow = item.id
+                                }
+                            }
+                        )
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
         }
     }
 </script>
