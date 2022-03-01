@@ -329,6 +329,7 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 	return &pb.AddImageReply{
 		ImageId:   image.Id,
 		CreatedAt: image.CreatedAt.Unix(),
+		ImageAddr: image.ImageAddr,
 	}, nil
 }
 
@@ -368,6 +369,7 @@ func (s *ImageService) UpdateImage(ctx context.Context, req *pb.UpdateImageReque
 		ImageName:    req.ImageName,
 		ImageVersion: req.ImageVersion,
 		ImageDesc:    req.ImageDesc,
+		Status:       int32(req.ImageStatus),
 	}
 	if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_REMOTE) {
 		if imageUpdated.ImageAddr != "" {
