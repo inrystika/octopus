@@ -58,6 +58,7 @@
                 type: String,
                 default: ""
             },
+            modelFrame: { type: String, default: "" },
             modelType: { type: Number, default: undefined },
             modelName: { type: String, default: "" },
             showDeploy: { type: Boolean, default: false }
@@ -79,7 +80,8 @@
         },
         created() {
             this.show = this.showDeploy
-            this.getList()
+            this.getList(this.modelName)
+            this.modelFrame=this.modelFrame.toLowerCase()
         },
         beforeDestroy() {
 
@@ -304,7 +306,7 @@
             },
             // 预制模型部署
             deploy(val) {
-                val = Object.assign(val, { modelName: this.modelName, type: this.modelType })
+                val = Object.assign(val, { modelName: this.modelName, type: this.modelType,modelFrame:this.modelFrame })
                 this.$router.push({ name: 'modelDeploy', params: { data: val, flag: true } })
             }
         }
