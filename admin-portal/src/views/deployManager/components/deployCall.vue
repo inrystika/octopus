@@ -13,8 +13,15 @@
                 <el-col :span="12">
                     <div>模型名称:<span>{{ data.modelName+ ":" + data.modelVersion }}</span></div>
                 </el-col>
-                <el-col :span="12">
+            </el-row>
+            <el-row>
+                <el-col :span="24">
                     <div>URL:<span>{{ data.serviceUrl }}</span></div>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="24">
+                    <div>swaggerURL:<span>{{ data.swaggerURL }}</span></div>
                 </el-col>
             </el-row>
             <el-row>
@@ -46,7 +53,7 @@
         },
         created() {
             this.data = JSON.parse(JSON.stringify(this.row))
-
+            this.data.swaggerURL = this.data.serviceUrl.replace("predictions", "doc")
         },
         methods: {
         }

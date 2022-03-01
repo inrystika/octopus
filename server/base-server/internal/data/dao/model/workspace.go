@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"gorm.io/plugin/soft_delete"
 	"server/common/dao"
 
 	"gorm.io/gorm"
@@ -10,9 +11,11 @@ import (
 type Workspace struct {
 	dao.Model
 	Id      string  `gorm:"type:varchar(100);not null;primaryKey;comment:'空间id'"`
-	Name    string  `gorm:"type:varchar(100);not null;index;comment:'空间名'"`
+	Name    string  `gorm:"type:varchar(100);not null;uniqueIndex:name_deletedAt,priority:1;comment:'空间名'"`
 	RPoolId string  `gorm:"type:varchar(100);not null;index;comment:'资源池id'"`
 	Users   []*User `gorm:"many2many:workspace_user;"`
+	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:name_deletedAt,priority:2"`
+
 }
 
 func (Workspace) TableName() string {
@@ -45,8 +48,8 @@ func (w WorkspaceList) Where(db *gorm.DB) *gorm.DB {
 	listSql := "1 = 1"
 	params := make([]interface{}, 0)
 	if w.Name != "" {
-		listSql += " and name like ? "
-		params = append(params, w.Name+"%")
+		listSql += " and name  = ? "
+		params = append(params, w.Name)
 	}
 	if w.RPoolId != "" {
 		listSql += " and r_pool_id = ? "

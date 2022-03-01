@@ -28,7 +28,7 @@
                     <span>{{ scope.row.modelVersion }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="模型描述">
+            <el-table-column label="服务描述">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
                 </template>
@@ -39,18 +39,17 @@
                     <span>{{ scope.row.status?statusText[scope.row.status][1]:'' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="创建时间">
+            <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button
-                    v-if="scope.row.status==='Available'||scope.row.status==='Creating'"
-                    type="text" @click="open2(scope.row.id)">
-                    停止
-                </el-button>
+                    <el-button v-if="scope.row.status==='Available'||scope.row.status==='Creating'" type="text"
+                        @click="open2(scope.row.id)">
+                        停止
+                    </el-button>
                     <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
                 </template>
             </el-table-column>
@@ -67,7 +66,7 @@
 
 <script>
     import detailDialog from "./components/index.vue";
-    import { getDeployList, deployDetail,stopDeploy } from '@/api/deployManager.js'
+    import { getDeployList, deployDetail, stopDeploy } from '@/api/deployManager.js'
     import { parseTime, formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
     export default {
@@ -83,7 +82,13 @@
                 detailDialog: false,
                 data: {},
                 statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
-                searchForm: [
+                searchForm: [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                { type: 'InputSelectGroup', label: '群组', prop: 'workspaceId', placeholder: '请输入群组名' },
+                { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' },
+                {
+                    type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
+                    options: [{ label: '初始中', value: 'Preparing' }, { label: '创建中', value: 'Creating' }, { label: '运行中', value: 'Available' }, { label: '失败', value: 'Failed' }, { label: '已停止', value: 'Stopped' }]
+                },
                 ],
                 searchData: {
                     pageIndex: 1,
@@ -101,8 +106,8 @@
         methods: {
             getDeployList(data) {
                 if (data.time && data.time.length !== 0) {
-                    data.createAtGte = data.time[0] / 1000
-                    data.createAtLt = data.time[1] / 1000
+                    data.createdAtGte = data.time[0] / 1000
+                    data.createdAtLt = data.time[1] / 1000
                     delete data.time
                 }
                 getDeployList(data).then(response => {
@@ -178,8 +183,8 @@
             handleStop(row) {
                 this.stop(row);
             },
-             // 停止确认
-             open2(val) {
+            // 停止确认
+            open2(val) {
                 this.$confirm('此操作将停止运行该部署服务, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',

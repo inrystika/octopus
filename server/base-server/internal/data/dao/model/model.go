@@ -95,23 +95,17 @@ type ModelList struct {
 	UserId                string
 	AlgorithmId           string
 	AlgorithmVersion      string
-	FrameWorkId           string
-	SpaceIdOrder          bool
-	SpaceIdSort           string
-	UserIdOrder           bool
-	UserIdSort            string
-	AlgorithmIdOrder      bool
-	AlgorithmIdSort       string
 	AlgorithmVersionOrder bool
 	AlgorithmVersionSort  string
-	CreatedAtOrder        bool
-	CreatedAtSort         string
+	FrameWorkId           string
 	SearchKey             string
 	PageIndex             int
 	PageSize              int
 	Ids                   []string
 	CreatedAtGte          int64
 	CreatedAtLt           int64
+	SortBy                string
+	OrderBy      		  string
 }
 
 // ModelVersion
@@ -130,17 +124,13 @@ type ModelVersionList struct {
 type ModelAccessList struct {
 	SpaceIds       []string
 	ModelIds       []string
-	SpaceIdOrder   bool
-	SpaceIdSort    string
-	ModelIdOrder   bool
-	ModelIdSort    string
-	CreatedAtOrder bool
-	CreatedAtSort  string
 	PageIndex      int
 	PageSize       int
 	Ids            []string
 	CreatedAtGte   int64
 	CreatedAtLt    int64
+	SortBy         string
+	OrderBy        string
 	FrameWorkId    string
 }
 

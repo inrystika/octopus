@@ -100,7 +100,7 @@
             getVersionList(val) {
                 let frameworkName = ""
                 if (this.modelTabType === 3) {
-                    getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                    getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
                         if (response.success) {
                             response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                             if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
@@ -114,7 +114,7 @@
                     })
                 }
                 if (this.modelTabType === 2 || this.modelTabType == 1) {
-                    getPublicAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                    getPublicAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
                         if (response.success) {
                             response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                             if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
@@ -124,7 +124,7 @@
                                 this.modelName = val.modelName
                             }
                             else {
-                                getMyAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+                                getMyAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
                                     if (response.success) {
                                         response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                                         if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
@@ -134,11 +134,15 @@
                                             this.modelName = val.modelName
                                         }
                                         else {
-                                            getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, searchKey: val.algorithmName }).then(response => {
+
+                                            getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
                                                 if (response.success) {
                                                     response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
                                                     if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
                                                         this.showDeploy = true
+                                                        this.FormVisible = true;
+                                                        this.modelId = val.modelId
+                                                        this.modelName = val.modelName
                                                     }
                                                     else {
                                                         this.showDeploy = false; this.FormVisible = true;

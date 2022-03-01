@@ -156,7 +156,7 @@
       },
       // 获取算法类型
       algorithmType() {
-        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        algorithmType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.optionType = response.data.lables
           } else {
@@ -170,7 +170,7 @@
       },
       // 获取算法框架
       algorithmFrame() {
-        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        frameType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.optionFrame = response.data.lables
           } else {

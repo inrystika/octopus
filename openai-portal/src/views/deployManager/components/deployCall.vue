@@ -13,8 +13,23 @@
                 <el-col :span="12">
                     <div>模型:<span>{{ data.modelName+ ":" + data.modelVersion }}</span></div>
                 </el-col>
-                <el-col :span="12">
+            </el-row>
+            <el-row>
+                <el-col :span="24">
                     <div>URL:<span>{{ data.serviceUrl }}</span></div>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="24">
+                    <div>swaggerURL:<span>{{ data.swaggerURL }}</span></div>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="12">
+                    <div>任务状态:<span style="margin-left: 10px">{{ statusText[data.status][1] }}</span></div>
+                </el-col>
+                <el-col :span="12">
+                    <div></div>
                 </el-col>
             </el-row>
             <!-- <el-row>
@@ -57,11 +72,12 @@
                 data: {},
                 textareaInput: '',
                 textareaOutput: '',
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Pending': ['status-agent', '等待中'], 'Running': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Succeeded': ['status-success', '成功'], 'Stopped': ['status-stopping', '已停止'] }
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
             }
         },
         created() {
             this.data = this.row
+            this.data.swaggerURL = this.data.serviceUrl.replace("predictions", "doc")
         },
         methods: {
             generate() {
