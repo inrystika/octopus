@@ -262,8 +262,9 @@ func (s *developService) handleNodeActions(na *nav1.NodeAction) {
 	}
 
 	ctx := context.Background()
-	_, err := s.data.ImageDao.Update(ctx, &model.ImageUpdateCond{Id: imageId}, &model.ImageUpdate{
-		Status: int32(imageStatus),
+	_, err := s.imageService.UpdateImage(ctx, &api.UpdateImageRequest{
+		ImageId:     imageId,
+		ImageStatus: imageStatus,
 	})
 	if err != nil {
 		s.log.Errorw(ctx, err)
