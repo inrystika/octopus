@@ -596,6 +596,7 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	//停止任务前，要删除掉sdep服务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
+		//todo: 如果停止动作的任务删除操作出错了，查询下sdep任务是否存在，不存在的话，强制修改状态
 		return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
 	}
 
