@@ -27,7 +27,9 @@
             </el-table-column>
             <el-table-column v-if="flag" label="提供者" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.username }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.username }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="镜像地址" align="center" :show-overflow-tooltip="true">
@@ -104,10 +106,6 @@
                         options: [{ label: '未制作', value: 1 }, { label: '制作中', value: 2 }, { label: '制作完成', value: 3 }, { label: '制作失败', value: 4 }]
                     },
                     { type: 'Input', label: '镜像名', prop: 'imageNameLike', placeholder: '请输入镜像名' },
-                    {
-                        type: 'Select', label: '镜像类型', prop: 'imageType', placeholder: '请选择镜像类型',
-                        options: [{ label: 'NoteBook类型', value: 1 }, { label: '训练类型', value: 2 }]
-                    },
                     {
                         type: 'Select', label: '来源类型', prop: 'sourceType', placeholder: '请选择来源类型',
                         options: [{ label: '上传', value: 1 }, { label: '远程', value: 2 }]

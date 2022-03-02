@@ -1,73 +1,57 @@
 <template>
     <div>
-        <el-table
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-        >
-            <el-table-column label="节点名字" align="center">
+        <el-table :data="tableData" style="width: 100%;font-size: 15px" :header-cell-style="{'color':'black'}"
+            :span-method="listSpanMethod" :row-style="{height:'5px'}" :cell-style="{padding:'5px 0'}">
+            <el-table-column label="节点名字">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="IP" align="center">
+            <el-table-column label="IP">
                 <template slot-scope="scope">
                     <span>{{ scope.row.ip }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="节点状态" align="center">
+            <el-table-column label="节点状态">
                 <template slot-scope="scope">
                     <span>{{ scope.row.status }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="所属资源池" align="center" show-overflow-tooltip>
+            <el-table-column label="所属资源池" show-overflow-tooltip>
                 <template slot-scope="scope">
                     <span>{{ scope.row.resourcePools }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="节点详情" align="center">
-                <template slot-scope="scope">
-                    <span class="detail" @mouseover="handleDetail(scope.row)">详情</span>
-                </template>
-            </el-table-column>
-        </el-table>
-        <!-- 节点详情对话框 -->
-        <el-dialog :title="'节点详情/' + title" :visible.sync="nodeDetail" :close-on-click-modal="false">
-            <el-table :data="data">
+            <el-table-column label="节点信息" align="center">
                 <el-table-column label="名称">
                     <template slot-scope="scope">
-                        <span>
-                            {{ scope.row.name }}
+                        <span style="color: #409eff">
+                            {{ scope.row.childName }}
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="平台使用量">
+                <el-table-column label="使用量">
                     <template slot-scope="scope">
-                        <span>
+                        <span style="color: #409eff;">
                             {{ scope.row.use }}
                         </span>
                     </template>
                 </el-table-column>
                 <el-table-column label="总量">
                     <template slot-scope="scope">
-                        <span>
+                        <span style="color: #409eff;">
                             {{ scope.row.total }}
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="使用百分比">
+                <el-table-column label="使用百分比" align="center" width="100px">
                     <template slot-scope="scope">
-                        <el-progress type="circle" :percentage="scope.row.percentage" :width="50" :height="50" />
+                        <el-progress type="circle" :percentage="scope.row.percentage" :width="40" :height="40"
+                            v-if="!scope.row.children" />
                     </template>
                 </el-table-column>
-
-            </el-table>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="nodeDetail = false">取 消</el-button>
-                <el-button type="primary" @click="nodeDetail = false">确 定</el-button>
-            </div>
-        </el-dialog>
+            </el-table-column>
+        </el-table>
 
     </div>
 </template>
@@ -82,10 +66,8 @@
         data() {
             return {
                 input: '',
-                nodeDetail: false,
                 tableData: [],
-                data: [],
-                title: ""
+
 
             }
         },
@@ -93,9 +75,8 @@
             this.getNodeList()
         },
         methods: {
-            handleDetail(val) {
-                this.title = val.name
-                this.data = []
+            getDetail(val) {
+                let data = []
                 for (const key1 in val.allocated) {
                     for (const key2 in val.capacity) {
                         if (key1 === key2) {
@@ -110,11 +91,11 @@
                                 percentage = percentage * 100
                                 percentage = parseFloat(percentage.toFixed(2))
                             }
-                            this.data.push({ name: key1, use: val.allocated[key1], total: val.capacity[key1], percentage: percentage })
+                            data.push({ childName: key1, use: val.allocated[key1], total: val.capacity[key1], percentage: percentage, id: Math.random() })
                         }
                     }
                 }
-                this.nodeDetail = true
+                return data
             },
             getNodeList(val) {
                 getNodeList(val).then(response => {
@@ -127,7 +108,16 @@
                                     }
                                 }
                             )
-                            this.tableData = response.data.nodes
+                            response.data.nodes.forEach(
+                                item => {
+                                    item.id = Math.random()
+                                    if (this.getDetail(item) !== []) {
+                                        item.children = this.getDetail(item)
+                                    }
+                                    else { item.children = [] }
+                                }
+                            )
+                            this.tableData = this.handleTableData(response.data.nodes)
                         }
                     } else {
                         this.$message({
@@ -136,8 +126,47 @@
                         });
                     }
                 })
-            }
+            },
+            //合并列
+            handleTableData(data) {
+                let arr = [];
+                let on = 0;
+                let spanNum = 0;
+                for (let i = 0; i < data.length; i++) {
+                    let node_info = data[i].children
+                    on++;
+                    for (let j = 0; j < node_info.length; j++) {
+                        let info = {
+                            on: on,
+                            span_num: j === 0 ? node_info.length : 0,
+                            childName: node_info[j].childName,
+                            use: node_info[j].use,
+                            total: node_info[j].total,
+                            percentage: node_info[j].percentage,
+                            name: data[i].name,
+                            ip: data[i].ip,
+                            status: data[i].status,
+                            resourcePools: data[i].resourcePools
+                        }
+                        arr.push(info)
+                    }
+                }
+                return arr
+            },
+            listSpanMethod({ row, column, rowIndex, columnIndex }) {
+                if (columnIndex < 4) {
+                    if (row.span_num > 0) {
+                        return {
+                            rowspan: row.span_num,
+                            colspan: 1
+                        };
 
+                    }
+                    else {
+                        return { rowspan: 0, colspan: 0 }
+                    }
+                }
+            },
         }
     }
 </script>

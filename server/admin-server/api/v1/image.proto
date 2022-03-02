@@ -72,6 +72,7 @@ message ImageDetail {
   string username = 11;
   string imageVersion = 12;
   string spaceName = 13;
+  string userEmail = 14;
 }
 
 message ListPreImageRequest {
@@ -109,8 +110,6 @@ message ListUserImageRequest {
   int32 imageStatus = 10[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
   string imageVersion = 11[(validate.rules).string = {max_len: 50}];
   string searchKey = 12[(validate.rules).string = {max_len: 50}];
-  string userNameLike = 13[(validate.rules).string = {max_len: 50}];
-  string spaceNameLike = 14[(validate.rules).string = {max_len: 50}];
 }
 
 message ListUserImageReply {

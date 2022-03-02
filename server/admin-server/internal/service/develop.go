@@ -95,6 +95,7 @@ func (s *DevelopService) assignValue(ctx context.Context, notebooks []*api.Noteb
 		for _, i := range notebooks {
 			if v, ok := userMap[i.UserId]; ok {
 				i.UserName = v.FullName
+				i.UserEmail = v.Email
 			}
 
 			if v, ok := spaceMap[i.WorkspaceId]; ok {

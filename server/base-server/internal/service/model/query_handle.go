@@ -53,11 +53,12 @@ func (h *modelQueryHandle) ListPreModelHandle(ctx context.Context, req *api.List
 	modelDao := h.data.ModelDao
 	totalSize, modelList, err := modelDao.ListModel(ctx, &model.ModelList{
 		IsPrefab:       true,
-		CreatedAtOrder: true,
-		CreatedAtSort:  model.DESC,
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		FrameWorkId:    req.FrameWorkId,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -86,11 +87,12 @@ func (h *modelQueryHandle) ListMyModelHandle(ctx context.Context, req *api.ListM
 		IsPrefab:       false,
 		SpaceId:        req.SpaceId,
 		UserId:         req.UserId,
-		CreatedAtOrder: true,
-		CreatedAtSort:  model.DESC,
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		FrameWorkId:    req.FrameWorkId,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -125,10 +127,11 @@ func (h *modelQueryHandle) ListCommModelHandle(ctx context.Context, req *api.Lis
 
 	totalSize, modelAccessList, err := modelDao.ListModelAccess(ctx, &model.ModelAccessList{
 		SpaceIds:       []string{req.SpaceId},
-		CreatedAtOrder: true,
-		CreatedAtSort:  model.DESC,
 		PageIndex:      pageIndex,
 		PageSize:       pageSize,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
+		FrameWorkId:    req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -179,15 +182,13 @@ func (h *modelQueryHandle) ListAllUserModelHandle(ctx context.Context, req *api.
 	modelDao := h.data.ModelDao
 	totalSize, modelList, err := modelDao.ListModel(ctx, &model.ModelList{
 		IsPrefab:       false,
-		CreatedAtOrder: true,
-		SpaceIdOrder:   true,
-		SpaceIdSort:    model.DESC,
-		UserIdOrder:    true,
-		UserIdSort:     model.DESC,
-		CreatedAtSort:  model.DESC,
 		PageIndex:      int(req.PageIndex),
 		PageSize:       int(req.PageSize),
 		SearchKey:      req.SearchKey,
+		UserId:         req.UserId,
+		SpaceId:        req.SpaceId,
+		CreatedAtGte:   req.CreatedAtGte,
+		CreatedAtLt:    req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err

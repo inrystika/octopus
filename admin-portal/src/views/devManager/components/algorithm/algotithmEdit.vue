@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="编辑" :visible.sync="dialogFormVisible" width="30%" :before-close="handleDialogClose"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false" v-if="show">
       <el-form :model="form">
         <el-form-item label="模型名称" :label-width="formLabelWidth">
           <el-input v-model="form.modelName"></el-input>
@@ -55,8 +55,24 @@
         dialogFormVisible: true,
         formLabelWidth: '120px',
         typeOptions: [],
-        useOptions: []
+        useOptions: [],
+        show: false,
+        apply: false,
+        framework: false
+
       };
+    },
+    watch: {
+      apply() {
+        if (this.apply && this.framework) {
+          this.show = true
+        }
+      },
+      framework() {
+        if (this.apply && this.framework) {
+          this.show = true
+        }
+      }
     },
     methods: {
       cancel() {
@@ -70,9 +86,10 @@
       },
       // 获取算法类型
       algorithmType() {
-        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        algorithmType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
+            this.apply = true
           } else {
             // this.showUpload = false
             this.$message({
@@ -84,9 +101,10 @@
       },
       // 获取算法框架
       frameType() {
-        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        frameType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
+            this.framework = true
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),

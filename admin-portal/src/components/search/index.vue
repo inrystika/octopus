@@ -13,8 +13,8 @@
                             :value="op.id" />
                     </el-select>
                     <!-- 群组可搜索下拉框 -->
-                    <el-select v-if="item.type==='InputSelectGroup'" v-model="searchData[item.prop]" filterable
-                        :filter-method="getGroupOptions" v-loadmore="loadGroupName" @focus='groupClick'>
+                    <el-select v-if="item.type==='InputSelectGroup'" v-model="searchData[item.prop]"
+                        v-loadmore="loadGroupName" @focus='groupClick'>
                         <el-option v-for="op in groupOptions" :key="op.id" :label="op.name" :value="op.id" />
                     </el-select>
                     <el-select v-if="item.type==='Select'" v-model="searchData[item.prop]">
@@ -60,8 +60,7 @@
                 usersTotal: undefined,
                 groupCount: 1,
                 groupTotal: undefined,
-                userTemp: '',
-                groupTemp: ''
+                userTemp: ''
 
             }
         },
@@ -94,30 +93,18 @@
                 }
                 else { this.userOptions = [] }
             },
-            getGroupOptions(val) {
+            getGroupOptions() {
                 this.groupCount = 1
-                if (val != '') {
-                    if (val == '默认群组') {
-                        this.groupOptions = [{ name: '默认群组', id: 'default-workspace' }]
+                this.groupOptions = [{ name: '默认群组', id: 'default-workspace' }]
+                getGroupList({
+                    pageIndex: this.groupCount,
+                    pageSize: 10,
+                }).then(response => {
+                    if (response.success) {
+                        this.groupTotal = response.data.totalSize
+                        this.groupOptions = this.groupOptions.concat(response.data.workspaces)
                     }
-                    else {
-                        this.groupTemp = val
-                        this.groupOptions = []
-                        getGroupList({
-                            pageIndex: this.groupCount,
-                            pageSize: 10,
-                            searchKey: val
-                        }).then(response => {
-                            if (response.success) {
-                                this.groupTotal = response.data.totalSize
-                                this.groupOptions = response.data.workspaces
-                            }
-                        })
-                    }
-
-                }
-                else { this.groupOptions = [] }
-
+                })
             },
             loadUserName() {
                 this.usersCount = this.usersCount + 1
@@ -137,11 +124,11 @@
             },
             loadGroupName() {
                 this.groupCount = this.groupCount + 1
-                if (this.groupOptions.length < this.groupTotal) {
+                if (this.groupOptions.length < this.groupTotal + 1) {
                     getGroupList({
                         pageIndex: this.groupCount,
                         pageSize: 10,
-                        searchKey: this.groupTemp
+
                     }).then(response => {
                         if (response.success) {
                             this.groupTotal = response.data.totalSize
@@ -150,8 +137,8 @@
                     })
                 }
             },
-            userClick() { this.userOptions = [] },
-            groupClick() { this.groupOptions = [] }
+            userClick() { this.getUserOptions() },
+            groupClick() { this.getGroupOptions() }
         }
     }
 </script>

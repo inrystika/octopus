@@ -143,8 +143,8 @@ const error = {
   16020: '用户不存在',
   16021: '用户已存在',
   16022: '用户id错误',
-  16023: '空间已存在',
-  16024: '空间不存在',
+  16023: '群组已存在',
+  16024: '群组不存在',
   16025: '用户无空间权限',
   /* 17001~18000 计费管理错误*/
   17001: '获取锁失败',
@@ -167,7 +167,13 @@ const error = {
 
   /* 21001-22000 云际错误*/
   21001: '云际请求失败',
-  21002: '无权限访问'
+  21002: '无权限访问',
+  //  模型部署错误
+  250001: '部署使用计算框架非TF或者PT',
+  25002: '创建模型部署服务失败',
+  25003: '删除模型部署服务失败',
+  25004: '模型部署服务请求失败',
+  25005: '模型权限校验失败'
 }
 // export function getErrorMsg(errorCode) {
 //   let message = ''
@@ -180,8 +186,8 @@ const error = {
 //   return '系统错误'
 // }
 export const mixin = {
-  methods:{
-    getErrorMsg(errorCode){
+  methods: {
+    getErrorMsg(errorCode) {
       let message = ''
       for (var p in error) {
         if (String(errorCode) === p) {

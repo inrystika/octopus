@@ -2,12 +2,12 @@
     <div>
         <div>
             <el-select v-model="userId" filterable :filter-method="getUserOptions" v-loadmore="loadUserName"
-                @focus='userClick' v-if="type=='user'">
+                @focus='userClick' v-if="type=='user'" placeholder="用户 搜索">
                 <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
                     :value="op.id" />
             </el-select>
-            <el-select v-model="spaceId" filterable :filter-method="getGroupOptions" v-loadmore="loadGroupName"
-                @focus='groupClick' v-if="type=='group'">
+            <el-select v-model="spaceId" v-loadmore="loadGroupName"
+            @focus='groupClick' v-if="type=='group'" placeholder="群组 搜索">
                 <el-option v-for="op in groupOptions" :key="op.id" :label="op.name" :value="op.id" />
             </el-select>
             <el-button type="primary" @click="reset" class="reset">重置</el-button>
@@ -17,7 +17,9 @@
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
-                    <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    </el-tooltip>
                     <span v-if="type==='group'" style="margin-left: 10px">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
@@ -34,9 +36,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
-                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-                @current-change="handleCurrentChange" />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 对话框 -->
         <el-dialog :title="title" :visible.sync="dialogFormVisible" width="25%" :close-on-click-modal="false">
@@ -78,8 +80,10 @@
         },
         data() {
             return {
-                pageIndex: 1,
-                pageSize: 10,
+                searchData: {
+                    pageIndex: 1,
+                    pageSize: 10
+                },
                 total: undefined,
                 tableData: [],
                 dialogFormVisible: false,
@@ -122,15 +126,26 @@
         },
         methods: {
             handleSizeChange(val) {
-                this.pageSize = val
-                this.getTime()
+                this.searchData.pageSize = val
+                let data = {}
+                if (this.type == 'user') {
+                    data = Object.assign(this.searchData, { userId: this.userId })
+                }
+                
+                else { data = Object.assign(this.searchData, { spaceId: this.spaceId }) }
+                this.getTime(data)
             },
             handleCurrentChange(val) {
-                this.pageIndex = val
-                this.getTime()
+                this.searchData.pageIndex = val
+                let data = {}
+                if (this.type == 'user') {
+                    data = Object.assign(this.searchData, { userId: this.userId })
+                }
+                else { data = Object.assign(this.searchData, { spaceId: this.spaceId }) }
+                this.getTime(data)
             },
             getTime(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (!data) { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize } }
                 if (this.timeTabType === 1) {
                     userList(data).then(response => {
                         if (response.success) {
@@ -159,7 +174,7 @@
             },
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
+                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
                 if (this.timeTabType === 1) {
                     data.userId = data.id
                 } else {
@@ -256,30 +271,19 @@
                 }
                 else { this.userOptions = [] }
             },
-            getGroupOptions(val) {
+            groupClick() { this.getGroupOptions() },
+            getGroupOptions() {
                 this.groupCount = 1
-                if (val != '') {
-                    if (val == '默认群组') {
-                        this.groupOptions = [{ name: '默认群组', id: 'default-workspace' }]
+                this.groupOptions = [{ name: '默认群组', id: 'default-workspace' }]
+                getGroupList({
+                    pageIndex: this.groupCount,
+                    pageSize: 10,
+                }).then(response => {
+                    if (response.success) {
+                        this.groupTotal = response.data.totalSize
+                        this.groupOptions = this.groupOptions.concat(response.data.workspaces)
                     }
-                    else {
-                        this.groupTemp = val
-                        this.groupOptions = []
-                        getGroupList({
-                            pageIndex: this.groupCount,
-                            pageSize: 10,
-                            searchKey: val
-                        }).then(response => {
-                            if (response.success) {
-                                this.groupTotal = response.data.totalSize
-                                this.groupOptions = response.data.workspaces
-                            }
-                        })
-                    }
-
-                }
-                else { this.groupOptions = [] }
-
+                })
             },
             loadUserName() {
                 this.usersCount = this.usersCount + 1
@@ -299,11 +303,10 @@
             },
             loadGroupName() {
                 this.groupCount = this.groupCount + 1
-                if (this.groupOptions.length < this.groupTotal) {
+                if (this.groupOptions.length < this.groupTotal + 1) {
                     getGroupList({
                         pageIndex: this.groupCount,
                         pageSize: 10,
-                        searchKey: this.groupTemp
                     }).then(response => {
                         if (response.success) {
                             this.groupTotal = response.data.totalSize
@@ -312,14 +315,13 @@
                     })
                 }
             },
-            userClick() { this.userOptions = [] },
-            groupClick() { this.groupOptions = [] },
+            userClick() {this.getUserOptions() },
             search() {
                 let data = {}
                 if (this.type == 'user') {
-                    data = { pageIndex: this.pageIndex, pageSize: this.pageSize, userId: this.userId }
+                    data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, userId: this.userId }
                 }
-                else { data = { pageIndex: this.pageIndex, pageSize: this.pageSize, spaceId: this.spaceId } }
+                else { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
                 this.getTime(data)
             },
             reset() {

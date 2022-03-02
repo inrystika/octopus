@@ -87,6 +87,10 @@ message Influxdb {
   string precision = 5;
 }
 
+message Ambassador {
+  string addr = 1;
+}
+
 message Data {
   Database database = 1;
   Pipeline pipeline = 2;
@@ -96,7 +100,8 @@ message Data {
   Redis redis = 6;
   Influxdb influxdb = 7;
   JointCloud jointCloud = 8;
-  sftpgo sftpgo = 9;
+  Ambassador ambassador = 9;
+  sftpgo sftpgo = 10;
 }
 
 message Develop {
@@ -141,6 +146,7 @@ message Service {
   Resource resource = 7;
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
+  string dockerModelDeployPath = 10;
 }
 
 message Administrator {

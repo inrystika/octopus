@@ -29,7 +29,9 @@
             </el-table-column>
             <el-table-column label="用户名">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
@@ -56,7 +58,7 @@
                         @click="open(scope.row)"
                     >停止
                     </el-button>
-                    <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
+                    <el-button type="text" @click="handledetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>

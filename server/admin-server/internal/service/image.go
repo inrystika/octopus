@@ -73,12 +73,12 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		ImageNameLike: req.ImageNameLike,
-		UserNameLike:  req.UserNameLike,
-		SpaceNameLike: req.SpaceNameLike,
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
 		ImageStatus:   innterapi.ImageStatus(req.ImageStatus),
 		ImageVersion:  req.ImageVersion,
 		SearchKey:     req.SearchKey,
+		UserId:        req.UserId,
+		SpaceId:       req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -114,12 +114,15 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 			return nil, err
 		}
 		userMap := make(map[string]string)
+		emailMap := make(map[string]string)
 		for _, u := range userReply.Users {
 			userMap[u.Id] = u.FullName
+			emailMap[u.Id] = u.Email
 		}
 
 		for _, image := range images {
 			image.Username = userMap[image.UserId]
+			image.UserEmail = emailMap[image.UserId]
 		}
 	}
 	if len(workspaceIds) > 0 {

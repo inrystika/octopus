@@ -42,6 +42,7 @@ ingress:
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
+  ambassadorPath: /seldon
   minioPath:
     web: /minio
     api: /oss
@@ -134,6 +135,8 @@ baseserver:
       username: jointCloudUsername
       password: jointCloudPassword
       sessionExpirySec: 540 #实际有效期为600
+    ambassador: #需要修改为实际的值
+      baseUrl: 192.168.202.73
   service:
     billingPeriodSec: 1800
     develop:

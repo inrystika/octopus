@@ -77,6 +77,7 @@ message BillingUser {
   double amount = 3;
   string userId = 4;
   string userName = 5;
+  string userEmail = 6;
 }
 
 message ListBillingUserReply {
@@ -119,6 +120,7 @@ message UserPayRecord {
   int32 status = 10;  // 1计费中 2计费完成
   string userId = 11;
   string userName = 12;
+  string userEmail = 13;
 }
 
 message ListUserPayRecordReply {
@@ -146,6 +148,7 @@ message UserRechargeRecord {
   string userId = 7;
   string userName = 8;
   string title = 9;
+  string userEmail = 10;
 }
 
 message ListUserRechargeRecordReply {
@@ -212,6 +215,7 @@ message SpacePayRecord {
   string spaceName = 12;
   string userId = 13;
   string userName = 14;
+  string userEmail = 15;
 }
 
 message ListSpacePayRecordReply {

@@ -13,6 +13,9 @@ export function judgeParam(params) {
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
   params.modelName ? conditions.push(`modelName` + params.modelName) : null;
+  params.userId ? conditions.push(`userId=` + params.userId) : null;
+  params.spaceId ? conditions.push(`spaceId=` + params.spaceId) : null;
+  params.workspaceId ? conditions.push(`workspaceId=` + params.workspaceId) : null;
   return conditions
 }
 

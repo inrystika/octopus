@@ -37,6 +37,7 @@ type Data struct {
 	PlatformClient         api.PlatformServiceClient
 	JointCloudClient       api.JointCloudServiceClient
 	PlatformTrainJobClient api.PlatformTrainJobServiceClient
+	ModelDeployClient      api.ModelDeployServiceClient
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
@@ -83,5 +84,6 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		PlatformClient:         api.NewPlatformServiceClient(conn),
 		JointCloudClient:       api.NewJointCloudServiceClient(conn),
 		PlatformTrainJobClient: api.NewPlatformTrainJobServiceClient(conn),
+		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
 	}, nil
 }

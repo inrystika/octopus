@@ -19,6 +19,8 @@ import (
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
 	"server/base-server/internal/service/workspace"
+	"server/base-server/internal/service/modeldeploy"
+
 	"server/common/log"
 )
 
@@ -41,6 +43,7 @@ type Service struct {
 	PlatformService         api.PlatformServiceServer
 	PlatformTrainJobService platform.PlatformTrainJobService
 	JointCloudService       api.JointCloudServiceServer
+	ModelDeployService  api.ModelDeployServiceServer
 	FtpProxyService         api.FtpProxyServiceServer
 }
 
@@ -87,6 +90,14 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 	service.JointCloudService = jointcloud.NewJointCloudService(conf, data)
+
+	service.ModelDeployService, err = modeldeploy.NewModelDeployService(conf, logger, data,
+		service.WorkspaceService, service.ModelService, service.ResourceSpecService, service.ResourceService,
+		service.ResourcePoolService, service.BillingService)
+	if err != nil {
+		return nil, err
+	}
+
 	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, logger, data)
 	return service, nil
 }

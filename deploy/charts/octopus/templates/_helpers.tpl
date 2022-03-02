@@ -981,3 +981,49 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{ include "nodeagent.select-labels" . }}
 {{ include "nodeagent.resource-labels" . }}
 {{- end -}}
+
+{{/******************ambassador******************/}}
+
+{{- define "ambassador.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "ambassador.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-ambassador" .Release.Name  | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "ambassador.labels" -}}
+{{ include "ambassador.select-labels" . }}
+{{- end -}}
+
+{{- define "ambassador.select-labels" -}}
+app.kubernetes.io/name: {{ include "ambassador.name" . }}
+app.kubernetes.io/instance: {{ include "ambassador.fullname" . }}
+app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
+{{- end -}}
+
+
+{{- define "ambassador.serviceName" -}}
+{{- printf "%s" (include "ambassador.fullname" .)  -}}
+{{- end -}}
+
+{{- define "ambassador.port" -}}
+{{- printf "80" -}}
+{{- end -}}
+
+{{- define "ambassador.targetPort" -}}
+{{- printf "8080" -}}
+{{- end -}}
+
+{{- define "ambassador.serviceAddr" -}}
+{{- printf "%s:%s" (include "ambassador.serviceName" .)  (include "ambassador.port" .) -}}
+{{- end -}}

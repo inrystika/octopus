@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
+	"server/common/utils"
+	"time"
 
 	"server/common/log"
 
@@ -102,12 +104,27 @@ func (d *modelDao) ListModel(ctx context.Context, req *model.ModelList) (int64, 
 		params = append(params, req.Ids)
 	}
 
+	if req.CreatedAtGte != 0 {
+		querySql += " and created_at >= ? "
+		params = append(params, time.Unix(req.CreatedAtGte, 0))
+	}
+
+	if req.CreatedAtLt != 0 {
+		querySql += " and created_at < ? "
+		params = append(params, time.Unix(req.CreatedAtLt, 0))
+	}
+
 	// 模糊搜索
 	if req.SearchKey != "" {
 		querySql += " and (model_name like ? "
 		params = append(params, "%"+req.SearchKey+"%")
 		querySql += " or model_descript like ? )"
 		params = append(params, "%"+req.SearchKey+"%")
+	}
+
+	if req.FrameWorkId != "" {
+		querySql += " and framework_id = ? "
+		params = append(params, req.FrameWorkId)
 	}
 
 	querySql += " and is_prefab = ? "
@@ -128,31 +145,17 @@ func (d *modelDao) ListModel(ctx context.Context, req *model.ModelList) (int64, 
 			Offset((req.PageIndex - 1) * req.PageSize)
 	}
 
-	// orderby语句拼接
-	if req.SpaceIdOrder {
-		orderSql := fmt.Sprintf("space_id %s", req.SpaceIdSort)
-		db = db.Order(orderSql)
+	sortBy := "created_at"
+	orderBy := "desc"
+	if req.SortBy != "" {
+		sortBy = utils.CamelToSnake(req.SortBy)
 	}
 
-	if req.UserIdOrder {
-		orderSql := fmt.Sprintf("user_id %s", req.UserIdSort)
-		db = db.Order(orderSql)
+	if req.OrderBy != "" {
+		orderBy = req.OrderBy
 	}
 
-	if req.AlgorithmIdOrder {
-		orderSql := fmt.Sprintf("algorithm_id %s", req.AlgorithmIdSort)
-		db = db.Order(orderSql)
-	}
-
-	if req.AlgorithmVersionOrder {
-		orderSql := fmt.Sprintf("algorithm_version %s", req.AlgorithmVersionSort)
-		db = db.Order(orderSql)
-	}
-
-	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
-		db = db.Order(orderSql)
-	}
+	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
 
 	db = db.Find(&models)
 	if db.Error != nil {
@@ -417,6 +420,13 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 		params = append(params, req.Ids)
 	}
 
+	if req.FrameWorkId != "" {
+		joinSql := " Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
+		querySql += " and framework_id = ?"
+		params = append(params, req.FrameWorkId)
+		db = db.Joins(joinSql).Where(querySql, params...)
+	}
+
 	if len(params) == 0 {
 		return 0, nil, errors.Errorf(nil, errors.ErrorDBSelectParamsEmpty)
 	}
@@ -436,19 +446,17 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 			Offset((req.PageIndex - 1) * req.PageSize)
 	}
 
-	// orderby语句拼接
-	if req.SpaceIdOrder {
-		orderSql := fmt.Sprintf("space_id %s", req.SpaceIdSort)
-		db = db.Order(orderSql)
+	sortBy := "created_at"
+	orderBy := "desc"
+	if req.SortBy != "" {
+		sortBy = utils.CamelToSnake(req.SortBy)
 	}
-	if req.ModelIdOrder {
-		orderSql := fmt.Sprintf("model_id %s", req.ModelIdSort)
-		db = db.Order(orderSql)
+
+	if req.OrderBy != "" {
+		orderBy = req.OrderBy
 	}
-	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
-		db = db.Order(orderSql)
-	}
+
+	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
 
 	db = db.Find(&accessModels)
 	if db.Error != nil {

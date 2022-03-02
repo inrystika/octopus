@@ -137,8 +137,6 @@ message ListUserImageRequest {
   ImageSourceType sourceType = 9[(validate.rules).enum = {defined_only: true}];
   ImageStatus imageStatus = 10[(validate.rules).enum = {defined_only: true}];
   string searchKey = 11[(validate.rules).string = {max_len: 50}];
-  string userNameLike = 12[(validate.rules).string = {max_len: 50}];
-  string spaceNameLike = 13[(validate.rules).string = {max_len: 50}];
   string nameVerLike = 14[(validate.rules).string = {max_len: 50}];
 }
 
@@ -200,6 +198,7 @@ message AddImageRequest {
 message AddImageReply {
   string imageId = 1;
   int64  createdAt = 2;
+  string imageAddr = 3[(validate.rules).string = {max_len: 254}];
 }
 
 message DeleteImageRequest {
@@ -219,6 +218,7 @@ message UpdateImageRequest {
   string imageDesc = 3;
   string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z0-9][\\w|\\-|\\.]*$", max_len: 50}];
   string imageAddr = 5[(validate.rules).string = {max_len: 254}];
+  ImageStatus imageStatus = 6 [(validate.rules).enum = {defined_only: true}];
   // ImageSourceType sourceType = 6;
   // string spaceId = 7;
   // string userId = 8;

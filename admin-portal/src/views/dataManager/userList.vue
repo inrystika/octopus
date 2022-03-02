@@ -38,7 +38,9 @@
         </el-table-column>
         <el-table-column label="提供者">
           <template slot-scope="scope">
-            <span>{{ scope.row.userName }}</span>
+            <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+              <span>{{ scope.row.userName }}</span>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="创建时间">

@@ -202,6 +202,13 @@ const (
 	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
 	ErrorJointCloudNoPermission  = 21002 // 无权限访问
 
+	/* 25001~25000 训练管理错误*/
+	ErrorModelDeployForbidden    = 25001 // 部署使用计算框架非TF或者PT
+	ErrorModelDeployFailed       = 25002 // 创建模型部署服务失败
+	ErrorModelDeployDeleteFailed = 25003 // 删除模型部署服务失败
+	ErrorModelInferRequest       = 25004 // 模型部署服务请求失败
+	ErrorModelAuthFailed         = 25005 // 模型权限校验失败
+
 	/* 22001-23000 ftp服务错误*/
 	ErrorSFtpGOAPIRequestFailed = 22001 // 接口请求错误
 )
@@ -401,6 +408,13 @@ var codeMsgMap = map[int]codeMsg{
 	/* 21001-22000 云际请求错误*/
 	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},
 	ErrorJointCloudNoPermission:  {codeType: PermissionDenied, msg: "no permission"},
+
+	/* 25001~26000 数据集管理错误*/
+	ErrorModelDeployForbidden:    {codeType: PermissionDenied, msg: "modelframe  uncorrect"},
+	ErrorModelDeployFailed:       {codeType: Internal, msg: "deploy seldon service failed"},
+	ErrorModelDeployDeleteFailed: {codeType: Internal, msg: "delete seldon service failed"},
+	ErrorModelInferRequest:       {codeType: Internal, msg: "seldon service http request failed"},
+	ErrorModelAuthFailed:         {codeType: Internal, msg: "model can`t access"},
 
 	/* 21001-22000 云际请求错误*/
 	ErrorSFtpGOAPIRequestFailed:  {codeType: Internal, msg: "sftpgo api request failed"},

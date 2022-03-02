@@ -185,6 +185,15 @@ func (s *WorkspaceService) CreateWorkspace(ctx context.Context, req *api.CreateW
 	if existed > 0 {
 		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceResourcePoolBound)
 	}
+	existed, err = s.data.WorkspaceDao.Count(ctx, &model.WorkspaceList{
+		Name: req.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if existed > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorWorkSpaceExisted)
+	}
 
 	wa := model.WorkspaceAdd{
 		Id:      strconv.FormatUint(snowflake.NextUID(), 10),

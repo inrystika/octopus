@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
-	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/session"
@@ -200,32 +199,18 @@ func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.Note
 	return reply, nil
 }
 
-
 // 保存notebook
 func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
 	session := session.SessionFromContext(ctx)
 	if session == nil {
 		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
 	}
-	userId := commctx.UserIdFromContext(ctx)
-	spaceId := session.GetWorkspace()
-	// create a new image to make
-	reply, err  := s.data.ImageClient.AddImage(ctx, &innerapi.AddImageRequest{
-		ImageName:        req.ImageName,
-		ImageVersion:     req.ImageVersion,
-		UserId:           userId,
-		SpaceId:          spaceId,
-		IsPrefab:         innerapi.ImageIsPrefab_IMAGE_IS_PREFAB_NO,
-		SourceType:       innerapi.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED,
-	})
-	if err != nil {
-		return nil, err
-	}
 
 	sReq := &innerapi.SaveNotebookRequest{
 		NotebookId:       req.NotebookId,
 		TaskName:         req.TaskName,
-		ImageId:          reply.ImageId,
+		ImageName:        req.ImageName,
+		ImageVersion:     req.ImageVersion,
 		LayerDescription: req.LayerDescription,
 	}
 	if _, err := s.data.DevelopClient.SaveNotebook(ctx, sReq); err != nil {
@@ -240,12 +225,10 @@ func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.L
 		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
 	}
 
-
 	err := s.checkPermission(ctx, req.NotebookId, session.UserId)
 	if err != nil {
 		return nil, err
 	}
-
 
 	innerReq := &innerapi.ListNotebookEventRecordRequest{}
 	err = copier.Copy(innerReq, req)
