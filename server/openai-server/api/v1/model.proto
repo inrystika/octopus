@@ -101,6 +101,10 @@ message ModelDetail {
   string latestVersion = 9;
   // 模型创建时间(时间戳)
   int64 createdAt = 10;
+  // 模型框架id
+  string frameWorkId = 11;
+  // 模型框架名称
+  string frameWorkName = 12;
 }
 
 message VersionDetail {

@@ -401,6 +401,8 @@ func (s *ModelService) modelTransfer(ctx context.Context, model *innterapi.Model
 		modelDetail.AlgorithmName = ""
 	} else {
 		modelDetail.AlgorithmName = algorithmReply.Algorithm.AlgorithmName
+		modelDetail.FrameWorkId = algorithmReply.Algorithm.FrameworkId
+		modelDetail.FrameWorkName = algorithmReply.Algorithm.FrameworkName
 	}
 
 	return modelDetail, nil
