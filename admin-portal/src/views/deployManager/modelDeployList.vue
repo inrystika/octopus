@@ -44,6 +44,11 @@
                     <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="运行时长" align="center">
+                <template slot-scope="scope">
+                    <span>{{ formatDuring(scope.row.runSec)}}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button v-if="scope.row.status==='Available'||scope.row.status==='Creating'" type="text"
@@ -182,6 +187,9 @@
             },
             handleStop(row) {
                 this.stop(row);
+            },
+            formatDuring(val) {
+                return formatDuring(val)
             },
             // 停止确认
             open2(val) {
