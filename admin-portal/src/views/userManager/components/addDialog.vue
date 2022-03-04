@@ -17,7 +17,7 @@
                     <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
                 </el-form-item> -->
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
-                    <el-input v-model="ruleForm.name" />
+                    <el-input v-model.trim="ruleForm.name" />
                 </el-form-item>
                 <el-form-item v-if="group" label="用户列表" :label-width="formLabelWidth" prop="userIds">
                     <el-select v-model="ruleForm.userIds" v-loadmore="loadUser" placeholder="请选择用户列表" multiple>
@@ -31,7 +31,7 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item v-if="user" label="姓名" :label-width="formLabelWidth" prop="fullname">
-                    <el-input v-model="ruleForm.fullname" />
+                    <el-input v-model.trim="ruleForm.fullname" />
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
