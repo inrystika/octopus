@@ -34,7 +34,7 @@
                     <span>{{ scope.row.endedAt | parseTime }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="类型" align="center" v-if="type=='user'">
+            <el-table-column label="类型" align="center">
                 <template slot-scope="scope">
                     <span>{{ changeType(scope.row.bizType) }}</span>
                 </template>

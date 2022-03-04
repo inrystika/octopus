@@ -111,7 +111,7 @@
 
                     ],
                     name: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' }
+                        { required: true, message: '请输入群组名', trigger: 'blur' }
 
                     ],
                     userIds: [
