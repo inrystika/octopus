@@ -106,6 +106,9 @@
                 if (this.modelFrame === 'Pytorch' || this.modelFrame == 'TensorFlow') {
                     this.showDeploy = true
                 }
+                else{
+                    this.showDeploy = false
+                }
 
             },
             handleDelete(row) {
