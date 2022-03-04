@@ -599,23 +599,38 @@ func (s *modelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 	//停止任务前，要删除掉sdep服务
 	err = s.data.Cluster.DeleteSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
 	if err != nil {
-		//todo: 如果停止动作的任务删除操作出错了，查询下sdep任务是否存在，不存在的话，强制修改状态
-		return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
+		//如果停止动作的任务删除操作出错了，查询下sdep任务是否存在，不存在的话，强制修改任务状态
+		obj, err := s.data.Cluster.GetSeldonDeployment(context.TODO(), seldonNameSpace, serviceName)
+		if obj == nil {
+			err = forceUpdateStatus(s, ctx, req)
+			return &api.StopDepReply{StoppedAt: time.Now().Unix()}, nil
+		} else {
+			return nil, errors.Errorf(err, errors.ErrorModelDeployDeleteFailed)
+		}
 	}
 
+	err = forceUpdateStatus(s, ctx, req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.StopDepReply{StoppedAt: time.Now().Unix()}, nil
+}
+
+func forceUpdateStatus(s *modelDeployService, ctx context.Context, req *api.StopDepRequest) error {
 	now := time.Now()
 	//再执行状态更新
-	err = s.data.ModelDeployDao.UpdateModelDeployService(ctx, &model.ModelDeploy{
+	err := s.data.ModelDeployDao.UpdateModelDeployService(ctx, &model.ModelDeploy{
 		Id:          req.Id,
 		Operation:   req.Operation,
 		Status:      STATE_STOPPED,
 		CompletedAt: &now,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	return &api.StopDepReply{StoppedAt: time.Now().Unix()}, nil
+	return nil
 }
 
 //删除模型服务
