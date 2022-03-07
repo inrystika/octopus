@@ -3,6 +3,7 @@ package trainjob
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -1018,14 +1019,20 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 }
 
 func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
-	_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-		SpaceId:          trainJob.WorkspaceId,
-		UserId:           trainJob.UserId,
-		AlgorithmId:      trainJob.AlgorithmId,
-		AlgorithmVersion: trainJob.AlgorithmVersion,
-		FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
-	})
-	return err
+	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
+	fileInfos, _ := ioutil.ReadDir(filePath)
+	if len(fileInfos) > 0 {
+		_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+			SpaceId:          trainJob.WorkspaceId,
+			UserId:           trainJob.UserId,
+			AlgorithmId:      trainJob.AlgorithmId,
+			AlgorithmVersion: trainJob.AlgorithmVersion,
+			FilePath:         filePath,
+		})
+		return err
+	}
+
+	return nil
 }
 
 func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
