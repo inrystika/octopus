@@ -2,9 +2,8 @@ package ftpproxy
 
 import (
 	"context"
+	"io/ioutil"
 	"net/http"
-	"server/base-server/internal/common"
-	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
 	"sync"
 	"time"
@@ -23,21 +22,20 @@ const (
 
 type FtpProxyService struct {
 	pb.UnimplementedFtpProxyServiceServer
-	conf         *conf.Bootstrap
-	log          *log.Helper
-	data         *data.Data
-	client       *sftpgov2.APIClient
-	token        *ftpAuthToken
+	conf   *conf.Bootstrap
+	data   *data.Data
+	client *sftpgov2.APIClient
+	token  *ftpAuthToken
 }
 
 type ftpAuthToken struct {
-	mu          sync.Mutex
+	mu sync.Mutex
 
-	username    string
-	password    string
-	token       *sftpgov2.Token
-	client      *sftpgov2.APIClient
-	log         *log.Helper
+	username string
+	password string
+	token    *sftpgov2.Token
+	client   *sftpgov2.APIClient
+	log      *log.Helper
 }
 
 func (t *ftpAuthToken) getToken(ctx context.Context) string {
@@ -54,14 +52,14 @@ func (t *ftpAuthToken) getToken(ctx context.Context) string {
 		UserName: t.username,
 		Password: t.password,
 	}))
-	tk, resp , err := apiGetTokenRequest.Execute()
+	tk, resp, err := apiGetTokenRequest.Execute()
 	if err != nil {
 		t.log.Errorf(ctx, "FtpGO GetToken failed, err: %v", err)
 		panic(err)
 	}
 	if resp.StatusCode == http.StatusOK {
 		t.token.AccessToken = tk.AccessToken
-		t.token.ExpiresAt   = tk.ExpiresAt
+		t.token.ExpiresAt = tk.ExpiresAt
 		return *t.token.AccessToken
 	}
 	t.log.Errorf(ctx, "FtpGO GetToken failed, statusCode: %v", resp.StatusCode)
@@ -76,18 +74,17 @@ func (t *ftpAuthToken) isExpired() bool {
 	return !time.Now().Add(30 * time.Second).Before(*t.token.ExpiresAt)
 }
 
-func NewFtpProxyService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) pb.FtpProxyServiceServer {
+func NewFtpProxyService(conf *conf.Bootstrap, data *data.Data) pb.FtpProxyServiceServer {
 	config := sftpgov2.NewConfiguration()
 	config.Scheme = "http"
 	config.Host = conf.Data.Sftpgo.BaseUrl
 
 	client := sftpgov2.NewAPIClient(config)
 	token := ftpAuthToken{
-		client:    client,
-		token:     &sftpgov2.Token{},
-		username:  conf.Data.Sftpgo.Username,
-		password:  conf.Data.Sftpgo.Password,
-		log:       log.NewHelper("FtpProxyService.ftpAccessToken", logger),
+		client:   client,
+		token:    &sftpgov2.Token{},
+		username: conf.Data.Sftpgo.Username,
+		password: conf.Data.Sftpgo.Password,
 	}
 	ctx := context.WithValue(context.Background(), sftpgov2.ContextServerVariables, map[string]string{
 		"basePath": "v2",
@@ -95,15 +92,14 @@ func NewFtpProxyService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 	token.getToken(ctx)
 
 	return &FtpProxyService{
-		token:        &token,
-		client:       client,
-		conf:         conf,
-		data:         data,
-		log:          log.NewHelper("FtpProxyService", logger),
+		token:  &token,
+		client: client,
+		conf:   conf,
+		data:   data,
 	}
 }
 
-func (s *FtpProxyService) CreateOrUpdateAccount(ctx context.Context, req *pb.CreateOrUpdateAccountRequest) (*pb.CreateOrUpdateAccountReply, error) {
+func (s *FtpProxyService) CreateOrUpdateUser(ctx context.Context, req *pb.CreateOrUpdateUserRequest) (*pb.CreateOrUpdateUserReply, error) {
 	fuser, err := s.getFtpUser(ctx, req.Username)
 	if err != nil {
 		return nil, err
@@ -114,21 +110,12 @@ func (s *FtpProxyService) CreateOrUpdateAccount(ctx context.Context, req *pb.Cre
 		return nil, err
 	}
 	if fuser == nil {
-		user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.Id})
-		if err != nil {
-			return nil, err
-		}
-		if user == nil {
-			return nil, errors.Errorf(nil, errors.ErrorUserAccountNotExisted)
-		}
-
 		fuser = sftpgov2.NewUser()
 		fuser.SetUsername(req.Username)
 		fuser.SetEmail(req.Email)
 		fuser.SetPassword(password)
-		fuser.SetHomeDir(req.HomeDir)
 
-		_, err = s.createFtpUser(ctx, fuser, user)
+		_, err = s.createFtpUser(ctx, fuser, req.HomeS3Bucket)
 		if err != nil {
 			return nil, err
 		}
@@ -142,17 +129,13 @@ func (s *FtpProxyService) CreateOrUpdateAccount(ctx context.Context, req *pb.Cre
 		if req.Password != "" {
 			fuser.SetPassword(password)
 		}
-		if req.HomeDir != "" {
-			fuser.SetHomeDir(req.HomeDir)
-		}
 		err := s.updateFtpUser(ctx, *fuser, 1)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &pb.CreateOrUpdateAccountReply{
-	}, nil
+	return &pb.CreateOrUpdateUserReply{}, nil
 }
 
 func (s *FtpProxyService) getAuthCtx(ctx context.Context) context.Context {
@@ -162,7 +145,7 @@ func (s *FtpProxyService) getAuthCtx(ctx context.Context) context.Context {
 	return context.WithValue(ctx, sftpgov2.ContextAccessToken, s.token.getToken(ctx))
 }
 
-func (s *FtpProxyService) getFtpUser (ctx context.Context, username string) (*sftpgov2.User, error){
+func (s *FtpProxyService) getFtpUser(ctx context.Context, username string) (*sftpgov2.User, error) {
 	user, resp, err := s.client.UsersApi.GetUserByUsername(s.getAuthCtx(ctx), username).Execute()
 	httpStatusCode := resp.StatusCode
 	if err != nil && httpStatusCode != http.StatusNotFound {
@@ -175,34 +158,13 @@ func (s *FtpProxyService) getFtpUser (ctx context.Context, username string) (*sf
 	case http.StatusNotFound:
 		return nil, nil
 	default:
-		s.log.Errorf(ctx, "FtpGO GetUserByUsername, username: %s, statusCode: %v", username, httpStatusCode)
+		log.Errorf(ctx, "FtpGO GetUserByUsername, username: %s, statusCode: %v", username, httpStatusCode)
 		return nil, errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 }
 
-func (s *FtpProxyService) createFtpUser (ctx context.Context, fuser *sftpgov2.User, user *model.User) (*sftpgov2.User, error){
-	accessSecret := sftpgov2.NewSecret()
-	accessSecret.SetPayload(s.conf.Data.Minio.Base.SecretAccessKey)
-	accessSecret.SetStatus("Plain")
-
-	s3EndPoint := "://" + s.conf.Data.Minio.Base.EndPoint
-	if s.conf.Data.Minio.Base.UseSSL {
-		s3EndPoint = "https" + s3EndPoint
-	} else {
-		s3EndPoint = "http" + s3EndPoint
-	}
-
-	s3Config := sftpgov2.NewS3Config()
-	s3Config.SetBucket(common.GetUserHomeBucket(user.Id))
-	s3Config.SetRegion("us-east-1")
-	s3Config.SetAccessKey(s.conf.Data.Minio.Base.AccessKeyID)
-	s3Config.SetAccessSecret(*accessSecret)
-	s3Config.SetEndpoint(s3EndPoint)
-	s3Config.SetForcePathStyle(true)
-
-	fileSystemConfig := sftpgov2.NewFilesystemConfig()
-	fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__1)
-	fileSystemConfig.SetS3config(*s3Config)
+func (s *FtpProxyService) createFtpUser(ctx context.Context, fuser *sftpgov2.User, userBucket string) (*sftpgov2.User, error) {
+	fileSystemConfig := s.newFileSystemConfig(userBucket, "")
 
 	permissions := map[string][]sftpgov2.Permission{}
 	permissions["/"] = []sftpgov2.Permission{sftpgov2.PERMISSION_STAR}
@@ -221,20 +183,149 @@ func (s *FtpProxyService) createFtpUser (ctx context.Context, fuser *sftpgov2.Us
 
 	u, resp, err := s.client.UsersApi.AddUser(s.getAuthCtx(ctx)).User(*fuser).Execute()
 	if err != nil {
-		return nil, err
+		s.printResponse(ctx, resp)
+		return nil, errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 	httpStatusCode := resp.StatusCode
 	switch httpStatusCode {
 	case http.StatusCreated:
 		return u, nil
 	default:
-		s.log.Errorf(ctx, "FtpGO createFtpUser, username: %s, statusCode: %v", fuser.Username, httpStatusCode)
+		log.Errorf(ctx, "FtpGO createFtpUser, username: %v, statusCode: %v", fuser.Username, httpStatusCode)
 		return nil, errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 }
 
-func (s *FtpProxyService) updateFtpUser (ctx context.Context, user sftpgov2.User, disconnect int32) error {
-	_, resp, err := s.client.UsersApi.UpdateUser(s.getAuthCtx(ctx),*user.Username).User(user).Disconnect(disconnect).Execute()
+func (s *FtpProxyService) newFileSystemConfig(bucket string, object string) *sftpgov2.FilesystemConfig {
+	accessSecret := sftpgov2.NewSecret()
+	accessSecret.SetPayload(s.conf.Data.Minio.Base.SecretAccessKey)
+	accessSecret.SetStatus("Plain")
+
+	s3EndPoint := "://" + s.conf.Data.Minio.Base.EndPoint
+	if s.conf.Data.Minio.Base.UseSSL {
+		s3EndPoint = "https" + s3EndPoint
+	} else {
+		s3EndPoint = "http" + s3EndPoint
+	}
+
+	s3Config := sftpgov2.NewS3Config()
+	s3Config.SetBucket(bucket)
+	s3Config.SetRegion("us-east-1")
+	s3Config.SetAccessKey(s.conf.Data.Minio.Base.AccessKeyID)
+	s3Config.SetAccessSecret(*accessSecret)
+	s3Config.SetEndpoint(s3EndPoint)
+	s3Config.SetForcePathStyle(true)
+	s3Config.SetKeyPrefix(object)
+
+	fileSystemConfig := sftpgov2.NewFilesystemConfig()
+	fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__1)
+	fileSystemConfig.SetS3config(*s3Config)
+	return fileSystemConfig
+}
+
+func (s *FtpProxyService) updateFtpUser(ctx context.Context, user sftpgov2.User, disconnect int32) error {
+	_, resp, err := s.client.UsersApi.UpdateUser(s.getAuthCtx(ctx), *user.Username).User(user).Disconnect(disconnect).Execute()
+	if err != nil {
+		s.printResponse(ctx, resp)
+		return errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
+	}
+	httpStatusCode := resp.StatusCode
+	switch httpStatusCode {
+	case http.StatusOK:
+		return nil
+	default:
+		log.Errorf(ctx, "FtpGO updateFtpUser, username: %v, statusCode: %v", user.Username, httpStatusCode)
+		return errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
+	}
+}
+
+func (s *FtpProxyService) CreateVirtualFolder(ctx context.Context, req *pb.CreateVirtualFolderRequest) (*pb.CreateVirtualFolderReply, error) {
+	folder := sftpgov2.NewBaseVirtualFolder()
+	folder.SetName(req.Name)
+	folder.SetFilesystem(*s.newFileSystemConfig(req.S3Bucket, req.S3Object))
+	err := s.addVirtualFolder(ctx, *folder)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.getFtpUser(ctx, req.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	vfs := make([]sftpgov2.VirtualFolder, 0)
+	for _, v := range user.VirtualFolders {
+		vf := sftpgov2.NewVirtualFolder(req.VirtualPath)
+		vf.SetName(v.GetName())
+		vf.SetVirtualPath(v.GetVirtualPath())
+		vfs = append(vfs, *vf)
+	}
+	vf := sftpgov2.NewVirtualFolder(req.VirtualPath)
+	vf.SetName(req.Name)
+	vf.SetVirtualPath(req.VirtualPath)
+	vfs = append(vfs, *vf)
+
+	user.VirtualFolders = vfs
+
+	err = s.updateFtpUser(ctx, *user, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CreateVirtualFolderReply{}, nil
+}
+
+func (s *FtpProxyService) addVirtualFolder(ctx context.Context, bvf sftpgov2.BaseVirtualFolder) error {
+	_, resp, err := s.client.FoldersApi.AddFolder(s.getAuthCtx(ctx)).BaseVirtualFolder(bvf).Execute()
+	if err != nil {
+		s.printResponse(ctx, resp)
+		return errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
+	}
+
+	httpStatusCode := resp.StatusCode
+	switch httpStatusCode {
+	case http.StatusCreated:
+		return nil
+	default:
+		return errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
+	}
+}
+
+func (s *FtpProxyService) printResponse(ctx context.Context, r *http.Response) {
+	if r != nil {
+		bytes, _ := ioutil.ReadAll(r.Body)
+		log.Infof(ctx, "resp: %v", string(bytes))
+	}
+}
+
+func (s *FtpProxyService) DeleteVirtualFolder(ctx context.Context, req *pb.DeleteVirtualFolderRequest) (*pb.DeleteVirtualFolderReply, error) {
+
+	user, err := s.getFtpUser(ctx, req.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	hasVf := false
+	for _, v := range user.VirtualFolders {
+		if *v.Name == req.Name {
+			hasVf = true
+		}
+	}
+
+	if !hasVf {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+
+	err = s.deleteVirtualFolder(ctx, req.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteVirtualFolderReply{}, nil
+}
+
+func (s *FtpProxyService) deleteVirtualFolder(ctx context.Context, name string) error {
+	_, resp, err := s.client.FoldersApi.DeleteFolder(s.getAuthCtx(ctx), name).Execute()
 	if err != nil {
 		return err
 	}
@@ -243,7 +334,6 @@ func (s *FtpProxyService) updateFtpUser (ctx context.Context, user sftpgov2.User
 	case http.StatusOK:
 		return nil
 	default:
-		s.log.Errorf(ctx, "FtpGO updateFtpUser, username: %s, statusCode: %v", user.Username, httpStatusCode)
 		return errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 }

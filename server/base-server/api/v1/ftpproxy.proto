@@ -7,16 +7,39 @@ option go_package = "server/base-server/api/v1;v1";
 import "validate/validate.proto";
 
 service FtpProxyService {
-  rpc CreateOrUpdateAccount (CreateOrUpdateAccountRequest) returns (CreateOrUpdateAccountReply);
+  rpc CreateOrUpdateUser (CreateOrUpdateUserRequest) returns (CreateOrUpdateUserReply);
+  rpc CreateVirtualFolder (CreateVirtualFolderRequest) returns (CreateVirtualFolderReply);
+  rpc DeleteVirtualFolder (DeleteVirtualFolderRequest) returns (DeleteVirtualFolderReply);
 }
 
-message CreateOrUpdateAccountRequest {
-  string id = 1;
+message CreateOrUpdateUserRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string homeS3Bucket = 4;
+  string homeS3Object = 5;
+}
+
+message CreateOrUpdateUserReply {
+}
+
+message CreateVirtualFolderRequest {
+  string name = 1;
   string username = 2;
-  string email = 3;
-  string password = 4;
-  string homeDir = 5;
+  string virtualPath =3;
+  string s3Bucket = 4;
+  string s3Object = 5;
 }
 
-message CreateOrUpdateAccountReply {
+message CreateVirtualFolderReply {
+
+}
+
+message DeleteVirtualFolderRequest {
+  string name = 1;
+  string username = 2;
+}
+
+message DeleteVirtualFolderReply {
+
 }

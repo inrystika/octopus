@@ -417,5 +417,5 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorModelAuthFailed:         {codeType: Internal, msg: "model can`t access"},
 
 	/* 21001-22000 云际请求错误*/
-	ErrorSFtpGOAPIRequestFailed:  {codeType: Internal, msg: "sftpgo api request failed"},
+	ErrorSFtpGOAPIRequestFailed: {codeType: Internal, msg: "sftpgo api request failed"},
 }
