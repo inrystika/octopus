@@ -31,6 +31,11 @@
                     <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="运行时长" align="center">
+                <template slot-scope="scope">
+                    <span>{{ formatDuring(scope.row.runSec) }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="状态" align="center">
                 <template slot-scope="scope">
                     <span :class="statusText[scope.row.status][0]" v-if="statusText[scope.row.status][0]"></span>
@@ -67,6 +72,7 @@
     import dialogForm from "./components/dialogForm.vue";
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
+    import { formatDuring } from '@/utils/index'
     import store from '@/store'
     export default {
         name: "PreImage",

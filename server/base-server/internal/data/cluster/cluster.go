@@ -55,5 +55,6 @@ type Cluster interface {
 	GetPod(ctx context.Context, namespace string, name string) (*v1.Pod, error)
 	CreateSeldonDeployment(ctx context.Context, namespace string, seldonDeployment *seldonv1.SeldonDeployment) (*seldonv1.SeldonDeployment, error)
 	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
+	GetSeldonDeployment(ctx context.Context, namespace string, serviceName string) (*seldonv1.SeldonDeployment, error)
 	RegisterDeploymentInformerCallback(onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete)
 }
