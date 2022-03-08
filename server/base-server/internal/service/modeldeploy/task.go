@@ -129,6 +129,15 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 
 							payAmount = floats.Round(payAmount, common.BillingPrecision)
 
+							if payAmount <= j.PayAmount && payStatus != api.BillingPayRecordStatus_BPRS_PAY_COMPLETED {
+								continue
+							}
+
+							extraInfo := make(map[string]string)
+							if ownerType == api.BillingOwnerType_BOT_SPACE {
+								extraInfo = common.GetExtraInfo(j.UserId)
+							}
+
 							_, err := s.billingService.Pay(ctx, &api.PayRequest{
 								OwnerId:   ownerId,
 								OwnerType: ownerType,
@@ -139,6 +148,7 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 								StartedAt: payStartAt,
 								EndedAt:   payEndAt,
 								Status:    payStatus,
+								ExtraInfo: extraInfo,
 							})
 							if err != nil {
 								s.log.Errorf(ctx, "Pay err: %s", err)

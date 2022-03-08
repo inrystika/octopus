@@ -37,6 +37,7 @@ func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRe
 		SearchKey:    req.SearchKey,
 		CreatedAtGte: req.CreatedAtGte,
 		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -73,6 +74,7 @@ func (s *ModelService) ListMyModel(ctx context.Context, req *api.ListMyModelRequ
 		SearchKey:    req.SearchKey,
 		CreatedAtGte: req.CreatedAtGte,
 		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -108,6 +110,7 @@ func (s *ModelService) ListCommModel(ctx context.Context, req *api.ListCommModel
 		SearchKey:    req.SearchKey,
 		CreatedAtGte: req.CreatedAtGte,
 		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -398,6 +401,8 @@ func (s *ModelService) modelTransfer(ctx context.Context, model *innterapi.Model
 		modelDetail.AlgorithmName = ""
 	} else {
 		modelDetail.AlgorithmName = algorithmReply.Algorithm.AlgorithmName
+		modelDetail.FrameWorkId = algorithmReply.Algorithm.FrameworkId
+		modelDetail.FrameWorkName = algorithmReply.Algorithm.FrameworkName
 	}
 
 	return modelDetail, nil

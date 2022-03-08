@@ -21,7 +21,7 @@
                     <span>{{ scope.row.modelVersion }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="模型描述" align="center" :show-overflow-tooltip="true">
+            <el-table-column label="服务描述" align="center" :show-overflow-tooltip="true">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
                 </template>
@@ -29,6 +29,11 @@
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.createdAt | parseTime }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="运行时长" align="center">
+                <template slot-scope="scope">
+                    <span>{{ formatDuring(scope.row.runSec) }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="状态" align="center">
@@ -39,9 +44,8 @@
             </el-table-column>
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
-                    <el-button
-                        v-if="scope.row.status==='Available'||scope.row.status==='Creating'"
-                        type="text" @click="open2(scope.row.id)">
+                    <el-button v-if="scope.row.status==='Available'||scope.row.status==='Creating'" type="text"
+                        @click="open2(scope.row.id)">
                         停止
                     </el-button>
                     <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
@@ -68,6 +72,7 @@
     import dialogForm from "./components/dialogForm.vue";
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
+    import { formatDuring } from '@/utils/index'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -87,12 +92,16 @@
                 detailDialog: false,
                 flag: true,
                 Logo: true,
-                searchForm: [],
+                searchForm: [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' },
+                {
+                    type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
+                    options: [{ label: '初始中', value: 'Preparing' }, { label: '创建中', value: 'Creating' }, { label: '运行中', value: 'Available' }, { label: '失败', value: 'Failed' }, { label: '已停止', value: 'Stopped' }]
+                },],
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
                 },
-                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'],'Stopped': ['status-stopping', '已停止'] },
+                statusText: { 'Preparing': ['status-ready', '初始中'], 'Creating': ['status-agent', '创建中'], 'Available': ['status-running', '运行中'], 'Failed': ['status-danger', '失败'], 'Stopped': ['status-stopping', '已停止'] },
             }
         },
         created() {
@@ -116,8 +125,8 @@
         methods: {
             getList(data) {
                 if (data.time && data.time.length !== 0) {
-                    data.createAtGte = data.time[0] / 1000
-                    data.createAtLt = data.time[1] / 1000
+                    data.createdAtGte = data.time[0] / 1000
+                    data.createdAtLt = data.time[1] / 1000
                     delete data.time
                 }
                 getDeployList(data).then(response => {
@@ -148,8 +157,8 @@
                     this.getList(this.searchData)
                 })
             },
-            Delete(val) {     
-                deleteDeploy({jobIds:val}).then(response => {
+            Delete(val) {
+                deleteDeploy({ jobIds: val }).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '删除成功',

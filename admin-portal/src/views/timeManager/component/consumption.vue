@@ -34,16 +34,16 @@
                     <span>{{ scope.row.endedAt | parseTime }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="类型" align="center" v-if="type=='user'">
+            <el-table-column label="类型" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.bizType==1?'训练':'notebook' }}</span>
+                    <span>{{ changeType(scope.row.bizType) }}</span>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="searchData.pageSize" :total="total"
-                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-                @current-change="handleCurrentChange" />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
     </div>
 </template>
@@ -71,7 +71,7 @@
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
                 searchForm: [],
                 type: '',
-                searchKey:''
+                searchKey: ''
 
             }
         },
@@ -88,14 +88,26 @@
         },
 
         methods: {
+            changeType(value) {
+                switch (value) {
+                    case 0:
+                        return ''
+                    case 1:
+                        return '训练'
+                    case 2:
+                        return 'NoteBook'
+                    default:
+                        return '模型部署'
+                }
+            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
-                this.searchData.searchKey=this.searchKey
+                this.searchData.searchKey = this.searchKey
                 this.getPay(this.searchData)
             },
             handleCurrentChange(val) {
                 this.searchData.pageIndex = val
-                this.searchData.searchKey=this.searchKey
+                this.searchData.searchKey = this.searchKey
                 this.getPay(this.searchData)
             },
             getPay(data) {

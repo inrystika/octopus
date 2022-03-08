@@ -116,7 +116,7 @@
       },
       // 获取数据集类型
       datasetType() {
-        datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
           } else {
@@ -130,7 +130,7 @@
       },
        // 获取数据集用途
        datasetUse() {
-        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetUse({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
           } else {

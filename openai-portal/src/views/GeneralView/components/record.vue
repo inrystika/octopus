@@ -106,10 +106,14 @@
     methods: {
       changeType(value) {
         switch (value) {
+          case 0:
+            return ''
           case 1:
             return '训练'
-          default:
+          case 2:
             return 'NoteBook'
+          default:
+            return '模型部署'
         }
       },
       handleSizeChange(val) {

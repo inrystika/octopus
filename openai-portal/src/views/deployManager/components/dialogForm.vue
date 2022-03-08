@@ -16,14 +16,14 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
-                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型">
-                        <el-option label="PyTorch" value="pytorch"></el-option>
-                        <el-option label="TensorFlow" value="tensorflow"></el-option>
+                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork" :disabled="chooseFrame">
+                        <el-option label="pytorch" value="pytorch"></el-option>
+                        <el-option label="tensorflow" value="tensorflow"></el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 模型三级框 -->
                 <div>
-                    <el-form-item label="模型类型" prop="modelSource" style="display:inline-block;">
+                    <el-form-item label="模型类型" prop="modelSource" style="display:inline-block;" v-if="modelType">
                         <el-select v-model="ruleForm.modelSource" placeholder="请选择模型类型" @change="changeModelSource"
                             :disabled="uncheckable">
                             <el-option label="我的模型" value="1" />
@@ -34,14 +34,14 @@
                     <el-form-item v-if="modelName" label="模型名称" prop="modelId" style="display:inline-block;">
                         <el-select v-model="ruleForm.modelId" v-loadmore="loadModelName" placeholder="请选择模型名称"
                             filterable remote :remote-method="remoteModel" @change="changeModelName"
-                            @click.native="getModelItem" :disabled="uncheckable">
+                            @click.native="getModelNameItem" :disabled="uncheckable">
                             <el-option v-for="item in modelNameOption" :key="item.modelId+item.modelName"
                                 :label="item.modelName" :value="item.modelId" />
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="modelVersion" label="模型版本" prop="modelVersion" style="display:inline-block;">
                         <el-select v-model="ruleForm.modelVersion" v-loadmore="loadModelVersion" placeholder="请选择模型版本"
-                            :disabled="uncheckable">
+                            :disabled="uncheckable" @click.native="getModelVersionItem">
                             <el-option v-for="item in modelVersionOption" :key="item.modelId+item.version"
                                 :label="item.version" :value="item.version" />
                         </el-select>
@@ -72,6 +72,7 @@
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
     import upload from '@/components/upload/index.vue'
+    import { algorithmFrame } from "@/api/modelDev";
     export default {
         name: "DialogCreateForm",
         components: {
@@ -127,7 +128,7 @@
                 },
                 resourceOptions: [],
                 // 模型类型
-                modelType: undefined,
+                modelType: false,
                 // 模型名称
                 modelName: false,
                 modelNameCount: 1,
@@ -143,7 +144,14 @@
                 uncheckable: false,
                 //临时模型名称ID
                 tempId: undefined,
-                flag:false
+                flag: false,
+                option: {
+                    pytorch: '',
+                    tensorflow: ''
+
+                },
+                frameWorkId: '',
+                chooseFrame:false
 
             }
         },
@@ -153,13 +161,17 @@
                 this.uncheckable = true
                 this.modelName = true
                 this.modelVersion = true
-                this.ruleForm.modelSource = this.row.type.toString()       
+                this.ruleForm.modelSource = this.row.type.toString()
                 this.ruleForm.modelId = this.row.modelName
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
-                this.flag=true
+                this.flag = true
+                this.modelType=true
+                this.ruleForm.modelFrame=this.row.modelFrame.toLowerCase()
+                this.chooseFrame=true
             }
             this.getResourceList()
+            this.algorithmFrame()
         },
         beforeDestroy() {
 
@@ -170,10 +182,13 @@
                 this.modelName = true
                 this.modelNameCount = 1
                 this.modelNameOption = []
+                this.ruleForm.modelId = ""
+                this.ruleForm.modelVersion = ""
+
             },
             getModel(searchKey) {
                 if (this.ruleForm.modelSource == 1) {
-                    getMyModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                    getMyModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey, frameWorkId: this.frameWorkId }).then(response => {
                         if (response.success) {
                             if (response.data.models !== null) {
                                 this.modelNameTotal = response.data.totalSize
@@ -188,7 +203,7 @@
                     })
                 }
                 if (this.ruleForm.modelSource == 2) {
-                    getPublicModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                    getPublicModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey, frameWorkId: this.frameWorkId }).then(response => {
                         if (response.success) {
                             if (response.data.models !== null) {
                                 this.modelNameTotal = response.data.totalSize
@@ -203,7 +218,7 @@
                     })
                 }
                 if (this.ruleForm.modelSource == 3) {
-                    getPreModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey }).then(response => {
+                    getPreModel({ pageIndex: this.modelNameCount, pageSize: 10, nameLike: searchKey, frameWorkId: this.frameWorkId }).then(response => {
                         if (response.success) {
                             if (response.data.models !== null) {
                                 this.modelNameTotal = response.data.totalSize
@@ -234,65 +249,32 @@
                 this.modelNameTotal = 1
                 this.getModel(this.modelNameTemp)
             },
-            getModelItem() {
+            getModelNameItem() {
+                this.modelNameOption = []
                 this.modelNameTemp = ''
                 this.modelNameCount = 1
-                if (this.ruleForm.modelSource == 1) {
-                    getMyModel({ pageIndex: this.modelNameCount, pageSize: 10, }).then(response => {
-                        if (response.success) {
-                            if (response.data.models !== null) {
-                                this.modelNameTotal = response.data.totalSize
-                                this.modelNameOption = this.modelNameOption.concat(response.data.models);
-                            }
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-                if (this.ruleForm.modelSource == 2) {
-                    getPublicModel({ pageIndex: this.modelNameCount, pageSize: 10, }).then(response => {
-                        if (response.success) {
-                            if (response.data.models !== null) {
-                                this.modelNameTotal = response.data.totalSize
-                                this.modelNameOption = this.modelNameOption.concat(response.data.models);
-                            }
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
-                if (this.ruleForm.modelSource == 3) {
-                    getPreModel({ pageIndex: this.modelNameCount, pageSize: 10, }).then(response => {
-                        if (response.success) {
-                            if (response.data.models !== null) {
-                                this.modelNameTotal = response.data.totalSize
-                                this.modelNameOption = this.modelNameOption.concat(response.data.models);
-                            }
-                        } else {
-                            this.$message({
-                                message: this.getErrorMsg(response.error.subcode),
-                                type: 'warning'
-                            });
-                        }
-                    })
-                }
+                this.getModel()
             },
             changeModelName() {
                 this.modelVersion = true
                 this.modelVersionCount = 1
                 this.modelVersionOption = []
                 this.ruleForm.modelVersion = ''
-                this.getModelVersionList()
             },
-            getModelVersionList() {
+            getModelVersionItem() {
+                this.modelVersionCount = 1
+                this.modelVersionOption = []
+                this.getModelVersion()
+            },
+            loadModelVersion() {
+                this.modelVersionCount = this.modelVersionCount + 1
+                if (this.modelVersionOption.length < this.modelVersionTotal) {
+                    this.getModelVersion()
+                }
+            },
+            getModelVersion() {
                 if (this.ruleForm.modelSource !== 2) {
-                    getNoPublicList({ pageIndex: this.modelVersionCount, pageSize: 1, modelId: this.ruleForm.modelId }).then(response => {
+                    getNoPublicList({ pageIndex: this.modelVersionCount, pageSize: 10, modelId: this.ruleForm.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {
                                 this.modelVersionTotal = response.data.totalSize
@@ -311,12 +293,11 @@
                         }
                     })
                 } else {
-                    getPublicList({ pageIndex: this.modelVersionCount, pageSize: 1, modelId: this.ruleForm.modelId }).then(response => {
+                    getPublicList({ pageIndex: this.modelVersionCount, pageSize: 10, modelId: this.ruleForm.modelId }).then(response => {
                         if (response.success) {
                             if (response.data.modelVersions !== null) {
                                 this.modelVersionTotal = response.data.totalSize
-                                this.modelVersionOption = this.modelVersionOption.concat(response.data.models);
-                                console.log(this.modelVersionOption, "OPPO")
+                                this.modelVersionOption = this.modelVersionOption.concat(data.models);
                             }
                         } else {
                             this.$message({
@@ -325,12 +306,6 @@
                             });
                         }
                     })
-                }
-            },
-            loadModelVersion() {
-                this.modelVersionCount = this.modelVersionCount + 1
-                if (this.modelVersionOption.length < this.modelVersionTotal) {
-                    this.getModelVersionList()
                 }
             },
             // 获取资源规格
@@ -353,10 +328,11 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        if(this.flag){
-                            this.ruleForm.modelId=this.tempId
+                        let data=JSON.parse(JSON.stringify(this.ruleForm))
+                        if (this.flag) {
+                            data.modelId = this.tempId           
                         }
-                        createDeploy(this.ruleForm).then(response => {
+                        createDeploy(data).then(response => {
                             if (response.success) {
                                 this.$message({
                                     message: '提交成功',
@@ -386,7 +362,38 @@
             },
             isCloseX(val) {
                 this.close = val
-            }
+            },
+            //选择算法类型下拉框
+            changeFameWork() {
+                this.modelType = true
+                this.frameWorkId = this.option[this.ruleForm.modelFrame]
+                this.ruleForm.modelSource=""
+                this.ruleForm.modelId = ""
+                this.ruleForm.modelVersion=""
+                
+            },
+             // 获取算法框架
+             algorithmFrame() {
+                algorithmFrame({ pageIndex: 1, pageSize: 50 }).then(response => {
+                    if (response.success) {
+                        response.data.lables.forEach(
+                            item => {
+                                if (item.lableDesc === "Pytorch") {
+                                    this.option.pytorch = item.id
+                                }
+                                if (item.lableDesc === "TensorFlow") {
+                                    this.option.tensorflow = item.id
+                                }
+                            }
+                        )
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
         }
     }
 </script>

@@ -104,6 +104,7 @@ func (h *modelAddHandle) AddPreModelHandle(ctx context.Context, req *api.AddPreM
 	modelVersionId := utils.GetUUIDWithoutSeparator()
 	modelVersion := common.VersionStrBuild(1)
 	modelName := algorithmReply.Algorithm.ModelName
+	modelFraworkId := algorithmReply.Algorithm.FrameworkId
 	modelDescript := req.ModelDescript
 	preModel, err := modelDao.CreateModel(ctx, &model.Model{
 		Id:               modelId,
@@ -113,6 +114,7 @@ func (h *modelAddHandle) AddPreModelHandle(ctx context.Context, req *api.AddPreM
 		ModelName:        modelName,
 		ModelDescript:    modelDescript,
 		LatestVersion:    modelVersion,
+		FrameworkId:      modelFraworkId,
 		ModelVersions: []*model.ModelVersion{
 			{
 				Id:         modelVersionId,
@@ -327,6 +329,7 @@ func (h *modelAddHandle) addNewMyModel(ctx context.Context, req *api.AddMyModelR
 	modelVersionId := utils.GetUUIDWithoutSeparator()
 	modelVersion := common.VersionStrBuild(1)
 	modelName := algorithmReply.Algorithm.ModelName
+	modelFrameWorkId := algorithmReply.Algorithm.FrameworkId
 	modelDescript := ""
 
 	myModel, err := modelDao.CreateModel(ctx, &model.Model{
@@ -338,6 +341,7 @@ func (h *modelAddHandle) addNewMyModel(ctx context.Context, req *api.AddMyModelR
 		AlgorithmVersion: req.AlgorithmVersion,
 		ModelName:        modelName,
 		ModelDescript:    modelDescript,
+		FrameworkId:      modelFrameWorkId,
 		LatestVersion:    modelVersion,
 		ModelVersions: []*model.ModelVersion{
 			{
