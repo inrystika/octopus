@@ -435,3 +435,15 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
+
+# seldon-core
+seldon-core:
+  usageMetrics:
+    enabled: true
+  namespace : seldon-system
+
+# seldon-core
+seldon-core-operator :
+  ambassador:
+    enabled: true
+  namespace : seldon-system
