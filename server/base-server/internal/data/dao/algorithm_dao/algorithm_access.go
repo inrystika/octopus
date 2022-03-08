@@ -18,7 +18,7 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 	params := make([]interface{}, 0)
 	querySql := "1 = 1"
 	if req.SpaceId != "" {
-		querySql += " and space_id = ? "
+		querySql += " and algorithm_access.space_id = ? "
 		params = append(params, req.SpaceId)
 	}
 	if req.AlgorithmId != "" {
@@ -48,8 +48,8 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		querySql += " and algorithm_name like ? "
 		params = append(params, "%"+req.NameLike+"%")
 	}
-
-	db = db.Where(querySql, params...)
+	db = db.Joins("join algorithm as al on al.algorithm_id = algorithm_access.algorithm_id")
+	db = db.Model(&model.AlgorithmAccess{}).Where(querySql, params...)
 
 	var totalSize int64
 	res := db.Count(&totalSize)
@@ -59,7 +59,6 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		d.log.Errorw(ctx, err)
 		return 0, nil, err
 	}
-
 	// limit语句拼接
 	if req.PageSize > 0 && req.PageIndex > 0 {
 		db = db.Limit(req.PageSize).
@@ -76,15 +75,14 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
+		orderSql := fmt.Sprintf("al.created_at %s", req.CreatedAtSort)
 		db = db.Order(orderSql)
 	}
 
 	if req.SortBy != "" {
 		db = req.Order(db)
 	}
-
-	db = db.Find(&accessAlgorithms)
+	db = db.Select("algorithm_access.*").Find(&accessAlgorithms)
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFindFailed)
 		d.log.Errorw(ctx, err)
