@@ -438,12 +438,16 @@ nodeagent:
 
 # seldon-core
 seldon-core:
+  ambassador:
+    enabled: true
   usageMetrics:
     enabled: true
   namespace : seldon-system
 
-# seldon-core
-seldon-core-operator :
+# seldon-core-operator
+seldon-core-operator:
   ambassador:
+    enabled: true
+  usageMetrics:
     enabled: true
   namespace : seldon-system
