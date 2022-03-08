@@ -230,7 +230,7 @@ func (d *imageDao) ListImageByAccess(ctx context.Context, condition *model.Image
 	db = condition.JoinImageAccess(db)
 
 	var images []*model.Image
-	result := db.Find(&images)
+	result := db.Select("image_access.*").Find(&images)
 	if result.Error != nil {
 		return nil, result.Error
 	}

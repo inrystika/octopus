@@ -226,7 +226,7 @@ func (d *datasetDao) ListCommDataset(ctx context.Context, query *model.CommDatas
 
 	db = db.Order(fmt.Sprintf("%s %s", sortBy, orderBy))
 
-	res = db.Find(&datasets)
+	res = db.Select("dataset.*").Find(&datasets)
 	if res.Error != nil {
 		return nil, 0, errors.Errorf(res.Error, errors.ErrorDBFindFailed)
 	}
