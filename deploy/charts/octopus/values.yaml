@@ -442,7 +442,7 @@ seldon-core:
     enabled: true
   usageMetrics:
     enabled: true
-  namespace: seldon-system
+  namespace : seldon-system
 
 # seldon-core-operator
 seldon-core-operator:
@@ -450,4 +450,4 @@ seldon-core-operator:
     enabled: true
   usageMetrics:
     enabled: true
-  namespace: seldon-system
+  namespace : seldon-system
