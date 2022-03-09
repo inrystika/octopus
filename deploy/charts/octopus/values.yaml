@@ -442,4 +442,4 @@ seldon-core-operator:
     enabled: true
   usageMetrics:
     enabled: true
-  namespace: seldon-system
+  namespaceOverride: seldon-system
