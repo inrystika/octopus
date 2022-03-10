@@ -17,13 +17,14 @@ import (
 
 type UserService struct {
 	api.UnimplementedUserServiceServer
-	conf       *conf.Bootstrap
-	log        *log.Helper
-	data       *data.Data
-	defaultPVS common.PersistentVolumeSourceExtender
+	conf            *conf.Bootstrap
+	log             *log.Helper
+	data            *data.Data
+	defaultPVS      common.PersistentVolumeSourceExtender
+	ftpProxyService api.FtpProxyServiceServer
 }
 
-func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServiceServer {
+func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ftpProxyService api.FtpProxyServiceServer) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
 	if err != nil {
 		panic(err)
@@ -32,10 +33,11 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) ap
 		panic("mod init failed, missing config [module.storage.source]")
 	}
 	return &UserService{
-		conf:       conf,
-		log:        log.NewHelper("UserService", logger),
-		data:       data,
-		defaultPVS: *pvs,
+		conf:            conf,
+		log:             log.NewHelper("UserService", logger),
+		data:            data,
+		defaultPVS:      *pvs,
+		ftpProxyService: ftpProxyService,
 	}
 }
 
@@ -312,4 +314,28 @@ func (s *UserService) UpdateUserConfig(ctx context.Context, req *api.UpdateUserC
 	}
 
 	return &api.UpdateUserConfigReply{}, nil
+}
+
+func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateUserFtpAccountRequest) (*api.UpdateUserFtpAccountReply, error) {
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.ftpProxyService.CreateOrUpdateFtpAccount(ctx, &api.CreateOrUpdateFtpAccountRequest{
+		Username:     req.FtpUserName,
+		Email:        user.Email,
+		Password:     req.FtpPassword,
+		HomeS3Bucket: common.GetUserHomeBucket(req.UserId),
+		HomeS3Object: "",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: req.UserId}, &model.UserUpdate{FtpUserName: req.FtpUserName})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserFtpAccountReply{}, nil
 }

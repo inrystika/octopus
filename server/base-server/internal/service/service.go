@@ -56,7 +56,8 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 
-	service.UserService = user.NewUserService(conf, logger, data)
+	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, data)
+	service.UserService = user.NewUserService(conf, logger, data, service.FtpProxyService)
 	service.AdminUserService = user.NewAdminUserService(conf, logger, data)
 	service.ResourceService = resources.NewResourceService(ctx, conf, logger, data)
 	service.ResourceSpecService = resources.NewResourceSpecService(conf, logger, data)
@@ -98,6 +99,5 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 
-	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, data)
 	return service, nil
 }

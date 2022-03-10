@@ -435,3 +435,15 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
+
+sftpgo:
+  replicaCount: 1
+  image:
+    tag: "v2.2.2"
+  service:
+    webPort: "8080"
+    webNodePort: "30808"
+    sftpPort: "2022"
+    sftpNodePort: "32022"
+  resources: {}
+  nodeSelector: {}

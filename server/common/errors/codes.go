@@ -210,7 +210,9 @@ const (
 	ErrorModelAuthFailed         = 25005 // 模型权限校验失败
 
 	/* 22001-23000 ftp服务错误*/
-	ErrorSFtpGOAPIRequestFailed = 22001 // 接口请求错误
+	ErrorSFtpGOAPIRequestFailed     = 22001 // 接口请求错误
+	ErrorSFtpGOUserNotExist         = 22002 // 用户未存在
+	ErrorSFtpGOUserNotOwnVirtualDir = 22003 // 虚拟目录未属于用户
 )
 
 type codeMsg struct {

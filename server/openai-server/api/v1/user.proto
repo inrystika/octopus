@@ -32,6 +32,13 @@ service User {
         get: "/v1/usermanage/config"
       };
     };
+
+    rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/ftpaccount"
+        body: "*"
+      };
+    };
 }
 
 message UserItem {
@@ -88,4 +95,13 @@ message GetUserConfigRequest {
 
 message GetUserConfigReply {
   map<string, string> config = 1;
+}
+
+message UpdateUserFtpAccountRequest {
+  string ftpUserName = 1 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
+  string ftpPassword = 2;
+}
+
+message UpdateUserFtpAccountReply {
+
 }

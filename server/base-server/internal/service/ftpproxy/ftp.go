@@ -35,35 +35,33 @@ type ftpAuthToken struct {
 	password string
 	token    *sftpgov2.Token
 	client   *sftpgov2.APIClient
-	log      *log.Helper
 }
 
-func (t *ftpAuthToken) getToken(ctx context.Context) string {
+func (t *ftpAuthToken) getToken(ctx context.Context) (string, error) {
 	if !t.isExpired() {
-		return *t.token.AccessToken
+		return *t.token.AccessToken, nil
 	}
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	if !t.isExpired() {
-		return *t.token.AccessToken
+		return *t.token.AccessToken, nil
 	}
-	apiGetTokenRequest := t.client.TokenApi.GetToken(context.WithValue(ctx, sftpgov2.ContextBasicAuth, sftpgov2.BasicAuth{
+	tk, resp, err := t.client.TokenApi.GetToken(context.WithValue(ctx, sftpgov2.ContextBasicAuth, sftpgov2.BasicAuth{
 		UserName: t.username,
 		Password: t.password,
-	}))
-	tk, resp, err := apiGetTokenRequest.Execute()
+	})).Execute()
 	if err != nil {
-		t.log.Errorf(ctx, "FtpGO GetToken failed, err: %v", err)
-		panic(err)
+		log.Errorf(ctx, "FtpGO GetToken failed, err: %v", err)
+		return "", errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 	if resp.StatusCode == http.StatusOK {
 		t.token.AccessToken = tk.AccessToken
 		t.token.ExpiresAt = tk.ExpiresAt
-		return *t.token.AccessToken
+		return *t.token.AccessToken, nil
 	}
-	t.log.Errorf(ctx, "FtpGO GetToken failed, statusCode: %v", resp.StatusCode)
-	return ""
+	log.Errorf(ctx, "FtpGO GetToken failed, statusCode: %v", resp.StatusCode)
+	return "", errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
 }
 
 func (t *ftpAuthToken) isExpired() bool {
@@ -99,23 +97,45 @@ func NewFtpProxyService(conf *conf.Bootstrap, data *data.Data) pb.FtpProxyServic
 	}
 }
 
-func (s *FtpProxyService) CreateOrUpdateUser(ctx context.Context, req *pb.CreateOrUpdateUserRequest) (*pb.CreateOrUpdateUserReply, error) {
+func (s *FtpProxyService) CreateOrUpdateFtpAccount(ctx context.Context, req *pb.CreateOrUpdateFtpAccountRequest) (*pb.CreateOrUpdateFtpAccountReply, error) {
+	var err error
+	password := ""
+	if req.Password != "" {
+		password, err = commUtils.EncryptPassword(req.Password)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	fuser, err := s.getFtpUser(ctx, req.Username)
-	if err != nil {
+	if err != nil && !errors.IsError(errors.ErrorSFtpGOUserNotExist, err) {
 		return nil, err
 	}
 
-	password, err := commUtils.EncryptPassword(req.Password)
-	if err != nil {
-		return nil, err
-	}
 	if fuser == nil {
 		fuser = sftpgov2.NewUser()
+		fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
+		permissions := map[string][]sftpgov2.Permission{
+			"/": {sftpgov2.PERMISSION_STAR},
+		}
+
+		fuser.SetStatus(1)
+		fuser.SetUid(0)
+		fuser.SetGid(0)
+		fuser.SetMaxSessions(UNLIMITED)
+		fuser.SetQuotaSize(UNLIMITED)
+		fuser.SetQuotaFiles(UNLIMITED)
+		fuser.SetExpirationDate(UNLIMITED)
+		fuser.SetPermissions(permissions)
+		fuser.SetFilesystem(*fileSystemConfig)
+		fuser.SetUploadBandwidth(UNLIMITED)
+		fuser.SetDownloadBandwidth(UNLIMITED)
+
 		fuser.SetUsername(req.Username)
 		fuser.SetEmail(req.Email)
 		fuser.SetPassword(password)
 
-		_, err = s.createFtpUser(ctx, fuser, req.HomeS3Bucket)
+		_, err = s.createFtpUser(ctx, fuser)
 		if err != nil {
 			return nil, err
 		}
@@ -135,18 +155,26 @@ func (s *FtpProxyService) CreateOrUpdateUser(ctx context.Context, req *pb.Create
 		}
 	}
 
-	return &pb.CreateOrUpdateUserReply{}, nil
+	return &pb.CreateOrUpdateFtpAccountReply{}, nil
 }
 
-func (s *FtpProxyService) getAuthCtx(ctx context.Context) context.Context {
+func (s *FtpProxyService) getAuthCtx(ctx context.Context) (context.Context, error) {
 	ctx = context.WithValue(ctx, sftpgov2.ContextServerVariables, map[string]string{
 		"basePath": "v2",
 	})
-	return context.WithValue(ctx, sftpgov2.ContextAccessToken, s.token.getToken(ctx))
+	token, err := s.token.getToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return context.WithValue(ctx, sftpgov2.ContextAccessToken, token), nil
 }
 
 func (s *FtpProxyService) getFtpUser(ctx context.Context, username string) (*sftpgov2.User, error) {
-	user, resp, err := s.client.UsersApi.GetUserByUsername(s.getAuthCtx(ctx), username).Execute()
+	ctx, err := s.getAuthCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	user, resp, err := s.client.UsersApi.GetUserByUsername(ctx, username).Execute()
 	httpStatusCode := resp.StatusCode
 	if err != nil && httpStatusCode != http.StatusNotFound {
 		return nil, err
@@ -156,32 +184,19 @@ func (s *FtpProxyService) getFtpUser(ctx context.Context, username string) (*sft
 	case http.StatusOK:
 		return user, nil
 	case http.StatusNotFound:
-		return nil, nil
+		return nil, errors.Errorf(err, errors.ErrorSFtpGOUserNotExist)
 	default:
 		log.Errorf(ctx, "FtpGO GetUserByUsername, username: %s, statusCode: %v", username, httpStatusCode)
 		return nil, errors.Errorf(nil, errors.ErrorSFtpGOAPIRequestFailed)
 	}
 }
 
-func (s *FtpProxyService) createFtpUser(ctx context.Context, fuser *sftpgov2.User, userBucket string) (*sftpgov2.User, error) {
-	fileSystemConfig := s.newFileSystemConfig(userBucket, "")
-
-	permissions := map[string][]sftpgov2.Permission{}
-	permissions["/"] = []sftpgov2.Permission{sftpgov2.PERMISSION_STAR}
-
-	fuser.SetStatus(1)
-	fuser.SetUid(0)
-	fuser.SetGid(0)
-	fuser.SetMaxSessions(UNLIMITED)
-	fuser.SetQuotaSize(UNLIMITED)
-	fuser.SetQuotaFiles(UNLIMITED)
-	fuser.SetExpirationDate(UNLIMITED)
-	fuser.SetPermissions(permissions)
-	fuser.SetFilesystem(*fileSystemConfig)
-	fuser.SetUploadBandwidth(UNLIMITED)
-	fuser.SetDownloadBandwidth(UNLIMITED)
-
-	u, resp, err := s.client.UsersApi.AddUser(s.getAuthCtx(ctx)).User(*fuser).Execute()
+func (s *FtpProxyService) createFtpUser(ctx context.Context, fuser *sftpgov2.User) (*sftpgov2.User, error) {
+	ctx, err := s.getAuthCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	u, resp, err := s.client.UsersApi.AddUser(ctx).User(*fuser).Execute()
 	if err != nil {
 		s.printResponse(ctx, resp)
 		return nil, errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
@@ -224,7 +239,14 @@ func (s *FtpProxyService) newFileSystemConfig(bucket string, object string) *sft
 }
 
 func (s *FtpProxyService) updateFtpUser(ctx context.Context, user sftpgov2.User, disconnect int32) error {
-	_, resp, err := s.client.UsersApi.UpdateUser(s.getAuthCtx(ctx), *user.Username).User(user).Disconnect(disconnect).Execute()
+	for i := 0; i < len(user.VirtualFolders); i++ {
+		user.VirtualFolders[i].Filesystem = nil
+	}
+	ctx, err := s.getAuthCtx(ctx)
+	if err != nil {
+		return err
+	}
+	_, resp, err := s.client.UsersApi.UpdateUser(ctx, *user.Username).User(user).Disconnect(disconnect).Execute()
 	if err != nil {
 		s.printResponse(ctx, resp)
 		return errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
@@ -253,19 +275,10 @@ func (s *FtpProxyService) CreateVirtualFolder(ctx context.Context, req *pb.Creat
 		return nil, err
 	}
 
-	vfs := make([]sftpgov2.VirtualFolder, 0)
-	for _, v := range user.VirtualFolders {
-		vf := sftpgov2.NewVirtualFolder(req.VirtualPath)
-		vf.SetName(v.GetName())
-		vf.SetVirtualPath(v.GetVirtualPath())
-		vfs = append(vfs, *vf)
-	}
 	vf := sftpgov2.NewVirtualFolder(req.VirtualPath)
 	vf.SetName(req.Name)
 	vf.SetVirtualPath(req.VirtualPath)
-	vfs = append(vfs, *vf)
-
-	user.VirtualFolders = vfs
+	user.VirtualFolders = append(user.VirtualFolders, *vf)
 
 	err = s.updateFtpUser(ctx, *user, 1)
 	if err != nil {
@@ -276,7 +289,11 @@ func (s *FtpProxyService) CreateVirtualFolder(ctx context.Context, req *pb.Creat
 }
 
 func (s *FtpProxyService) addVirtualFolder(ctx context.Context, bvf sftpgov2.BaseVirtualFolder) error {
-	_, resp, err := s.client.FoldersApi.AddFolder(s.getAuthCtx(ctx)).BaseVirtualFolder(bvf).Execute()
+	ctx, err := s.getAuthCtx(ctx)
+	if err != nil {
+		return err
+	}
+	_, resp, err := s.client.FoldersApi.AddFolder(ctx).BaseVirtualFolder(bvf).Execute()
 	if err != nil {
 		s.printResponse(ctx, resp)
 		return errors.Errorf(err, errors.ErrorSFtpGOAPIRequestFailed)
@@ -299,7 +316,6 @@ func (s *FtpProxyService) printResponse(ctx context.Context, r *http.Response) {
 }
 
 func (s *FtpProxyService) DeleteVirtualFolder(ctx context.Context, req *pb.DeleteVirtualFolderRequest) (*pb.DeleteVirtualFolderReply, error) {
-
 	user, err := s.getFtpUser(ctx, req.Username)
 	if err != nil {
 		return nil, err
@@ -313,7 +329,7 @@ func (s *FtpProxyService) DeleteVirtualFolder(ctx context.Context, req *pb.Delet
 	}
 
 	if !hasVf {
-		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		return nil, errors.Errorf(nil, errors.ErrorSFtpGOUserNotOwnVirtualDir)
 	}
 
 	err = s.deleteVirtualFolder(ctx, req.Name)
@@ -321,11 +337,23 @@ func (s *FtpProxyService) DeleteVirtualFolder(ctx context.Context, req *pb.Delet
 		return nil, err
 	}
 
+	user, err = s.getFtpUser(ctx, req.Username)
+	if err != nil {
+		return nil, err
+	}
+	err = s.updateFtpUser(ctx, *user, 1)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.DeleteVirtualFolderReply{}, nil
 }
 
 func (s *FtpProxyService) deleteVirtualFolder(ctx context.Context, name string) error {
-	_, resp, err := s.client.FoldersApi.DeleteFolder(s.getAuthCtx(ctx), name).Execute()
+	ctx, err := s.getAuthCtx(ctx)
+	if err != nil {
+		return err
+	}
+	_, resp, err := s.client.FoldersApi.DeleteFolder(ctx, name).Execute()
 	if err != nil {
 		return err
 	}
