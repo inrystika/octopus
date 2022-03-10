@@ -1,0 +1,13 @@
+# Source: seldon-config-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-config
+  namespace: seldon-system
+data:
+  predictor_servers: |
+    PYTORCH_SERVER:
+      protocols:
+        seldon:
+          defaultImageVersion: "2.0.0"
+          image: "192.168.202.110:5000/train/pytorchserver"
