@@ -443,10 +443,9 @@ seldon-core-operator:
   usageMetrics:
     enabled: true
   namespaceOverride: seldon-system
-
-predictor_servers:
-  PYTORCH_SERVER:
-    protocols:
-      seldon:
-        defaultImageVersion: "2.0.0"
-        image: 192.168.202.110:5000/train/pytorchserver
+  predictor_servers:
+    PYTORCH_SERVER:
+      protocols:
+        seldon:
+          defaultImageVersion: "2.0.0"
+          image: 192.168.202.110:5000/train/pytorchserver
