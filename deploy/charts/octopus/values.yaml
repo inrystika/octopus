@@ -61,6 +61,8 @@ pvc:
     requests: 100Gi
   logger:
     requests: 100Gi
+  sftpgo:
+    requests: 100Gi
 
 pv:
   minio:
@@ -93,6 +95,12 @@ pv:
       nfs:
         server:  192.168.203.72
         path:  /data/datasets/data/logger
+  sftpgo:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server: 192.168.203.72
+        path: /data/datasets/data/sftpgo
 
 # taskset
 taskset:
@@ -437,13 +445,19 @@ nodeagent:
   nodeSelector: {}
 
 sftpgo:
-  replicaCount: 1
-  image:
-    tag: "v2.2.2"
   service:
-    webPort: "8080"
-    webNodePort: "30808"
-    sftpPort: "2022"
-    sftpNodePort: "32022"
-  resources: {}
-  nodeSelector: {}
+    type: NodePort
+    ports:
+      sftp:
+        nodePort: "30022"
+  volumes:
+    - name: "sftp"
+      persistentVolumeClaim:
+        claimName: "octopus-sftpgo-pvc"
+  volumeMounts:
+    - name: "home"
+      mountPath: "/var/lib/sftpgo"
+      subPath: "home"
+    - name: "data"
+      mountPath: "/srv/sftpgo"
+      subPath: "data"

@@ -70,3 +70,18 @@ spec:
   accessModes:
     - ReadWriteMany
 {{ toYaml .Values.pv.influxdb.storageType | indent 2 }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-sftpgo-pv
+  labels:
+    pv: sftpgo-pv
+spec:
+  capacity:
+    storage: {{ .Values.pv.sftpgo.requests }}
+  accessModes:
+    - ReadWriteMany
+  {{ toYaml .Values.pv.sftpgo.storageType | indent 2 }}
