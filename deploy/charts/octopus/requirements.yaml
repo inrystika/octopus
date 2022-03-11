@@ -14,6 +14,6 @@ dependencies:
   - name: influxdb
     version: 4.10.0
     repository: https://helm.influxdata.com/
-  - name: sftp
+  - name: sftpgo
     version: 4.10.0
     repository: https://charts.sagikazarmark.dev/

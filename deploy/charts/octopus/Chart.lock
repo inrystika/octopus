@@ -11,7 +11,7 @@ dependencies:
 - name: nginx-ingress-controller
   repository: https://charts.bitnami.com/bitnami
   version: 7.6.9
-- name: sftp
+- name: sftpgo
   repository: https://charts.sagikazarmark.dev/
   version: 0.12.0
 
