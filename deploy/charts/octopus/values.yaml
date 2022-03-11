@@ -451,13 +451,23 @@ sftpgo:
       sftp:
         nodePort: "30022"
   volumes:
-    - name: "sftp"
+    - name: "data"
       persistentVolumeClaim:
         claimName: "octopus-sftpgo-pvc"
   volumeMounts:
-    - name: "home"
+    - name: "data"
       mountPath: "/var/lib/sftpgo"
       subPath: "home"
     - name: "data"
       mountPath: "/srv/sftpgo"
       subPath: "data"
+  envVars:
+    - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
+      value: "admin"
+    - name: "SFTPGO_DEFAULT_ADMIN_PASSWORD"
+      value: "123456"
+  config:
+    data_provider:
+      create_default_admin: true
+  nodeSelector:
+    <<: *nodeSelector

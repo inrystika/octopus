@@ -84,4 +84,4 @@ spec:
     storage: {{ .Values.pv.sftpgo.requests }}
   accessModes:
     - ReadWriteMany
-  {{ toYaml .Values.pv.sftpgo.storageType | indent 2 }}
+{{ toYaml .Values.pv.sftpgo.storageType | indent 2 }}
