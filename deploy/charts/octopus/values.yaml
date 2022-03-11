@@ -435,7 +435,7 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
-cd
+
 # seldon-core-operator
 seldon-core-operator:
   ambassador:
