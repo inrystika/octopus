@@ -7,6 +7,7 @@ export function judgeParam(params) {
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
   params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
   params.shared ? conditions.push(`shared=` + params.shared) : null;
