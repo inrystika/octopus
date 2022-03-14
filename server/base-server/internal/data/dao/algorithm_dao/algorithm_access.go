@@ -45,7 +45,7 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 	}
 
 	if req.NameLike != "" {
-		querySql += " and algorithm_name like ? "
+		querySql += " and algorithm_access.algorithm_name like ? "
 		params = append(params, "%"+req.NameLike+"%")
 	}
 	db = db.Joins("join algorithm as al on al.algorithm_id = algorithm_access.algorithm_id")
