@@ -124,11 +124,19 @@
           { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
           {
             type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
+            options:[
+              { value:"preparing",label:"初始中" },
+              { value:"pending",label:"等待中" },
+              { value:"running",label:"运行中" },
+              { value:"failed",label:"失败" },
+              { value:"succeeded",label:"成功" },
+              { value:"stopped",label:"已停止" },
+            ]
           }
         ],
         searchData: {
           pageIndex: 1,
-          pageSize: 10
+          pageSize: 10,
         },
         resourceList: [],
         title: "是否启动NoteBook？",

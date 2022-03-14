@@ -64,9 +64,11 @@
                 if (!this.dialogFormVisible) { this.searchData = { searchKey: this.searchData.searchKey } }
                 if (this.dialogFormVisible) { this.dialogFormVisible = !this.dialogFormVisible }
                 this.$emit('searchData', this.searchData)
+               
             },
             changeSearchType() {
                 this.dialogFormVisible = !this.dialogFormVisible
+                 this.searchData={ searchKey: ''}
             },
             reset() { this.searchData = { searchKey: '' } }
         }
