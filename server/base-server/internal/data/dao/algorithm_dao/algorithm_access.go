@@ -38,9 +38,9 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 
 	// 模糊搜索
 	if req.SearchKey != "" {
-		querySql += " and (algorithm_name like ? "
+		querySql += " and (algorithm_access.algorithm_name like ? "
 		params = append(params, "%"+req.SearchKey+"%")
-		querySql += " or algorithm_descript like ? )"
+		querySql += " or algorithm_access.algorithm_descript like ? )"
 		params = append(params, "%"+req.SearchKey+"%")
 	}
 
