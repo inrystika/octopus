@@ -420,6 +420,16 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 		params = append(params, req.Ids)
 	}
 
+	if req.CreatedAtGte != 0 {
+		querySql += " and model_access.created_at >= ? "
+		params = append(params, time.Unix(req.CreatedAtGte, 0))
+	}
+
+	if req.CreatedAtLt != 0 {
+		querySql += " and model_access.created_at < ? "
+		params = append(params, time.Unix(req.CreatedAtLt, 0))
+	}
+
 	if req.FrameWorkId != "" {
 		joinSql := " Inner JOIN (select id as mid,framework_id from model)mm on mm.mid = model_access.model_id "
 		querySql += " and framework_id = ?"
