@@ -59,7 +59,7 @@
                 modelId: undefined,
                 type: undefined,
                 modelFrame: undefined,
-                searchForm: [],
+                searchForm: [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }],
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
@@ -180,6 +180,11 @@
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
+                if (this.searchData.time) {
+                    this.searchData.createdAtGte = this.searchData.time[0] / 1000
+                    this.searchData.createdAtLt = this.searchData.time[1] / 1000
+                    delete this.searchData.time
+                }
                 this.getModel(this.searchData)
             },
             // 删除确认
