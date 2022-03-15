@@ -73,6 +73,7 @@
             },
             changeSearchType() {
                 this.dialogFormVisible = !this.dialogFormVisible
+               this.searchData={ searchKey: '' }
             },
             reset() { this.searchData = { searchKey: '' }, this.userOptions = [], this.groupOptions = [] },
             getUserOptions(val) {

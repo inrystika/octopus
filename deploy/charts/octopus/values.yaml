@@ -435,3 +435,17 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
+
+# seldon-core-operator
+seldon-core-operator:
+  ambassador:
+    enabled: true
+  usageMetrics:
+    enabled: true
+  namespaceOverride: seldon-system
+  predictor_servers:
+    PYTORCH_SERVER:
+      protocols:
+        seldon:
+          defaultImageVersion: "2.0.1"
+          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
