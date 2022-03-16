@@ -421,12 +421,12 @@ func (d *modelDao) ListModelAccess(ctx context.Context, req *model.ModelAccessLi
 	}
 
 	if req.CreatedAtGte != 0 {
-		querySql += " and model_access.created_at >= ? "
+		querySql += " and model.created_at >= ? "
 		params = append(params, time.Unix(req.CreatedAtGte, 0))
 	}
 
 	if req.CreatedAtLt != 0 {
-		querySql += " and model_access.created_at < ? "
+		querySql += " and model.created_at < ? "
 		params = append(params, time.Unix(req.CreatedAtLt, 0))
 	}
 
