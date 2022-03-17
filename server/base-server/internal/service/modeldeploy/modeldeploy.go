@@ -130,10 +130,10 @@ func (s *modelDeployService) updateDeployStatus(ctx context.Context, obj interfa
 	if err != nil {
 		return
 	}
-	newState := string(objSeldon.Status.State)
-	if newState == STATE_STOPPED {
+	if deployService.Status == STATE_STOPPED {
 		return
 	}
+	newState := string(objSeldon.Status.State)
 	if newState == deployService.Status {
 		return
 	}
