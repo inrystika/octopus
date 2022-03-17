@@ -71,13 +71,13 @@
     import { createDeploy } from '@/api/deployManager.js'
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
-    import upload from '@/components/upload/index.vue'
+    // import upload from '@/components/upload/index.vue'
     import { algorithmFrame } from "@/api/modelDev";
     export default {
         name: "DialogCreateForm",
-        components: {
-            upload
-        },
+        // components: {
+        //     upload
+        // },
         props: {
             row: {
                 type: Object,
@@ -261,10 +261,12 @@
                 this.modelVersionOption = []
                 this.ruleForm.modelVersion = ''
             },
-            getModelVersionItem() {
+            getModelVersionItem() {           
+                if(!this.flag){
                 this.modelVersionCount = 1
                 this.modelVersionOption = []
                 this.getModelVersion()
+                }              
             },
             loadModelVersion() {
                 this.modelVersionCount = this.modelVersionCount + 1
