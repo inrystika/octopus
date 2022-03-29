@@ -164,6 +164,7 @@ const (
 	ErrorUserWorkSpaceNoPermission  = 16025 // 用户无空间权限
 	ErrorWorkSpaceResourcePoolBound = 16026 // 空间与资源池已绑定
 	ErrorUserConfigKeyNotExist      = 16027 // 配置项不存在
+	ErrorUserAccountBinded          = 16028 // 账号已绑定
 
 	/* 17001~18000 计费管理错误*/
 	ErrorBillingObtainLockFailed = 17001 //获取锁失败
@@ -364,6 +365,7 @@ var codeMsgMap = map[int]codeMsg{
 	// 用户管理
 	ErrorUserAccountNotExisted:      {codeType: NotFound, msg: "user account not exists"},
 	ErrorUserAccountExisted:         {codeType: AlreadyExists, msg: "user account exists"},
+	ErrorUserAccountBinded:          {codeType: AlreadyExists, msg: "user account exists"},
 	ErrorUserIdNotRight:             {codeType: InvalidArgument, msg: "userid not valid"},
 	ErrorWorkSpaceExisted:           {codeType: AlreadyExists, msg: "workspace existed"},
 	ErrorWorkSpaceNotExist:          {codeType: NotFound, msg: "workspace not existed"},

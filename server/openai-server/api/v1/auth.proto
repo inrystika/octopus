@@ -21,16 +21,51 @@ service Auth {
         delete: "/v1/authmanage/token"
       };
     };
+    rpc RegisterAndBind (RegisterRequest) returns (RegisterReply) {
+      option (google.api.http) = {
+        post: "/v1/authmanage/registerandbind"
+        body: "*"
+      };
+    };
+    rpc GetTokenByBind (GetTokenRequest) returns (GetTokenReply);
+}
+
+enum GenderType
+{
+  NO = 0;
+  MALE = 1;
+  FEMALE = 2;
 }
 
 message GetTokenRequest {
   string username = 1 [(validate.rules).string = {email: true}];
   string password = 2 [(validate.rules).string = {min_len: 8, max_len: 30}];
+  Bind bind = 3;
+}
+
+message Bind{
+  string platform = 1;
+  string userId = 2;
+  string userName = 3;
 }
 
 message GetTokenReply {
   string token = 1;
   int64 expiration = 2;
+}
+
+message RegisterRequest {
+  string username = 1 [(validate.rules).string = {email: true}];
+  string password = 2 [(validate.rules).string = {min_len: 8, max_len: 30}];
+  string fullName = 3 [(validate.rules).string = {min_len: 1, max_len: 30}];
+  GenderType gender = 4 [(validate.rules).enum = {in: [1,2]}];
+  Bind bind = 5;
+}
+
+message RegisterReply {
+  string token = 1;
+  int64 expiration = 2;
+  string userId = 3;
 }
 
 message DeleteTokenRequest {
