@@ -178,7 +178,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 		Email: req.Email,
 		Phone: req.Phone,
 	}
-	if req.Bind == nil {
+	if req.Bind != nil {
 		cond.Bind = &model.Bind{
 			Platform: req.Bind.Platform,
 			UserId:   req.Bind.UserId,
@@ -206,11 +206,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.FullName = req.FullName
 	user.Gender = int32(req.Gender)
 	user.Status = int32(api.UserStatus_ACTIVITY)
-	user.Bind = &model.Bind{
-		Platform: req.Bind.Platform,
-		UserId:   req.Bind.UserId,
-		UserName: req.Bind.UserName,
-	}
+	user.Bind = cond.Bind
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err

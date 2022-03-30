@@ -51,7 +51,7 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 	if !utils.ValidatePassword(reply.User.Password, req.Password) {
 		return nil, errors.Errorf(err, errors.ErrorAuthenticationFailed)
 	}
-	//°ó¶¨µÚÈı·½ÕËºÅ
+	//ç»‘å®šç¬¬ä¸‰æ–¹è´¦å·
 	if req.Bind != nil {
 		userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
 		if err != nil {
@@ -85,7 +85,7 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 		if err0 != nil {
 			return nil, err0
 		}
-	} //Íê³É°ó¶¨
+	} //å®Œæˆç»‘å®š
 
 	token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 	if err != nil {
@@ -124,7 +124,7 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 	if req.Bind == nil {
 		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	//ÅĞ¶ÏÓÃ»§ÃûÊÇ·ñÒÑ´æÔÚÒÔ¼°µÚÈı·½ÕËºÅÊÇ·ñÒÑ°ó¶¨
+	//åˆ¤æ–­ç”¨æˆ·åæ˜¯å¦å·²å­˜åœ¨ä»¥åŠç¬¬ä¸‰æ–¹è´¦å·æ˜¯å¦å·²ç»‘å®š
 	userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
 	if err != nil {
 		return nil, err
@@ -134,17 +134,7 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 		UserId:   string(userId),
 		UserName: req.Bind.UserName,
 	}
-	reply, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
-		Email: req.Username,
-		Bind:  reqBind,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if reply.User != nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserAccountExisted)
-	}
-	//×¢²á²¢°ó¶¨
+	//æ³¨å†Œå¹¶ç»‘å®š
 	newUser, err := s.data.UserClient.AddUser(ctx, &innterapi.AddUserRequest{
 		Email:    req.Username,
 		Password: req.Password,
@@ -155,7 +145,7 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 	if err != nil {
 		return nil, err
 	}
-	//Éú³Étoken
+	//ç”Ÿæˆtoken
 	token, err := jwt.CreateToken(newUser.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 	if err != nil {
 		return nil, err
@@ -197,7 +187,7 @@ func (s *AuthService) GetTokenByBind(ctx context.Context, req *api.GetTokenReque
 	if err != nil {
 		return nil, err
 	}
-	//ÒÑ°ó¶¨·µ»Øtoken,Î´°ó¶¨·µ»Ø¿Õ
+	//å·²ç»‘å®šè¿”å›token,æœªç»‘å®šè¿”å›ç©º
 	if reply.User != nil {
 		token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 		if err != nil {
