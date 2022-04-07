@@ -37,7 +37,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 
-	noAuthUris := []string{"/v1/authmanage/token", "/v1/systemmanage/webconfig"}
+	noAuthUris := []string{"/v1/authmanage/token", "/v1/authmanage/registerandbind", "/v1/systemmanage/webconfig"}
 	var jwtOpts = []jwt.Option{}
 	jwtOpts = append(jwtOpts, func(options *jwt.Options) {
 		options.Secret = c.Http.JwtSecrect
@@ -78,6 +78,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	}
 
 	srv := http.NewServer(opts...)
+	srv.HandlePrefix("/v1/oauth2", NewOauthHandler(c, context.Background(), service))
 	srv.HandlePrefix("/v1/usermanage", api.NewUserHandler(service.UserService, options...))
 	srv.HandlePrefix("/v1/authmanage", api.NewAuthHandler(service.AuthService, options...))
 	srv.HandlePrefix("/v1/algorithmmanage", api.NewAlgorithmHandler(service.AlgorithmService, options...))
