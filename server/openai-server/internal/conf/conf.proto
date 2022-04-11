@@ -28,6 +28,7 @@ message Server {
   }
 
   HTTP http = 1;
+  Oauth oauth = 2;
 }
 
 message Data {
@@ -50,8 +51,21 @@ message Service {
       string systemNameZh = 4;
       string organization = 5;
       bool manualInvisible = 6;
+      string thirdPlatform = 7;
   }
   int64 tokenExpirationSec = 1;
   WebConfig webConfig = 2;
 
+}
+
+message Oauth {
+  message Pcl {
+    string authServerURL = 1;
+    string clientID = 2;
+    string clientSecret = 3;
+    string redirectURL = 4;
+  }
+
+  Pcl pcl = 1;
+  string registerURL = 2;
 }

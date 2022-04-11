@@ -38,7 +38,6 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		options.NoAuthUris = []string{AUTH_TOKEN_URL}
 	})
 
-	handleOptions := comHttp.NewHandleOptions()
 	options := []http.HandleOption{
 		http.Middleware(
 			middleware.Chain(
@@ -49,9 +48,9 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				validate.Server(),
 			),
 		),
-		http.RequestDecoder(handleOptions.DecodeRequest),
-		http.ResponseEncoder(handleOptions.EncodeResponse),
-		http.ErrorEncoder(handleOptions.EncodeError),
+		http.RequestDecoder(comHttp.DecodeRequest),
+		http.ResponseEncoder(comHttp.EncodeResponse),
+		http.ErrorEncoder(comHttp.EncodeError),
 	}
 
 	srv := http.NewServer(opts...)

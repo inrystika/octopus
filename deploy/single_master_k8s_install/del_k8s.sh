@@ -1,4 +1,7 @@
 #!/bin/bash
+bash_path=$(cd "$(dirname "$0")";pwd)
+source $bash_path/base.config
+
 if [[ "$(whoami)" != "root" ]]; then
 	echo "please run this script as root ." >&2
 	exit 1
@@ -19,7 +22,7 @@ del_kube() {
   rm -rf /opt/cni
   rm -rf /var/lib/etcd
   rm -rf /var/etcd
-  apt-get remove -y kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00
+  apt-get remove -y kubelet=${kube_version}-00 kubeadm=${kube_version}-00 kubectl=${kube_version}-00
   rm -rf /etc/yum.repos.d/kubernetes.repo
   rm -rf /opt/kube/bin/kubectl
   rm -rf /opt/kube/bin/kubelet
