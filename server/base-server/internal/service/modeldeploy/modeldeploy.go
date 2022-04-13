@@ -321,7 +321,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	if startJobInfo.modelFrame == PytorchFrame {
 		serverImageAddr := s.conf.Data.PytorchServer.ImageAddr
 		serverImageVersion := s.conf.Data.PytorchServer.Version
-		imageInfo := fmt.Sprintf(serverImageAddr, ":", serverImageVersion)
+		imageInfo := fmt.Sprintf("%s:%s", serverImageAddr, serverImageVersion)
 		seldonPodSpec := &seldonv1.SeldonPodSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -428,7 +428,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
+	serviceUrl := s.conf.Data.Ambassador.BaseUrl + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }

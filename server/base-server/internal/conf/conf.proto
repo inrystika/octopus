@@ -88,7 +88,7 @@ message Influxdb {
 }
 
 message Ambassador {
-  string addr = 1;
+  string baseUrl = 1;
 }
 
 message PytorchServer {

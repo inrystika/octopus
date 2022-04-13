@@ -137,6 +137,9 @@ baseserver:
       sessionExpirySec: 540 #实际有效期为600
     ambassador: #需要修改为实际的值
       baseUrl: 192.168.202.73
+    pytorchServer:
+      imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+      version: 2.0.2
   service:
     billingPeriodSec: 1800
     develop:

@@ -142,7 +142,10 @@ data:
         password: {{ .Values.baseserver.data.jointCloud.password }}
         sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
       ambassador:
-        addr:  {{ .Values.baseserver.data.ambassador.baseUrl }}
+        baseUrl:  {{ .Values.baseserver.data.ambassador.baseUrl }}
+      pytorchServer:
+        imageAddr:  {{ .Values.baseserver.data.pytorchServer.imageAddr }}
+        version:  {{ .Values.baseserver.data.pytorchServer.version }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
