@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	innterapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
@@ -50,6 +51,41 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 	if !utils.ValidatePassword(reply.User.Password, req.Password) {
 		return nil, errors.Errorf(err, errors.ErrorAuthenticationFailed)
 	}
+	//绑定第三方账号
+	if req.Bind != nil {
+		userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
+		if err != nil {
+			return nil, err
+		}
+		reqBind := &innterapi.Bind{
+			Platform: req.Bind.Platform,
+			UserId:   string(userId),
+			UserName: req.Bind.UserName,
+		}
+		rep, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
+			Bind: reqBind,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if rep.User != nil {
+			return nil, errors.Errorf(nil, errors.ErrorUserAccountBinded)
+		}
+		bindInfo := make([]*innterapi.Bind, 0)
+		bindInfo = append(bindInfo, reqBind)
+		if reply.User.Bind != nil {
+			for _, a := range reply.User.Bind {
+				bindInfo = append(bindInfo, a)
+			}
+		}
+		_, err0 := s.data.UserClient.UpdateUser(ctx, &innterapi.UpdateUserRequest{
+			Id:   reply.User.Id,
+			Bind: bindInfo,
+		})
+		if err0 != nil {
+			return nil, err0
+		}
+	} //完成绑定
 
 	token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 	if err != nil {
@@ -82,4 +118,104 @@ func (s *AuthService) DeleteToken(ctx context.Context, req *api.DeleteTokenReque
 		return nil, err
 	}
 	return &api.DeleteTokenReply{}, nil
+}
+
+func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequest) (*api.RegisterReply, error) {
+	if req.Bind == nil {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	//判断用户名是否已存在以及第三方账号是否已绑定
+	userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
+	if err != nil {
+		return nil, err
+	}
+	reqBind := &innterapi.Bind{
+		Platform: req.Bind.Platform,
+		UserId:   string(userId),
+		UserName: req.Bind.UserName,
+	}
+	//注册并绑定
+	newUser, err := s.data.UserClient.AddUser(ctx, &innterapi.AddUserRequest{
+		Email:    req.Username,
+		Password: req.Password,
+		FullName: req.FullName,
+		Gender:   innterapi.GenderType(req.Gender),
+		Bind:     reqBind,
+	})
+	if err != nil {
+		return nil, err
+	}
+	//生成token
+	token, err := jwt.CreateToken(newUser.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
+	if err != nil {
+		return nil, err
+	}
+	tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
+	if err != nil {
+		return nil, err
+	}
+	// create user online session
+	if err = s.data.SessionClient.Create(ctx, &ss.Session{
+		Id:         newUser.User.Id,
+		UserId:     newUser.User.Id,
+		Status:     int32(newUser.User.Status),
+		Attributes: make(map[string]string),
+		CreatedAt:  tokenClaim.CreatedAt,
+	}); err != nil {
+		return nil, err
+	}
+
+	return &api.RegisterReply{
+		Token:      token,
+		Expiration: 0,
+		UserId:     newUser.User.Id,
+	}, nil
+}
+
+func (s *AuthService) GetTokenByBind(ctx context.Context, req *api.GetTokenRequest) (*api.GetTokenReply, error) {
+	if req.Bind == nil {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	reqBind := &innterapi.Bind{
+		Platform: req.Bind.Platform,
+		UserId:   req.Bind.UserId,
+		UserName: req.Bind.UserName,
+	}
+	reply, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
+		Bind: reqBind,
+	})
+	if err != nil {
+		return nil, err
+	}
+	//已绑定返回token,未绑定返回空
+	if reply.User != nil {
+		token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
+		if err != nil {
+			return nil, err
+		}
+		tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
+		if err != nil {
+			return nil, err
+		}
+		// create user online session
+		if err = s.data.SessionClient.Create(ctx, &ss.Session{
+			Id:         reply.User.Id,
+			UserId:     reply.User.Id,
+			Status:     int32(reply.User.Status),
+			Attributes: make(map[string]string),
+			CreatedAt:  tokenClaim.CreatedAt,
+		}); err != nil {
+			return nil, err
+		}
+
+		return &api.GetTokenReply{
+			Token:      token,
+			Expiration: 0,
+		}, nil
+	} else {
+		return &api.GetTokenReply{
+			Token:      "",
+			Expiration: 0,
+		}, nil
+	}
 }
