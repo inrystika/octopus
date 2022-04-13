@@ -457,4 +457,4 @@ seldon-core-operator:
       protocols:
         seldon:
           defaultImageVersion: "2.0.2"
-          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+          image: "swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver"
