@@ -53,7 +53,10 @@ data:
     password: 7ee15bc8fee766cad1bd70ccf5f4dc14
     sessionExpirySec: 540 #实际有效期为600
   ambassador:
-    addr: 192.168.203.156:31812
+    addr: 192.168.202.73
+  pytorchserver:
+    imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+    version: 2.0.2
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset
