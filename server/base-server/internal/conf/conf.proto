@@ -88,7 +88,12 @@ message Influxdb {
 }
 
 message Ambassador {
-  string addr = 1;
+  string baseUrl = 1;
+}
+
+message PytorchServer {
+  string imageAddr = 1;
+  string version = 2;
 }
 
 message Data {
@@ -101,6 +106,7 @@ message Data {
   Influxdb influxdb = 7;
   JointCloud jointCloud = 8;
   Ambassador ambassador = 9;
+  PytorchServer pytorchServer = 10;
 }
 
 message Develop {

@@ -137,6 +137,9 @@ baseserver:
       sessionExpirySec: 540 #实际有效期为600
     ambassador: #需要修改为实际的值
       baseUrl: 192.168.202.73
+    pytorchServer:
+      imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+      version: 2.0.2
   service:
     billingPeriodSec: 1800
     develop:
@@ -164,8 +167,8 @@ openaiserver:
         authServerURL: "https://one.pcl.ac.cn/idp/oauth2"
         clientID: "yn1"
         clientSecret: "74d4543ca3d74f42af841479c5c6d045"
-        redirectURL: "http://localhost:8003/v1/oauth2/pcl/callback"
-      registerURL: "http://192.168.202.73/openai/register"
+        redirectURL: "http://192.168.202.73/openaiserver/v1/oauth2/pcl/callback"
+      registerURL: "http://192.168.202.73/openai/"
   data:
     redis:
       username: ""
@@ -456,5 +459,5 @@ seldon-core-operator:
     PYTORCH_SERVER:
       protocols:
         seldon:
-          defaultImageVersion: "2.0.1"
-          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+          defaultImageVersion: "2.0.2"
+          image: "swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver"

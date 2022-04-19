@@ -45,7 +45,8 @@ func NewOauthHandler(conf *conf.Server, ctx context.Context, service *service.Se
 		AuthServerURL, config = getConfByPlatform(conf.GetOauth(), strings.Split(r.URL.Path, "/")[3])
 		u := config.AuthCodeURL("xyz",
 			oauth2.SetAuthURLParam("response_type", "code"))
-		http.Redirect(w, r, u, http.StatusFound)
+		//http.Redirect(w, r, u, http.StatusFound)
+		w.Header().Set("url", u)
 	}).Methods("GET")
 
 	r.HandleFunc("/v1/oauth2/{platform}/callback", func(w http.ResponseWriter, r *http.Request) {

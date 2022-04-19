@@ -4,6 +4,7 @@ from typing import Dict, List, Union, Iterable
 import logging
 import torch
 import os
+import mlflow
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +22,13 @@ class PytorchServer(SeldonComponent):
             self.load()
 
         def load(self):
-            logger.info("-----------2.0.1-----load model--------------")
-            user_model_from_path = os.path.join(self.model_volume_path, self.model_userId, self.model_Id,
-                                                self.model_version, "model.pth")
+            logger.info("-----------2.0.2-----load model--------------")
+            user_model_from_path = os.path.join(self.model_volume_path, self.model_userId, self.model_Id,self.model_version)
             logger.info(f"model full path in docker is: {user_model_from_path}....")
-            model = torch.load(user_model_from_path)
-            # model = model.double()
-            self.model = model.eval()
+            if not os.path.isdir(user_model_from_path):
+               logger.error("model file path is invalid! can not deploy model service!")
+            loaded_model = mlflow.pytorch.load_model(user_model_from_path)
+            self.model = loaded_model.eval()
             self.ready = True
             logger.info(f"model is loaded, waiting to predict")
 
@@ -43,7 +44,6 @@ class PytorchServer(SeldonComponent):
                 logger.info(f"-------------predict successfully!----------------------")
                 logger.info(f"4th: infer result is: {outputs.tolist()}")
                 return outputs.tolist()
-                return "test predict method"
             except Exception as ex:
                 logging.exception("Exception during predict")
                 return "model predicted failed, please check your request parameters!"
