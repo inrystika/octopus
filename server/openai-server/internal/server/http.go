@@ -5,7 +5,6 @@ import (
 	nethttp "net/http"
 	innterapi "server/base-server/api/v1"
 	"server/common/constant/userconfig"
-	comCtx "server/common/context"
 	"server/common/errors"
 	comHttp "server/common/http"
 	"server/common/middleware/jwt"
@@ -53,9 +52,10 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				return errors.Errorf(nil, errors.ErrorAuthenticationForbidden)
 			}
 
-			if comCtx.CreatedAtFromContext(ctx) != s.CreatedAt {
-				return errors.Errorf(nil, errors.ErrorTokenRenew)
-			}
+			//api开放给外部使用，去掉单端登录
+			//if comCtx.CreatedAtFromContext(ctx) != s.CreatedAt {
+			//	return errors.Errorf(nil, errors.ErrorTokenRenew)
+			//}
 			return nil
 		}
 	})

@@ -72,7 +72,7 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 
 	return &api.GetTokenReply{
 		Token:      token,
-		Expiration: 0,
+		Expiration: s.conf.Service.TokenExpirationSec,
 	}, nil
 }
 
