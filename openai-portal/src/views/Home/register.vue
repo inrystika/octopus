@@ -2,14 +2,15 @@
     <div class="contain">
         <el-row type="flex" justify="center">
             <el-col :span="6">
-                <div class="title">注册</div>
+                <div class="title" v-if="!show">登录</div>
+                <div class="title" v-if="show">注册</div>
             </el-col>
         </el-row>
         <el-row type="flex" justify="center">
             <el-col :span="6">
                 <div class="grid-content bg-purple-dark">
                     <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
-                        <el-form-item prop="fullName" label="姓名">
+                        <el-form-item prop="fullName" label="姓名" v-if="show">
                             <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
                                 placeholder="请输入姓名" />
                         </el-form-item>
@@ -23,11 +24,18 @@
                         </el-form-item>
                         <el-form-item>
                             <el-row type="flex" :gutter="20">
-                                <el-col :span="18" :offset="10">
-                                    <el-button type="primary" @click="submitForm()">注册</el-button>
+                                <el-col :span="18" :offset="9" v-if="!show">
+                                    <el-button type="primary" @click="login()">绑定并登录</el-button>
                                 </el-col>
-                                <el-col :span="6" :offset="2" class="login">
-                                    <el-link type="primary" v-show="show" @click="login()">去登录</el-link>
+                                <el-col :span="18" :offset="9" v-if="show">
+                                    <el-button type="primary" @click="register()">注册并登录</el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-row type="flex" :gutter="20" v-if="hidden">
+                                <el-col :span="18" :offset="9">
+                                    <el-link type="primary" @click="goRegister">未注册?点击注册</el-link>
                                 </el-col>
                             </el-row>
                         </el-form-item>
@@ -39,8 +47,9 @@
 </template>
 <script>
     import { register } from '@/api/themeChange.js'
-    import { mapGetters } from 'vuex'
-    import store from '@/store'
+    import { login } from '@/api/Home.js'
+    import { getUrl } from '@/utils/index.js'
+    import { setToken } from '@/utils/auth'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -52,11 +61,11 @@
             };
             return {
                 show: false,
+                hidden: true,
                 loginForm: {
                     fullName: '',
                     username: undefined,
                     password: undefined,
-                    gender: 2,
                     bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
@@ -74,14 +83,15 @@
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
         },
         computed: {
-            ...mapGetters([
-                'platform',
-                'userId',
-                'userName'
-            ])
         },
         methods: {
-            submitForm() {
+            //去注册
+            goRegister() {
+                this.show = !this.show
+                this.hidden = false
+            },
+            // 注册并绑定
+            register() {
                 this.$refs['loginForm'].validate((valid) => {
                     if (valid) {
                         register(this.loginForm).then(
@@ -91,7 +101,8 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    this.show = true
+                                    setToken(getUrl("token", url))
+                                    this.$router.push({ path: '/index' })
                                 }
                                 else {
                                     if (response.error.subcode == 16021) {
@@ -99,7 +110,6 @@
                                             message: this.getErrorMsg(response.error.subcode),
                                             type: 'warning'
                                         });
-                                        this.show = true
                                     }
                                     else {
                                         this.$message({
@@ -116,9 +126,25 @@
                     }
                 });
             },
+            // 登录并绑定
             login() {
-                this.$router.push({
-                    path: "/login"
+                let loginForm = JSON.parse(JSON.stringify(this.loginForm));
+                delete loginForm.fullName
+                login(loginForm).then((res) => {
+                    if (res.success) {
+                        setToken(getUrl("token", url))
+                        this.$router.push({ path: '/index' })
+                        this.$message({
+                            message: '登录成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(res.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                }).catch(() => {
                 })
             },
         }

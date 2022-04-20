@@ -77,7 +77,8 @@
                 logining: false,
                 loginForm: {
                     email: undefined,
-                    password: undefined
+                    password: undefined,
+                    bind: { platform: '', userId:'', userName: '' }
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
@@ -106,11 +107,6 @@
             this.getThirdInfo(location.href)
         },
         computed: {
-            ...mapGetters([
-                'platform',
-                'userId',
-                'userName'
-            ])
         },
         watch: {
             $route: {
@@ -164,8 +160,12 @@
                         let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
                         sessionStorage.setItem('thirdUserName', thirdUserName)
                     }
+                    if (url.indexOf("token") != -1) {
+                        setToken(getUrl("token", url))
+                        this.$router.push({ path: '/index' })
+                    }
                     // setToken(getUrl("token", url))
-                    if (url.indexOf("token") != -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
+                    if (url.indexOf("token") == -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
                         this.goRegister()
                     }
                 }
