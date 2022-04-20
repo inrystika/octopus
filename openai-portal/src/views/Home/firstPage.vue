@@ -58,7 +58,7 @@
 </template>
 <script>
     import { getInterface } from '@/api/themeChange.js'
-    import { getUrl } from '@/utils/index.js'
+    // import { GetUrlParam } from '@/utils/index.js'
     import { mapGetters } from 'vuex'
     import store from '@/store'
     import { setToken } from '@/utils/auth'

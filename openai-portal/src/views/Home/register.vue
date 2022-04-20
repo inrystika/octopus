@@ -48,7 +48,7 @@
 <script>
     import { register } from '@/api/themeChange.js'
     import { login } from '@/api/Home.js'
-    import { getUrl } from '@/utils/index.js'
+    import { GetUrlParam } from '@/utils/index.js'
     import { setToken } from '@/utils/auth'
     export default {
         data() {
@@ -78,8 +78,7 @@
             }
         },
         created() {
-            console.log(location.href)
-            this.getThirdInfo(location.href)        
+            this.getThirdInfo()
             this.loginForm.bind.platform = sessionStorage.getItem("platform")
             this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
@@ -87,23 +86,20 @@
         computed: {
         },
         methods: {
-            getThirdInfo(url) {
-                if (url) {
-                    if (getUrl("token", url) !== '') {
-                        console.log(getUrl("token", url))
-                        setToken(getUrl("token", url))
-                        this.$router.push({ path: '/index' })
-                    }
-                    sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
-                    if (getUrl("thirdUserName", url)) {
-                        let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
-                        sessionStorage.setItem('thirdUserName', thirdUserName)
-                        console.log("222")
-                    }
-
+            getThirdInfo() {
+                if (GetUrlParam('token') !== '') {
+                    setToken(GetUrlParam('token'))
+                    this.$router.push({ path: '/index' })
+                }
+                sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                if (GetUrlParam("thirdUserName")) {
+                    let thirdUserName = GetUrlParam("thirdUserName").replace("#/", "")
+                    sessionStorage.setItem('thirdUserName', thirdUserName)
                 }
 
             },
+
+
             //去注册
             goRegister() {
                 this.show = !this.show
