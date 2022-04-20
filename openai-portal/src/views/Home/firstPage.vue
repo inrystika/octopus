@@ -104,7 +104,7 @@
 
         },
         mounted() {
-            this.getThirdInfo(location.href)
+            // this.getThirdInfo(location.href)
         },
         computed: {
         },
@@ -152,24 +152,6 @@
                 this.$router.push({
                     path: "/register"
                 })
-            },
-            getThirdInfo(url) {
-                if (url) {
-                    sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
-                    if (getUrl("thirdUserName", url)) {
-                        let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
-                        sessionStorage.setItem('thirdUserName', thirdUserName)
-                    }
-                    if (url.indexOf("token") != -1) {
-                        setToken(getUrl("token", url))
-                        this.$router.push({ path: '/index' })
-                    }
-                    // setToken(getUrl("token", url))
-                    if (url.indexOf("token") == -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
-                        this.goRegister()
-                    }
-                }
-
             }
         }
     };
