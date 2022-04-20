@@ -107,7 +107,7 @@
       async logout() {
         await this.$store.dispatch('user/logout')
         this.$router.push(`/?redirect=${this.$route.fullPath}`)
-        location.reload()
+        // location.reload()
       },
       handleCommand(command) {
         // 切换群组页面刷新但是保留页面当前群组状态

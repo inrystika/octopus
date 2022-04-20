@@ -100,6 +100,9 @@
             if (this.GLOBAL.THEME_TITLE_ZH) {
                 this.itemShow = false
             }
+
+        },
+        mounted() {
             this.getThirdInfo(location.href)
         },
         computed: {
@@ -155,15 +158,19 @@
                 })
             },
             getThirdInfo(url) {
-                sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
-                if (getUrl("thirdUserName", url)) {
-                    let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
-                    sessionStorage.setItem('thirdUserName', thirdUserName)
+                console.log(url,"+++++")
+                if (url) {
+                    sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
+                    if (getUrl("thirdUserName", url)) {
+                        let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
+                        sessionStorage.setItem('thirdUserName', thirdUserName)
+                    }
+                    setToken(getUrl("token", url))
+                    if (url.indexOf("token") != -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
+                        this.goRegister()
+                    }
                 }
-                setToken(getUrl("token", url))
-                if (url.indexOf("token") != -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
-                    this.goRegister()
-                }
+
             }
         }
     };
