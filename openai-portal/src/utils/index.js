@@ -127,3 +127,11 @@ export function formatDuring(mss) {
   seconds = seconds === 0 ? '' : seconds
   return days + hours + minutes + seconds
 }
+// 获取浏览器url中指定字段
+export function getUrl(name, url) {
+  url = url || window.location.search;
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+  var r = url.substr(1).match(reg);
+  if (r != null) return (r[2]);
+  return null;
+}

@@ -9,8 +9,13 @@
             <el-col :span="6">
                 <div class="grid-content bg-purple-dark">
                     <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
-                        <el-form-item prop="email" label="邮箱">
-                            <el-input v-model="loginForm.email" type="text" auto-complete="off" placeholder="请输入用户账号" />
+                        <el-form-item prop="fullName" label="姓名">
+                            <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
+                                placeholder="请输入姓名" />
+                        </el-form-item>
+                        <el-form-item prop="username" label="邮箱">
+                            <el-input v-model="loginForm.username" type="text" auto-complete="off"
+                                placeholder="请输入用户账号" />
                         </el-form-item>
                         <el-form-item prop="password" label="密码">
                             <el-input v-model="loginForm.password" type="password" auto-complete="off"
@@ -34,6 +39,8 @@
 </template>
 <script>
     import { register } from '@/api/themeChange.js'
+    import { mapGetters } from 'vuex'
+    import store from '@/store'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -46,16 +53,32 @@
             return {
                 show: false,
                 loginForm: {
-                    email: undefined,
-                    password: undefined
+                    fullName: '',
+                    username: undefined,
+                    password: undefined,
+                    gender: 2,
+                    bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
-                    email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
+                    username: [{ required: true, message: "请输入用户账号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
+                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+                    fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
                 },
             }
+        },
+        created() {
+            this.loginForm.bind.platform = sessionStorage.getItem("platform")
+            this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
+            this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
+        },
+        computed: {
+            ...mapGetters([
+                'platform',
+                'userId',
+                'userName'
+            ])
         },
         methods: {
             submitForm() {
@@ -71,6 +94,7 @@
                                     this.show = true
                                 }
                                 else {
+                                    this.show = true
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
                                         type: 'warning'
@@ -78,7 +102,7 @@
                                 }
                             }
                         )
-                    } else {                    
+                    } else {
                         return false;
                     }
                 });
@@ -87,7 +111,7 @@
                 this.$router.push({
                     path: "/login"
                 })
-            }
+            },
         }
     }
 </script>
