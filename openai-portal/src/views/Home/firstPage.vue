@@ -165,7 +165,7 @@
                         let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
                         sessionStorage.setItem('thirdUserName', thirdUserName)
                     }
-                    setToken(getUrl("token", url))
+                    // setToken(getUrl("token", url))
                     if (url.indexOf("token") != -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
                         this.goRegister()
                     }
