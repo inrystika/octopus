@@ -90,6 +90,7 @@
             getThirdInfo(url) {
                 if (url) {
                     if (getUrl("token", url) !== '') {
+                        console.log(getUrl("token", url))
                         setToken(getUrl("token", url))
                         this.$router.push({ path: '/index' })
                     }
