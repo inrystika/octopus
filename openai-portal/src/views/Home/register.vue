@@ -94,11 +94,20 @@
                                     this.show = true
                                 }
                                 else {
-                                    this.show = true
-                                    this.$message({
-                                        message: this.getErrorMsg(response.error.subcode),
-                                        type: 'warning'
-                                    });
+                                    if (response.error.subcode == 16021) {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                        this.show = true
+                                    }
+                                    else {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                    }
+
                                 }
                             }
                         )

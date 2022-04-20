@@ -158,7 +158,6 @@
                 })
             },
             getThirdInfo(url) {
-                console.log(url,"+++++")
                 if (url) {
                     sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
                     if (getUrl("thirdUserName", url)) {
