@@ -78,8 +78,8 @@
             }
         },
         created() {
-            this.getThirdInfo(location.href)
             console.log(location.href)
+            this.getThirdInfo(location.href)        
             this.loginForm.bind.platform = sessionStorage.getItem("platform")
             this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
@@ -89,17 +89,17 @@
         methods: {
             getThirdInfo(url) {
                 if (url) {
-                    console.log("1")
+                    if (getUrl("token", url) !== '') {
+                        setToken(getUrl("token", url))
+                        this.$router.push({ path: '/index' })
+                    }
                     sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
                     if (getUrl("thirdUserName", url)) {
                         let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
                         sessionStorage.setItem('thirdUserName', thirdUserName)
                         console.log("222")
                     }
-                    if (getUrl("token", url) !== '') {
-                        setToken(getUrl("token", url))
-                        this.$router.push({ path: '/index' })
-                    }
+
                 }
 
             },
