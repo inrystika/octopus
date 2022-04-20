@@ -19,6 +19,7 @@ router.beforeEach(async(to, from, next) => {
   // next()
   if (hasToken) {
     try {
+      console.log(hasToken, "++++++++")
       // eslint-disable-next-line eqeqeq
       if (store.getters.name === '' && to.path !== '/register') { await store.dispatch('user/getInfo') }
       if (store.getters.workspaces.length === 0) { await store.dispatch('user/getSpace') }

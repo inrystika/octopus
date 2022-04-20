@@ -147,11 +147,6 @@
                 getInterface(this.interfaceName).then(res => {
                 })
             },
-            goRegister() {
-                this.$router.push({
-                    path: "/register"
-                })
-            }
         }
     };
 </script>

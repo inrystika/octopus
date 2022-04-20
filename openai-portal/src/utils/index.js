@@ -129,8 +129,12 @@ export function formatDuring(mss) {
 }
 // 获取浏览器url中指定字段
 export function GetUrlParam(paraName) {
-  var query = location.href
+  // var query = location.href
+  // eslint-disable-next-line no-undef
+  let query = location.href
+  // eslint-disable-next-line no-undef
   query = query.replace('?token', '&token')
+  // eslint-disable-next-line no-undef
   var vars = query.split("&");
   for (var i = 0; i < vars.length; i++) {
     var pair = vars[i].split("=");

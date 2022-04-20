@@ -87,13 +87,16 @@
         },
         methods: {
             getThirdInfo() {
+                console.log(GetUrlParam('token'),"====="),
+                console.log(GetUrlParam('thirdUserId'),"===="),
+                console.log(GetUrlParam('thirdUserName'),"====")
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
                     this.$router.push({ path: '/index' })
                 }
                 sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
                 if (GetUrlParam("thirdUserName")) {
-                    let thirdUserName = GetUrlParam("thirdUserName").replace("#/", "")
+                    let thirdUserName = GetUrlParam("thirdUserName")
                     sessionStorage.setItem('thirdUserName', thirdUserName)
                 }
 
