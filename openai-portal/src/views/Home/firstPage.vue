@@ -104,7 +104,6 @@
 
         },
         mounted() {
-            // this.getThirdInfo(location.href)
         },
         computed: {
         },
