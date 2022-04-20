@@ -154,9 +154,12 @@
                     path: "/register"
                 })
             },
-            getThirdInfo(userId, userName, url) {
+            getThirdInfo(url) {
                 sessionStorage.setItem('thirdUserId', getUrl("thirdUserId", url))
-                sessionStorage.setItem('thirdUserName', getUrl("thirdUserName", url).replace("#/", ""))
+                if (getUrl("thirdUserName", url)) {
+                    let thirdUserName = getUrl("thirdUserName", url).replace("#/", "")
+                    sessionStorage.setItem('thirdUserName', thirdUserName)
+                }
                 setToken(getUrl("token", url))
                 if (url.indexOf("token") != -1 && url.indexOf("UserId") != -1 && url.indexOf("thirdUserName") != -1) {
                     this.goRegister()
