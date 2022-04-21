@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/', '/register'] // no redirect whitelist
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
 
@@ -19,7 +19,6 @@ router.beforeEach(async(to, from, next) => {
   // next()
   if (hasToken) {
     try {
-      console.log(hasToken, "++++++++")
       // eslint-disable-next-line eqeqeq
       if (store.getters.name === '' && to.path !== '/register') { await store.dispatch('user/getInfo') }
       if (store.getters.workspaces.length === 0) { await store.dispatch('user/getSpace') }

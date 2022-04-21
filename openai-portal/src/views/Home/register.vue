@@ -87,18 +87,19 @@
         },
         methods: {
             getThirdInfo() {
-                console.log(GetUrlParam('token'),"====="),
-                console.log(GetUrlParam('thirdUserId'),"===="),
-                console.log(GetUrlParam('thirdUserName'),"====")
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
-                    this.$router.push({ path: '/index' })
+                    console.log(getToken(), "token")
+                    // this.$router.push({ path: '/index' })
                 }
-                sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
-                if (GetUrlParam("thirdUserName")) {
-                    let thirdUserName = GetUrlParam("thirdUserName")
-                    sessionStorage.setItem('thirdUserName', thirdUserName)
+                else {
+                    sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                    if (GetUrlParam("thirdUserName")) {
+                        let thirdUserName = GetUrlParam("thirdUserName")
+                        sessionStorage.setItem('thirdUserName', thirdUserName)
+                    }
                 }
+
 
             },
 
@@ -161,6 +162,7 @@
                             message: this.getErrorMsg(res.error.subcode),
                             type: 'warning'
                         });
+                        this.$router.push({ path: '/' })
                     }
                 }).catch(() => {
                 })
