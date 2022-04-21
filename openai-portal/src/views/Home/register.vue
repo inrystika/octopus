@@ -116,7 +116,7 @@
 
             //去注册
             goRegister() {
-                this.show = !this.show
+                this.show = true
                 this.hidden = false
             },
             // 注册并绑定
