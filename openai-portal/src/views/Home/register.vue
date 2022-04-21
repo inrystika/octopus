@@ -14,6 +14,12 @@
                             <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
                                 placeholder="请输入姓名" />
                         </el-form-item>
+                        <el-form-item prop="gender" label="姓名" v-if="show">
+                            <el-radio-group v-model="loginForm.gender">
+                                <el-radio :label="1">男</el-radio>
+                                <el-radio :label="2">女</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
                         <el-form-item prop="username" label="邮箱">
                             <el-input v-model="loginForm.username" type="text" auto-complete="off"
                                 placeholder="请输入用户账号" />
@@ -49,7 +55,7 @@
     import { register } from '@/api/themeChange.js'
     import { login } from '@/api/Home.js'
     import { GetUrlParam } from '@/utils/index.js'
-    import { setToken } from '@/utils/auth'
+    import { setToken, getToken } from '@/utils/auth'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -66,6 +72,7 @@
                     fullName: '',
                     username: undefined,
                     password: undefined,
+                    gender: undefined,
                     bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
@@ -73,7 +80,10 @@
                     { validator: checkEmail, trigger: "blur" }
                     ],
                     password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
-                    fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
+                    fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+                    gender: [
+                        { required: true, message: '请选择性别', trigger: 'change' }
+                    ],
                 },
             }
         },
@@ -82,6 +92,7 @@
             this.loginForm.bind.platform = sessionStorage.getItem("platform")
             this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
+            console.log(this.loginForm)
         },
         computed: {
         },
@@ -89,7 +100,6 @@
             getThirdInfo() {
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
-                    console.log(getToken(), "token")
                     // this.$router.push({ path: '/index' })
                 }
                 else {
@@ -149,6 +159,7 @@
             login() {
                 let loginForm = JSON.parse(JSON.stringify(this.loginForm));
                 delete loginForm.fullName
+                delete loginForm.gender
                 login(loginForm).then((res) => {
                     if (res.success) {
                         setToken(getUrl("token", url))
