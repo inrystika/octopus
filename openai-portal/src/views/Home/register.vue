@@ -99,7 +99,6 @@
             getThirdInfo() {
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
-                    console.log(getToken(),'token')
                     this.$router.push({ path: '/index' })
                 }
                 else {
@@ -127,7 +126,7 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    setToken(getUrl("token", url))
+                                    setToken(GetUrlParam('token'))
                                     this.$router.push({ path: '/index' })
                                 }
                                 else {
@@ -159,7 +158,7 @@
                 delete loginForm.gender
                 login(loginForm).then((res) => {
                     if (res.success) {
-                        setToken(getUrl("token", url))
+                        setToken(GetUrlParam('token'))
                         this.$router.push({ path: '/index' })
                         this.$message({
                             message: '登录成功',
