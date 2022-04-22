@@ -100,6 +100,9 @@
             getThirdInfo() {
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
+                    console.log(getToken(),'token')
+                    // sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                    // sessionStorage.setItem('thirdUserName', GetUrlParam("thirdUserName"))
                     // this.$router.push({ path: '/index' })
                 }
                 else {
