@@ -101,7 +101,7 @@
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
                     console.log(getToken(),'token')
-                    this.$router.push({ path: '/index' })
+                    // this.$router.push({ path: '/index' })
                 }
                 else {
                     sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
