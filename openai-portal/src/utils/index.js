@@ -131,7 +131,7 @@ export function formatDuring(mss) {
 export function GetUrlParam(paraName) {
   // var query = location.href
   // eslint-disable-next-line no-undef
-  let query = location.href
+  let query = decodeURIComponent(location.href)
   // eslint-disable-next-line no-undef
   query = query.replace('?token', '&token')
   // eslint-disable-next-line no-undef
