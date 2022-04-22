@@ -55,7 +55,7 @@
     import { register } from '@/api/themeChange.js'
     import { login } from '@/api/Home.js'
     import { GetUrlParam } from '@/utils/index.js'
-    import { setToken, getToken } from '@/utils/auth'
+    import { setToken, getToken, removeToken } from '@/utils/auth'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -97,16 +97,11 @@
         },
         methods: {
             getThirdInfo() {
-                if (GetUrlParam('token') !== '') {
-                    setToken(GetUrlParam('token'))
-                    this.$router.push({ path: '/index' })
-                }
-                else {
-                    sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
-                    if (GetUrlParam("thirdUserName")) {
-                        let thirdUserName = GetUrlParam("thirdUserName")
-                        sessionStorage.setItem('thirdUserName', thirdUserName)
-                    }
+                removeToken()
+                sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                if (GetUrlParam("thirdUserName")) {
+                    let thirdUserName = GetUrlParam("thirdUserName")
+                    sessionStorage.setItem('thirdUserName', thirdUserName)
                 }
 
             },
