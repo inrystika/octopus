@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
-import store from '@/store'
 import { getToken, removeToken } from '@/utils/auth'
 import router from '../router'
 // create an axios instance
@@ -14,7 +13,7 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // do something before request is sent
-    if (store.getters.token) {
+    if (getToken()) {
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
@@ -52,7 +51,7 @@ service.interceptors.response.use(
       window.open(response.headers.url, '_blank')
     } else if (!response.data.success && (response.data.error.subcode === 16004 || response.data.error.subcode === 16010 || response.data.error.subcode === 16007)) {
 
-      setTimeout(function() {
+      setTimeout(function () {
         removeToken()
         router.replace({ path: '/' })
       }, 1000)

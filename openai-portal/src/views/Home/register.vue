@@ -92,7 +92,6 @@
             this.loginForm.bind.platform = sessionStorage.getItem("platform")
             this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
-            console.log(this.loginForm)
         },
         computed: {
         },
@@ -101,7 +100,7 @@
                 if (GetUrlParam('token') !== '') {
                     setToken(GetUrlParam('token'))
                     console.log(getToken(),'token')
-                    // this.$router.push({ path: '/index' })
+                    this.$router.push({ path: '/index' })
                 }
                 else {
                     sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
