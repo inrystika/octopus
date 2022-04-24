@@ -46,9 +46,9 @@ router.beforeEach(async (to, from, next) => {
         if (GetUrlParam('token') && GetUrlParam('token') !== '') {
           setToken(GetUrlParam('token'))
           next('/index')
-        } else if (
-          GetUrlParam('thirdUserId') && GetUrlParam('thirdUserName')) { next() }
-        next('/')
+        } else {
+          next()
+        }
       } else { next() }
     } else {
       // other pages that do not have permission to access are redirected to the login page.
