@@ -165,12 +165,12 @@
                 delete loginForm.gender
                 login(loginForm).then((res) => {
                     if (res.success) {
-                        setToken(GetUrlParam('token'))
-                        this.$router.push({ path: '/index' })
                         this.$message({
                             message: '登录成功',
                             type: 'success'
                         });
+                        setToken(res.data.token)
+                        this.$router.push({ path: '/index' })
                     } else {
                         this.$message({
                             message: this.getErrorMsg(res.error.subcode),
