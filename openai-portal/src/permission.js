@@ -42,7 +42,6 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
-        console.log(location.href)
         if (GetUrlParam('token') && GetUrlParam('token') !== '') {
           setToken(GetUrlParam('token'))
           next('/index')
