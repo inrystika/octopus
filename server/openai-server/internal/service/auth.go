@@ -13,6 +13,7 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
+	"strings"
 	"time"
 )
 
@@ -53,7 +54,7 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 	}
 	//绑定第三方账号
 	if req.Bind != nil {
-		userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
+		userId, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(req.Bind.UserId, "%3D", "="))
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +126,7 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 	//判断用户名是否已存在以及第三方账号是否已绑定
-	userId, err := base64.StdEncoding.DecodeString(req.Bind.UserId)
+	userId, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(req.Bind.UserId, "%3D", "="))
 	if err != nil {
 		return nil, err
 	}

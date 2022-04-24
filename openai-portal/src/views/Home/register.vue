@@ -2,15 +2,27 @@
     <div class="contain">
         <el-row type="flex" justify="center">
             <el-col :span="6">
-                <div class="title">注册</div>
+                <div class="title" v-if="!show">登录</div>
+                <div class="title" v-if="show">注册</div>
             </el-col>
         </el-row>
         <el-row type="flex" justify="center">
             <el-col :span="6">
                 <div class="grid-content bg-purple-dark">
                     <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
-                        <el-form-item prop="email" label="邮箱">
-                            <el-input v-model="loginForm.email" type="text" auto-complete="off" placeholder="请输入用户账号" />
+                        <el-form-item prop="fullName" label="姓名" v-if="show">
+                            <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
+                                placeholder="请输入姓名" />
+                        </el-form-item>
+                        <el-form-item prop="gender" label="姓名" v-if="show">
+                            <el-radio-group v-model="loginForm.gender">
+                                <el-radio :label="1">男</el-radio>
+                                <el-radio :label="2">女</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item prop="username" label="邮箱">
+                            <el-input v-model="loginForm.username" type="text" auto-complete="off"
+                                placeholder="请输入用户账号" />
                         </el-form-item>
                         <el-form-item prop="password" label="密码">
                             <el-input v-model="loginForm.password" type="password" auto-complete="off"
@@ -18,11 +30,18 @@
                         </el-form-item>
                         <el-form-item>
                             <el-row type="flex" :gutter="20">
-                                <el-col :span="18" :offset="10">
-                                    <el-button type="primary" @click="submitForm()">注册</el-button>
+                                <el-col :span="18" :offset="9" v-if="!show">
+                                    <el-button type="primary" @click="login()">绑定并登录</el-button>
                                 </el-col>
-                                <el-col :span="6" :offset="2" class="login">
-                                    <el-link type="primary" v-show="show" @click="login()">去登录</el-link>
+                                <el-col :span="18" :offset="9" v-if="show">
+                                    <el-button type="primary" @click="register()">注册并登录</el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-row type="flex" :gutter="20" v-if="hidden">
+                                <el-col :span="18" :offset="9">
+                                    <el-link type="primary" @click="goRegister">未注册?点击注册</el-link>
                                 </el-col>
                             </el-row>
                         </el-form-item>
@@ -34,6 +53,9 @@
 </template>
 <script>
     import { register } from '@/api/themeChange.js'
+    import { login } from '@/api/Home.js'
+    import { GetUrlParam } from '@/utils/index.js'
+    import { setToken, getToken, removeToken } from '@/utils/auth'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -45,20 +67,51 @@
             };
             return {
                 show: false,
+                hidden: true,
                 loginForm: {
-                    email: undefined,
-                    password: undefined
+                    fullName: '',
+                    username: undefined,
+                    password: undefined,
+                    gender: undefined,
+                    bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
-                    email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
+                    username: [{ required: true, message: "请输入用户账号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
+                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+                    fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+                    gender: [
+                        { required: true, message: '请选择性别', trigger: 'change' }
+                    ],
                 },
             }
         },
+        created() {
+            this.getThirdInfo()
+            this.loginForm.bind.platform = sessionStorage.getItem("platform")
+            this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
+            this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
+        },
+        computed: {
+        },
         methods: {
-            submitForm() {
+            getThirdInfo() {
+                removeToken()
+                sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                if (GetUrlParam("thirdUserName")) {
+                    let thirdUserName = GetUrlParam("thirdUserName")
+                    sessionStorage.setItem('thirdUserName', thirdUserName)
+                }
+
+            },
+            //去注册
+            goRegister() {
+                this.show = true
+                this.hidden = false
+            },
+            // 注册并绑定
+            register() {
                 this.$refs['loginForm'].validate((valid) => {
                     if (valid) {
                         register(this.loginForm).then(
@@ -68,26 +121,54 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    this.show = true
+                                    setToken(GetUrlParam('token'))
+                                    this.$router.push({ path: '/index' })
                                 }
                                 else {
-                                    this.$message({
-                                        message: this.getErrorMsg(response.error.subcode),
-                                        type: 'warning'
-                                    });
+                                    if (response.error.subcode == 16021) {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                    }
+                                    else {
+                                        this.$message({
+                                            message: this.getErrorMsg(response.error.subcode),
+                                            type: 'warning'
+                                        });
+                                    }
+
                                 }
                             }
                         )
-                    } else {                    
+                    } else {
                         return false;
                     }
                 });
             },
+            // 登录并绑定
             login() {
-                this.$router.push({
-                    path: "/login"
+                let loginForm = JSON.parse(JSON.stringify(this.loginForm));
+                delete loginForm.fullName
+                delete loginForm.gender
+                login(loginForm).then((res) => {
+                    if (res.success) {
+                        setToken(GetUrlParam('token'))
+                        this.$router.push({ path: '/index' })
+                        this.$message({
+                            message: '登录成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(res.error.subcode),
+                            type: 'warning'
+                        });
+                        this.$router.push({ path: '/' })
+                    }
+                }).catch(() => {
                 })
-            }
+            },
         }
     }
 </script>

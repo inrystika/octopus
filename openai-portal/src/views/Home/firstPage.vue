@@ -46,15 +46,6 @@
                                     </el-col>
                                 </el-row>
                             </el-form-item>
-                            <el-form-item>
-                                <el-col :span="12" :offset="16">
-                                    <el-col :span="10" class="isRegister"><span>还没有注册?</span></el-col>
-                                    <el-col :span="6" class="register">
-                                        <span @click="goRegister">去注册</span>
-                                    </el-col>
-                                </el-col>
-                            </el-form-item>
-
                         </el-form>
                         <div v-if="this.GLOBAL.THEME_ORG_NAME" class="pku-footer">&copy;北大人工智能研究院</div>
                     </div>
@@ -67,6 +58,10 @@
 </template>
 <script>
     import { getInterface } from '@/api/themeChange.js'
+    // import { GetUrlParam } from '@/utils/index.js'
+    import { mapGetters } from 'vuex'
+    import store from '@/store'
+    import { setToken } from '@/utils/auth'
     export default {
         data() {
             // 邮箱类型验证
@@ -82,7 +77,8 @@
                 logining: false,
                 loginForm: {
                     email: undefined,
-                    password: undefined
+                    password: undefined,
+                    bind: { platform: '', userId:'', userName: '' }
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
@@ -97,25 +93,19 @@
             }
         },
         created() {
-            this.interfaceName = sessionStorage.getItem("interfaceName");
-            if (this.interfaceName && this.interfaceName !== '') {
-                getInterface(this.interfaceName).then(response => {
-                    if (!response.success) {
-                        this.$message({
-                            message: this.getErrorMsg(response.error.subcode),
-                            type: 'warning'
-                        });
-                    }
-                })
-            }
-            if (this.interfaceName && this.interfaceName != '') {
+            this.interfaceName = sessionStorage.getItem("platform")
+            if (this.interfaceName == 'pcl') {
                 this.show = true
             }
             else { this.show = false }
-            // this.show=false
             if (this.GLOBAL.THEME_TITLE_ZH) {
                 this.itemShow = false
             }
+
+        },
+        mounted() {
+        },
+        computed: {
         },
         watch: {
             $route: {
@@ -155,25 +145,8 @@
             },
             jumpThird() {
                 getInterface(this.interfaceName).then(res => {
-                    if (res.code) {
-                        this.$message({
-                            message: '登录成功',
-                            type: 'success'
-                        });
-                    }
-                    else {
-                        this.$message({
-                            message: '登录失败',
-                            type: 'warning'
-                        });
-                    }
                 })
             },
-            goRegister() {
-                this.$router.push({
-                    path: "/register"
-                })
-            }
         }
     };
 </script>
@@ -282,22 +255,10 @@
         margin-top: 10px;
     }
 
-    .isRegister {
-        font-weight: 800;
-        font-size: 10px;
-    }
-
     .el-image {
         border-radius: 50px;
         border: 1px solid transparent;
         cursor: pointer;
-    }
-
-    .register {
-        color: #3296fa;
-        text-decoration: underline;
-        cursor: pointer;
-        font-size: 10px;
     }
 
     .name {
