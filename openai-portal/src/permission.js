@@ -42,10 +42,12 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
+        console.log(location.href)
         if (GetUrlParam('token') && GetUrlParam('token') !== '') {
           setToken(GetUrlParam('token'))
           next('/index')
-        } else if (GetUrlParam('thirdUserId') && GetUrlParam('thirdUserName')) { next() }
+        } else if (
+          GetUrlParam('thirdUserId') && GetUrlParam('thirdUserName')) { next() }
         next('/')
       } else { next() }
     } else {
@@ -55,7 +57,6 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 })
-
 router.afterEach(() => {
   // finish progress bar
   NProgress.done()
