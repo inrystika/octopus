@@ -8,7 +8,7 @@
         </el-row>
         <el-row type="flex" justify="center">
             <el-col :span="6">
-                <div class="grid-content bg-purple-dark">
+                <div>
                     <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
                         <el-form-item prop="fullName" label="姓名" v-if="show">
                             <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
@@ -42,6 +42,13 @@
                             <el-row type="flex" :gutter="20" v-if="hidden">
                                 <el-col :span="18" :offset="9">
                                     <el-link type="primary" @click="goRegister">未注册?点击注册</el-link>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item v-if="show">
+                            <el-row type="flex" justify="end">
+                                <el-col :span="4">
+                                    <el-link type="primary" @click="goLogin()">返回登录</el-link>
                                 </el-col>
                             </el-row>
                         </el-form-item>
@@ -109,6 +116,11 @@
             goRegister() {
                 this.show = true
                 this.hidden = false
+            },
+            //去登录
+            goLogin() {
+                this.show = false
+                this.hidden = true
             },
             // 注册并绑定
             register() {
