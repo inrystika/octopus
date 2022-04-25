@@ -86,7 +86,7 @@
                     username: [{ required: true, message: "请输入用户账号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }, { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }],
                     fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
                     gender: [
                         { required: true, message: '请选择性别', trigger: 'change' }
@@ -165,18 +165,18 @@
                 delete loginForm.gender
                 login(loginForm).then((res) => {
                     if (res.success) {
-                        setToken(GetUrlParam('token'))
-                        this.$router.push({ path: '/index' })
                         this.$message({
                             message: '登录成功',
                             type: 'success'
                         });
+                        setToken(res.data.token)
+                        this.$router.push({ path: '/index' })
                     } else {
                         this.$message({
                             message: this.getErrorMsg(res.error.subcode),
                             type: 'warning'
                         });
-                        this.$router.push({ path: '/' })
+                        // this.$router.push({ path: '/' })
                     }
                 }).catch(() => {
                 })
