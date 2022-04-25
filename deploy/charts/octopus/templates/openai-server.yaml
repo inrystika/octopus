@@ -87,7 +87,7 @@ data:
     service:
         port: {{ template "openaiserver.port" . }}
         targetPort: {{ template "openaiserver.port" . }}
-        tokenExpirationSec: 86400
+        tokenExpirationSec: {{ .Values.openaiserver.service.tokenExpirationSec }}
         webConfig:
           logoAddr: "{{ .Values.openaiserver.service.webConfig.logoAddr }}"
           themeColor: "{{ .Values.openaiserver.service.webConfig.themeColor }}"
