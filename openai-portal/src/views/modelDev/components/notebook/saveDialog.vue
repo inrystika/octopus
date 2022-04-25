@@ -25,7 +25,7 @@
           <el-input v-model="ruleForm.imageVersion" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="增量描述:" :label-width="formLabelWidth" prop="LayerDescription">
-          <el-input type="textarea" v-model="ruleForm.LayerDescription" maxlength="100" show-word-limit></el-input>
+          <el-input type="textarea" v-model="ruleForm.LayerDescription"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
