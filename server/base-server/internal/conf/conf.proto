@@ -107,7 +107,7 @@ message Data {
   JointCloud jointCloud = 8;
   Ambassador ambassador = 9;
   PytorchServer pytorchServer = 10;
-  sftpgo sftpgo = 10;
+  sftpgo sftpgo = 11;
 }
 
 message Develop {
