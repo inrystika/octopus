@@ -16,7 +16,8 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
-                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork" :disabled="chooseFrame">
+                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork"
+                        :disabled="chooseFrame">
                         <el-option label="pytorch" value="pytorch"></el-option>
                         <el-option label="tensorflow" value="tensorflow"></el-option>
                     </el-select>
@@ -50,7 +51,7 @@
                 <el-form-item label="资源类型" prop="resourceType">
                     <el-select v-model="ruleForm.resourceType" placeholder="请选择服务类型">
                         <el-option label="cpu" value="cpu"></el-option>
-                        <el-option label="gpu" value="gpu" disabled></el-option>
+                        <el-option label="gpu" value="gpu"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="资源规格" prop="resourceSpecId">
@@ -71,13 +72,13 @@
     import { createDeploy } from '@/api/deployManager.js'
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
-    import upload from '@/components/upload/index.vue'
+    // import upload from '@/components/upload/index.vue'
     import { algorithmFrame } from "@/api/modelDev";
     export default {
         name: "DialogCreateForm",
-        components: {
-            upload
-        },
+        // components: {
+        //     upload
+        // },
         props: {
             row: {
                 type: Object,
@@ -151,7 +152,7 @@
 
                 },
                 frameWorkId: '',
-                chooseFrame:false
+                chooseFrame: false
 
             }
         },
@@ -166,9 +167,9 @@
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
                 this.flag = true
-                this.modelType=true
-                this.ruleForm.modelFrame=this.row.modelFrame.toLowerCase()
-                this.chooseFrame=true
+                this.modelType = true
+                this.ruleForm.modelFrame = this.row.modelFrame.toLowerCase()
+                this.chooseFrame = true
             }
             this.getResourceList()
             this.algorithmFrame()
@@ -262,9 +263,11 @@
                 this.ruleForm.modelVersion = ''
             },
             getModelVersionItem() {
-                this.modelVersionCount = 1
-                this.modelVersionOption = []
-                this.getModelVersion()
+                if (!this.flag) {
+                    this.modelVersionCount = 1
+                    this.modelVersionOption = []
+                    this.getModelVersion()
+                }
             },
             loadModelVersion() {
                 this.modelVersionCount = this.modelVersionCount + 1
@@ -328,9 +331,9 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        let data=JSON.parse(JSON.stringify(this.ruleForm))
+                        let data = JSON.parse(JSON.stringify(this.ruleForm))
                         if (this.flag) {
-                            data.modelId = this.tempId           
+                            data.modelId = this.tempId
                         }
                         createDeploy(data).then(response => {
                             if (response.success) {
@@ -340,10 +343,19 @@
                                 });
                                 this.$emit('confirm', false)
                             } else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
+                                if (response.error.subcode == 15011) {
+                                    this.$message({
+                                        message: '服务器名称重名',
+                                        type: 'warning'
+                                    });
+                                }
+                                else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+
                             }
                         })
 
@@ -367,13 +379,13 @@
             changeFameWork() {
                 this.modelType = true
                 this.frameWorkId = this.option[this.ruleForm.modelFrame]
-                this.ruleForm.modelSource=""
+                this.ruleForm.modelSource = ""
                 this.ruleForm.modelId = ""
-                this.ruleForm.modelVersion=""
-                
+                this.ruleForm.modelVersion = ""
+
             },
-             // 获取算法框架
-             algorithmFrame() {
+            // 获取算法框架
+            algorithmFrame() {
                 algorithmFrame({ pageIndex: 1, pageSize: 50 }).then(response => {
                     if (response.success) {
                         response.data.lables.forEach(

@@ -530,6 +530,14 @@ func (kc *kubernetesCluster) DeleteSeldonDeployment(ctx context.Context, namespa
 	return nil
 }
 
+func (kc *kubernetesCluster) GetSeldonDeployment(ctx context.Context, namespace string, serviceName string) (*seldonv1.SeldonDeployment, error) {
+	obj, err := kc.seldonClient.MachinelearningV1().SeldonDeployments(namespace).Get(ctx, serviceName, metav1.GetOptions{})
+	if err != nil {
+		return obj, err
+	}
+	return nil, nil
+}
+
 func (kc *kubernetesCluster) GetDynamicInformer(resourceType string) (informers.GenericInformer, error) {
 	cfg := kc.GetClusterConfig()
 	dc, err := dynamic.NewForConfig(cfg)

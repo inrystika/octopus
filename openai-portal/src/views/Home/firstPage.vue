@@ -7,38 +7,44 @@
             <div class="content">
                 <div class="login-container">
                     <div class="grid-content">
-                        <el-form
-                            @submit.native.prevent
-                            ref="loginForm"
-                            :model="loginForm"
-                            :rules="rules"
-                            status-icon
-                            label-position="left"
-                            label-width="0px"
-                            class="demo-ruleForm login-page"
-                          >
-                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
-                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH }}</span></div>
+                        <el-form @submit.native.prevent ref="loginForm" :model="loginForm" :rules="rules" status-icon
+                            label-position="left" label-width="0px" class="demo-ruleForm login-page">
+                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span
+                                    class="octopus">启智章鱼</span></div>
+                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH
+                                    }}</span></div>
                             <el-form-item prop="email">
-                                <el-input
-                                    v-model="loginForm.email"
-                                    type="text"
-                                    auto-complete="off"
-                                    placeholder="请输入用户账号"
-                                />
+                                <el-input v-model="loginForm.email" type="text" auto-complete="off"
+                                    placeholder="请输入用户账号" />
                             </el-form-item>
                             <el-form-item prop="password">
-                                <el-input
-                                    v-model="loginForm.password"
-                                    type="password"
-                                    auto-complete="off"
-                                    placeholder="密码"
-                                />
+                                <el-input v-model="loginForm.password" type="password" auto-complete="off"
+                                    placeholder="密码" />
                             </el-form-item>
-                            <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" native-type='submit' :style="{'background':colorChange,'border-color':colorChange}" :loading="logining" @click="handleLogin">
+                            <el-form-item style="width:100%;margin-bottom: 0px;">
+                                <el-button type="primary" style="width:100%;" native-type='submit'
+                                    :style="{'background':colorChange,'border-color':colorChange}" :loading="logining"
+                                    @click="handleLogin">
                                     登录
                                 </el-button>
+                            </el-form-item>
+                            <el-form-item v-if="show" type="flex">
+                                <el-row type="flex" align="middle">
+                                    <el-col :span="6">
+                                        <div>第三方登录</div>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <div>
+                                            <div class="demo-image">
+                                                <div class="block">
+                                                    <el-image style="width: 50px; height: 50px" :src="url"
+                                                        @click="jumpThird"></el-image>
+                                                    <div class="name">{{interfaceName}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </el-col>
+                                </el-row>
                             </el-form-item>
                         </el-form>
                         <div v-if="this.GLOBAL.THEME_ORG_NAME" class="pku-footer">&copy;北大人工智能研究院</div>
@@ -47,10 +53,15 @@
             </div>
         </el-main>
     </el-container>
+    <!-- 注册对话框 -->
 
 </template>
-
 <script>
+    import { getInterface } from '@/api/themeChange.js'
+    // import { GetUrlParam } from '@/utils/index.js'
+    import { mapGetters } from 'vuex'
+    import store from '@/store'
+    import { setToken } from '@/utils/auth'
     export default {
         data() {
             // 邮箱类型验证
@@ -62,10 +73,12 @@
                 callback(new Error("请输入合法的邮箱"));
             };
             return {
+                url: require('../../assets/icon-pcl.png'),
                 logining: false,
                 loginForm: {
                     email: undefined,
-                    password: undefined
+                    password: undefined,
+                    bind: { platform: '', userId:'', userName: '' }
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
@@ -75,17 +88,28 @@
                 },
                 checked: false,
                 itemShow: true,
-                colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : ''
+                colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : '',
+                interfaceName: ''
             }
         },
-        created(){
-          if(this.GLOBAL.THEME_TITLE_ZH){
-            this.itemShow = false
-          }
+        created() {
+            this.interfaceName = sessionStorage.getItem("platform")
+            if (this.interfaceName == 'pcl') {
+                this.show = true
+            }
+            else { this.show = false }
+            if (this.GLOBAL.THEME_TITLE_ZH) {
+                this.itemShow = false
+            }
+
+        },
+        mounted() {
+        },
+        computed: {
         },
         watch: {
             $route: {
-                handler: function(route) {
+                handler: function (route) {
                     this.redirect = route.query && route.query.redirect
                 },
                 immediate: true
@@ -118,7 +142,11 @@
                         return false
                     }
                 })
-            }
+            },
+            jumpThird() {
+                getInterface(this.interfaceName).then(res => {
+                })
+            },
         }
     };
 </script>
@@ -173,7 +201,7 @@
         color: #502374;
     }
 
-    .pkuTitle{
+    .pkuTitle {
         font-size: 24px;
         margin-bottom: 66px;
     }
@@ -193,7 +221,7 @@
     .login-page {
         margin-top: 100px;
         width: 400px;
-        height: 320px;
+        min-height: 330px;
         padding: 35px 35px 15px;
         background: #fff;
         border: 1px solid #996699;
@@ -212,8 +240,30 @@
         position: relative;
         top: 30%;
     }
+
     .pku-footer {
-      font-weight: 600;
-      margin-top: 40px;
+        font-weight: 600;
+        margin-top: 40px;
+    }
+
+    .interface {
+        margin-top: 5px;
+        font-weight: 800;
+    }
+
+    .demo-image {
+        margin-top: 10px;
+    }
+
+    .el-image {
+        border-radius: 50px;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .name {
+        font-weight: 800;
+        position: relative;
+        top: -20px;
     }
 </style>

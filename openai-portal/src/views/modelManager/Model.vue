@@ -59,7 +59,7 @@
                 modelId: undefined,
                 type: undefined,
                 modelFrame: undefined,
-                searchForm: [],
+                searchForm: [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }],
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
@@ -99,72 +99,15 @@
                 this.getModel(this.searchData)
             },
             getVersionList(val) {
-                let frameworkName = ""
-                if (this.modelTabType === 3) {
-                    getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
-                        if (response.success) {
-                            response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
-                            if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
-                                this.showDeploy = true
-                                this.FormVisible = true;
-                                this.modelId = val.modelId
-                                this.modelName = val.modelName
-                                this.modelFrame = frameworkName
-                            }
-                            else { this.showDeploy = false }
-
-                        }
-                    })
+                this.FormVisible = true;
+                this.modelId = val.modelId
+                this.modelName = val.modelName
+                this.modelFrame = val.frameWorkName
+                if (this.modelFrame === 'Pytorch' || this.modelFrame == 'TensorFlow') {
+                    this.showDeploy = true
                 }
-                if (this.modelTabType === 2 || this.modelTabType == 1) {
-                    getPublicAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
-                        if (response.success) {
-                            response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
-                            if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
-                                this.showDeploy = true
-                                this.FormVisible = true;
-                                this.modelId = val.modelId
-                                this.modelName = val.modelName
-                                this.modelFrame = frameworkName
-                            }
-                            else {
-                                getMyAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
-                                    if (response.success) {
-                                        response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
-                                        if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
-                                            this.showDeploy = true
-                                            this.FormVisible = true;
-                                            this.modelId = val.modelId
-                                            this.modelName = val.modelName
-                                            this.modelFrame = frameworkName
-                                        }
-                                        else {
-                                            getPresetAlgorithmList({ pageIndex: 1, pageSize: 10, modelId: val.modelId }).then(response => {
-                                                if (response.success) {
-                                                    response.data.algorithms[0] ? frameworkName = response.data.algorithms[0].frameworkName : frameworkName = ""
-                                                    if (frameworkName === "TensorFlow" || frameworkName === "Pytorch") {
-                                                        this.showDeploy = true
-                                                        this.FormVisible = true;
-                                                        this.modelId = val.modelId
-                                                        this.modelName = val.modelName
-                                                        this.modelFrame = frameworkName
-                                                    }
-                                                    else {
-                                                        this.showDeploy = false; this.FormVisible = true;
-                                                        this.modelId = val.modelId
-                                                        this.modelName = val.modelName
-                                                    }
-
-                                                }
-                                            })
-                                        }
-                                    }
-
-                                })
-                            }
-                        }
-                    })
-
+                else{
+                    this.showDeploy = false
                 }
 
             },
@@ -237,6 +180,11 @@
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
+                if (this.searchData.time) {
+                    this.searchData.createdAtGte = this.searchData.time[0] / 1000
+                    this.searchData.createdAtLt = this.searchData.time[1] / 1000
+                    delete this.searchData.time
+                }
                 this.getModel(this.searchData)
             },
             // 删除确认

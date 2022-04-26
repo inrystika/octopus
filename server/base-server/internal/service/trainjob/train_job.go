@@ -3,6 +3,7 @@ package trainjob
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -301,35 +302,55 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 		queue = workspace.Workspace.ResourcePoolId
 	}
-	//image
-	image, err := s.getImageAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.ImageId)
-	if err != nil {
-		return nil, err
+
+	imageAddr := ""
+	if job.ImageId != "" { //判空，允许通过API调用不传此参数
+		//image
+		image, err := s.getImageAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.ImageId)
+		if err != nil {
+			return nil, err
+		}
+
+		if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
+			return nil, errors.Errorf(nil, errors.ErrorJobImageStatusForbidden)
+		}
+		job.ImageName = image.Image.ImageName
+		job.ImageVersion = image.Image.ImageVersion
+		imageAddr = image.ImageFullAddr
+	} else if job.ImageUrl != "" {
+		imageAddr = job.ImageUrl
+	} else {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
-		return nil, errors.Errorf(nil, errors.ErrorJobImageStatusForbidden)
+	algorithmPath := ""
+	if job.AlgorithmId != "" { //判空，允许通过API调用不传此参数
+		//algorithm
+		algorithmVersion, err := s.getAlgorithmAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.AlgorithmId, job.AlgorithmVersion)
+		if err != nil {
+			return nil, err
+		}
+		if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
+			return nil, errors.Errorf(err, errors.ErrorJobAlgorithmStatusForbidden)
+		}
+		job.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
+		algorithmPath = algorithmVersion.Algorithm.Path
 	}
-	job.ImageName = image.Image.ImageName
-	job.ImageVersion = image.Image.ImageVersion
-	//algorithm
-	algorithmVersion, err := s.getAlgorithmAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.AlgorithmId, job.AlgorithmVersion)
-	if err != nil {
-		return nil, err
+
+	datasetPath := ""
+	if job.DataSetId != "" { //判空，允许通过API调用不传此参数
+		//dataSet
+		dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
+		if err != nil {
+			return nil, err
+		}
+		if dataSetVersion.Version.Status != int32(api.DatasetVersionStatus_DVS_Unzipped) {
+			return nil, errors.Errorf(err, errors.ErrorJobImageStatusForbidden)
+		}
+		job.DatasetName = dataSetVersion.Dataset.Name
+		datasetPath = dataSetVersion.Version.Path
 	}
-	if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
-		return nil, errors.Errorf(err, errors.ErrorJobAlgorithmStatusForbidden)
-	}
-	job.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
-	//dataSet
-	dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
-	if err != nil {
-		return nil, err
-	}
-	if dataSetVersion.Version.Status != int32(api.DatasetVersionStatus_DVS_Unzipped) {
-		return nil, errors.Errorf(err, errors.ErrorJobImageStatusForbidden)
-	}
-	job.DatasetName = dataSetVersion.Dataset.Name
+
 	//resource spec info
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
@@ -435,9 +456,9 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 	return &startJobInfo{
 		queue:         queue,
-		imageAddr:     image.ImageFullAddr,
-		algorithmPath: algorithmVersion.Algorithm.Path,
-		datasetPath:   dataSetVersion.Version.Path,
+		imageAddr:     imageAddr,
+		algorithmPath: algorithmPath,
+		datasetPath:   datasetPath,
 		specs:         startJobSpecs,
 	}, nil
 }
@@ -1018,14 +1039,20 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 }
 
 func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
-	_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-		SpaceId:          trainJob.WorkspaceId,
-		UserId:           trainJob.UserId,
-		AlgorithmId:      trainJob.AlgorithmId,
-		AlgorithmVersion: trainJob.AlgorithmVersion,
-		FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
-	})
-	return err
+	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
+	fileInfos, _ := ioutil.ReadDir(filePath)
+	if len(fileInfos) > 0 {
+		_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+			SpaceId:          trainJob.WorkspaceId,
+			UserId:           trainJob.UserId,
+			AlgorithmId:      trainJob.AlgorithmId,
+			AlgorithmVersion: trainJob.AlgorithmVersion,
+			FilePath:         filePath,
+		})
+		return err
+	}
+
+	return nil
 }
 
 func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {

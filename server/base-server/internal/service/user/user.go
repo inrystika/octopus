@@ -69,6 +69,16 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 
 	users := make([]*api.UserItem, len(usersTbl))
 	for idx, user := range usersTbl {
+		bindInfo := make([]*api.Bind, 0)
+		if user.Bind != nil {
+			for _, a := range user.Bind {
+				replyBind := new(api.Bind)
+				replyBind.Platform = a.Platform
+				replyBind.UserId = a.UserId
+				replyBind.UserName = a.UserName
+				bindInfo = append(bindInfo, replyBind)
+			}
+		}
 		item := &api.UserItem{
 			Id:        user.Id,
 			FullName:  user.FullName,
@@ -79,6 +89,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			Password:  user.Password,
 			CreatedAt: user.CreatedAt.Unix(),
 			UpdatedAt: user.UpdatedAt.Unix(),
+			Bind:      bindInfo,
 		}
 		users[idx] = item
 	}
@@ -102,11 +113,19 @@ func (s *UserService) CheckOrInitUser(ctx context.Context, req *api.CheckOrInitU
 }
 
 func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*api.FindUserReply, error) {
-	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{
+	a := model.UserQuery{
 		Id:    req.Id,
 		Email: req.Email,
 		Phone: req.Phone,
-	})
+	}
+	if req.Bind != nil {
+		a.Bind = &model.Bind{
+			Platform: req.Bind.Platform,
+			UserId:   req.Bind.UserId,
+			UserName: req.Bind.UserName,
+		}
+	}
+	user, err := s.data.UserDao.Find(ctx, &a)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +134,16 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			User: nil,
 		}, nil
 	}
-
+	bindInfo := make([]*api.Bind, 0)
+	if user.Bind != nil {
+		for _, a := range user.Bind {
+			replyBind := new(api.Bind)
+			replyBind.Platform = a.Platform
+			replyBind.UserId = a.UserId
+			replyBind.UserName = a.UserName
+			bindInfo = append(bindInfo, replyBind)
+		}
+	}
 	reply := &api.FindUserReply{
 		User: &api.UserItem{
 			Id:        user.Id,
@@ -127,6 +155,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			Password:  user.Password,
 			CreatedAt: user.CreatedAt.Unix(),
 			UpdatedAt: user.UpdatedAt.Unix(),
+			Bind:      bindInfo,
 		},
 	}
 
@@ -163,7 +192,13 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 		Email: req.Email,
 		Phone: req.Phone,
 	}
-
+	if req.Bind != nil {
+		cond.Bind = &model.Bind{
+			Platform: req.Bind.Platform,
+			UserId:   req.Bind.UserId,
+			UserName: req.Bind.UserName,
+		}
+	}
 	existed, err := s.data.UserDao.Find(ctx, &cond)
 	if err != nil {
 		return nil, err
@@ -185,6 +220,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.FullName = req.FullName
 	user.Gender = int32(req.Gender)
 	user.Status = int32(api.UserStatus_ACTIVITY)
+	user.Bind = cond.Bind
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err
@@ -194,7 +230,16 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 		s.log.Error(ctx, err)
 		return nil, err
 	}
-
+	bindInfo := make([]*api.Bind, 0)
+	if u.Bind != nil {
+		for _, a := range u.Bind {
+			replyBind := new(api.Bind)
+			replyBind.Platform = a.Platform
+			replyBind.UserId = a.UserId
+			replyBind.UserName = a.UserName
+			bindInfo = append(bindInfo, replyBind)
+		}
+	}
 	reply := &api.AddUserReply{
 		User: &api.UserItem{
 			Id:       u.Id,
@@ -204,6 +249,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 			Gender:   api.GenderType(u.Gender),
 			Status:   api.UserStatus(u.Status),
 			Password: u.Password,
+			Bind:     bindInfo,
 		},
 	}
 
@@ -215,12 +261,23 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 
 func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest) (*api.UpdateUserReply, error) {
 	userId := req.Id
+	bindInfo := make([]*model.Bind, 0)
+	if req.Bind != nil {
+		for _, a := range req.Bind {
+			reqBind := new(model.Bind)
+			reqBind.Platform = a.Platform
+			reqBind.UserId = a.UserId
+			reqBind.UserName = a.UserName
+			bindInfo = append(bindInfo, reqBind)
+		}
+	}
 	user := model.UserUpdate{
 		FullName: req.FullName,
 		Email:    req.Email,
 		Phone:    req.Phone,
 		Gender:   int32(req.Gender),
 		Status:   int32(req.Status),
+		Bind:     bindInfo,
 	}
 	if req.Password != "" {
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -235,6 +292,17 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 	if err != nil {
 		return nil, err
 	}
+
+	bindInfo2 := make([]*api.Bind, 0)
+	if result.Bind != nil {
+		for _, a := range result.Bind {
+			replyBind := new(api.Bind)
+			replyBind.Platform = a.Platform
+			replyBind.UserId = a.UserId
+			replyBind.UserName = a.UserName
+			bindInfo2 = append(bindInfo2, replyBind)
+		}
+	}
 	return &api.UpdateUserReply{
 		User: &api.UserItem{
 			Id:       result.Id,
@@ -244,6 +312,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 			Gender:   api.GenderType(result.Gender),
 			Status:   api.UserStatus(result.Status),
 			Password: result.Password,
+			Bind:     bindInfo2,
 		},
 	}, nil
 }
@@ -256,6 +325,16 @@ func (s *UserService) ListUserInCond(ctx context.Context, req *api.ListUserInCon
 
 	userItems := make([]*api.UserItem, len(users))
 	for idx, user := range users {
+		bindInfo := make([]*api.Bind, 0)
+		if user.Bind != nil {
+			for _, a := range user.Bind {
+				replyBind := new(api.Bind)
+				replyBind.Platform = a.Platform
+				replyBind.UserId = a.UserId
+				replyBind.UserName = a.UserName
+				bindInfo = append(bindInfo, replyBind)
+			}
+		}
 		item := &api.UserItem{
 			Id:        user.Id,
 			FullName:  user.FullName,
@@ -266,6 +345,7 @@ func (s *UserService) ListUserInCond(ctx context.Context, req *api.ListUserInCon
 			Password:  user.Password,
 			CreatedAt: user.CreatedAt.Unix(),
 			UpdatedAt: user.UpdatedAt.Unix(),
+			Bind:      bindInfo,
 		}
 		userItems[idx] = item
 	}

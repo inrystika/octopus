@@ -145,6 +145,9 @@ baseserver:
       sessionExpirySec: 540 #实际有效期为600
     ambassador: #需要修改为实际的值
       baseUrl: 192.168.202.73
+    pytorchServer:
+      imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+      version: 2.0.3
   service:
     billingPeriodSec: 1800
     develop:
@@ -166,11 +169,20 @@ openaiserver:
     name: "openai-server"
   app:
     logLevel: info
+  server:
+    oauth:
+      pcl:
+        authServerURL: "https://one.pcl.ac.cn/idp/oauth2"
+        clientID: "yn1"
+        clientSecret: "74d4543ca3d74f42af841479c5c6d045"
+        redirectURL: "http://192.168.202.73/openaiserver/v1/oauth2/pcl/callback"
+      registerURL: "http://192.168.202.73/openai/"
   data:
     redis:
       username: ""
       password: "abcde"
   service:
+    tokenExpirationSec: 86400
     webConfig:
       logoAddr:
       #格式如#94070a
@@ -179,6 +191,7 @@ openaiserver:
       systemNameZh:
       organization:
       manualInvisible:
+      thirdPlatform: "pcl"
 
 # platform-server
 platformserver:
@@ -443,6 +456,20 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
+
+# seldon-core-operator
+seldon-core-operator:
+  ambassador:
+    enabled: true
+  usageMetrics:
+    enabled: true
+  namespaceOverride: seldon-system
+  predictor_servers:
+    PYTORCH_SERVER:
+      protocols:
+        seldon:
+          defaultImageVersion: "2.0.3"
+          image: "swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver"
 
 sftpgo:
   service:

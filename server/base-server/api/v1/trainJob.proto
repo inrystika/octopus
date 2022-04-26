@@ -39,15 +39,17 @@ service TrainJobService {
 message TrainJobRequest {
   string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
   string desc = 2;
-  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
-  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
-  string imageId = 5[(validate.rules).string = {min_len: 1}];
-  string dataSetId = 6[(validate.rules).string = {min_len: 1}];
-  string dataSetVersion = 7[(validate.rules).string = {min_len: 1}];
+  string algorithmId = 3[(validate.rules).string = {min_len: 0}];
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 0}];
+  string imageId = 5[(validate.rules).string = {min_len: 0}];
+  string dataSetId = 6[(validate.rules).string = {min_len: 0}];
+  string dataSetVersion = 7[(validate.rules).string = {min_len: 0}];
   bool isDistributed = 8;
   repeated Config config = 9[(validate.rules).repeated.min_items = 1];
   string userId = 10[(validate.rules).string = {min_len: 1}];
   string workspaceId =11[(validate.rules).string = {min_len: 1}];
+  //镜像地址，非必填，镜像地址和镜像ID填一个
+  string imageUrl = 12[(validate.rules).string = {min_len: 0}];
 }
 
 message TrainJobTemplateRequest {
@@ -227,6 +229,7 @@ message TrainJob{
   string imageName = 20;
   string dataSetName = 21;
   int64  startedAt = 22;
+  string imageUrl = 23;
 }
 
 

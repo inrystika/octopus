@@ -148,7 +148,7 @@ EOF
     cd $bash_path
     cat apt-key.gpg | sudo apt-key add -
     echo -e "---------------------\033[31m install kubelet、kubeadm、kubectl \033[0m---------------------"
-    sudo apt-get update -y && apt-get install -y --allow-unauthenticated kubelet=1.16.3-00 kubeadm=1.16.3-00 kubectl=1.16.3-00 
+    sudo apt-get update -y && apt-get install -y --allow-unauthenticated kubelet=${kube_version}-00 kubeadm=${kube_version}-00 kubectl=${kube_version}-00
     cat <<EOF | sudo tee /etc/sysconfig/kubelet
         KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"
 EOF

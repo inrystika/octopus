@@ -93,20 +93,22 @@ message TrainJobRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
   //训练任务描述，非必填
   string desc = 2[(validate.rules).string = {max_len: 300}];
-  //算法ID，必填
-  string algorithmId = 3[(validate.rules).string = {min_len: 1}];
-  //算法版本，必填
-  string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
-  //镜像ID，必填
-  string imageId = 5[(validate.rules).string = {min_len: 1}];
-  //数据集ID，必填
-  string dataSetId = 7[(validate.rules).string = {min_len: 1}];
-  //数据集版本，必填
-  string dataSetVersion = 8[(validate.rules).string = {min_len: 1}];
+  //算法ID，非必填
+  string algorithmId = 3[(validate.rules).string = {min_len: 0}];
+  //算法版本，非必填
+  string algorithmVersion = 4[(validate.rules).string = {min_len: 0}];
+  //镜像ID，非必填，镜像地址和镜像ID填一个
+  string imageId = 5[(validate.rules).string = {min_len: 0}];
+  //数据集ID，非必填
+  string dataSetId = 7[(validate.rules).string = {min_len: 0}];
+  //数据集版本，非必填
+  string dataSetVersion = 8[(validate.rules).string = {min_len: 0}];
   //是否分布式任务，非必填，默认false，若为分布式任务则为true
   bool isDistributed = 9;
   //job子任务及其配置信息，必填
   repeated Config config = 10[(validate.rules).repeated.min_items = 1];
+  //镜像地址，非必填，镜像地址和镜像ID填一个
+  string imageUrl = 11[(validate.rules).string = {min_len: 0}];
 }
 
 message Config {
@@ -327,6 +329,7 @@ message TrainJob{
   string imageVersion = 21;
   //启动时间
   int64  startedAt = 22;
+  string imageUrl = 23;
 }
 
 message TrainJobTemplate{

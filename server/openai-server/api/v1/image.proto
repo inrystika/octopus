@@ -125,7 +125,7 @@ message ListUserImageRequest {
   string orderBy = 4[(validate.rules).string = {max_len: 20}];
   string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
-  int32 sourceType = 7[(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+  int32 sourceType = 7[(validate.rules).int32 = {in: [1,2,3],ignore_empty: true}];
   int32 imageStatus = 8[(validate.rules).int32 = {in: [1,2,3,4],ignore_empty: true}];
   string imageVersion = 9[(validate.rules).string = {max_len: 50}];
   string searchKey = 10[(validate.rules).string = {max_len: 50}];
@@ -146,7 +146,7 @@ message ListCommImageRequest {
   string imageAddrLike = 5[(validate.rules).string = {max_len: 254}];
   string imageNameLike = 6[(validate.rules).string = {max_len: 50}];
   string spaceId = 7[(validate.rules).string = {max_len: 36}];
-  int32 sourceType = 10[(validate.rules).int32 = {in: [1,2], ignore_empty: true}];
+  int32 sourceType = 10[(validate.rules).int32 = {in: [1,2,3], ignore_empty: true}];
   int32 imageStatus = 11[(validate.rules).int32 = {in: [1,2,3,4], ignore_empty: true}];
   string imageVersion = 12[(validate.rules).string = {max_len: 50}];
   string searchKey = 13[(validate.rules).string = {max_len: 50}];

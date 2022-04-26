@@ -76,6 +76,13 @@ data:
           addr:  0.0.0.0:8001
           timeout: 60s
           jwtSecrect: asdf
+        oauth:
+          pcl:
+            authServerURL: "{{ .Values.openaiserver.server.oauth.pcl.authServerURL }}"
+            clientID: "{{ .Values.openaiserver.server.oauth.pcl.clientID }}"
+            clientSecret: "{{ .Values.openaiserver.server.oauth.pcl.clientSecret }}"
+            redirectURL: "{{ .Values.openaiserver.server.oauth.pcl.redirectURL }}"
+          registerURL: "{{ .Values.openaiserver.server.oauth.registerURL }}"
          
     data:
         baseServerAddr: {{ include "baseserver.grpcServiceAddr" . }}
@@ -87,7 +94,7 @@ data:
     service:
         port: {{ template "openaiserver.port" . }}
         targetPort: {{ template "openaiserver.port" . }}
-        tokenExpirationSec: 86400
+        tokenExpirationSec: {{ .Values.openaiserver.service.tokenExpirationSec }}
         webConfig:
           logoAddr: "{{ .Values.openaiserver.service.webConfig.logoAddr }}"
           themeColor: "{{ .Values.openaiserver.service.webConfig.themeColor }}"
@@ -95,6 +102,7 @@ data:
           systemNameZh: "{{ .Values.openaiserver.service.webConfig.systemNameZh }}"
           organization: "{{ .Values.openaiserver.service.webConfig.organization }}"
           manualInvisible: {{ .Values.openaiserver.service.webConfig.manualInvisible }}
+          thirdPlatform: {{ .Values.openaiserver.service.webConfig.thirdPlatform }}
 
 ---
 

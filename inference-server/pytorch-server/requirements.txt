@@ -1,0 +1,5 @@
+seldon_core
+torch==1.10.0
+numpy
+mlflow
+werkzeug==1.0.1
