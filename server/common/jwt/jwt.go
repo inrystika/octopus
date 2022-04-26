@@ -41,6 +41,9 @@ func ParseToken(tokenStr string, secret string) (*TokenClaims, error) {
 		return nil, errors.Errorf(err, errors.ErrorParseTokenFailed)
 	}
 	if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+		if time.Now().Unix() > claims.ExpiresAt {
+			return nil, errors.Errorf(err, errors.ErrorParseTokenFailed)
+		}
 		return claims, nil
 	} else {
 		return nil, errors.Errorf(err, errors.ErrorTokenInvalid)
