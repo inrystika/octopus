@@ -141,13 +141,13 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
-		FullName: user.FullName,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Gender:   user.Gender,
-		Password: user.Password,
-		Status:   user.Status,
-		Bind:     user.Bind,
+		FullName:    user.FullName,
+		Email:       user.Email,
+		Phone:       user.Phone,
+		Gender:      user.Gender,
+		Password:    user.Password,
+		Status:      user.Status,
+		Bind:        user.Bind,
 		FtpUserName: user.FtpUserName,
 	})
 	if result.Error != nil {
