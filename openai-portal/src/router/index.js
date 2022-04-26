@@ -150,6 +150,20 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/setting',
+    component: Layout,
+    meta: { title: '设置', icon: 'el-icon-setting' },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'ftp',
+        name: 'ftp',
+        component: () => import('@/views/setting/ftp'),
+        meta: { title: 'ftp', icon: 'dot' }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
