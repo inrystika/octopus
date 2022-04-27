@@ -8,19 +8,20 @@
     <el-row :gutter="20">
       <el-col :span="12" :offset="6">
         <el-form ref="ftpForm" :rules="ftpRules" :model="ftpForm" style="margin: 0 auto;">
-          <el-form-item label="ftp账号:" prop="ftpName">
-            <el-input v-model="ftpForm.ftpName" placeholder="请填写账号" />
+          <el-form-item label="ftp账号:" prop="ftpUserName">
+            <el-input v-model="ftpForm.ftpUserName" placeholder="请填写账号" />
           </el-form-item>
-          <el-form-item label="ftp密码:" prop="password">
-            <el-input v-model="ftpForm.password" placeholder="请输入密码"/>
+          <el-form-item label="ftp密码:" prop="ftpPassword">
+            <el-input v-model="ftpForm.ftpPassword" placeholder="请输入密码"/>
           </el-form-item>
-          <el-button style="float: right;" type="primary">创建</el-button>
+          <el-button style="float: right;" type="primary" @click="submit">创建</el-button>
         </el-form>
       </el-col>
     </el-row>
   </div>
 </template>
 <script>
+import { updateUserFtpAccount } from "@/api/setting"
 export default {
   name: 'ftp',
   data() {
@@ -33,20 +34,37 @@ export default {
     };
     return {
       ftpRules: {
-        ftpName: [
+        ftpUserName: [
           { required: true, message: "请输入账号", trigger: "blur" },
           { validator: checkName, trigger: "blur" }
 
-        ], password: [
+        ], ftpPassword: [
           { required: true, message: '请输入密码！', trigger: 'blur' },
           { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }
         ]
       },
       ftpForm: {
-        ftpName: '',
-        password: ''
+        ftpUserName: '',
+        ftpPassword: ''
       },
       formLabelWidth: "120px",
+    }
+  },
+  methods: {
+    submit() {
+      this.$refs.ftpForm.validate(valid => {
+        if (valid) {
+          const params = {
+            ftpUserName: this.ftpForm.ftpUserName,
+            ftpPassword: this.ftpForm.ftpPassword
+          }
+          this.updateUserFtpAccount(params).then((res) => {
+            console.log("res:",res)
+          })
+        } else {
+          console.log('error')
+        }
+      })
     }
   }
 }
