@@ -498,3 +498,4 @@ sftpgo:
       create_default_admin: true
   nodeSelector:
     <<: *nodeSelector
+          image: "192.168.202.110:5000/octopus/pytorchserver"
