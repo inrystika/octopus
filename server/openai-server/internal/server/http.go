@@ -2,7 +2,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	nethttp "net/http"
+	"net/http/httputil"
+	"net/url"
 	innterapi "server/base-server/api/v1"
 	"server/common/constant/userconfig"
 	"server/common/errors"
@@ -16,6 +19,8 @@ import (
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/service"
 	"strings"
+
+	"github.com/gorilla/mux"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -83,6 +88,12 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/authmanage", api.NewAuthHandler(service.AuthService, options...))
 	srv.HandlePrefix("/v1/algorithmmanage", api.NewAlgorithmHandler(service.AlgorithmService, options...))
 	srv.HandlePrefix("/v1/developmanage", api.NewDevelopHandler(service.DevelopService, options...))
+	srv.HandleFunc("/v1/trainmanage/trainjob/{id}/task/{taskId}/replica/{replicaIdx}/log", func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		url, _ := url.Parse(fmt.Sprintf("%s/log/user/trainjob/%s/%s/%s/index.log", r.Host, mux.Vars(r)["id"], mux.Vars(r)["taskId"], mux.Vars(r)["replicaIdx"]))
+		proxy := httputil.NewSingleHostReverseProxy(url)
+
+		proxy.ServeHTTP(w, r)
+	})
 	srv.HandlePrefix("/v1/trainmanage", api.NewTrainJobServiceHandler(service.TrainJobService, options...))
 	srv.HandlePrefix("/v1/modelmanage", api.NewModelHandler(service.ModelService, options...))
 	srv.HandlePrefix("/v1/datasetmanage", api.NewDatasetServiceHandler(service.DatasetService, options...))
@@ -92,6 +103,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/jointcloudmanage", api.NewJointCloudServiceHandler(service.JointCloudService, options...))
 	srv.HandlePrefix("/v1/systemmanage", api.NewSystemServiceHandler(service.SystemService, options...))
 	srv.HandlePrefix("/v1/deploymanage", api.NewModelDeployServiceHandler(service.ModelDeployService, options...))
+
 	return srv
 }
 
