@@ -8,23 +8,23 @@
         </el-row>
         <el-row type="flex" justify="center">
             <el-col :span="6">
-                <div class="grid-content bg-purple-dark">
+                <div>
                     <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
-                        <el-form-item prop="fullName" label="姓名" v-if="show">
+                        <el-form-item prop="fullName" label="姓名" v-if="show" key="fullName">
                             <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
                                 placeholder="请输入姓名" />
                         </el-form-item>
-                        <el-form-item prop="gender" label="姓名" v-if="show">
+                        <el-form-item prop="gender" label="性别" v-if="show" key="gender">
                             <el-radio-group v-model="loginForm.gender">
                                 <el-radio :label="1">男</el-radio>
                                 <el-radio :label="2">女</el-radio>
                             </el-radio-group>
                         </el-form-item>
-                        <el-form-item prop="username" label="邮箱">
+                        <el-form-item prop="username" label="邮箱" key="username">
                             <el-input v-model="loginForm.username" type="text" auto-complete="off"
-                                placeholder="请输入用户账号" />
+                                placeholder="请输入邮箱号" />
                         </el-form-item>
-                        <el-form-item prop="password" label="密码">
+                        <el-form-item prop="password" label="密码" key="password">
                             <el-input v-model="loginForm.password" type="password" auto-complete="off"
                                 placeholder="密码" />
                         </el-form-item>
@@ -45,6 +45,13 @@
                                 </el-col>
                             </el-row>
                         </el-form-item>
+                        <el-form-item v-if="show">
+                            <el-row type="flex" justify="end">
+                                <el-col :span="4">
+                                    <el-link type="primary" @click="goLogin()">返回登录</el-link>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
                     </el-form>
                 </div>
             </el-col>
@@ -55,7 +62,7 @@
     import { register } from '@/api/themeChange.js'
     import { login } from '@/api/Home.js'
     import { GetUrlParam } from '@/utils/index.js'
-    import { setToken, getToken } from '@/utils/auth'
+    import { setToken, getToken, removeToken } from '@/utils/auth'
     export default {
         data() {
             var checkEmail = (rule, value, callback) => {
@@ -76,10 +83,11 @@
                     bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
-                    username: [{ required: true, message: "请输入用户账号", trigger: "blur" },
+                    username: [{ required: true, message: "请输入邮箱号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' },
+                    { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }],
                     fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
                     gender: [
                         { required: true, message: '请选择性别', trigger: 'change' }
@@ -92,35 +100,32 @@
             this.loginForm.bind.platform = sessionStorage.getItem("platform")
             this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
             this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
-            console.log(this.loginForm)
         },
         computed: {
         },
         methods: {
             getThirdInfo() {
-                if (GetUrlParam('token') !== '') {
-                    setToken(GetUrlParam('token'))
-                    // this.$router.push({ path: '/index' })
+                removeToken()
+                sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
+                if (GetUrlParam("thirdUserName")) {
+                    let thirdUserName = GetUrlParam("thirdUserName")
+                    sessionStorage.setItem('thirdUserName', thirdUserName)
                 }
-                else {
-                    sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
-                    if (GetUrlParam("thirdUserName")) {
-                        let thirdUserName = GetUrlParam("thirdUserName")
-                        sessionStorage.setItem('thirdUserName', thirdUserName)
-                    }
-                }
-
 
             },
-
-
             //去注册
             goRegister() {
                 this.show = true
                 this.hidden = false
             },
+            //去登录
+            goLogin() {
+                this.show = false
+                this.hidden = true
+            },
             // 注册并绑定
             register() {
+                console.log(this.loginForm)
                 this.$refs['loginForm'].validate((valid) => {
                     if (valid) {
                         register(this.loginForm).then(
@@ -130,7 +135,7 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    setToken(getUrl("token", url))
+                                    setToken(GetUrlParam('token'))
                                     this.$router.push({ path: '/index' })
                                 }
                                 else {
@@ -160,23 +165,29 @@
                 let loginForm = JSON.parse(JSON.stringify(this.loginForm));
                 delete loginForm.fullName
                 delete loginForm.gender
-                login(loginForm).then((res) => {
-                    if (res.success) {
-                        setToken(getUrl("token", url))
-                        this.$router.push({ path: '/index' })
-                        this.$message({
-                            message: '登录成功',
-                            type: 'success'
-                        });
+                this.$refs['loginForm'].validate((valid) => {
+                    if (valid) {
+                        login(loginForm).then((res) => {
+                            if (res.success) {
+                                this.$message({
+                                    message: '登录成功',
+                                    type: 'success'
+                                });
+                                setToken(res.data.token)
+                                this.$router.push({ path: '/index' })
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(res.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        }).catch(() => {
+                        })
                     } else {
-                        this.$message({
-                            message: this.getErrorMsg(res.error.subcode),
-                            type: 'warning'
-                        });
-                        this.$router.push({ path: '/' })
+                        return false;
                     }
-                }).catch(() => {
-                })
+                });
+
             },
         }
     }

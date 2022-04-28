@@ -117,7 +117,7 @@ export function param2Obj(url) {
 }
 export function formatSize(size) {
   if (size.indexOf('m') !== -1) {
-    size = size.substring(0, size.length - 2)
+    size = size.substring(0, size.length - 1)
     size = size * 0.001
     return size
   } else if (size.indexOf('Ki') !== -1) {

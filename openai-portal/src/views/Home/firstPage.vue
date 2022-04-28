@@ -30,16 +30,13 @@
                             </el-form-item>
                             <el-form-item v-if="show" type="flex">
                                 <el-row type="flex" align="middle">
-                                    <el-col :span="6">
-                                        <div>第三方登录</div>
-                                    </el-col>
-                                    <el-col :span="6">
-                                        <div>
+                                    <el-col :span="24">
+                                        <div class="PCLlogin">
                                             <div class="demo-image">
                                                 <div class="block">
-                                                    <el-image style="width: 50px; height: 50px" :src="url"
-                                                        @click="jumpThird"></el-image>
-                                                    <div class="name">{{interfaceName}}</div>
+                                                    <el-image style="width: 35px; height: 35px;display: inline-block;"
+                                                        :src="url" @click="jumpThird"></el-image>
+                                                    <span class="name">使用{{interfaceName}}账号登录</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -78,7 +75,7 @@
                 loginForm: {
                     email: undefined,
                     password: undefined,
-                    bind: { platform: '', userId:'', userName: '' }
+                    bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
@@ -145,6 +142,9 @@
             },
             jumpThird() {
                 getInterface(this.interfaceName).then(res => {
+                    window.opener = null;
+                    window.open("about:blank", "_top").close()
+
                 })
             },
         }
@@ -262,8 +262,16 @@
     }
 
     .name {
-        font-weight: 800;
+        height: 40px;
+        line-height: 40px;
         position: relative;
-        top: -20px;
+        top: -10px;
+        margin-left: 5px;
+        font-size: 22px;
+        font-weight: 300;
+    }
+
+    .PCLlogin {
+        margin-top: 20px;
     }
 </style>

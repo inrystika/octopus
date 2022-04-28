@@ -83,7 +83,7 @@
                             let percentage
                             if (parseInt(val.allocated[key1]) === 0) {
                                 0
-                            } else if ((/^\d+$/.test(val.allocated[key1])) && (/^\d+$/.test(val.capacity[key1]))) {
+                            } else if ((/^\d+$/.test(val.allocated[key1])) && (/^\d+$/.test(val.capacity[key1]))) {                            
                                 percentage = val.allocated[key1] / val.capacity[key1] * 100
                                 percentage = parseFloat(percentage.toFixed(2))
                             } else {
