@@ -42,7 +42,7 @@ type User struct {
 	Status      int32        `gorm:"type:int;not null;default:0;comment:'性别：1.冻结,2.正常'"`
 	Workspaces  []*Workspace `gorm:"many2many:workspace_user;"`
 	Bind        Binds        `gorm:"type:json;comment:'第三方账号绑定信息'"`
-	FtpUserName string       `gorm:"type:varchar(100);not null;default:'';uniqueIndex:ftpUserName;comment:'ftp用户名'"`
+	FtpUserName string       `gorm:"type:varchar(100);uniqueIndex:ftpUserName;comment:'ftp用户名'"`
 }
 
 func (User) TableName() string {
