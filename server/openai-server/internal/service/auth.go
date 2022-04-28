@@ -60,11 +60,13 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 		}
 		reqBind := &innterapi.Bind{
 			Platform: req.Bind.Platform,
-			UserId:   string(userId),
+			UserId:   "",
 			UserName: req.Bind.UserName,
 		}
+		//判断该云脑账号是否已绑定第三方平台的其他账号
 		rep, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
-			Bind: reqBind,
+			Email: req.Username,
+			Bind:  reqBind,
 		})
 		if err != nil {
 			return nil, err
@@ -72,6 +74,18 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 		if rep.User != nil {
 			return nil, errors.Errorf(nil, errors.ErrorUserAccountBinded)
 		}
+		//判断第三方平台账号是否已绑定其他云脑账号
+		reqBind.UserId = string(userId)
+		reps, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
+			Bind: reqBind,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if reps.User != nil {
+			return nil, errors.Errorf(nil, errors.ErrorUserAccountBinded)
+		}
+
 		bindInfo := make([]*innterapi.Bind, 0)
 		bindInfo = append(bindInfo, reqBind)
 		if reply.User.Bind != nil {
@@ -142,6 +156,14 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 		FullName: req.FullName,
 		Gender:   innterapi.GenderType(req.Gender),
 		Bind:     reqBind,
+	})
+	if err != nil {
+		return nil, err
+	}
+	//初始化用户机时数据
+	_, err = s.data.BillingClient.CreateBillingOwner(ctx, &innterapi.CreateBillingOwnerRequest{
+		OwnerId:   newUser.User.Id,
+		OwnerType: innterapi.BillingOwnerType_BOT_USER,
 	})
 	if err != nil {
 		return nil, err
