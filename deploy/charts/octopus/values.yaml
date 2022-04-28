@@ -150,7 +150,7 @@ baseserver:
       version: 2.0.4
     sftpgo:
       username: admin
-      password: 123456789
+      password: abcde
   service:
     billingPeriodSec: 1800
     develop:
@@ -475,13 +475,16 @@ seldon-core-operator:
           image: "192.168.202.110:5000/octopus/pytorchserver"
 
 sftpgo:
+  image:
+    repository: swr.cn-south-1.myhuaweicloud.com/openioctopus/sftpgo
+    tag: v2.2.2
   service:
     type: NodePort
     ports:
       sftp:
         nodePort: "30022"
       http:
-        port: 80
+        port: "80"
         nodePort: "30080"
   volumes:
     - name: "data"
@@ -498,7 +501,7 @@ sftpgo:
     - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
       value: "admin"
     - name: "SFTPGO_DEFAULT_ADMIN_PASSWORD"
-      value: "123456"
+      value: "abcde"
   config:
     data_provider:
       create_default_admin: true
