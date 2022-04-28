@@ -148,6 +148,9 @@ baseserver:
     pytorchServer:
       imageAddr: 192.168.202.110:5000/octopus/pytorchserver
       version: 2.0.4
+    sftpgo:
+      username: admin
+      password: 123456789
   service:
     billingPeriodSec: 1800
     develop:
@@ -477,6 +480,9 @@ sftpgo:
     ports:
       sftp:
         nodePort: "30022"
+      http:
+        port: 80
+        nodePort: "30080"
   volumes:
     - name: "data"
       persistentVolumeClaim:
