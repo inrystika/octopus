@@ -10,6 +10,7 @@ import (
 	"server/common/constant/userconfig"
 	"server/common/errors"
 	comHttp "server/common/http"
+	"server/common/log"
 	"server/common/middleware/jwt"
 	"server/common/middleware/logging"
 	"server/common/middleware/session"
@@ -89,8 +90,17 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/algorithmmanage", api.NewAlgorithmHandler(service.AlgorithmService, options...))
 	srv.HandlePrefix("/v1/developmanage", api.NewDevelopHandler(service.DevelopService, options...))
 	srv.HandleFunc("/v1/trainmanage/trainjob/{id}/task/{taskId}/replica/{replicaIdx}/log", func(w nethttp.ResponseWriter, r *nethttp.Request) {
-		url, _ := url.Parse(fmt.Sprintf("%s/log/user/trainjob/%s/%s/%s/index.log", r.Host, mux.Vars(r)["id"], mux.Vars(r)["taskId"], mux.Vars(r)["replicaIdx"]))
-		proxy := httputil.NewSingleHostReverseProxy(url)
+		proto := "http"
+		if strings.Contains(r.Proto, "HTTPS") {
+			proto = "https"
+		}
+		url, _ := url.Parse(fmt.Sprintf("%s://%s/log/user/trainjob/%s/%s/%s/index.log", proto, r.Host, mux.Vars(r)["id"], mux.Vars(r)["taskId"], mux.Vars(r)["replicaIdx"]))
+		log.Info(context.TODO(), url)
+		proxy := httputil.ReverseProxy{
+			Director: func(request *nethttp.Request) {
+				request.URL = url
+			},
+		}
 
 		proxy.ServeHTTP(w, r)
 	})
