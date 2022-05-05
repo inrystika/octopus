@@ -87,6 +87,15 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 	}, nil
 }
 
+func (s *UserService) CheckOrInitUser(ctx context.Context, req *api.CheckOrInitUserRequest) (*api.CheckOrInitUserReply, error) {
+	// to check or init user home storage bucket
+	err := s.initUser(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &api.CheckOrInitUserReply{}, nil
+}
+
 func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*api.FindUserReply, error) {
 	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{
 		Id:    req.Id,
@@ -119,26 +128,35 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 	return reply, nil
 }
 
-func (s *UserService) initUser(ctx context.Context, user *model.User) error {
+func (s *UserService) initUser(ctx context.Context, userId string) error {
 	// create user namespace
-	_, err := s.data.Cluster.CreateNamespace(ctx, user.Id)
+	_, err := s.data.Cluster.GetNamespace(ctx, userId)
 	if err != nil {
-		return err
+		_, err = s.data.Cluster.CreateNamespace(ctx, userId)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create user storage pv
-	pv := common.BuildStoragePersistentVolume(user.Id, s.defaultPVS.Capacity)
+	pv := common.BuildStoragePersistentVolume(userId, s.defaultPVS.Capacity)
 	pv.Spec.PersistentVolumeSource = s.defaultPVS.PersistentVolumeSource
-	_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+	_, err = s.data.Cluster.GetPersistentVolume(ctx, pv.Name)
 	if err != nil {
-		return err
+		_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create user storage pvc
-	pvc := common.BuildStoragePersistentVolumeChaim(user.Id, user.Id, s.defaultPVS.Capacity)
-	_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+	pvc := common.BuildStoragePersistentVolumeChaim(userId, userId, s.defaultPVS.Capacity)
+	_, err = s.data.Cluster.GetPersistentVolumeClaim(ctx, pvc.Namespace, pvc.Name)
 	if err != nil {
-		return err
+		_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -176,7 +194,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 		return nil, err
 	}
 
-	if err = s.initUser(ctx, u); err != nil {
+	if err = s.initUser(ctx, u.Id); err != nil {
 		s.log.Error(ctx, err)
 		return nil, err
 	}
