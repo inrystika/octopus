@@ -98,8 +98,9 @@ message GetUserConfigReply {
 }
 
 message UpdateUserFtpAccountRequest {
-  string ftpUserName = 1 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
-  string ftpPassword = 2;
+  string userId = 1;
+  string ftpUserName = 2 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
+  string ftpPassword = 3;
 }
 
 message UpdateUserFtpAccountReply {

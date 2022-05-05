@@ -157,3 +157,19 @@ func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigR
 	}
 	return &api.GetUserConfigReply{Config: reply.Config}, nil
 }
+
+func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateUserFtpAccountRequest) (*api.UpdateUserFtpAccountReply, error) {
+	userId := commctx.UserIdFromContext(ctx)
+
+	_, err := s.data.UserClient.UpdateUserFtpAccount(ctx, &innterapi.UpdateUserFtpAccountRequest{
+		FtpPassword: req.FtpPassword,
+		FtpUserName: req.FtpUserName,
+		UserId:      userId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserFtpAccountReply{}, nil
+}
