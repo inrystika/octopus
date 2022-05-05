@@ -6,16 +6,13 @@ import (
 	nethttp "net/http"
 	"net/http/httputil"
 	"net/url"
-	innterapi "server/base-server/api/v1"
 	"server/common/constant/userconfig"
 	"server/common/errors"
 	comHttp "server/common/http"
 	"server/common/log"
 	"server/common/middleware/jwt"
 	"server/common/middleware/logging"
-	"server/common/middleware/session"
 	"server/common/middleware/validate"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/service"
@@ -49,23 +46,6 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		options.NoAuthUris = noAuthUris
 	})
 
-	var sessionOpts = []session.Option{}
-	sessionOpts = append(sessionOpts, func(options *session.Options) {
-		options.Store = service.Data.SessionClient
-		options.NoAuthUris = noAuthUris
-		options.CheckSession = func(ctx context.Context, s *ss.Session) error {
-			if s.Status != int32(innterapi.UserStatus_ACTIVITY) {
-				return errors.Errorf(nil, errors.ErrorAuthenticationForbidden)
-			}
-
-			//api开放给外部使用，去掉单端登录
-			//if comCtx.CreatedAtFromContext(ctx) != s.CreatedAt {
-			//	return errors.Errorf(nil, errors.ErrorTokenRenew)
-			//}
-			return nil
-		}
-	})
-
 	handleOptions := comHttp.NewHandleOptions()
 	options := []http.HandleOption{
 		http.Middleware(
@@ -74,7 +54,6 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				tracing.Server(),
 				logging.Server(),
 				jwt.Server(jwtOpts...),
-				session.Server(sessionOpts...),
 				checkJointCloudPerm(service),
 				validate.Server(),
 			),
