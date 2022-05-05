@@ -7,36 +7,24 @@
             <div class="content">
                 <div class="login-container">
                     <div class="grid-content">
-                        <el-form
-                            @submit.native.prevent
-                            ref="loginForm"
-                            :model="loginForm"
-                            :rules="rules"
-                            status-icon
-                            label-position="left"
-                            label-width="0px"
-                            class="demo-ruleForm login-page"
-                          >
-                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span class="octopus">启智章鱼</span></div>
-                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH }}</span></div>
+                        <el-form @submit.native.prevent ref="loginForm" :model="loginForm" :rules="rules" status-icon
+                            label-position="left" label-width="0px" class="demo-ruleForm login-page">
+                            <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span
+                                    class="octopus">启智章鱼</span></div>
+                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH
+                                    }}</span></div>
                             <el-form-item prop="email">
-                                <el-input
-                                    v-model="loginForm.email"
-                                    type="text"
-                                    auto-complete="off"
-                                    placeholder="请输入用户账号"
-                                />
+                                <el-input v-model="loginForm.email" type="text" auto-complete="off"
+                                    placeholder="请输入用户账号" />
                             </el-form-item>
                             <el-form-item prop="password">
-                                <el-input
-                                    v-model="loginForm.password"
-                                    type="password"
-                                    auto-complete="off"
-                                    placeholder="密码"
-                                />
+                                <el-input v-model="loginForm.password" type="password" auto-complete="off"
+                                    placeholder="密码" />
                             </el-form-item>
                             <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" native-type='submit' :style="{'background':colorChange,'border-color':colorChange}" :loading="logining" @click="handleLogin">
+                                <el-button type="primary" style="width:100%;" native-type='submit'
+                                    :style="{'background':colorChange,'border-color':colorChange}" :loading="logining"
+                                    @click="handleLogin">
                                     登录
                                 </el-button>
                             </el-form-item>
@@ -78,14 +66,14 @@
                 colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : ''
             }
         },
-        created(){
-          if(this.GLOBAL.THEME_TITLE_ZH){
-            this.itemShow = false
-          }
+        created() {
+            if (this.GLOBAL.THEME_TITLE_ZH) {
+                this.itemShow = false
+            }
         },
         watch: {
             $route: {
-                handler: function(route) {
+                handler: function (route) {
                     this.redirect = route.query && route.query.redirect
                 },
                 immediate: true
@@ -104,6 +92,7 @@
                                     message: '登录成功',
                                     type: 'success'
                                 });
+                                localStorage.clear();
                             } else {
                                 this.$message({
                                     message: '账号密码错误',
@@ -173,7 +162,7 @@
         color: #502374;
     }
 
-    .pkuTitle{
+    .pkuTitle {
         font-size: 24px;
         margin-bottom: 66px;
     }
@@ -212,8 +201,9 @@
         position: relative;
         top: 30%;
     }
+
     .pku-footer {
-      font-weight: 600;
-      margin-top: 40px;
+        font-weight: 600;
+        margin-top: 40px;
     }
 </style>

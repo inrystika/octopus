@@ -17,7 +17,6 @@
       }
     },
     created() {
-      // localStorage.clear();
       this.themeChange()
     },
     methods: {
