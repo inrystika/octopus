@@ -19,6 +19,9 @@ service.interceptors.request.use(
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['Authorization'] = 'Bearer ' + getToken()
+      if (localStorage.getItem('space')) {
+        config.headers['Octopus-Space-Id'] = JSON.parse(localStorage.getItem('space')).workspaceId
+      }
     }
     // eslint-disable-next-line no-undef
     return config
@@ -47,7 +50,7 @@ service.interceptors.response.use(
     const res = response.data
     res.data = response.data.payload
     if (!response.data.success && (response.data.error.subcode === 16004 || response.data.error.subcode === 16010 || response.data.error.subcode === 16007)) {
-      setTimeout(function() {
+      setTimeout(function () {
         removeToken()
         router.replace({ path: '/' })
       }, 1000)
