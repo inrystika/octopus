@@ -142,9 +142,6 @@
             },
             jumpThird() {
                 getInterface(this.interfaceName).then(res => {
-                    // window.opener = null;
-                    // window.open("about:blank", "_top").close()
-
                 })
             },
         }
