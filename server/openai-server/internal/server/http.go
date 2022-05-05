@@ -6,7 +6,9 @@ import (
 	nethttp "net/http"
 	"net/http/httputil"
 	"net/url"
+	"server/common/constant"
 	"server/common/constant/userconfig"
+	commctx "server/common/context"
 	"server/common/errors"
 	comHttp "server/common/http"
 	"server/common/log"
@@ -54,6 +56,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				tracing.Server(),
 				logging.Server(),
 				jwt.Server(jwtOpts...),
+				handleHeader(),
 				checkJointCloudPerm(service),
 				validate.Server(),
 			),
@@ -116,6 +119,27 @@ func checkJointCloudPerm(service *service.Service) middleware.Middleware {
 				}
 			}
 
+			return handler(ctx, req)
+		}
+	}
+}
+
+func handleHeader() middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			var request *nethttp.Request
+			if info, ok := http.FromServerContext(ctx); ok {
+				request = info.Request
+			} else {
+				return handler(ctx, req)
+			}
+
+			spaceId := request.Header.Get("Octopus-Space-Id")
+			if spaceId == "" {
+				spaceId = constant.SYSTEM_WORKSPACE_DEFAULT
+			}
+
+			ctx = commctx.SpaceIdToContext(ctx, spaceId)
 			return handler(ctx, req)
 		}
 	}
