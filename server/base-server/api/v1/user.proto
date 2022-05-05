@@ -14,6 +14,7 @@ service UserService {
   rpc AddUser (AddUserRequest) returns (AddUserReply);
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
   rpc ListUserInCond (ListUserInCondRequest) returns (ListUserInCondReply);
+  rpc CheckOrInitUser (CheckOrInitUserRequest) returns (CheckOrInitUserReply);
 
   rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply);
   rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
@@ -56,6 +57,14 @@ message AddUserRequest {
 
 message AddUserReply {
   UserItem user = 1;
+}
+
+message CheckOrInitUserRequest {
+  string id = 1;
+}
+
+message CheckOrInitUserReply {
+
 }
 
 message FindUserRequest {
