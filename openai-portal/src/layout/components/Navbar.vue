@@ -7,9 +7,11 @@
         <el-dropdown>
           <div v-show="!this.GLOBAL.THEME_MANUAL_INVISIBLE">
             <i class="el-icon-document" :style="{'color':fontColor?fontColor:'#666699'}" />
-            <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual" :style="{'color':fontColor}">使用手册</a>
+            <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual"
+              :style="{'color':fontColor}">使用手册</a>
             <i class="el-icon-service" :style="{'color':fontColor?fontColor:'#666699'}" />
-            <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual" :style="{'color':fontColor}">问题意见</a>
+            <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual"
+              :style="{'color':fontColor}">问题意见</a>
           </div>
           <el-dropdown-menu slot="dropdown" />
         </el-dropdown>
@@ -56,7 +58,7 @@
         options: [],
         circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
         size: 'small',
-        current: '默认群组',
+        current: '',
         userMsg: undefined,
         fontColor: this.GLOBAL.THEME_COLOR ? '#FFFFFF' : ''
         // mainColor: curColor
@@ -69,7 +71,6 @@
         'name',
         'workspaces',
         'id',
-        'workspaceId'
       ])
     },
     created() {
@@ -100,6 +101,15 @@
             }
           )
         })
+        if (JSON.parse(localStorage.getItem('space'))) {
+          this.current = JSON.parse(localStorage.getItem('space')).workspaceName
+        }
+        else {
+          this.current = '默认群组'
+          let data = { workspaceName: '默认群组', workspaceId: 'default-workspace' }
+          data = JSON.stringify(data)
+          localStorage.setItem('space', data)
+        }
       },
       toggleSideBar() {
         this.$store.dispatch('app/toggleSideBar')
@@ -107,25 +117,16 @@
       async logout() {
         await this.$store.dispatch('user/logout')
         this.$router.push(`/?redirect=${this.$route.fullPath}`)
-        // location.reload()
+        localStorage.clear();
       },
       handleCommand(command) {
         // 切换群组页面刷新但是保留页面当前群组状态
-        const data = { userId: this.id, workspaceId: command.id }
+        let data = { workspaceName: command.name, workspaceId: command.id }
+        data = JSON.stringify(data)
         this.current = command.name
-        changeSpace(data).then(response => {
-          this.$message({
-            message: '切换成功',
-            type: 'success'
-          });
-          location.reload()
-        })
+        localStorage.setItem('space', data)
+        location.reload();
       },
-      // changeColor(newColor) {
-      //   changeThemeColor(newColor).then(() => {
-      //     this.$message.success('主题色切换成功')
-      //   })
-      // }
     },
   }
 </script>
@@ -182,6 +183,7 @@
       }
     }
   }
+
   .pkuNavbar {
     height: 60px;
     overflow: hidden;

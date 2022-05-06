@@ -5,8 +5,6 @@ import (
 	innerapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
-	"server/common/session"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -136,18 +134,15 @@ func (s *JointCloudService) ListJointCloudInterpreterVersion(ctx context.Context
 
 //创建训练任务
 func (s *JointCloudService) JointCloudTrainJob(ctx context.Context, req *api.JointCloudTrainJobRequest) (*api.JointCloudTrainJobReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.JointCloudTrainJobRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.JointCloudClient.TrainJob(ctx, innerReq)
 	if err != nil {
@@ -164,10 +159,7 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq.UserId = userId
 	innerReq.SpaceId = spaceId
@@ -188,11 +180,6 @@ func (s *JointCloudService) ListJointCloudJob(ctx context.Context, req *api.List
 
 // 停止训练任务
 func (s *JointCloudService) StopJob(ctx context.Context, req *api.JointCloudStopJobRequest) (*api.JointCloudStopJobReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	//trainJob, err := s.data.JointCloudClient.GetTrainJobInfo(ctx, &innerapi.TrainJobInfoRequest{Id: req.Id})
 	//if err != nil {
 	//	return nil, err
@@ -209,20 +196,4 @@ func (s *JointCloudService) StopJob(ctx context.Context, req *api.JointCloudStop
 		return nil, err
 	}
 	return &api.JointCloudStopJobReply{StoppedAt: reply.StoppedAt}, nil
-}
-
-func (s *JointCloudService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if userId == "" {
-		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-		return "", "", err
-	}
-
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-		return "", "", err
-	}
-
-	return userId, session.GetWorkspace(), nil
 }

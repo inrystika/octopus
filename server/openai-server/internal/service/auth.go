@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	innterapi "server/base-server/api/v1"
-	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/jwt"
 	"server/common/log"
-	ss "server/common/session"
 	"server/common/utils"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
@@ -106,20 +104,6 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
-	if err != nil {
-		return nil, err
-	}
-	// create user online session
-	if err = s.data.SessionClient.Create(ctx, &ss.Session{
-		Id:         reply.User.Id,
-		UserId:     reply.User.Id,
-		Status:     int32(reply.User.Status),
-		Attributes: make(map[string]string),
-		CreatedAt:  tokenClaim.CreatedAt,
-	}); err != nil {
-		return nil, err
-	}
 
 	return &api.GetTokenReply{
 		Token:      token,
@@ -128,10 +112,6 @@ func (s *AuthService) GetToken(ctx context.Context, req *api.GetTokenRequest) (*
 }
 
 func (s *AuthService) DeleteToken(ctx context.Context, req *api.DeleteTokenRequest) (*api.DeleteTokenReply, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if err := s.data.SessionClient.Delete(ctx, userId); err != nil {
-		return nil, err
-	}
 	return &api.DeleteTokenReply{}, nil
 }
 
@@ -173,24 +153,10 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 	if err != nil {
 		return nil, err
 	}
-	tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
-	if err != nil {
-		return nil, err
-	}
-	// create user online session
-	if err = s.data.SessionClient.Create(ctx, &ss.Session{
-		Id:         newUser.User.Id,
-		UserId:     newUser.User.Id,
-		Status:     int32(newUser.User.Status),
-		Attributes: make(map[string]string),
-		CreatedAt:  tokenClaim.CreatedAt,
-	}); err != nil {
-		return nil, err
-	}
 
 	return &api.RegisterReply{
 		Token:      token,
-		Expiration: 0,
+		Expiration: s.conf.Service.TokenExpirationSec,
 		UserId:     newUser.User.Id,
 	}, nil
 }
@@ -216,24 +182,10 @@ func (s *AuthService) GetTokenByBind(ctx context.Context, req *api.GetTokenReque
 		if err != nil {
 			return nil, err
 		}
-		tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
-		if err != nil {
-			return nil, err
-		}
-		// create user online session
-		if err = s.data.SessionClient.Create(ctx, &ss.Session{
-			Id:         reply.User.Id,
-			UserId:     reply.User.Id,
-			Status:     int32(reply.User.Status),
-			Attributes: make(map[string]string),
-			CreatedAt:  tokenClaim.CreatedAt,
-		}); err != nil {
-			return nil, err
-		}
 
 		return &api.GetTokenReply{
 			Token:      token,
-			Expiration: 0,
+			Expiration: s.conf.Service.TokenExpirationSec,
 		}, nil
 	} else {
 		return &api.GetTokenReply{

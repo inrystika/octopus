@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	"server/common/constant"
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -32,14 +32,11 @@ func NewResourceSpecService(conf *conf.Bootstrap, logger log.Logger, data *data.
 
 func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *empty.Empty) (*api.ListResourceSpecReply, error) {
 
-	_, workSpaceId, isDefaultSpace, err := rsvc.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
-	}
+	_, workSpaceId, isDefaultSpace := rsvc.getUserIdAndSpaceId(ctx)
 
 	rq := &innerapi.GetResourcePoolReply{}
 	if isDefaultSpace {
-		rq, err = rsvc.data.ResourcePoolClient.GetDefaultResourcePool(ctx, &empty.Empty{})
+		_, err := rsvc.data.ResourcePoolClient.GetDefaultResourcePool(ctx, &empty.Empty{})
 
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
@@ -101,20 +98,8 @@ func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *empt
 	}, nil
 }
 
-func (rsvc *ResourceSpecService) getUserIdAndSpaceId(ctx context.Context) (string, string, bool, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if userId == "" {
-		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-		rsvc.log.Errorw(ctx, err)
-		return "", "", false, err
-	}
+func (rsvc *ResourceSpecService) getUserIdAndSpaceId(ctx context.Context) (string, string, bool) {
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-		rsvc.log.Errorw(ctx, err)
-		return "", "", false, err
-	}
-
-	return userId, session.GetWorkspace(), session.IsDefaultWorkspace(), nil
+	return userId, spaceId, spaceId == constant.SYSTEM_WORKSPACE_DEFAULT
 }

@@ -10,7 +10,6 @@ const getDefaultState = () => {
     avatar: '',
     id: '',
     workspaces: [],
-    workspaceId: '',
     progressId: undefined
   }
 }
@@ -35,9 +34,6 @@ const mutations = {
   },
   SET_SPACE: (state, workspaces) => {
     state.workspaces = workspaces
-  },
-  SET_WORKSPACEID: (state, workspaceId) => {
-    state.workspaceId = workspaceId
   },
   SET_PROGRESSID: (state, progressId) => {
     state.progressId = progressId
@@ -76,10 +72,8 @@ const actions = {
           return reject('验证失败，请重新登录。')
         }
         const { fullName, id } = data.user
-        const workspaceId = data.workspaceId
         commit('SET_NAME', fullName)
         commit('SET_ID', id)
-        commit('SET_WORKSPACEID', workspaceId)
         resolve()
       }).catch(error => {
         reject(error)

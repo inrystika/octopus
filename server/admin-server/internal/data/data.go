@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"server/admin-server/internal/conf"
-	"server/admin-server/internal/data/session"
 	api "server/base-server/api/v1"
 	"server/common/errors"
 	"server/common/log"
@@ -31,7 +30,6 @@ type Data struct {
 	ResourceSpecClient     api.ResourceSpecServiceClient
 	ResourcePoolClient     api.ResourcePoolServiceClient
 	DatasetClient          api.DatasetServiceClient
-	SessionClient          session.SessionClient
 	BillingClient          api.BillingServiceClient
 	LableClient            api.LableServiceClient
 	PlatformClient         api.PlatformServiceClient
@@ -78,12 +76,11 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		ResourceSpecClient:     api.NewResourceSpecServiceClient(conn),
 		ResourcePoolClient:     api.NewResourcePoolServiceClient(conn),
 		DatasetClient:          api.NewDatasetServiceClient(conn),
-		SessionClient:          session.NewSessionClient(confData, logger),
 		BillingClient:          api.NewBillingServiceClient(conn),
 		LableClient:            api.NewLableServiceClient(conn),
 		PlatformClient:         api.NewPlatformServiceClient(conn),
 		JointCloudClient:       api.NewJointCloudServiceClient(conn),
 		PlatformTrainJobClient: api.NewPlatformTrainJobServiceClient(conn),
-		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
+		ModelDeployClient:      api.NewModelDeployServiceClient(conn),
 	}, nil
 }
