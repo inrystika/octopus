@@ -48,13 +48,17 @@ service.interceptors.response.use(
 
   response => {
     const res = response.data
-    res.data = response.data.payload
-    if (!response.data.success && (response.data.error.subcode === 16004 || response.data.error.subcode === 16010 || response.data.error.subcode === 16007)) {
-      setTimeout(function () {
+    if (response.data.payload) {
+      res.data = response.data.payload
+    }
+    if (response.status === 200 && response.data === '' && response.headers.url) {
+      window.open(response.headers.url, '_blank')
+    } else if (!response.data.success && (response.data.error.subcode === 16004 || response.data.error.subcode === 16010 || response.data.error.subcode === 16007)) {
+
+      setTimeout(function() {
         removeToken()
         router.replace({ path: '/' })
       }, 1000)
-      return res
     } else {
       return res
     }
