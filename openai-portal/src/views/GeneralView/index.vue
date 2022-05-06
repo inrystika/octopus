@@ -63,8 +63,10 @@
           <el-col :span="8">
             <div class="topHour">
               <!-- <el-button type="primary" size="small">机时充值</el-button> -->
-              <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getConsumption">消费记录</el-button>
-              <el-button v-show="billRecordVisible" :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
+              <el-button :style="{'background':mainColor,'border-color':mainColor}" class="topHourButton" type="primary"
+                size="small" @click="getConsumption">消费记录</el-button>
+              <el-button v-show="billRecordVisible" :style="{'background':mainColor,'border-color':mainColor}"
+                class="topHourButton" type="primary" size="small" @click="getRecharge">充值记录</el-button>
               <br>
               <div class="topHourInstrucTitle">
                 充值说明:
@@ -84,12 +86,14 @@
               模型开发
             </span>
             <div class="mainBlock">
-              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('notebook')">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                @click="create('notebook')">
                 <span :style="{'color':mainColor}" class="mainButtonText">
                   创建NoteBook
                 </span>
               </el-button>
-              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('algorithm')">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                @click="create('algorithm')">
                 <span :style="{'color':mainColor}" class="mainButtonText">
                   创建算法
                 </span>
@@ -101,12 +105,14 @@
               模型训练
             </span>
             <div class="mainBlock">
-              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('trainingTask')">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                @click="create('trainingTask')">
                 <span :style="{'color':mainColor}" class="mainButtonText">
                   创建训练任务
                 </span>
               </el-button>
-              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('trainingTemplate')">
+              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                @click="create('trainingTemplate')">
                 <span :style="{'color':mainColor}" class="mainButtonText">
                   创建训练模板
                 </span>
@@ -191,7 +197,8 @@
                     个
                   </div>
                 </div>
-                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('algorithm')">
+                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                  @click="create('algorithm')">
                   <span :style="{'color':mainColor}" class="mainButtonText">
                     创建算法
                   </span>
@@ -232,7 +239,8 @@
                     个
                   </div>
                 </div>
-                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('dataset')">
+                <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+                  @click="create('dataset')">
                   <span :style="{'color':mainColor}" class="mainButtonText">
                     创建数据集
                   </span>
@@ -271,7 +279,8 @@
                 个
               </div>
             </div>
-            <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small" @click="create('image')">
+            <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
+              @click="create('image')">
               <span :style="{'color':mainColor}" class="mainButtonText">
                 创建镜像
               </span>
@@ -301,7 +310,7 @@
     },
     data() {
       return {
-        customColor: this.GLOBAL.THEME_COLOR?[{ color: this.GLOBAL.THEME_COLOR, percentage: 100 }]:[{ color: '#666699', percentage: 100 }],
+        customColor: this.GLOBAL.THEME_COLOR ? [{ color: this.GLOBAL.THEME_COLOR, percentage: 100 }] : [{ color: '#666699', percentage: 100 }],
         count: {},
         show: false,
         recordRuleVisible: false,
@@ -385,9 +394,11 @@
         this.loading = false
       },
       getHour() {
-        this.groupName = this.workspaceId
-        if (this.workspaceId === "default-workspace") {
+        let workspaceId = JSON.parse(localStorage.getItem('space')).workspaceId
+        this.groupName = workspaceId
+        if (workspaceId === "default-workspace") {
           this.billRecordVisible = true  //充值记录按钮只在默认群组中展示
+          console.log(workspaceId)
           getUserHour().then(response => {
             if (response.success) {
               this.billAmount = response.data.billingUser.amount
