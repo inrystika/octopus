@@ -6,6 +6,7 @@ RUN mkdir -p /app/models
 VOLUME  /app/models
 COPY . /app
 WORKDIR /app
+RUN pip config set global.index-url https://pypi.douban.com/simple/
 RUN pip install -r requirements.txt
 EXPOSE 5000
 

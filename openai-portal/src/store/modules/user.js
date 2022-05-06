@@ -5,7 +5,7 @@ import { Message } from 'element-ui'
 
 const getDefaultState = () => {
   return {
-    token: getToken(),
+    token: '',
     name: '',
     avatar: '',
     id: '',
@@ -66,7 +66,7 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo(getToken()).then(response => {
         const { data } = response
         if (!data) {
           return reject('验证失败，请重新登录。')

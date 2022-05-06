@@ -21,12 +21,27 @@
                                 <el-input v-model="loginForm.password" type="password" auto-complete="off"
                                     placeholder="密码" />
                             </el-form-item>
-                            <el-form-item style="width:100%;">
+                            <el-form-item style="width:100%;margin-bottom: 0px;">
                                 <el-button type="primary" style="width:100%;" native-type='submit'
                                     :style="{'background':colorChange,'border-color':colorChange}" :loading="logining"
                                     @click="handleLogin">
                                     登录
                                 </el-button>
+                            </el-form-item>
+                            <el-form-item v-if="show" type="flex">
+                                <el-row type="flex" align="middle">
+                                    <el-col :span="24">
+                                        <div class="PCLlogin">
+                                            <div class="demo-image">
+                                                <div class="block">
+                                                    <el-image style="width: 35px; height: 35px;display: inline-block;"
+                                                        :src="url" @click="jumpThird"></el-image>
+                                                    <span class="name">使用{{interfaceName}}账号登录</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </el-col>
+                                </el-row>
                             </el-form-item>
                         </el-form>
                         <div v-if="this.GLOBAL.THEME_ORG_NAME" class="pku-footer">&copy;北大人工智能研究院</div>
@@ -35,10 +50,15 @@
             </div>
         </el-main>
     </el-container>
+    <!-- 注册对话框 -->
 
 </template>
-
 <script>
+    import { getInterface } from '@/api/themeChange.js'
+    // import { GetUrlParam } from '@/utils/index.js'
+    import { mapGetters } from 'vuex'
+    import store from '@/store'
+    import { setToken } from '@/utils/auth'
     export default {
         data() {
             // 邮箱类型验证
@@ -50,10 +70,12 @@
                 callback(new Error("请输入合法的邮箱"));
             };
             return {
+                url: require('../../assets/icon-pcl.png'),
                 logining: false,
                 loginForm: {
                     email: undefined,
-                    password: undefined
+                    password: undefined,
+                    bind: { platform: '', userId: '', userName: '' }
                 },
                 rules: {
                     email: [{ required: true, message: "请输入用户账号", trigger: "blur" },
@@ -63,13 +85,24 @@
                 },
                 checked: false,
                 itemShow: true,
-                colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : ''
+                colorChange: this.GLOBAL.THEME_COLOR ? this.GLOBAL.THEME_COLOR : '',
+                interfaceName: ''
             }
         },
         created() {
+            this.interfaceName = sessionStorage.getItem("platform")
+            if (this.interfaceName == 'pcl') {
+                this.show = true
+            }
+            else { this.show = false }
             if (this.GLOBAL.THEME_TITLE_ZH) {
                 this.itemShow = false
             }
+
+        },
+        mounted() {
+        },
+        computed: {
         },
         watch: {
             $route: {
@@ -92,7 +125,6 @@
                                     message: '登录成功',
                                     type: 'success'
                                 });
-                                localStorage.clear();
                             } else {
                                 this.$message({
                                     message: '账号密码错误',
@@ -107,7 +139,11 @@
                         return false
                     }
                 })
-            }
+            },
+            jumpThird() {
+                getInterface(this.interfaceName).then(res => {
+                })
+            },
         }
     };
 </script>
@@ -182,7 +218,7 @@
     .login-page {
         margin-top: 100px;
         width: 400px;
-        height: 320px;
+        min-height: 330px;
         padding: 35px 35px 15px;
         background: #fff;
         border: 1px solid #996699;
@@ -205,5 +241,34 @@
     .pku-footer {
         font-weight: 600;
         margin-top: 40px;
+    }
+
+    .interface {
+        margin-top: 5px;
+        font-weight: 800;
+    }
+
+    .demo-image {
+        margin-top: 10px;
+    }
+
+    .el-image {
+        border-radius: 50px;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .name {
+        height: 40px;
+        line-height: 40px;
+        position: relative;
+        top: -10px;
+        margin-left: 5px;
+        font-size: 22px;
+        font-weight: 300;
+    }
+
+    .PCLlogin {
+        margin-top: 20px;
     }
 </style>

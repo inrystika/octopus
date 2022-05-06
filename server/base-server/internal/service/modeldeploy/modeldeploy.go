@@ -44,7 +44,6 @@ const (
 	ModelVersion             = "model_version"
 	TFSignatureName          = "signature_name"
 	TFModelName              = "model_name"
-	PytorchServerVersion     = "192.168.202.110:5000/train/pytorchserver:2.0.0"
 	STATE_PREPARING          = "Preparing"
 	STATE_AVAILABLE          = "Available"
 	STATE_CREATING           = "Creating"
@@ -320,6 +319,9 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec, 0)
 	if startJobInfo.modelFrame == PytorchFrame {
+		serverImageAddr := s.conf.Data.PytorchServer.ImageAddr
+		serverImageVersion := s.conf.Data.PytorchServer.Version
+		imageInfo := fmt.Sprintf("%s:%s", serverImageAddr, serverImageVersion)
 		seldonPodSpec := &seldonv1.SeldonPodSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -330,7 +332,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 							Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						},
-						Image: PytorchServerVersion,
+						Image: imageInfo,
 					},
 				},
 				Volumes: volumes,
@@ -426,7 +428,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
+	serviceUrl := s.conf.Data.Ambassador.BaseUrl + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }

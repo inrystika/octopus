@@ -8,6 +8,13 @@ server:
     addr: 127.0.0.1:8003
     timeout: 60s
     jwtSecrect: asdf
+  oauth:
+    pcl:
+      authServerURL: https://one.pcl.ac.cn/idp/oauth2
+      clientID: yn1
+      clientSecret: 74d4543ca3d74f42af841479c5c6d045
+      redirectURL: http://192.168.202.73/openaiserver/v1/oauth2/pcl/callback
+    registerURL: http://192.168.202.73/openai/#/register
 data:
   baseServerAddr: dns:///127.0.0.1:9001
   baseServerRequestTimeout: 30s
@@ -25,3 +32,4 @@ service:
     systemNameZh:
     organization:
     manualInvisible:
+    thirdPlatform: pcl

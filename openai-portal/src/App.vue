@@ -8,6 +8,7 @@
   import Vue from 'vue'
   import { themeChange } from "@/api/themeChange.js"
   import { changeThemeColor, curColor } from '@/utils/themeColorClient'
+  import store from '@/store'
   export default {
     name: 'App',
     data() {
@@ -25,6 +26,9 @@
           const reg = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/  // 传入颜色格式须为16进制
           if (response.success) {
             if (response.data) {
+              if (response.data.thirdPlatform) {
+                sessionStorage.setItem('platform', response.data.thirdPlatform)
+              }
               Vue.prototype.GLOBAL.THEME_TITLE_ZH = response.data.systemNameZh
               Vue.prototype.GLOBAL.THEME_TITLE_EN = response.data.systemNameEn
               Vue.prototype.GLOBAL.THEME_LOGO_ADDR = response.data.logoAddr
