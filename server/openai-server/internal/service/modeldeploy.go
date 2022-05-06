@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	"server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -30,18 +30,15 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 
 //创建模型服务
 func (s *ModelDeployService) DeployModel(ctx context.Context, req *api.DepRequest) (*api.DepReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.DepRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.ModelDeployClient.DeployModel(ctx, innerReq)
 	if err != nil {
@@ -57,16 +54,13 @@ func (s *ModelDeployService) DeployModel(ctx context.Context, req *api.DepReques
 
 // 停止模型服务
 func (s *ModelDeployService) StopDepModel(ctx context.Context, req *api.StopDepRequest) (*api.StopDepReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 	//查询任务是否存在及用户是否一致
 	depInfo, err := s.data.ModelDeployClient.GetModelDepInfo(ctx, &innerapi.DepInfoRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
-	if depInfo.DepInfo.UserId != session.UserId {
+	if depInfo.DepInfo.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 	innerReq := &innerapi.StopDepRequest{
@@ -82,17 +76,14 @@ func (s *ModelDeployService) StopDepModel(ctx context.Context, req *api.StopDepR
 
 //删除模型服务
 func (s *ModelDeployService) DeleteDepModel(ctx context.Context, req *api.DeleteDepRequest) (*api.DeleteDepReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.JobIds, session.UserId)
+	err := s.checkPermission(ctx, req.JobIds, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	innerReq := &innerapi.DeleteDepRequest{UserId: session.UserId, JobIds: req.JobIds}
+	innerReq := &innerapi.DeleteDepRequest{UserId: userId, JobIds: req.JobIds}
 	reply, err := s.data.ModelDeployClient.DeleteDepModel(ctx, innerReq)
 	if err != nil {
 		return nil, err
@@ -117,18 +108,15 @@ func (s *ModelDeployService) checkPermission(ctx context.Context, serviceIds []s
 
 // 模型服务调用
 func (s *ModelDeployService) ModelServiceInfer(ctx context.Context, req *api.ServiceRequest) (*api.ServiceReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.ServiceRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.ModelDeployClient.ModelServiceInfer(ctx, innerReq)
 	if err != nil {
@@ -159,10 +147,7 @@ func (s *ModelDeployService) GetModelDepInfo(ctx context.Context, req *api.DepIn
 
 // 模型服务列表
 func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListRequest) (*api.DepListReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.DepListRequest{}
 	err := copier.Copy(innerReq, req)
@@ -170,8 +155,8 @@ func (s *ModelDeployService) ListDepModel(ctx context.Context, req *api.DepListR
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.ModelDeployClient.ListDepModel(ctx, innerReq)
 	if err != nil {

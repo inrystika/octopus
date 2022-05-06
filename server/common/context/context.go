@@ -15,6 +15,7 @@ const (
 	CTX_DB_TX_KEY      CtxKey = "dbTx"      //数据库事务 存在于common.Transaction()
 	CTX_CREATED_AT_KEY CtxKey = "createdAt"
 	CTX_PLATFORM_ID    CtxKey = "platformId" //第三方平台Id
+	CTX_SPACEID_KEY    CtxKey = "spaceId"    //群组id
 )
 
 func RequestIdKey() CtxKey {
@@ -51,6 +52,26 @@ func UserIdFromContext(ctx context.Context) string {
 		return id
 	}
 	return ""
+}
+
+func SpaceIdKey() CtxKey {
+	return CTX_SPACEID_KEY
+}
+
+func SpaceIdToContext(ctx context.Context, val interface{}) context.Context {
+	return context.WithValue(ctx, SpaceIdKey(), val)
+}
+
+func SpaceIdFromContext(ctx context.Context) string {
+	id, ok := ctx.Value(SpaceIdKey()).(string)
+	if ok {
+		return id
+	}
+	return ""
+}
+
+func UserIdAndSpaceIdFromContext(ctx context.Context) (string, string) {
+	return UserIdFromContext(ctx), SpaceIdFromContext(ctx)
 }
 
 func PlatformIdKey() CtxKey {

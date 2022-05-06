@@ -330,7 +330,7 @@
       };
     },
     computed: {
-      ...mapGetters(["name", "workspaceId"])
+      ...mapGetters(["name"])
     },
     created() {
       this.getTrainingTask();

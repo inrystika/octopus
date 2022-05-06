@@ -7,7 +7,6 @@ import (
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -106,11 +105,7 @@ func (s *AlgorithmService) ListPreAlgorithm(ctx context.Context, req *api.ListPr
 
 // 查询我的算法列表
 func (s *AlgorithmService) ListMyAlgorithm(ctx context.Context, req *api.ListMyAlgorithmRequest) (*api.ListMyAlgorithmReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.ListMyAlgorithm(ctx, &innterapi.ListMyAlgorithmRequest{
 		SpaceId:          spaceId,
@@ -142,10 +137,7 @@ func (s *AlgorithmService) ListMyAlgorithm(ctx context.Context, req *api.ListMyA
 
 // 查询公共算法列表
 func (s *AlgorithmService) ListCommAlgorithm(ctx context.Context, req *api.ListCommAlgorithmRequest) (*api.ListCommAlgorithmReply, error) {
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.ListCommAlgorithm(ctx, &innterapi.ListCommAlgorithmRequest{
 		SpaceId:          spaceId,
@@ -176,11 +168,7 @@ func (s *AlgorithmService) ListCommAlgorithm(ctx context.Context, req *api.ListC
 
 // 查询算法版本列表
 func (s *AlgorithmService) ListAlgorithmVersion(ctx context.Context, req *api.ListAlgorithmVersionRequest) (*api.ListAlgorithmVersionReply, error) {
-
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.ListAlgorithmVersion(ctx, &innterapi.ListAlgorithmVersionRequest{
 		AlgorithmId: req.AlgorithmId,
@@ -227,10 +215,7 @@ func (s *AlgorithmService) ListAlgorithmVersion(ctx context.Context, req *api.Li
 
 // 新增我的算法版本
 func (s *AlgorithmService) AddMyAlgorithmVersion(ctx context.Context, req *api.AddMyAlgorithmVersionRequest) (*api.AddMyAlgorithmVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.AddMyAlgorithmVersion(ctx, &innterapi.AddMyAlgorithmVersionRequest{
 		SpaceId:           spaceId,
@@ -253,11 +238,7 @@ func (s *AlgorithmService) AddMyAlgorithmVersion(ctx context.Context, req *api.A
 
 // 查询公共算法版本列表
 func (s *AlgorithmService) ListCommAlgorithmVersion(ctx context.Context, req *api.ListCommAlgorithmVersionRequest) (*api.ListCommAlgorithmVersionReply, error) {
-
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.ListCommAlgorithmVersion(ctx, &innterapi.ListCommAlgorithmVersionRequest{
 		SpaceId:     spaceId,
@@ -289,11 +270,7 @@ func (s *AlgorithmService) ListCommAlgorithmVersion(ctx context.Context, req *ap
 
 // 分享算法版本到公共算法
 func (s *AlgorithmService) ShareAlgorithmVersion(ctx context.Context, req *api.ShareAlgorithmVersionRequest) (*api.ShareAlgorithmVersionReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	ShareSpaceIdList := []string{}
 	ShareSpaceIdList = append(ShareSpaceIdList, spaceId)
@@ -316,11 +293,7 @@ func (s *AlgorithmService) ShareAlgorithmVersion(ctx context.Context, req *api.S
 
 // 取消分享算法版本到公共算法
 func (s *AlgorithmService) CloseShareAlgorithmVersion(ctx context.Context, req *api.CloseShareAlgorithmVersionRequest) (*api.CloseShareAlgorithmVersionReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	ShareSpaceIdList := []string{}
 	ShareSpaceIdList = append(ShareSpaceIdList, spaceId)
@@ -343,10 +316,7 @@ func (s *AlgorithmService) CloseShareAlgorithmVersion(ctx context.Context, req *
 
 // 删除我的算法版本
 func (s *AlgorithmService) DeleteMyAlgorithmVersion(ctx context.Context, req *api.DeleteMyAlgorithmVersionRequest) (*api.DeleteMyAlgorithmVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.DeleteMyAlgorithmVersion(ctx, &innterapi.DeleteMyAlgorithmVersionRequest{
 		SpaceId:     spaceId,
@@ -365,11 +335,7 @@ func (s *AlgorithmService) DeleteMyAlgorithmVersion(ctx context.Context, req *ap
 
 // 删除我的算法
 func (s *AlgorithmService) DeleteMyAlgorithm(ctx context.Context, req *api.DeleteMyAlgorithmRequest) (*api.DeleteMyAlgorithmReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.DeleteMyAlgorithm(ctx, &innterapi.DeleteMyAlgorithmRequest{
 		SpaceId:     spaceId,
@@ -404,11 +370,7 @@ func (s *AlgorithmService) DownloadAlgorithmVersionCompress(ctx context.Context,
 
 // 复制算法
 func (s *AlgorithmService) CopyAlgorithmVersion(ctx context.Context, req *api.CopyAlgorithmVersionRequest) (*api.CopyAlgorithmVersionReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.CopyAlgorithmVersion(ctx, &innterapi.CopyAlgorithmVersionRequest{
 		SpaceId:           spaceId,
@@ -449,10 +411,7 @@ func (s *AlgorithmService) DownloadAlgorithmVersion(ctx context.Context, req *ap
 
 // 新增我的算法
 func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlgorithmRequest) (*api.AddMyAlgorithmReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 	reply, err := s.data.AlgorithmClient.AddAlgorithm(ctx, &innterapi.AddAlgorithmRequest{
 		SpaceId:           spaceId,
 		UserId:            userId,
@@ -476,10 +435,7 @@ func (s *AlgorithmService) AddMyAlgorithm(ctx context.Context, req *api.AddMyAlg
 
 // 上传算法
 func (s *AlgorithmService) UploadAlgorithm(ctx context.Context, req *api.UploadAlgorithmRequest) (*api.UploadAlgorithmReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.UploadAlgorithm(ctx, &innterapi.UploadAlgorithmRequest{
 		SpaceId:     spaceId,
@@ -500,11 +456,7 @@ func (s *AlgorithmService) UploadAlgorithm(ctx context.Context, req *api.UploadA
 
 // 上传算法确认
 func (s *AlgorithmService) ConfirmUploadAlgorithm(ctx context.Context, req *api.ConfirmUploadAlgorithmRequest) (*api.ConfirmUploadAlgorithmReply, error) {
-
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.ConfirmUploadAlgorithm(ctx, &innterapi.ConfirmUploadAlgorithmRequest{
 		SpaceId:     spaceId,
@@ -565,10 +517,7 @@ func (s *AlgorithmService) BatchQueryAlgorithm(ctx context.Context, req *api.Bat
 
 // 修改我的算法
 func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.UpdateMyAlgorithmRequest) (*api.UpdateMyAlgorithmReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.UpdateAlgorithm(ctx, &innterapi.UpdateAlgorithmRequest{
 		SpaceId:           spaceId,
@@ -591,10 +540,7 @@ func (s *AlgorithmService) UpdateMyAlgorithm(ctx context.Context, req *api.Updat
 
 // 修改我的算法版本
 func (s *AlgorithmService) UpdatePreAlgorithmVersion(ctx context.Context, req *api.UpdateMyAlgorithmVersionRequest) (*api.UpdateMyAlgorithmVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.AlgorithmClient.UpdateAlgorithmVersion(ctx, &innterapi.UpdateAlgorithmVersionRequest{
 		SpaceId:           spaceId,
@@ -684,22 +630,4 @@ func (s *AlgorithmService) myAlgorithmTransfer(ctx context.Context, algorithm *i
 		AlgorithmDetail: algorithmDetail,
 		IsShared:        isShared,
 	}
-}
-
-func (s *AlgorithmService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if userId == "" {
-		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	return userId, session.GetWorkspace(), nil
 }
