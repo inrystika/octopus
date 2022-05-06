@@ -153,24 +153,10 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 	if err != nil {
 		return nil, err
 	}
-	tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
-	if err != nil {
-		return nil, err
-	}
-	// create user online session
-	if err = s.data.SessionClient.Create(ctx, &ss.Session{
-		Id:         newUser.User.Id,
-		UserId:     newUser.User.Id,
-		Status:     int32(newUser.User.Status),
-		Attributes: make(map[string]string),
-		CreatedAt:  tokenClaim.CreatedAt,
-	}); err != nil {
-		return nil, err
-	}
 
 	return &api.RegisterReply{
 		Token:      token,
-		Expiration: 0,
+		Expiration: s.conf.Service.TokenExpirationSec,
 		UserId:     newUser.User.Id,
 	}, nil
 }
@@ -196,24 +182,10 @@ func (s *AuthService) GetTokenByBind(ctx context.Context, req *api.GetTokenReque
 		if err != nil {
 			return nil, err
 		}
-		tokenClaim, err := jwt.ParseToken(token, s.conf.Server.Http.JwtSecrect)
-		if err != nil {
-			return nil, err
-		}
-		// create user online session
-		if err = s.data.SessionClient.Create(ctx, &ss.Session{
-			Id:         reply.User.Id,
-			UserId:     reply.User.Id,
-			Status:     int32(reply.User.Status),
-			Attributes: make(map[string]string),
-			CreatedAt:  tokenClaim.CreatedAt,
-		}); err != nil {
-			return nil, err
-		}
 
 		return &api.GetTokenReply{
 			Token:      token,
-			Expiration: 0,
+			Expiration: s.conf.Service.TokenExpirationSec,
 		}, nil
 	} else {
 		return &api.GetTokenReply{
