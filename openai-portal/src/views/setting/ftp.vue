@@ -58,8 +58,8 @@ export default {
             ftpUserName: this.ftpForm.ftpUserName,
             ftpPassword: this.ftpForm.ftpPassword
           }
-          updateUserFtpAccount(params).then((res) => {
-            if (res.success) {
+          updateUserFtpAccount(params).then((response) => {
+            if (response.success) {
               this.$message.success("创建成功")
             } else {
               this.$message({
