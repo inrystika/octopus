@@ -6,7 +6,6 @@ import (
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	ss "server/common/session"
 	"server/common/utils/collections/set"
 	pb "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
@@ -70,11 +69,7 @@ func (s *ImageService) ListPreImage(ctx context.Context, req *pb.ListPreImageReq
 }
 
 func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageRequest) (*pb.ListUserImageReply, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ImageClient.ListUserImage(ctx, &innterapi.ListUserImageRequest{
 		PageSize:      req.PageSize,
@@ -82,7 +77,7 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
 		UserId:        userId,
-		SpaceId:       session.GetWorkspace(),
+		SpaceId:       spaceId,
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
@@ -159,17 +154,14 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 }
 
 func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageRequest) (*pb.ListCommImageReply, error) {
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ImageClient.ListCommImage(ctx, &innterapi.ListCommImageRequest{
 		PageSize:      req.PageSize,
 		PageIndex:     req.PageIndex,
 		SortBy:        req.SortBy,
 		OrderBy:       req.OrderBy,
-		SpaceId:       session.GetWorkspace(),
+		SpaceId:       spaceId,
 		ImageNameLike: req.ImageNameLike,
 		NameVerLike:   req.NameVerLike,
 		SourceType:    innterapi.ImageSourceType(req.SourceType),
@@ -223,11 +215,7 @@ func (s *ImageService) ListCommImage(ctx context.Context, req *pb.ListCommImageR
 }
 
 func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*pb.AddImageReply, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ImageClient.AddImage(ctx, &innterapi.AddImageRequest{
 		ImageName:    req.ImageName,
@@ -237,7 +225,7 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 		SourceType:   innterapi.ImageSourceType(req.SourceType),
 		IsPrefab:     innterapi.ImageIsPrefab_IMAGE_IS_PREFAB_NO,
 		UserId:       userId,
-		SpaceId:      session.GetWorkspace(),
+		SpaceId:      spaceId,
 	})
 
 	if err != nil {
@@ -320,12 +308,8 @@ func (s *ImageService) UpdateImage(ctx context.Context, req *pb.UpdateImageReque
 }
 
 func (s *ImageService) ShareImage(ctx context.Context, req *pb.ShareImageRequest) (*pb.ShareImageReply, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-	reply, err := s.data.ImageClient.ShareImage(ctx, &innterapi.ShareImageRequest{ImageId: req.ImageId, UserId: userId, SpaceId: session.GetWorkspace()})
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
+	reply, err := s.data.ImageClient.ShareImage(ctx, &innterapi.ShareImageRequest{ImageId: req.ImageId, UserId: userId, SpaceId: spaceId})
 	if err != nil {
 		return nil, err
 	}
@@ -333,15 +317,11 @@ func (s *ImageService) ShareImage(ctx context.Context, req *pb.ShareImageRequest
 }
 
 func (s *ImageService) CloseShareImage(ctx context.Context, req *pb.CloseShareImageRequest) (*pb.CloseShareImageReply, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 	reply, err := s.data.ImageClient.CloseShareImage(ctx, &innterapi.CloseShareImageRequest{
 		ImageId: req.ImageId,
 		UserId:  userId,
-		SpaceId: session.GetWorkspace(),
+		SpaceId: spaceId,
 	})
 	if err != nil {
 		return nil, err

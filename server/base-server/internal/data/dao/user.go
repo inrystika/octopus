@@ -76,21 +76,23 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 	} else {
 		querySql := "1 = 1"
 		params := make([]interface{}, 0)
-		querySql += " and (JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
-		params = append(params, condition.Bind.Platform)
-		querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('userId', ?)))"
-		params = append(params, condition.Bind.UserId)
-		if condition.Id != "" {
-			querySql += " or id = ? "
-			params = append(params, condition.Id)
-		}
 		if condition.Email != "" {
-			querySql += " or email = ? "
+			querySql += " and email = ? "
 			params = append(params, condition.Email)
-		}
-		if condition.Phone != "" {
-			querySql += " or phone = ? "
-			params = append(params, condition.Phone)
+			if condition.Bind.UserId != "" {
+				querySql += " or (JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+				params = append(params, condition.Bind.Platform)
+				querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('userId', ?)))"
+				params = append(params, condition.Bind.UserId)
+			} else {
+				querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+				params = append(params, condition.Bind.Platform)
+			}
+		} else {
+			querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+			params = append(params, condition.Bind.Platform)
+			querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('userId', ?))"
+			params = append(params, condition.Bind.UserId)
 		}
 		result = db.Where(querySql, params...).First(&user)
 	}

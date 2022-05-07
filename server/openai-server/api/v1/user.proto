@@ -20,12 +20,6 @@ service User {
             get: "/v1/usermanage/user/{userId}/workspace"
         };
     };
-    rpc PutUserWorkspace (PutUserWorkspaceRequest) returns (PutUserWorkspaceReply) {
-        option (google.api.http) = {
-            put: "/v1/usermanage/user/{userId}/workspace"
-            body: "*"
-        };
-    };
     // 查询用户配置
     rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply) {
       option (google.api.http) = {
@@ -57,7 +51,6 @@ message GetUserInfoRequest {
 
 message GetUserInfoReply {
   UserItem user = 1;
-  string   workspaceId = 2;
 }
 
 message WorkspaceItem {
@@ -79,15 +72,6 @@ message ListUserWorkspacesRequest {
 
 message ListUserWorkspacesReply {
     repeated WorkspaceItem workspaces = 1;
-}
-
-message PutUserWorkspaceRequest {
-    string userId = 1 [(validate.rules).string = {min_len: 1, max_len: 36}];
-    string workspaceId = 2 [(validate.rules).string = {max_len: 36}];
-}
-
-message PutUserWorkspaceReply {
-
 }
 
 message GetUserConfigRequest {

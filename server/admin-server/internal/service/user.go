@@ -154,19 +154,6 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, err
 	}
 
-	// if updated password, reset session for user
-	if req.User.Password != "" {
-		userSession, err := s.data.SessionClient.Get(ctx, req.UserId)
-		if err != nil {
-			return nil, err
-		}
-		if userSession != nil {
-			if err = s.data.SessionClient.Delete(ctx, req.UserId); err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	return &pb.UpdateUserReply{
 		User: &pb.UserItem{
 			Id:        result.User.Id,
@@ -191,16 +178,6 @@ func (s *UserService) FreezeUser(ctx context.Context, req *pb.FreezeUserRequest)
 		return nil, err
 	}
 
-	userSession, err := s.data.SessionClient.Get(ctx, req.UserId)
-	if err != nil {
-		return nil, err
-	}
-	if userSession != nil {
-		userSession.Status = int32(innterapi.UserStatus_FREEZE)
-		if err = s.data.SessionClient.Update(ctx, userSession); err != nil {
-			return nil, err
-		}
-	}
 	return &pb.FreezeUserReply{FreezedAt: time.Now().Unix()}, nil
 }
 
@@ -214,16 +191,6 @@ func (s *UserService) ThawUser(ctx context.Context, req *pb.ThawUserRequest) (*p
 		return nil, err
 	}
 
-	userSession, err := s.data.SessionClient.Get(ctx, req.UserId)
-	if err != nil {
-		return nil, err
-	}
-	if userSession != nil {
-		userSession.Status = int32(innterapi.UserStatus_ACTIVITY)
-		if err = s.data.SessionClient.Update(ctx, userSession); err != nil {
-			return nil, err
-		}
-	}
 	return &pb.ThawUserReply{ThawedAt: time.Now().Unix()}, nil
 }
 
