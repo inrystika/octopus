@@ -31,12 +31,12 @@ func NewResourceSpecService(conf *conf.Bootstrap, logger log.Logger, data *data.
 }
 
 func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *empty.Empty) (*api.ListResourceSpecReply, error) {
-
+	var err error
 	_, workSpaceId, isDefaultSpace := rsvc.getUserIdAndSpaceId(ctx)
 
 	rq := &innerapi.GetResourcePoolReply{}
 	if isDefaultSpace {
-		_, err := rsvc.data.ResourcePoolClient.GetDefaultResourcePool(ctx, &empty.Empty{})
+		rq, err = rsvc.data.ResourcePoolClient.GetDefaultResourcePool(ctx, &empty.Empty{})
 
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
