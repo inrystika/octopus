@@ -104,5 +104,5 @@ message UpdateUserFtpAccountRequest {
 }
 
 message UpdateUserFtpAccountReply {
-
+    string ftpUserName = 1;
 }

@@ -47,6 +47,7 @@ message UserItem {
   GenderType gender = 8;
   UserStatus status = 9;
   repeated Bind bind = 10;
+  string ftpUserName = 11;
 }
 
 message Bind {
@@ -159,5 +160,5 @@ message UpdateUserFtpAccountRequest {
 }
 
 message UpdateUserFtpAccountReply {
-
+    UserItem user = 1;
 }
