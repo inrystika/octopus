@@ -345,7 +345,7 @@
                             } else {
                                 if (response.error.subcode == 15011) {
                                     this.$message({
-                                        message: '服务器名称重名',
+                                        message: '服务名称已存在',
                                         type: 'warning'
                                     });
                                 }

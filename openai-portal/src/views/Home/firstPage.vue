@@ -119,6 +119,7 @@
                         this.loading = true
                         this.$store.dispatch('user/login', this.loginForm).then((res) => {
                             if (res === 'success') {
+                                localStorage.clear()
                                 this.$router.push({ path: '/index' })
                                 this.loading = false
                                 this.$message({
@@ -142,7 +143,6 @@
             },
             jumpThird() {
                 getInterface(this.interfaceName).then(res => {
-                    window.close()
                 })
             },
         }

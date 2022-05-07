@@ -7,7 +7,6 @@ import (
 	"server/common/log"
 	"server/common/middleware/ctxcopy"
 	"server/openai-server/internal/conf"
-	"server/openai-server/internal/data/session"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -24,7 +23,6 @@ type Data struct {
 	DevelopClient      api.DevelopClient
 	ModelClient        api.ModelServiceClient
 	WorkspaceClient    api.WorkspaceServiceClient
-	SessionClient      session.SessionClient
 	ImageClient        api.ImageServiceClient
 	DatasetClient      api.DatasetServiceClient
 	ResourceSpecClient api.ResourceSpecServiceClient
@@ -66,7 +64,6 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		TrainJobClient:     api.NewTrainJobServiceClient(conn),
 		ModelClient:        api.NewModelServiceClient(conn),
 		WorkspaceClient:    api.NewWorkspaceServiceClient(conn),
-		SessionClient:      session.NewSessionClient(confData, logger),
 		ImageClient:        api.NewImageServiceClient(conn),
 		DatasetClient:      api.NewDatasetServiceClient(conn),
 		ResourceSpecClient: api.NewResourceSpecServiceClient(conn),

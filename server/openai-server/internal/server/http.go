@@ -2,20 +2,25 @@ package server
 
 import (
 	"context"
+	"fmt"
 	nethttp "net/http"
-	innterapi "server/base-server/api/v1"
+	"net/http/httputil"
+	"net/url"
+	"server/common/constant"
 	"server/common/constant/userconfig"
+	commctx "server/common/context"
 	"server/common/errors"
 	comHttp "server/common/http"
+	"server/common/log"
 	"server/common/middleware/jwt"
 	"server/common/middleware/logging"
-	"server/common/middleware/session"
 	"server/common/middleware/validate"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/service"
 	"strings"
+
+	"github.com/gorilla/mux"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -43,23 +48,6 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		options.NoAuthUris = noAuthUris
 	})
 
-	var sessionOpts = []session.Option{}
-	sessionOpts = append(sessionOpts, func(options *session.Options) {
-		options.Store = service.Data.SessionClient
-		options.NoAuthUris = noAuthUris
-		options.CheckSession = func(ctx context.Context, s *ss.Session) error {
-			if s.Status != int32(innterapi.UserStatus_ACTIVITY) {
-				return errors.Errorf(nil, errors.ErrorAuthenticationForbidden)
-			}
-
-			//api开放给外部使用，去掉单端登录
-			//if comCtx.CreatedAtFromContext(ctx) != s.CreatedAt {
-			//	return errors.Errorf(nil, errors.ErrorTokenRenew)
-			//}
-			return nil
-		}
-	})
-
 	options := []http.HandleOption{
 		http.Middleware(
 			middleware.Chain(
@@ -67,7 +55,7 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 				tracing.Server(),
 				logging.Server(),
 				jwt.Server(jwtOpts...),
-				session.Server(sessionOpts...),
+				handleHeader(),
 				checkJointCloudPerm(service),
 				validate.Server(),
 			),
@@ -83,6 +71,21 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 	srv.HandlePrefix("/v1/authmanage", api.NewAuthHandler(service.AuthService, options...))
 	srv.HandlePrefix("/v1/algorithmmanage", api.NewAlgorithmHandler(service.AlgorithmService, options...))
 	srv.HandlePrefix("/v1/developmanage", api.NewDevelopHandler(service.DevelopService, options...))
+	srv.HandleFunc("/v1/trainmanage/trainjob/{id}/task/{taskId}/replica/{replicaIdx}/log", func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		proto := "http"
+		if strings.Contains(r.Proto, "HTTPS") {
+			proto = "https"
+		}
+		url, _ := url.Parse(fmt.Sprintf("%s://%s/log/user/trainjob/%s/%s/%s/index.log", proto, r.Host, mux.Vars(r)["id"], mux.Vars(r)["taskId"], mux.Vars(r)["replicaIdx"]))
+		log.Info(context.TODO(), url)
+		proxy := httputil.ReverseProxy{
+			Director: func(request *nethttp.Request) {
+				request.URL = url
+			},
+		}
+
+		proxy.ServeHTTP(w, r)
+	})
 	srv.HandlePrefix("/v1/trainmanage", api.NewTrainJobServiceHandler(service.TrainJobService, options...))
 	srv.HandlePrefix("/v1/modelmanage", api.NewModelHandler(service.ModelService, options...))
 	srv.HandlePrefix("/v1/datasetmanage", api.NewDatasetServiceHandler(service.DatasetService, options...))
@@ -115,6 +118,27 @@ func checkJointCloudPerm(service *service.Service) middleware.Middleware {
 				}
 			}
 
+			return handler(ctx, req)
+		}
+	}
+}
+
+func handleHeader() middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			var request *nethttp.Request
+			if info, ok := http.FromServerContext(ctx); ok {
+				request = info.Request
+			} else {
+				return handler(ctx, req)
+			}
+
+			spaceId := request.Header.Get("Octopus-Space-Id")
+			if spaceId == "" {
+				spaceId = constant.SYSTEM_WORKSPACE_DEFAULT
+			}
+
+			ctx = commctx.SpaceIdToContext(ctx, spaceId)
 			return handler(ctx, req)
 		}
 	}

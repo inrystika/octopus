@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	"server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -33,13 +33,9 @@ func NewBillingService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 }
 
 func (s *billingService) GetBillingUser(ctx context.Context, req *api.GetBillingUserRequest) (*api.GetBillingUserReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 	owner, err := s.data.BillingClient.GetBillingOwner(ctx, &innerapi.GetBillingOwnerRequest{
-		OwnerId:   session.UserId,
+		OwnerId:   userId,
 		OwnerType: innerapi.BillingOwnerType_BOT_USER,
 	})
 	if err != nil {
@@ -53,17 +49,13 @@ func (s *billingService) GetBillingUser(ctx context.Context, req *api.GetBilling
 	}}, nil
 }
 func (s *billingService) ListUserPayRecord(ctx context.Context, req *api.ListUserPayRecordRequest) (*api.ListUserPayRecordReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 	innerReq := &innerapi.ListBillingPayRecordRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.OwnerId = session.UserId
+	innerReq.OwnerId = userId
 	innerReq.OwnerType = innerapi.BillingOwnerType_BOT_USER
 
 	innerReply, err := s.data.BillingClient.ListBillingPayRecord(ctx, innerReq)
@@ -80,17 +72,13 @@ func (s *billingService) ListUserPayRecord(ctx context.Context, req *api.ListUse
 	return reply, nil
 }
 func (s *billingService) ListUserRechargeRecord(ctx context.Context, req *api.ListUserRechargeRecordRequest) (*api.ListUserRechargeRecordReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 	innerReq := &innerapi.ListBillingRechargeRecordRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.OwnerId = session.UserId
+	innerReq.OwnerId = userId
 	innerReq.OwnerType = innerapi.BillingOwnerType_BOT_USER
 
 	innerReply, err := s.data.BillingClient.ListBillingRechargeRecord(ctx, innerReq)
@@ -107,13 +95,9 @@ func (s *billingService) ListUserRechargeRecord(ctx context.Context, req *api.Li
 	return reply, nil
 }
 func (s *billingService) GetBillingSpace(ctx context.Context, req *api.GetBillingSpaceRequest) (*api.GetBillingSpaceReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 	owner, err := s.data.BillingClient.GetBillingOwner(ctx, &innerapi.GetBillingOwnerRequest{
-		OwnerId:   session.GetWorkspace(),
+		OwnerId:   spaceId,
 		OwnerType: innerapi.BillingOwnerType_BOT_SPACE,
 	})
 	if err != nil {
@@ -127,19 +111,15 @@ func (s *billingService) GetBillingSpace(ctx context.Context, req *api.GetBillin
 	}}, nil
 }
 func (s *billingService) ListSpacePayRecord(ctx context.Context, req *api.ListSpacePayRecordRequest) (*api.ListSpacePayRecordReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 	innerReq := &innerapi.ListBillingPayRecordRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.OwnerId = session.GetWorkspace()
+	innerReq.OwnerId = spaceId
 	innerReq.OwnerType = innerapi.BillingOwnerType_BOT_SPACE
-	innerReq.ExtraInfo = map[string]string{"userId": session.UserId}
+	innerReq.ExtraInfo = map[string]string{"userId": userId}
 
 	innerReply, err := s.data.BillingClient.ListBillingPayRecord(ctx, innerReq)
 	if err != nil {
@@ -155,17 +135,13 @@ func (s *billingService) ListSpacePayRecord(ctx context.Context, req *api.ListSp
 	return reply, nil
 }
 func (s *billingService) ListSpaceRechargeRecord(ctx context.Context, req *api.ListSpaceRechargeRecordRequest) (*api.ListSpaceRechargeRecordReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 	innerReq := &innerapi.ListBillingRechargeRecordRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.OwnerId = session.GetWorkspace()
+	innerReq.OwnerId = spaceId
 	innerReq.OwnerType = innerapi.BillingOwnerType_BOT_SPACE
 
 	innerReply, err := s.data.BillingClient.ListBillingRechargeRecord(ctx, innerReq)
