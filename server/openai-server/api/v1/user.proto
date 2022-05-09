@@ -44,6 +44,7 @@ message UserItem {
   string phone = 6;
   int32 gender = 8;
   int32 status = 9;
+  string ftpUserName = 10;
 }
 
 message GetUserInfoRequest {
@@ -88,5 +89,5 @@ message UpdateUserFtpAccountRequest {
 }
 
 message UpdateUserFtpAccountReply {
-    string ftpUserName = 1;
+    UserItem ftpUserName = 1;
 }

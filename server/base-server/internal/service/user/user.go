@@ -146,16 +146,17 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 	}
 	reply := &api.FindUserReply{
 		User: &api.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    api.GenderType(user.Gender),
-			Status:    api.UserStatus(user.Status),
-			Password:  user.Password,
-			CreatedAt: user.CreatedAt.Unix(),
-			UpdatedAt: user.UpdatedAt.Unix(),
-			Bind:      bindInfo,
+			Id:          user.Id,
+			FullName:    user.FullName,
+			Email:       user.Email,
+			Phone:       user.Phone,
+			FtpUserName: user.FtpUserName,
+			Gender:      api.GenderType(user.Gender),
+			Status:      api.UserStatus(user.Status),
+			Password:  	 user.Password,
+			CreatedAt:   user.CreatedAt.Unix(),
+			UpdatedAt:   user.UpdatedAt.Unix(),
+			Bind:        bindInfo,
 		},
 	}
 

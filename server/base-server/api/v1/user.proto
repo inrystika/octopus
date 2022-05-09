@@ -160,5 +160,5 @@ message UpdateUserFtpAccountRequest {
 }
 
 message UpdateUserFtpAccountReply {
-    UserItem user = 1;
+
 }

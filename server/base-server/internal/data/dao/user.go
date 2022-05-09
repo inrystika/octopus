@@ -69,9 +69,10 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 	var result *gorm.DB
 	if condition.Bind == nil {
 		result = db.Where(&model.User{
-			Id:    condition.Id,
-			Email: condition.Email,
-			Phone: condition.Phone,
+			Id:          condition.Id,
+			Email:       condition.Email,
+			Phone:       condition.Phone,
+			FtpUserName: condition.FtpUserName,
 		}).First(&user)
 	} else {
 		querySql := "1 = 1"

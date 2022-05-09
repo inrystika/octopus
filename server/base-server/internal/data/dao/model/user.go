@@ -139,10 +139,11 @@ func (u UserList) Pagination(db *gorm.DB) *gorm.DB {
 }
 
 type UserQuery struct {
-	Id    string
-	Email string
-	Phone string
-	Bind  *Bind
+	Id          string
+	Email       string
+	Phone       string
+	Bind        *Bind
+	FtpUserName string
 }
 
 type UserAdd struct {

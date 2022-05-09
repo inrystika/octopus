@@ -44,14 +44,15 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *api.GetUserInfoReque
 
 	return &api.GetUserInfoReply{
 		User: &api.UserItem{
-			Id:        reply.User.Id,
-			CreatedAt: reply.User.CreatedAt,
-			UpdatedAt: reply.User.UpdatedAt,
-			FullName:  reply.User.FullName,
-			Email:     reply.User.Email,
-			Phone:     reply.User.Phone,
-			Gender:    int32(reply.User.Gender),
-			Status:    int32(reply.User.Status),
+			Id:          reply.User.Id,
+			CreatedAt:   reply.User.CreatedAt,
+			UpdatedAt:   reply.User.UpdatedAt,
+			FullName:    reply.User.FullName,
+			Email:       reply.User.Email,
+			Phone:       reply.User.Phone,
+			Gender:      int32(reply.User.Gender),
+			Status:    	 int32(reply.User.Status),
+			FtpUserName: reply.User.FtpUserName,
 		},
 	}, nil
 }
