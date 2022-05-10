@@ -22,6 +22,8 @@
 </template>
 <script>
 import { updateUserFtpAccount } from "@/api/setting"
+import { getInfo } from '@/api/Home'
+import { getToken } from '@/utils/auth'
 export default {
   name: 'ftp',
   data() {
@@ -50,6 +52,14 @@ export default {
       formLabelWidth: "120px",
     }
   },
+  created() {
+    getInfo(getToken()).then(response => {
+      if (!response.data) {
+        this.ftpForm.ftpUserName = ''
+      }
+      this.ftpForm.ftpUserName = response.data.user.ftpUserName
+    })
+  },
   methods: {
     submit() {
       this.$refs.ftpForm.validate(valid => {
@@ -61,6 +71,7 @@ export default {
           updateUserFtpAccount(params).then((response) => {
             if (response.success) {
               this.$message.success("创建成功")
+              this.ftpForm.ftpPassword = ''
             } else {
               this.$message({
                 message: this.getErrorMsg(
