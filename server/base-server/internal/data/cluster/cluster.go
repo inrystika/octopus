@@ -32,6 +32,7 @@ type Cluster interface {
 	CreateIngress(ctx context.Context, ingress *v1beta1.Ingress) error
 	DeleteIngress(ctx context.Context, namespace string, name string) error
 	CreateNamespace(ctx context.Context, namespace string) (*v1.Namespace, error)
+	GetNamespace(ctx context.Context, namespace string) (*v1.Namespace, error)
 	DeleteNamespace(ctx context.Context, namespace string) error
 	ListQueue(ctx context.Context, labelSelector string) ([]byte, error)
 	GetQueue(ctx context.Context, name string) ([]byte, error)
@@ -44,7 +45,9 @@ type Cluster interface {
 	RemoveNodeLabel(ctx context.Context, name string, labelKey string) error
 	CreateAndListenJob(ctx context.Context, job *batchv1.Job, callback func(e error)) error
 	CreatePersistentVolume(ctx context.Context, pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
+	GetPersistentVolume(ctx context.Context, name string) (*v1.PersistentVolume, error)
 	CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error)
+	GetPersistentVolumeClaim(ctx context.Context, namespace string, name string) (*v1.PersistentVolumeClaim, error)
 	CreateSecret(ctx context.Context, secret *v1.Secret) (*v1.Secret, error)
 	DeletePersistentVolume(ctx context.Context, name string) error
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, name string) error
