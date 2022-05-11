@@ -69,9 +69,10 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 	var result *gorm.DB
 	if condition.Bind == nil {
 		result = db.Where(&model.User{
-			Id:    condition.Id,
-			Email: condition.Email,
-			Phone: condition.Phone,
+			Id:          condition.Id,
+			Email:       condition.Email,
+			Phone:       condition.Phone,
+			FtpUserName: condition.FtpUserName,
 		}).First(&user)
 	} else {
 		querySql := "1 = 1"
@@ -143,13 +144,14 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
-		FullName: user.FullName,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Gender:   user.Gender,
-		Password: user.Password,
-		Status:   user.Status,
-		Bind:     user.Bind,
+		FullName:    user.FullName,
+		Email:       user.Email,
+		Phone:       user.Phone,
+		Gender:      user.Gender,
+		Password:    user.Password,
+		Status:      user.Status,
+		Bind:        user.Bind,
+		FtpUserName: user.FtpUserName,
 	})
 	if result.Error != nil {
 		return nil, result.Error

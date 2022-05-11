@@ -9,16 +9,17 @@ import (
 	"server/base-server/internal/service/billing"
 	"server/base-server/internal/service/dataset"
 	"server/base-server/internal/service/develop"
+	"server/base-server/internal/service/ftpproxy"
 	"server/base-server/internal/service/image"
 	"server/base-server/internal/service/jointcloud"
 	"server/base-server/internal/service/lable"
 	"server/base-server/internal/service/model"
+	"server/base-server/internal/service/modeldeploy"
 	"server/base-server/internal/service/platform"
 	"server/base-server/internal/service/resources"
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
 	"server/base-server/internal/service/workspace"
-	"server/base-server/internal/service/modeldeploy"
 
 	"server/common/log"
 )
@@ -42,7 +43,8 @@ type Service struct {
 	PlatformService         api.PlatformServiceServer
 	PlatformTrainJobService platform.PlatformTrainJobService
 	JointCloudService       api.JointCloudServiceServer
-	ModelDeployService  api.ModelDeployServiceServer
+	ModelDeployService      api.ModelDeployServiceServer
+	FtpProxyService         api.FtpProxyServiceServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -54,7 +56,8 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 
-	service.UserService = user.NewUserService(conf, logger, data)
+	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, data)
+	service.UserService = user.NewUserService(conf, logger, data, service.FtpProxyService)
 	service.AdminUserService = user.NewAdminUserService(conf, logger, data)
 	service.ResourceService = resources.NewResourceService(ctx, conf, logger, data)
 	service.ResourceSpecService = resources.NewResourceSpecService(conf, logger, data)

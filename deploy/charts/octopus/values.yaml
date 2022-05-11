@@ -61,6 +61,8 @@ pvc:
     requests: 100Gi
   logger:
     requests: 100Gi
+  sftpgo:
+    requests: 100Gi
 
 pv:
   minio:
@@ -93,6 +95,12 @@ pv:
       nfs:
         server:  192.168.203.72
         path:  /data/datasets/data/logger
+  sftpgo:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server: 192.168.203.72
+        path: /data/datasets/data/sftpgo
 
 # taskset
 taskset:
@@ -140,6 +148,9 @@ baseserver:
     pytorchServer:
       imageAddr: 192.168.202.110:5000/octopus/pytorchserver
       version: 2.0.4
+    sftpgo:
+      username: admin
+      password: abcde
   service:
     billingPeriodSec: 1800
     develop:
@@ -462,3 +473,37 @@ seldon-core-operator:
         seldon:
           defaultImageVersion: "2.0.4"
           image: "192.168.202.110:5000/octopus/pytorchserver"
+
+sftpgo:
+  image:
+    repository: swr.cn-south-1.myhuaweicloud.com/openioctopus/sftpgo
+    tag: v2.2.2
+  service:
+    type: NodePort
+    ports:
+      sftp:
+        nodePort: "30022"
+      http:
+        port: "80"
+        nodePort: "30080"
+  volumes:
+    - name: "data"
+      persistentVolumeClaim:
+        claimName: "octopus-sftpgo-pvc"
+  volumeMounts:
+    - name: "data"
+      mountPath: "/var/lib/sftpgo"
+      subPath: "home"
+    - name: "data"
+      mountPath: "/srv/sftpgo"
+      subPath: "data"
+  envVars:
+    - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
+      value: "admin"
+    - name: "SFTPGO_DEFAULT_ADMIN_PASSWORD"
+      value: "abcde"
+  config:
+    data_provider:
+      create_default_admin: true
+  nodeSelector:
+    <<: *nodeSelector
