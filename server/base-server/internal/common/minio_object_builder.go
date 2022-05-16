@@ -108,3 +108,7 @@ func GetMinioDataSetObject(spaceId string, userId string, dataSetId string, vers
 func GetMinioTrainJobObject(spaceId string, userId string, trainJobId string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", TRAIN_JOB_FOLDER, spaceId, userId, trainJobId)
 }
+
+func GetUserHomeBucket(userId string) string {
+	return fmt.Sprintf("%s", userId)
+}

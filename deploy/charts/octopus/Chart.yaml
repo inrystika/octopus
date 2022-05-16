@@ -41,6 +41,9 @@ dependencies:
 - name: seldon-core-operator
   version: 1.12.0
   repository: https://storage.googleapis.com/seldon-charts
+- name: sftpgo
+  version: 0.12.0
+  repository: https://charts.sagikazarmark.dev/
 
 home: https://octopus.openi.org.cn/
 icon: https://git.openi.org.cn/OpenI/octopus/media/branch/master/logo.png

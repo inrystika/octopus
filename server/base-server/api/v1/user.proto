@@ -19,6 +19,7 @@ service UserService {
   rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply);
   rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
   rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
+  rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply);
 }
 
 enum UserStatus
@@ -46,6 +47,7 @@ message UserItem {
   GenderType gender = 8;
   UserStatus status = 9;
   repeated Bind bind = 10;
+  string ftpUserName = 11;
 }
 
 message Bind {
@@ -148,5 +150,15 @@ message UpdateUserConfigRequest {
 }
 
 message UpdateUserConfigReply {
+
+}
+
+message UpdateUserFtpAccountRequest {
+  string userId = 1;
+  string ftpUserName = 2 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
+  string ftpPassword = 3;
+}
+
+message UpdateUserFtpAccountReply {
 
 }
