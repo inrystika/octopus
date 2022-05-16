@@ -153,7 +153,7 @@ export const constantRoutes = [
   {
     path: '/setting',
     component: Layout,
-    meta: { title: '设置', icon: 'el-icon-setting' },
+    meta: { title: '设置', icon: 'setting' },
     alwaysShow: true,
     children: [
       {
