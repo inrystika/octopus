@@ -208,7 +208,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'deployManager',
         component: () => import('@/views/deployManager/index'),
-        meta: { title: '服务管理', icon: 'model' }
+        meta: { title: '服务管理', icon: 'deploy' }
       }
     ]
   },
