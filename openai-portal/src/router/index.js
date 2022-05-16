@@ -53,13 +53,13 @@ export const constantRoutes = [
       path: '/index',
       name: 'index',
       component: () => import('@/views/GeneralView/index'),
-      meta: { title: '概览', icon: 'overView' }
+      meta: { title: '概览', icon: 'all' }
     }]
   },
   {
     path: '/dataManager',
     component: Layout,
-    meta: { title: '数据管理', icon: 'data' },
+    meta: { title: '数据管理', icon: 'dataset' },
     alwaysShow: true,
     children: [
       {
@@ -134,7 +134,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'modelDeploy',
         component: () => import('@/views/deployManager/index'),
-        meta: { title: '部署服务', icon: 'model' }
+        meta: { title: '部署服务', icon: 'deploy' }
       }
     ]
   },
