@@ -44,14 +44,15 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *api.GetUserInfoReque
 
 	return &api.GetUserInfoReply{
 		User: &api.UserItem{
-			Id:        reply.User.Id,
-			CreatedAt: reply.User.CreatedAt,
-			UpdatedAt: reply.User.UpdatedAt,
-			FullName:  reply.User.FullName,
-			Email:     reply.User.Email,
-			Phone:     reply.User.Phone,
-			Gender:    int32(reply.User.Gender),
-			Status:    int32(reply.User.Status),
+			Id:          reply.User.Id,
+			CreatedAt:   reply.User.CreatedAt,
+			UpdatedAt:   reply.User.UpdatedAt,
+			FullName:    reply.User.FullName,
+			Email:       reply.User.Email,
+			Phone:       reply.User.Phone,
+			Gender:      int32(reply.User.Gender),
+			Status:    	 int32(reply.User.Status),
+			FtpUserName: reply.User.FtpUserName,
 		},
 	}, nil
 }
@@ -98,4 +99,20 @@ func (s *UserService) GetUserConfig(ctx context.Context, req *api.GetUserConfigR
 		return nil, err
 	}
 	return &api.GetUserConfigReply{Config: reply.Config}, nil
+}
+
+func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateUserFtpAccountRequest) (*api.UpdateUserFtpAccountReply, error) {
+	userId := commctx.UserIdFromContext(ctx)
+
+	_, err := s.data.UserClient.UpdateUserFtpAccount(ctx, &innterapi.UpdateUserFtpAccountRequest{
+		FtpPassword: req.FtpPassword,
+		FtpUserName: req.FtpUserName,
+		UserId:      userId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserFtpAccountReply{}, nil
 }

@@ -39,7 +39,7 @@ data:
     apiVersion: v1.0
     useSSL: false
   redis:
-    addr: 192.168.202.73:31392
+    addr: 192.168.202.73:30635
     username:
     password: abcde
   influxdb:
@@ -57,11 +57,16 @@ data:
   pytorchServer:
     imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
     version: 2.0.2
+  sftpgo:
+    baseUrl: 192.168.202.73:30080
+    username: admin
+    password: abcde
 service:
   baseServerAddr: http://127.0.0.1:8001
   dockerDatasetPath: /dataset
   dockerCodePath: /code
   dockerModelPath: /model
+  dockerUserHomePath: /userhome
   resourceLabelKey: octopus.pcl.ac.cn/type
   billingPeriodSec: 60
   develop:
@@ -91,4 +96,4 @@ module:
       capacity: "100Gi"
       nfs:
         server: 192.168.203.72
-        path: "/data/datasets/data"
+        path: "/data/datasets/data/octopus-dev-minio"

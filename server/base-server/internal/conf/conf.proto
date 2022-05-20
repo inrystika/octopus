@@ -107,6 +107,7 @@ message Data {
   JointCloud jointCloud = 8;
   Ambassador ambassador = 9;
   PytorchServer pytorchServer = 10;
+  sftpgo sftpgo = 11;
 }
 
 message Develop {
@@ -136,6 +137,12 @@ message JointCloud {
   int32 sessionExpirySec = 4;
 }
 
+message sftpgo {
+  string baseUrl = 1;
+  string username = 2;
+  string password = 3;
+}
+
 message Service {
   string baseServerAddr = 2;
   string dockerDatasetPath = 3;
@@ -146,6 +153,7 @@ message Service {
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
   string dockerModelDeployPath = 10;
+  string dockerUserHomePath = 11;
 }
 
 message Administrator {

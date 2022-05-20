@@ -17,13 +17,14 @@ import (
 
 type UserService struct {
 	api.UnimplementedUserServiceServer
-	conf       *conf.Bootstrap
-	log        *log.Helper
-	data       *data.Data
-	defaultPVS common.PersistentVolumeSourceExtender
+	conf            *conf.Bootstrap
+	log             *log.Helper
+	data            *data.Data
+	defaultPVS      common.PersistentVolumeSourceExtender
+	ftpProxyService api.FtpProxyServiceServer
 }
 
-func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServiceServer {
+func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ftpProxyService api.FtpProxyServiceServer) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
 	if err != nil {
 		panic(err)
@@ -32,10 +33,11 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) ap
 		panic("mod init failed, missing config [module.storage.source]")
 	}
 	return &UserService{
-		conf:       conf,
-		log:        log.NewHelper("UserService", logger),
-		data:       data,
-		defaultPVS: *pvs,
+		conf:            conf,
+		log:             log.NewHelper("UserService", logger),
+		data:            data,
+		defaultPVS:      *pvs,
+		ftpProxyService: ftpProxyService,
 	}
 }
 
@@ -98,6 +100,15 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 	}, nil
 }
 
+func (s *UserService) CheckOrInitUser(ctx context.Context, req *api.CheckOrInitUserRequest) (*api.CheckOrInitUserReply, error) {
+	// to check or init user home storage bucket
+	err := s.initUser(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &api.CheckOrInitUserReply{}, nil
+}
+
 func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*api.FindUserReply, error) {
 	a := model.UserQuery{
 		Id:    req.Id,
@@ -132,42 +143,59 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 	}
 	reply := &api.FindUserReply{
 		User: &api.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    api.GenderType(user.Gender),
-			Status:    api.UserStatus(user.Status),
-			Password:  user.Password,
-			CreatedAt: user.CreatedAt.Unix(),
-			UpdatedAt: user.UpdatedAt.Unix(),
-			Bind:      bindInfo,
+			Id:          user.Id,
+			FullName:    user.FullName,
+			Email:       user.Email,
+			Phone:       user.Phone,
+			FtpUserName: user.FtpUserName,
+			Gender:      api.GenderType(user.Gender),
+			Status:      api.UserStatus(user.Status),
+			Password:  	 user.Password,
+			CreatedAt:   user.CreatedAt.Unix(),
+			UpdatedAt:   user.UpdatedAt.Unix(),
+			Bind:        bindInfo,
 		},
 	}
 
 	return reply, nil
 }
 
-func (s *UserService) initUser(ctx context.Context, user *model.User) error {
-	// create user namespace
-	_, err := s.data.Cluster.CreateNamespace(ctx, user.Id)
+func (s *UserService) initUser(ctx context.Context, userId string) error {
+	err := s.data.Minio.CreateBucket(common.GetUserHomeBucket(userId))
 	if err != nil {
-		return err
+		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
+			return err
+		}
+	}
+
+	// create user namespace
+	_, err = s.data.Cluster.GetNamespace(ctx, userId)
+	if err != nil {
+		_, err = s.data.Cluster.CreateNamespace(ctx, userId)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create user storage pv
-	pv := common.BuildStoragePersistentVolume(user.Id, s.defaultPVS.Capacity)
+	pv := common.BuildStoragePersistentVolume(userId, s.defaultPVS.Capacity)
 	pv.Spec.PersistentVolumeSource = s.defaultPVS.PersistentVolumeSource
-	_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+	_, err = s.data.Cluster.GetPersistentVolume(ctx, pv.Name)
 	if err != nil {
-		return err
+		_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create user storage pvc
-	pvc := common.BuildStoragePersistentVolumeChaim(user.Id, user.Id, s.defaultPVS.Capacity)
-	_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+	pvc := common.BuildStoragePersistentVolumeChaim(userId, userId, s.defaultPVS.Capacity)
+	_, err = s.data.Cluster.GetPersistentVolumeClaim(ctx, pvc.Namespace, pvc.Name)
 	if err != nil {
-		return err
+		_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -212,7 +240,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 		return nil, err
 	}
 
-	if err = s.initUser(ctx, u); err != nil {
+	if err = s.initUser(ctx, u.Id); err != nil {
 		s.log.Error(ctx, err)
 		return nil, err
 	}
@@ -380,4 +408,28 @@ func (s *UserService) UpdateUserConfig(ctx context.Context, req *api.UpdateUserC
 	}
 
 	return &api.UpdateUserConfigReply{}, nil
+}
+
+func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateUserFtpAccountRequest) (*api.UpdateUserFtpAccountReply, error) {
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.ftpProxyService.CreateOrUpdateFtpAccount(ctx, &api.CreateOrUpdateFtpAccountRequest{
+		Username:     req.FtpUserName,
+		Email:        user.Email,
+		Password:     req.FtpPassword,
+		HomeS3Bucket: common.GetUserHomeBucket(req.UserId),
+		HomeS3Object: "",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: req.UserId}, &model.UserUpdate{FtpUserName: req.FtpUserName})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserFtpAccountReply{}, nil
 }

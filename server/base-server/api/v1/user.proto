@@ -14,10 +14,12 @@ service UserService {
   rpc AddUser (AddUserRequest) returns (AddUserReply);
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
   rpc ListUserInCond (ListUserInCondRequest) returns (ListUserInCondReply);
+  rpc CheckOrInitUser (CheckOrInitUserRequest) returns (CheckOrInitUserReply);
 
   rpc ListUserConfigKey (ListUserConfigKeyRequest) returns (ListUserConfigKeyReply);
   rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
   rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
+  rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply);
 }
 
 enum UserStatus
@@ -45,6 +47,7 @@ message UserItem {
   GenderType gender = 8;
   UserStatus status = 9;
   repeated Bind bind = 10;
+  string ftpUserName = 11;
 }
 
 message Bind {
@@ -64,6 +67,14 @@ message AddUserRequest {
 
 message AddUserReply {
   UserItem user = 1;
+}
+
+message CheckOrInitUserRequest {
+  string id = 1;
+}
+
+message CheckOrInitUserReply {
+
 }
 
 message FindUserRequest {
@@ -139,5 +150,15 @@ message UpdateUserConfigRequest {
 }
 
 message UpdateUserConfigReply {
+
+}
+
+message UpdateUserFtpAccountRequest {
+  string userId = 1;
+  string ftpUserName = 2 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
+  string ftpPassword = 3;
+}
+
+message UpdateUserFtpAccountReply {
 
 }

@@ -209,6 +209,11 @@ const (
 	ErrorModelDeployDeleteFailed = 25003 // 删除模型部署服务失败
 	ErrorModelInferRequest       = 25004 // 模型部署服务请求失败
 	ErrorModelAuthFailed         = 25005 // 模型权限校验失败
+
+	/* 22001-23000 ftp服务错误*/
+	ErrorSFtpGOAPIRequestFailed     = 22001 // 接口请求错误
+	ErrorSFtpGOUserNotExist         = 22002 // 用户未存在
+	ErrorSFtpGOUserNotOwnVirtualDir = 22003 // 虚拟目录未属于用户
 )
 
 type codeMsg struct {
@@ -414,4 +419,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorModelDeployDeleteFailed: {codeType: Internal, msg: "delete seldon service failed"},
 	ErrorModelInferRequest:       {codeType: Internal, msg: "seldon service http request failed"},
 	ErrorModelAuthFailed:         {codeType: Internal, msg: "model can`t access"},
+
+	/* 21001-22000 云际请求错误*/
+	ErrorSFtpGOAPIRequestFailed: {codeType: Internal, msg: "sftpgo api request failed"},
 }
