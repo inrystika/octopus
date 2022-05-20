@@ -96,4 +96,4 @@ module:
       capacity: "100Gi"
       nfs:
         server: 192.168.203.72
-        path: "/data/datasets/data"
+        path: "/data/datasets/data/octopus-dev-minio"
