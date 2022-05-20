@@ -159,7 +159,7 @@ export const constantRoutes = [
   {
     path: '/devManager',
     component: Layout,
-    meta: { title: '模型开发', icon: 'model' },
+    meta: { title: '模型开发', icon: 'modelDevelop' },
     alwaysShow: true,
     children: [
       {
@@ -196,7 +196,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'modelManager',
         component: () => import('@/views/modelManager/index'),
-        meta: { title: '模型管理', icon: 'model2' }
+        meta: { title: '模型管理', icon: 'modelManage' }
       }
     ]
   },
@@ -232,7 +232,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'cloudInterconnection',
         component: () => import('@/views/cloudInterconnection/index'),
-        meta: { title: '云际互联', icon: 'example' }
+        meta: { title: '云际互联', icon: 'cloudConnection' }
       }
     ]
   },

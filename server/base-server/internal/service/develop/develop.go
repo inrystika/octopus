@@ -544,6 +544,12 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			ReadOnly:  false,
 		},
 		{
+			Name:      "data",
+			MountPath: s.conf.Service.DockerUserHomePath,
+			SubPath:   common.GetUserHomeBucket(nb.UserId),
+			ReadOnly:  false,
+		},
+		{
 			Name:      "localtime",
 			MountPath: "/etc/localtime",
 		},

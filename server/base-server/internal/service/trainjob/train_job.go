@@ -523,6 +523,12 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				ReadOnly:  false,
 			},
 			{
+				Name:      "data",
+				MountPath: s.conf.Service.DockerUserHomePath,
+				SubPath:   common.GetUserHomeBucket(job.UserId),
+				ReadOnly:  false,
+			},
+			{
 				Name:      "localtime",
 				MountPath: "/etc/localtime",
 			},

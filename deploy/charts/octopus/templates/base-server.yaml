@@ -156,6 +156,7 @@ data:
       dockerDatasetPath: /dataset
       dockerCodePath:  /code
       dockerModelPath: /model
+      dockerUserHomePath: /userhome
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       develop:
