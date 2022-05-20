@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="创建新版本" width="650px" :visible.sync="CreateFormVisible" :before-close="handleDialogClose"
-      :close-on-click-modal="false" :show-close="close">
+      :close-on-click-modal="false" :show-close="Close">
       <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
         <el-form-item label="数据集名称" :label-width="formLabelWidth" prop="name">
           <el-input v-model="ruleForm.name" :disabled="true" />
@@ -57,7 +57,7 @@
         },
         CreateFormVisible: true,
         formLabelWidth: "120px",
-        close: true
+        Close: true
       }
     },
     created() {
@@ -82,7 +82,7 @@
         this.$emit("close", false);
       },
       isCloseX(val) {
-        this.close = val
+        this.Close = val
       }
     }
   }

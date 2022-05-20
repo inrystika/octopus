@@ -141,4 +141,14 @@ export function GetUrlParam(paraName) {
   }
   return null;
 }
+// 刷新页面清空进度条
+export function clearProgress(paraName) {
+  var storage = window.sessionStorage;
+  for (var i = 0, len = storage.length; i < len; i++) {
+    var key = storage.key(i);
+    if (key !== 'space' && key !== 'platform') {
+      storage.removeItem(key)
+    }
+  }
+}
 

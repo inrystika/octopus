@@ -302,6 +302,7 @@
   import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList } from '@/api/datasetManager'
   import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
   import { getUserHour, getGroupHour } from "@/api/generalView";
+  import { clearProgress } from '@/utils/index.js'
   import record from './components/record.vue'
   export default {
     name: "Dashboard",
@@ -347,16 +348,14 @@
       this.getAllLit()
     },
     mounted() {
-      window.addEventListener('beforeunload', e => {
-        sessionStorage.clear()
+      window.addEventListener("beforeunload", (e) => {
+        clearProgress()
       });
-
     },
     destroyed() {
-      window.removeEventListener('beforeunload', e => {
-        sessionStorage.clear()
-      })
-
+      window.removeEventListener("beforeunload", (e) => {
+        clearProgress()
+      });
     },
     methods: {
       async getTrainingTask() {
@@ -394,7 +393,7 @@
         this.loading = false
       },
       getHour() {
-        let workspaceId = JSON.parse(localStorage.getItem('space')).workspaceId
+        let workspaceId = JSON.parse(sessionStorage.getItem('space')).workspaceId
         this.groupName = workspaceId
         if (workspaceId === "default-workspace") {
           this.billRecordVisible = true  //充值记录按钮只在默认群组中展示

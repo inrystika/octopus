@@ -141,6 +141,7 @@
 <script>
 import searchForm from "@/components/search/index.vue";
 import dialogForm from "./components/dialogForm.vue";
+import { clearProgress } from '@/utils/index.js'
 import {
   getMyImage,
   getPublicImage,
@@ -216,6 +217,7 @@ export default {
     };
   },
   created() {
+   
     this.getImage(this.searchData);
     if (this.imageTabType !== 1) {
       this.flag = false;
@@ -237,12 +239,12 @@ export default {
   },
   mounted() {
     window.addEventListener("beforeunload", (e) => {
-      sessionStorage.clear();
+      clearProgress()
     });
   },
   destroyed() {
     window.removeEventListener("beforeunload", (e) => {
-      sessionStorage.clear();
+      clearProgress()
     });
     clearInterval(this.timer);
     this.timer = null;

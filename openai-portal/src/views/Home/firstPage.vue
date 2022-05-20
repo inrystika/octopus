@@ -59,6 +59,7 @@
     import { mapGetters } from 'vuex'
     import store from '@/store'
     import { setToken } from '@/utils/auth'
+    import { clearProgress } from '@/utils/index.js'
     export default {
         data() {
             // 邮箱类型验证
@@ -119,7 +120,7 @@
                         this.loading = true
                         this.$store.dispatch('user/login', this.loginForm).then((res) => {
                             if (res === 'success') {
-                                localStorage.clear()
+                                // sessionStorage.clear()
                                 this.$router.push({ path: '/index' })
                                 this.loading = false
                                 this.$message({
