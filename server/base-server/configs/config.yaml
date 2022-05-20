@@ -66,6 +66,7 @@ service:
   dockerDatasetPath: /dataset
   dockerCodePath: /code
   dockerModelPath: /model
+  dockerUserHomePath: /userhome
   resourceLabelKey: octopus.pcl.ac.cn/type
   billingPeriodSec: 60
   develop:
@@ -95,4 +96,4 @@ module:
       capacity: "100Gi"
       nfs:
         server: 192.168.203.72
-        path: "/data/datasets/data"
+        path: "/data/datasets/data/octopus-dev-minio"

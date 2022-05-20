@@ -153,6 +153,7 @@ message Service {
   string resourceLabelKey = 8;
   int64  billingPeriodSec = 9;
   string dockerModelDeployPath = 10;
+  string dockerUserHomePath = 11;
 }
 
 message Administrator {

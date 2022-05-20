@@ -161,8 +161,15 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 }
 
 func (s *UserService) initUser(ctx context.Context, userId string) error {
+	err := s.data.Minio.CreateBucket(common.GetUserHomeBucket(userId))
+	if err != nil {
+		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
+			return err
+		}
+	}
+
 	// create user namespace
-	_, err := s.data.Cluster.GetNamespace(ctx, userId)
+	_, err = s.data.Cluster.GetNamespace(ctx, userId)
 	if err != nil {
 		_, err = s.data.Cluster.CreateNamespace(ctx, userId)
 		if err != nil {
