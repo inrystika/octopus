@@ -2,7 +2,6 @@
   <div class="Wrapper">
     <el-row :gutter="20">
       <div style="float:left;width:126px;height:40px;text-align:center;padding-top:12px;">ftp设置</div>
-      <el-button type="primary" style="float:right">新建训练任务</el-button>
     </el-row>
     <el-divider class="demo"></el-divider>
     <el-row :gutter="20">
