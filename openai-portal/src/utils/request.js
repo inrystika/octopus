@@ -19,8 +19,8 @@ service.interceptors.request.use(
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['Authorization'] = 'Bearer ' + getToken()
-      if (localStorage.getItem('space')) {
-        config.headers['Octopus-Space-Id'] = JSON.parse(localStorage.getItem('space')).workspaceId
+      if (sessionStorage.getItem('space')) {
+        config.headers['Octopus-Space-Id'] = JSON.parse(sessionStorage.getItem('space')).workspaceId
       }
     }
     // eslint-disable-next-line no-undef

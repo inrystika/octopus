@@ -18,7 +18,7 @@ export function changeThemeColor(newColor) {
 }
 
 export function initThemeColor() {
-  const savedColor = localStorage.getItem('theme_color')
+  const savedColor = sessionStorage.getItem('theme_color')
   if (savedColor) {
     curColor = savedColor
     changeThemeColor(savedColor)

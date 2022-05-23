@@ -73,6 +73,7 @@
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
     import { formatDuring } from '@/utils/index'
+    import { clearProgress } from '@/utils/index.js'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -112,15 +113,14 @@
             this.getList(this.searchData)
         },
         mounted() {
-            window.addEventListener('beforeunload', e => {
-                sessionStorage.clear()
+            window.addEventListener("beforeunload", (e) => {
+                clearProgress()
             });
-
         },
         destroyed() {
-            window.removeEventListener('beforeunload', e => {
-                sessionStorage.clear()
-            })
+            window.removeEventListener("beforeunload", (e) => {
+                clearProgress()
+            });
         },
         methods: {
             getList(data) {

@@ -110,14 +110,14 @@
             }
           )
         })
-        if (JSON.parse(localStorage.getItem('space'))) {
-          this.current = JSON.parse(localStorage.getItem('space')).workspaceName
+        if (JSON.parse(sessionStorage.getItem('space'))) {
+          this.current = JSON.parse(sessionStorage.getItem('space')).workspaceName
         }
         else {
           this.current = '默认群组'
           let data = { workspaceName: '默认群组', workspaceId: 'default-workspace' }
           data = JSON.stringify(data)
-          localStorage.setItem('space', data)
+          sessionStorage.setItem('space', data)
         }
       },
       toggleSideBar() {
@@ -126,14 +126,14 @@
       async logout() {
         await this.$store.dispatch('user/logout')
         this.$router.push(`/?redirect=${this.$route.fullPath}`)
-        localStorage.clear();
+        sessionStorage.removeItem("space");
       },
       handleCommand(command) {
         // 切换群组页面刷新但是保留页面当前群组状态
         let data = { workspaceName: command.name, workspaceId: command.id }
         data = JSON.stringify(data)
         this.current = command.name
-        localStorage.setItem('space', data)
+        sessionStorage.setItem('space', data)
         location.reload();
       },
     },
