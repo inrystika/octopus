@@ -33,11 +33,11 @@ export default {
   name: 'ftp',
   data() {
     var checkName = (rule, value, callback) => {
-      const regName = /^[a-zA-Z][0-9a-zA-Z_]{4,15}$/;
+      const regName = /^[a-zA-Z][0-9a-zA-Z_]{4,30}$/;
       if (regName.test(value)) {
         return callback();
       }
-      callback(new Error("账号由字母开头，长度4-15个字符，允许字母数字下划线"));
+      callback(new Error("账号由字母开头，长度4-30个字符，允许字母数字下划线"));
     };
     return {
       passFlag: false,
