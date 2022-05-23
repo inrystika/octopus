@@ -22,6 +22,7 @@
 </template>
 <script>
 import { updateUserFtpAccount } from "@/api/setting"
+import { clearProgress } from '@/utils/index.js'
 import { getInfo } from '@/api/Home'
 import { getToken } from '@/utils/auth'
 export default {
@@ -59,6 +60,16 @@ export default {
       }
       this.ftpForm.ftpUserName = response.data.user.ftpUserName
     })
+  },
+  mounted() {
+    window.addEventListener("beforeunload", (e) => {
+      clearProgress()
+    });
+  },
+  destroyed() {
+    window.removeEventListener("beforeunload", (e) => {
+      clearProgress()
+    });
   },
   methods: {
     submit() {

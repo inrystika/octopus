@@ -48,7 +48,7 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		querySql += " and algorithm_access.algorithm_name like ? "
 		params = append(params, "%"+req.NameLike+"%")
 	}
-	db = db.Joins("join algorithm as al on al.algorithm_id = algorithm_access.algorithm_id")
+	db = db.Joins("inner join (select algorithm_id as al_id from algorithm )al on al.al_id = algorithm_access.algorithm_id")
 	db = db.Model(&model.AlgorithmAccess{}).Where(querySql, params...)
 
 	var totalSize int64

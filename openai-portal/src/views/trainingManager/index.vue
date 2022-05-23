@@ -11,6 +11,7 @@
 <script>
   import traningTask from "./traningTask.vue";
   import taskTemplate from "./taskTemplate.vue";
+  import { clearProgress } from '@/utils/index.js'
   export default {
     components: {
       traningTask,
@@ -43,16 +44,14 @@
       }
     },
     mounted() {
-      window.addEventListener('beforeunload', e => {
-        sessionStorage.clear()
+      window.addEventListener("beforeunload", (e) => {
+        clearProgress()
       });
-
     },
     destroyed() {
-      window.removeEventListener('beforeunload', e => {
-        sessionStorage.clear()
-      })
-
+      window.removeEventListener("beforeunload", (e) => {
+        clearProgress()
+      });
     },
     methods: {
       handleTabClick(tab) {
