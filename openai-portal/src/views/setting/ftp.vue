@@ -33,7 +33,7 @@ export default {
   name: 'ftp',
   data() {
     var checkName = (rule, value, callback) => {
-      const regName = /^[a-zA-Z][0-9a-zA-Z_]{4,30}$/;
+      const regName = /^[a-zA-Z][0-9a-zA-Z_]{3,30}$/;
       if (regName.test(value)) {
         return callback();
       }
