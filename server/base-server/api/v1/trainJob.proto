@@ -50,6 +50,7 @@ message TrainJobRequest {
   string workspaceId =11[(validate.rules).string = {min_len: 1}];
   //镜像地址，非必填，镜像地址和镜像ID填一个
   string imageUrl = 12[(validate.rules).string = {min_len: 0}];
+  string resourcePool = 13;
 }
 
 message TrainJobTemplateRequest {

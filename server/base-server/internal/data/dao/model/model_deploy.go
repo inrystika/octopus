@@ -33,6 +33,7 @@ type ModelDeploy struct {
 	PayStatus      api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:扣费状态 1扣费中 2扣费完成"`
 	ResourceSpecId string                     `gorm:"type:varchar(100);not null;default:'';comment:'资源Id'"`
 	ResSpecPrice   uint32                     `gorm:"type:int unsigned;comment:资源规格单价"`
+	ResourcePool   string                     `gorm:"type:varchar(300);default:'';comment:资源池"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }

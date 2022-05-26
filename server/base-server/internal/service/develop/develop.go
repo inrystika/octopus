@@ -149,11 +149,15 @@ type closeFunc func(ctx context.Context) error
 func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) (*startJobInfo, error) {
 	queue := ""
 	if nb.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-		if err != nil {
-			return nil, err
+		if nb.ResourcePool == "" {
+			pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+			if err != nil {
+				return nil, err
+			}
+			queue = pool.ResourcePool.Name
+		} else {
+			queue = nb.ResourcePool
 		}
-		queue = pool.ResourcePool.Name
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: nb.WorkspaceId})
 		if err != nil {
