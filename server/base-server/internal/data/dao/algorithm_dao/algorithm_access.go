@@ -75,7 +75,7 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("al.created_at %s", req.CreatedAtSort)
+		orderSql := fmt.Sprintf("algorithm_access.created_at %s", req.CreatedAtSort)
 		db = db.Order(orderSql)
 	}
 
