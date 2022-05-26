@@ -194,7 +194,7 @@ openaiserver:
       systemNameZh:
       organization:
       manualInvisible:
-      thirdPlatform: "pcl"
+      thirdPlatform:
 
 # platform-server
 platformserver:
