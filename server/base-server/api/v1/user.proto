@@ -114,6 +114,7 @@ message UpdateUserRequest {
   GenderType gender = 6 [(validate.rules).enum = {defined_only: true}];
   UserStatus status = 7 [(validate.rules).enum = {defined_only: true}];
   repeated Bind bind = 8;
+  repeated string resourcePools = 9;
 }
 
 message UpdateUserReply {

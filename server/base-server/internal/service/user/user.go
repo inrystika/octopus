@@ -150,7 +150,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			FtpUserName: user.FtpUserName,
 			Gender:      api.GenderType(user.Gender),
 			Status:      api.UserStatus(user.Status),
-			Password:  	 user.Password,
+			Password:    user.Password,
 			CreatedAt:   user.CreatedAt.Unix(),
 			UpdatedAt:   user.UpdatedAt.Unix(),
 			Bind:        bindInfo,
@@ -286,12 +286,13 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		}
 	}
 	user := model.UserUpdate{
-		FullName: req.FullName,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Gender:   int32(req.Gender),
-		Status:   int32(req.Status),
-		Bind:     bindInfo,
+		FullName:      req.FullName,
+		Email:         req.Email,
+		Phone:         req.Phone,
+		Gender:        int32(req.Gender),
+		Status:        int32(req.Status),
+		Bind:          bindInfo,
+		ResourcePools: req.ResourcePools,
 	}
 	if req.Password != "" {
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)

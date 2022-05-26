@@ -289,5 +289,7 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	db.Exec(`update  user set resource_pools='["common-pool"]' where resource_pools is null`)
+
 	return db, err
 }

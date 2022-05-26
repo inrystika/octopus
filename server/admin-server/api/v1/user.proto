@@ -123,6 +123,7 @@ message UpdateUserRequest {
     string password = 2 [(validate.rules).string = {min_len: 8, max_len: 30, ignore_empty:true}];
     string phone = 3 [(validate.rules).string = {pattern: "^(13|14|15|17|18|19)[0-9]{9}$", ignore_empty:true}];
     int32  gender = 4 [(validate.rules).int32 = {in: [1,2],ignore_empty: true}];
+    repeated string resourcePools = 5;
   }
   UpdateItem user = 2 [(validate.rules).message.required = true];
 }

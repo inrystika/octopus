@@ -143,11 +143,12 @@ func (s *UserService) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.
 
 func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
 	result, err := s.data.UserClient.UpdateUser(ctx, &innterapi.UpdateUserRequest{
-		Id:       req.UserId,
-		Password: req.User.Password,
-		FullName: req.User.FullName,
-		Phone:    req.User.Phone,
-		Gender:   innterapi.GenderType(req.User.Gender),
+		Id:            req.UserId,
+		Password:      req.User.Password,
+		FullName:      req.User.FullName,
+		Phone:         req.User.Phone,
+		Gender:        innterapi.GenderType(req.User.Gender),
+		ResourcePools: req.User.ResourcePools,
 	})
 
 	if err != nil {
