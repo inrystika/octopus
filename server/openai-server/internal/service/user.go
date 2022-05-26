@@ -44,15 +44,16 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *api.GetUserInfoReque
 
 	return &api.GetUserInfoReply{
 		User: &api.UserItem{
-			Id:          reply.User.Id,
-			CreatedAt:   reply.User.CreatedAt,
-			UpdatedAt:   reply.User.UpdatedAt,
-			FullName:    reply.User.FullName,
-			Email:       reply.User.Email,
-			Phone:       reply.User.Phone,
-			Gender:      int32(reply.User.Gender),
-			Status:    	 int32(reply.User.Status),
-			FtpUserName: reply.User.FtpUserName,
+			Id:            reply.User.Id,
+			CreatedAt:     reply.User.CreatedAt,
+			UpdatedAt:     reply.User.UpdatedAt,
+			FullName:      reply.User.FullName,
+			Email:         reply.User.Email,
+			Phone:         reply.User.Phone,
+			Gender:        int32(reply.User.Gender),
+			Status:        int32(reply.User.Status),
+			FtpUserName:   reply.User.FtpUserName,
+			ResourcePools: reply.User.ResourcePools,
 		},
 	}, nil
 }
@@ -74,17 +75,26 @@ func (s *UserService) ListUserWorkspaces(ctx context.Context, req *api.ListUserW
 	workspaces := make([]*api.WorkspaceItem, len(result.Workspaces))
 	for idx, w := range result.Workspaces {
 		workspaces[idx] = &api.WorkspaceItem{
-			Id:        w.Id,
-			Name:      w.Name,
-			CreatedAt: w.CreatedAt,
-			UpdatedAt: w.UpdatedAt,
+			Id:            w.Id,
+			Name:          w.Name,
+			CreatedAt:     w.CreatedAt,
+			UpdatedAt:     w.UpdatedAt,
+			ResourcePools: []string{w.ResourcePoolId},
 		}
+	}
+
+	user, err := s.data.UserClient.FindUser(ctx, &innterapi.FindUserRequest{
+		Id: userId,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	// add default workspace
 	workspaces = append(workspaces, &api.WorkspaceItem{
-		Id:   constant.SYSTEM_WORKSPACE_DEFAULT,
-		Name: "",
+		Id:            constant.SYSTEM_WORKSPACE_DEFAULT,
+		Name:          "",
+		ResourcePools: user.User.ResourcePools,
 	})
 
 	return &api.ListUserWorkspacesReply{

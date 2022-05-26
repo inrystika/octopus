@@ -45,6 +45,7 @@ message UserItem {
   int32 gender = 8;
   int32 status = 9;
   string ftpUserName = 10;
+  repeated string resourcePools = 12;
 }
 
 message GetUserInfoRequest {
@@ -59,6 +60,7 @@ message WorkspaceItem {
     int64 createdAt = 2;
     int64 updatedAt = 3;
     string name = 4;
+    repeated string resourcePools = 5;
 }
 
 message WorkspaceUser {
