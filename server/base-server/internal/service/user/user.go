@@ -236,6 +236,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.Gender = int32(req.Gender)
 	user.Status = int32(api.UserStatus_ACTIVITY)
 	user.Bind = cond.Bind
+	user.ResourcePools = []string{s.conf.Service.Resource.DefaultPoolName}
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err

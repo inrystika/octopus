@@ -114,14 +114,15 @@ func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, er
 		bindInfo = append(bindInfo, user.Bind)
 	}
 	u := model.User{
-		Id:       user.Id,
-		FullName: user.FullName,
-		Gender:   user.Gender,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Password: user.Password,
-		Status:   user.Status,
-		Bind:     bindInfo,
+		Id:            user.Id,
+		FullName:      user.FullName,
+		Gender:        user.Gender,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Password:      user.Password,
+		Status:        user.Status,
+		Bind:          bindInfo,
+		ResourcePools: user.ResourcePools,
 	}
 
 	result := db.Omit("ftp_user_name").Create(&u)
