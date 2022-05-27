@@ -158,14 +158,15 @@ type UserQuery struct {
 }
 
 type UserAdd struct {
-	Id       string
-	FullName string
-	Gender   int32
-	Email    string
-	Phone    string
-	Password string
-	Status   int32
-	Bind     *Bind
+	Id            string
+	FullName      string
+	Gender        int32
+	Email         string
+	Phone         string
+	Password      string
+	Status        int32
+	Bind          *Bind
+	ResourcePools []string
 }
 
 type UserUpdate struct {

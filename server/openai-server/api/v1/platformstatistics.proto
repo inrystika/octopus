@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service PlatformStatistics {
+  // 平台数据汇总
+  rpc Summary (PlatformStatSummaryRequest) returns (PlatformStatSummaryReply) {
+    option (google.api.http) = {
+      get: "/v1/platformstatisticsmanage/summary"
+    };
+  };
+}
+
+message PlatformStatSummaryRequest {
+
+}
+
+message PlatformStatSummaryReply {
+  message TrainJob {
+    int32 pendingNum = 1;
+    int32 runningNum = 2;
+  }
+
+  TrainJob trainJob = 1;
+}

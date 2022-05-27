@@ -16,6 +16,7 @@ import (
 	"server/base-server/internal/service/model"
 	"server/base-server/internal/service/modeldeploy"
 	"server/base-server/internal/service/platform"
+	"server/base-server/internal/service/platformstatistics"
 	"server/base-server/internal/service/resources"
 	"server/base-server/internal/service/trainjob"
 	"server/base-server/internal/service/user"
@@ -25,26 +26,27 @@ import (
 )
 
 type Service struct {
-	AlgorithmService        api.AlgorithmServiceServer
-	UserService             api.UserServiceServer
-	AdminUserService        api.AdminUserServer
-	ModelService            api.ModelServiceServer
-	ResourceService         api.ResourceServiceServer
-	ResourceSpecService     api.ResourceSpecServiceServer
-	ResourcePoolService     api.ResourcePoolServiceServer
-	NodeService             api.NodeServiceServer
-	DevelopService          develop.DevelopService
-	TrainJobService         trainjob.TrainJobService
-	WorkspaceService        api.WorkspaceServiceServer
-	DatasetService          api.DatasetServiceServer
-	ImageService            api.ImageServiceServer
-	BillingService          api.BillingServiceServer
-	LableService            api.LableServiceServer
-	PlatformService         api.PlatformServiceServer
-	PlatformTrainJobService platform.PlatformTrainJobService
-	JointCloudService       api.JointCloudServiceServer
-	ModelDeployService      api.ModelDeployServiceServer
-	FtpProxyService         api.FtpProxyServiceServer
+	AlgorithmService          api.AlgorithmServiceServer
+	UserService               api.UserServiceServer
+	AdminUserService          api.AdminUserServer
+	ModelService              api.ModelServiceServer
+	ResourceService           api.ResourceServiceServer
+	ResourceSpecService       api.ResourceSpecServiceServer
+	ResourcePoolService       api.ResourcePoolServiceServer
+	NodeService               api.NodeServiceServer
+	DevelopService            develop.DevelopService
+	TrainJobService           trainjob.TrainJobService
+	WorkspaceService          api.WorkspaceServiceServer
+	DatasetService            api.DatasetServiceServer
+	ImageService              api.ImageServiceServer
+	BillingService            api.BillingServiceServer
+	LableService              api.LableServiceServer
+	PlatformService           api.PlatformServiceServer
+	PlatformTrainJobService   platform.PlatformTrainJobService
+	JointCloudService         api.JointCloudServiceServer
+	ModelDeployService        api.ModelDeployServiceServer
+	FtpProxyService           api.FtpProxyServiceServer
+	PlatformStatisticsService api.PlatformStatisticsServer
 }
 
 func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, data *data.Data) (*Service, error) {
@@ -98,6 +100,8 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	if err != nil {
 		return nil, err
 	}
+
+	service.PlatformStatisticsService = platformstatistics.NewPlatformStatisticsService(data)
 
 	return service, nil
 }
