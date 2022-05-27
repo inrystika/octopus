@@ -25,31 +25,32 @@ import (
 )
 
 type Data struct {
-	UserDao             dao.UserDao
-	AdminUserDao        dao.AdminUserDao
-	AlgorithmDao        algorithm_dao.AlgorithmDao
-	ResourceDao         dao.ResourceDao
-	ResourceSpecDao     dao.ResourceSpecDao
-	DevelopDao          dao.DevelopDao
-	TrainJobDao         dao.TrainJobDao
-	ModelDao            dao.ModelDao
-	DatasetDao          dao.DatasetDao
-	WorkspaceDao        dao.WorkspaceDao
-	ImageDao            dao.ImageDao
-	BillingDao          dao.BillingDao
-	LableDao            dao.LableDao
-	PlatformTrainJobDao platformDao.PlatformTrainJobDao
-	Pipeline            pipeline.Pipeline
-	Cluster             cluster.Cluster
-	Minio               minio.Minio
-	Registry            registry.ArtifactRegistry
-	Redis               redis.Redis
-	Influxdb            influxdb.Influxdb
-	PlatformDao         platformDao.PlatformDao
-	Platform            platform.Platform
-	JointCloudDao       jointcloud.JointcloudDao
-	JointCloud          jointcloud.JointCloud
-	ModelDeployDao      dao.ModelDeployDao
+	UserDao               dao.UserDao
+	AdminUserDao          dao.AdminUserDao
+	AlgorithmDao          algorithm_dao.AlgorithmDao
+	ResourceDao           dao.ResourceDao
+	ResourceSpecDao       dao.ResourceSpecDao
+	DevelopDao            dao.DevelopDao
+	TrainJobDao           dao.TrainJobDao
+	ModelDao              dao.ModelDao
+	DatasetDao            dao.DatasetDao
+	WorkspaceDao          dao.WorkspaceDao
+	ImageDao              dao.ImageDao
+	BillingDao            dao.BillingDao
+	LableDao              dao.LableDao
+	PlatformTrainJobDao   platformDao.PlatformTrainJobDao
+	Pipeline              pipeline.Pipeline
+	Cluster               cluster.Cluster
+	Minio                 minio.Minio
+	Registry              registry.ArtifactRegistry
+	Redis                 redis.Redis
+	Influxdb              influxdb.Influxdb
+	PlatformDao           platformDao.PlatformDao
+	Platform              platform.Platform
+	JointCloudDao         jointcloud.JointcloudDao
+	JointCloud            jointcloud.JointCloud
+	ModelDeployDao        dao.ModelDeployDao
+	PlatformStatisticsDao dao.PlatformStatisticsDao
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
@@ -99,6 +100,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
+	d.PlatformStatisticsDao = dao.NewPlatformStatisticsDao(db)
 
 	return d, func() {
 		clusterCancel()

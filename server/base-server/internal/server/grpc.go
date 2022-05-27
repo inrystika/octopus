@@ -61,5 +61,6 @@ func NewGRPCServer(c *conf.Server, s *service.Service) *grpc.Server {
 	api.RegisterJointCloudServiceServer(gs, s.JointCloudService)
 	api.RegisterModelDeployServiceServer(gs, s.ModelDeployService)
 	api.RegisterFtpProxyServiceServer(gs, s.FtpProxyService)
+	api.RegisterPlatformStatisticsServer(gs, s.PlatformStatisticsService)
 	return gs
 }
