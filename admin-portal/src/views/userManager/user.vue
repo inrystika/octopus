@@ -45,6 +45,7 @@
             </el-table-column>
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
+                    <el-button v-if="user" type="text" @click="handleUserEdit(scope.row)">编辑</el-button>
                     <el-button v-if="scope.row.status===2 && user" type="text" @click="handleFreeze(scope.row)">冻结
                     </el-button>
                     <el-button v-if="scope.row.status===1 && user" type="text" @click="handleThaw( scope.row)">激活
@@ -71,6 +72,9 @@
         <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
             @confirm="confirm" @close="close">
         </userConfig>
+        <!-- 资源池绑定对话框 -->
+        <userEdit v-if="userEdit" :userResourcePoolList="userResourcePoolList" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
+        </userEdit>
         <!-- 详情对话框 -->
         <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
             class="title" :close-on-click-modal="false">
@@ -90,10 +94,12 @@
 
 <script>
     import { getUserList, getGroupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
+    import { getResourcePool } from '@/api/resourceManager.js'
     import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
     import userConfig from "./components/userConfig.vue";
+    import userEdit from "./components/userEdit.vue";
     import searchForm from '@/components/search/index.vue'
     export default {
         name: "UserList",
@@ -101,7 +107,8 @@
             operateDialog,
             addDialog,
             searchForm,
-            userConfig
+            userConfig,
+            userEdit
         },
         props: {
             userTabType: { type: Number, default: undefined }
@@ -114,6 +121,8 @@
                 operateVisible: false,
                 detailVisible: false,
                 userConfigVisible: false,
+                userEdit: false,
+                userResourcePoolList: [],
                 show: false,
                 user: false,
                 group: false,
@@ -162,6 +171,24 @@
         //     this.timer = null;
         // },
         methods: {
+            handleUserEdit(row) {
+                this.row = row
+                getResourcePool().then(response => {
+                    if (response.success) {
+                        if (response.data !== null && response.data.resourcePools !== null) {
+                            this.userEdit = true
+                            this.userResourcePoolList =response.data.resourcePools
+                        } else {
+                            this.userResourcePoolList = []
+                        }
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
             handleFreeze(row) {
                 freeze(row.id).then(response => {
                     if (response.success) {
@@ -263,18 +290,21 @@
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             confirm(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             close(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             create() {
