@@ -104,12 +104,27 @@
                         <el-button type="primary" @click="addItem">增加</el-button>
                         <el-button type="text" :disabled="showArg" @click="open">预览</el-button>
                     </el-form-item>
-                    <el-form-item label="资源规格" prop="resourceSpecId">
+
+                    <div>
+                        <el-form-item label="资源池" prop="poolItem" style="display:inline-block;">
+                            <el-select v-model="ruleForm.poolItem" placeholder="请选择资源池" @change="getResourceList">
+                                <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item v-if="specificationVisible" label="资源规格" prop="resourceSpecId" style="display:inline-block;">
+                            <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
+                                <el-option v-for="(item,index) in resourceOptions" :key="index" :label="item.label"
+                                    :value="item.value" />
+                            </el-select>
+                        </el-form-item>
+                    </div>
+
+                    <!-- <el-form-item label="资源规格" prop="resourceSpecId">
                         <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
                             <el-option v-for="(item,index) in resourceOptions" :key="index" :label="item.label"
                                 :value="item.value" />
                         </el-select>
-                    </el-form-item>
+                    </el-form-item> -->
                 </div>
                 <div v-if="!show">
                     <traningList :training-table="table" :resource="resourceOptions" @tableData="getTableData" />
@@ -127,6 +142,7 @@
 </template>
 
 <script>
+    import { mapGetters } from 'vuex'
     import traningList from './traningList.vue'
     import { createTask, saveTemplate, getResourceList } from '@/api/trainingManager'
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
@@ -150,6 +166,8 @@
         },
         data() {
             return {
+                specificationVisible:false,
+                poolList: [],
                 show: true,
                 showTraning: true,
                 showTemplate: false,
@@ -179,6 +197,7 @@
 
                     }],
                     resourceSpecId: "",
+                    poolItem: "",
                     command: ''
                 },
                 CreateFormVisible: true,
@@ -219,6 +238,9 @@
                     ],
                     resourceSpecId: [
                         { required: true, message: '请选择活资源规格', trigger: 'change' }
+                    ],
+                    poolItem: [
+                        { required: true, message: "请选择资源池", trigger: "blur" }
                     ]
                 },
                 formLabelWidth: '120px',
@@ -293,7 +315,10 @@
 
                     return flag
                 }
-            }
+            },
+            ...mapGetters([
+                'workspaces'
+            ])
         },
         watch: {
             'ruleForm.isDistributed': {
@@ -307,7 +332,8 @@
         created() {
             // 判断是创建训练任务还是创建模板还是创建模板
             // 1创建训练任务2创建训练模板3其他页面跳转
-            this.getResourceList()
+            // this.getResourceList()
+            this.getSpacePools();
             if (this.flag === 3) {
                 const temp = JSON.parse(JSON.stringify(this.row))
                 this.temp.algorithmId = temp.algorithmId
@@ -319,9 +345,21 @@
             }
         },
         methods: {
+            getSpacePools() {
+                let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
+                this.workspaces.forEach(
+                    item => {
+                        // 获取当前群组绑定资源池列表
+                        if(item.name == workspaceName) {
+                            this.poolList = item.resourcePools
+                        }
+                    }
+                )
+            },
             // 获取资源规格
             getResourceList() {
-                getResourceList().then(response => {
+                this.specificationVisible = true
+                getResourceList(this.ruleForm.poolItem).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {
