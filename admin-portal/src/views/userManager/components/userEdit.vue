@@ -49,6 +49,13 @@
     created() {
       this.resourcePoolList = this.userResourcePoolList
       this.userInfo = this.row
+      this.resourcePoolList.forEach(
+        item => {
+          if(item.default) {
+            this.ruleForm.pool = [item]
+          }
+        }
+      )
     },
     methods: {
       handleDialogClose() {
