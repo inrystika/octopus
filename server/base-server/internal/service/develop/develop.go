@@ -550,7 +550,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		{
 			Name:      "data",
 			MountPath: s.conf.Service.DockerUserHomePath,
-			SubPath:   common.GetUserHomeBucket(nb.UserId),
+			SubPath:   common.GetUserHomePath(nb.UserId),
 			ReadOnly:  false,
 		},
 		{
