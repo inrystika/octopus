@@ -529,7 +529,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			{
 				Name:      "data",
 				MountPath: s.conf.Service.DockerUserHomePath,
-				SubPath:   common.GetUserHomeBucket(job.UserId),
+				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
 			},
 			{

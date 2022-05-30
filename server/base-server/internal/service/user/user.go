@@ -162,7 +162,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 }
 
 func (s *UserService) initUser(ctx context.Context, userId string) error {
-	err := s.data.Minio.CreateBucket(common.GetUserHomeBucket(userId))
+	err := s.data.Minio.CreateBucket(common.GetUserBucket(userId))
 	if err != nil {
 		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
 			return err
@@ -422,8 +422,8 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 		Username:     req.FtpUserName,
 		Email:        user.Email,
 		Password:     req.FtpPassword,
-		HomeS3Bucket: common.GetUserHomeBucket(req.UserId),
-		HomeS3Object: "",
+		HomeS3Bucket: common.GetUserBucket(req.UserId),
+		HomeS3Object: common.GetUserHomeObject(),
 	})
 	if err != nil {
 		return nil, err
