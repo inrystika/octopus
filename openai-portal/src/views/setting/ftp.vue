@@ -11,7 +11,7 @@
             <!-- <el-tooltip content="ftp账号与启智章鱼账号相互独立" placement="top">
               <i class="el-icon-info" style="color: #f7c324"></i>
             </el-tooltip> -->
-            <el-input v-model="ftpForm.ftpUserName" placeholder="请填写账号" minlength="4" maxlength="30" show-word-limit/>
+            <el-input v-model="ftpForm.ftpUserName" placeholder="请填写账号" :disabled="isShow" minlength="4" maxlength="30" show-word-limit/>
           </el-form-item>
           <el-form-item label="ftp密码:" prop="ftpPassword">
             <el-input v-model="ftpForm.ftpPassword" :type="[passFlag?'text':'password']" placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit>
@@ -40,6 +40,7 @@ export default {
       callback(new Error("账号由字母开头，长度4-30个字符，允许字母数字下划线"));
     };
     return {
+      isShow: false,
       passFlag: false,
       ftpRules: {
         ftpUserName: [
@@ -60,10 +61,10 @@ export default {
   },
   created() {
     getInfo(getToken()).then(response => {
-      if (!response.data) {
-        this.ftpForm.ftpUserName = ''
-      }
-      this.ftpForm.ftpUserName = response.data.user.ftpUserName
+      if (response.data.user.ftpUserName) {
+        this.ftpForm.ftpUserName = response.data.user.ftpUserName
+        this.isShow = true
+      }     
     })
   },
   mounted() {
