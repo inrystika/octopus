@@ -10,8 +10,6 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
-
-	"github.com/golang/protobuf/ptypes/empty"
 )
 
 type ResourceSpecService struct {
@@ -30,36 +28,13 @@ func NewResourceSpecService(conf *conf.Bootstrap, logger log.Logger, data *data.
 	}
 }
 
-func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *empty.Empty) (*api.ListResourceSpecReply, error) {
+func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *api.ListResourceSpecRequest) (*api.ListResourceSpecReply, error) {
 	var err error
-	_, workSpaceId, isDefaultSpace := rsvc.getUserIdAndSpaceId(ctx)
 
 	rq := &innerapi.GetResourcePoolReply{}
-	if isDefaultSpace {
-		rq, err = rsvc.data.ResourcePoolClient.GetDefaultResourcePool(ctx, &empty.Empty{})
-
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
-		}
-	} else {
-		wsReply, err := rsvc.data.WorkspaceClient.FindWorkspace(ctx, &innerapi.FindWorkspaceRequest{
-			Id: workSpaceId,
-		})
-
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
-		}
-
-		resourcePoolId := wsReply.Workspace.ResourcePoolId
-
-		rq, err = rsvc.data.ResourcePoolClient.GetResourcePool(ctx, &innerapi.GetResourcePoolRequest{
-			Id: resourcePoolId,
-		})
-
-		if err != nil {
-			return nil, errors.Errorf(err, errors.ErrorListResourceSpec)
-		}
-	}
+	rq, err = rsvc.data.ResourcePoolClient.GetResourcePool(ctx, &innerapi.GetResourcePoolRequest{
+		Id: req.ResourcePool,
+	})
 
 	allResourceSpecList, err := rsvc.data.ResourceSpecClient.ListResourceSpec(ctx, &innerapi.ListResourceSpecRequest{})
 	if err != nil {

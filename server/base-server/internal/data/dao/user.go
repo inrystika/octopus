@@ -114,14 +114,15 @@ func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, er
 		bindInfo = append(bindInfo, user.Bind)
 	}
 	u := model.User{
-		Id:       user.Id,
-		FullName: user.FullName,
-		Gender:   user.Gender,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Password: user.Password,
-		Status:   user.Status,
-		Bind:     bindInfo,
+		Id:            user.Id,
+		FullName:      user.FullName,
+		Gender:        user.Gender,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Password:      user.Password,
+		Status:        user.Status,
+		Bind:          bindInfo,
+		ResourcePools: user.ResourcePools,
 	}
 
 	result := db.Omit("ftp_user_name").Create(&u)
@@ -144,14 +145,15 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
-		FullName:    user.FullName,
-		Email:       user.Email,
-		Phone:       user.Phone,
-		Gender:      user.Gender,
-		Password:    user.Password,
-		Status:      user.Status,
-		Bind:        user.Bind,
-		FtpUserName: user.FtpUserName,
+		FullName:      user.FullName,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Gender:        user.Gender,
+		Password:      user.Password,
+		Status:        user.Status,
+		Bind:          user.Bind,
+		FtpUserName:   user.FtpUserName,
+		ResourcePools: user.ResourcePools,
 	})
 	if result.Error != nil {
 		return nil, result.Error

@@ -54,12 +54,19 @@
                         <el-option label="gpu" value="gpu"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="资源规格" prop="resourceSpecId">
-                    <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
-                        <el-option v-for="item in resourceOptions" :key="item.id" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
+
+                <div>
+                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList">
+                            <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="specificationVisible" label="资源规格" prop="resourceSpecId" style="display:inline-block;">
+                      <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
+                          <el-option v-for="item in resourceOptions" :key="item.id" :label="item.label" :value="item.value" />
+                      </el-select>
+                  </el-form-item>
+                </div>
                 <el-form-item>
                     <el-button type="primary" @click="submitForm('ruleForm')">提交服务</el-button>
                 </el-form-item>
@@ -72,7 +79,7 @@
     import { createDeploy } from '@/api/deployManager.js'
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
-    // import upload from '@/components/upload/index.vue'
+    import { mapGetters } from 'vuex'
     import { algorithmFrame } from "@/api/modelDev";
     export default {
         name: "DialogCreateForm",
@@ -87,6 +94,8 @@
         },
         data() {
             return {
+                specificationVisible:false,
+                poolList: [],
                 CreateFormVisible: true,
                 ruleForm: {
                     name: '',
@@ -97,7 +106,8 @@
                     modelVersion: '',
                     resourceType: '',
                     resourceSpecId: '',
-                    domain: this.GLOBAL.DOMAIN
+                    domain: this.GLOBAL.DOMAIN,
+                    resourcePool: "",
                 },
                 rules: {
                     name: [
@@ -125,6 +135,13 @@
                     resourceSpecId: [
                         { required: true, message: '请选择资源规格', trigger: 'change' }
                     ],
+                    resourcePool: [
+                        {
+                            required: true,
+                            message: "请选择资源池",
+                            trigger: "blur"
+                        }
+                    ]
 
                 },
                 resourceOptions: [],
@@ -156,7 +173,11 @@
 
             }
         },
-        watch: {},
+        computed: {
+            ...mapGetters([
+                'workspaces'
+            ])
+        },
         created() {
             if (JSON.stringify(this.row) !== '{}') {
                 this.uncheckable = true
@@ -171,7 +192,8 @@
                 this.ruleForm.modelFrame = this.row.modelFrame.toLowerCase()
                 this.chooseFrame = true
             }
-            this.getResourceList()
+            this.getSpacePools();
+            // this.getResourceList()
             this.algorithmFrame()
         },
         beforeDestroy() {
@@ -311,9 +333,21 @@
                     })
                 }
             },
+            getSpacePools() {
+                let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
+                this.workspaces.forEach(
+                    item => {
+                        // 获取当前群组绑定资源池列表
+                        if(item.name == workspaceName) {
+                            this.poolList = item.resourcePools
+                        }
+                    }
+                )
+            },
             // 获取资源规格
             getResourceList() {
-                getResourceList().then(response => {
+                this.specificationVisible = true
+                getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.deploy.resourceSpecs.forEach(
                             item => {

@@ -289,11 +289,15 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 	queue := ""
 	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-		if err != nil {
-			return nil, err
+		if job.ResourcePool == "" {
+			pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+			if err != nil {
+				return nil, err
+			}
+			queue = pool.ResourcePool.Name
+		} else {
+			queue = job.ResourcePool
 		}
-		queue = pool.ResourcePool.Name
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: job.WorkspaceId})
 		if err != nil {
@@ -525,7 +529,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			{
 				Name:      "data",
 				MountPath: s.conf.Service.DockerUserHomePath,
-				SubPath:   common.GetUserHomeBucket(job.UserId),
+				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
 			},
 			{

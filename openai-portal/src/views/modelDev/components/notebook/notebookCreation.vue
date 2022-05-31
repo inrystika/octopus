@@ -13,11 +13,6 @@
                 </el-form-item>
                 <!-- 算法三级框 -->
                 <div>
-                    <!-- <el-form-item label="算法类型" prop="algorithmSource" style="display:inline-block;">
-            <el-select v-model="ruleForm.algorithmSource" placeholder="请选择">
-              <el-option label="我的算法" value="my"></el-option>
-            </el-select>
-                    </el-form-item>-->
                     <el-form-item label="算法名称" prop="algorithmId" style="display:inline-block;">
                         <el-select v-model="ruleForm.algorithmId" v-loadmore="loadAlgorithmName" placeholder="请选择算法名称"
                             filterable remote :remote-method="remoteAlgorithm" @change="changeAlgorithmName"
@@ -85,13 +80,20 @@
                         </el-select>
                     </el-form-item>
                 </div>
-
-                <el-form-item label="资源规格" :label-width="formLabelWidth" prop="specification">
-                    <el-select v-model="ruleForm.specification" placeholder="请资源规格" style="width:35%">
-                        <el-option v-for="(item, index) in resourceList" :key="index" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
+                <!-- 资源二级框 -->
+                <div>
+                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResource">
+                            <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="specificationVisible" label="资源规格" prop="specification" style="display:inline-block;">
+                        <el-select v-model="ruleForm.specification" placeholder="请选择资源规格">
+                            <el-option v-for="(item, index) in resourceList" :key="index" :label="item.label"
+                                :value="item.value" />
+                        </el-select>
+                    </el-form-item>
+                </div>
                 <el-form-item>
                     <el-button type="text" @click="showMultitask">高级设置</el-button>
                 </el-form-item>
@@ -115,6 +117,7 @@
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from "@/api/datasetManager";
     import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
     import { getResourceList } from "@/api/trainingManager";
+    import { mapGetters } from 'vuex'
     export default {
         name: "NotebookCreation",
         directives: {
@@ -135,6 +138,8 @@
         },
         data() {
             return {
+                specificationVisible:false,
+                poolList: [],
                 ruleForm: {
                     name: "",
                     desc: "",
@@ -146,7 +151,9 @@
                     dataSetSource: "",
                     dataSetId: "",
                     dataSetVersion: "",
-                    taskNumber: 1
+                    taskNumber: 1,
+                    resourcePool: "",
+                    specification: ""
                 },
                 rules: {
                     name: [
@@ -191,19 +198,17 @@
                             trigger: "change"
                         }
                     ],
-                    // dataSetSource: [
-                    //   { required: true, message: '请选择数据集类型', trigger: 'change' }
-                    // ],
-                    // dataSetId: [
-                    //   { required: true, message: '请选择数据集名称', trigger: 'change' }
-                    // ],
-                    // dataSetVersion: [
-                    //   { required: true, message: '请选择数据集版本', trigger: 'change' }
-                    // ],
                     specification: [
                         {
                             required: true,
                             message: "请选择资源规格",
+                            trigger: "blur"
+                        }
+                    ],
+                    resourcePool: [
+                        {
+                            required: true,
+                            message: "请选择资源池",
                             trigger: "blur"
                         }
                     ]
@@ -246,10 +251,26 @@
             };
         },
         created() {
-            this.getResource();
-            // this.getAlgorithmNameList();
+            // this.getResource();
+            this.getSpacePools();
+        },
+        computed: {
+            ...mapGetters([
+                'workspaces'
+            ])
         },
         methods: {
+            getSpacePools() {
+                let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
+                this.workspaces.forEach(
+                    item => {
+                        // 获取当前群组绑定资源池列表
+                        if(item.name == workspaceName) {
+                            this.poolList = item.resourcePools
+                        }
+                    }
+                )
+            },
             handleDialogClose() {
                 this.$emit("close", false);
             },
@@ -269,8 +290,9 @@
                         });
                     });
             },
-            getResource() {
-                getResourceList().then(response => {
+            getResource() {               
+                this.specificationVisible = true
+                getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.debug.resourceSpecs.forEach(
                             item => {
@@ -280,7 +302,6 @@
                                 });
                             }
                         );
-                        // this.resourceList = response.data.mapResourceSpecIdList.debug.resourceSpecs
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
@@ -306,7 +327,8 @@
                             algorithmVersion: this.ruleForm.algorithmVersion || "",
                             datasetId: this.ruleForm.dataSetId || "",
                             datasetVersion: this.ruleForm.dataSetVersion || "",
-                            taskNumber: this.ruleForm.taskNumber
+                            taskNumber: this.ruleForm.taskNumber,
+                            resourcePool: this.ruleForm.resourcePool
                         };
                         const confirmInfo = this.$createElement
                         this.$confirm(
