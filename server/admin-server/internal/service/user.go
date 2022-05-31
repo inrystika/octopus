@@ -93,14 +93,15 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 
 	return &pb.GetUserReply{
 		User: &pb.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    int32(user.Gender),
-			Status:    int32(user.Status),
+			Id:            user.Id,
+			FullName:      user.FullName,
+			CreatedAt:     user.CreatedAt,
+			UpdatedAt:     user.UpdatedAt,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			Gender:        int32(user.Gender),
+			Status:        int32(user.Status),
+			ResourcePools: user.ResourcePools,
 		},
 		Workspaces: workspaces,
 	}, nil
