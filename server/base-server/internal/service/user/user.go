@@ -80,16 +80,17 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			}
 		}
 		item := &api.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    api.GenderType(user.Gender),
-			Status:    api.UserStatus(user.Status),
-			Password:  user.Password,
-			CreatedAt: user.CreatedAt.Unix(),
-			UpdatedAt: user.UpdatedAt.Unix(),
-			Bind:      bindInfo,
+			Id:            user.Id,
+			FullName:      user.FullName,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			Gender:        api.GenderType(user.Gender),
+			Status:        api.UserStatus(user.Status),
+			Password:      user.Password,
+			CreatedAt:     user.CreatedAt.Unix(),
+			UpdatedAt:     user.UpdatedAt.Unix(),
+			Bind:          bindInfo,
+			ResourcePools: user.ResourcePools,
 		}
 		users[idx] = item
 	}
@@ -293,8 +294,10 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		Phone:         req.Phone,
 		Gender:        int32(req.Gender),
 		Status:        int32(req.Status),
-		Bind:          bindInfo,
 		ResourcePools: req.ResourcePools,
+	}
+	if len(bindInfo) > 0 {
+		user.Bind = bindInfo
 	}
 	if req.Password != "" {
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
