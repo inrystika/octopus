@@ -49,14 +49,15 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 	users := make([]*pb.UserItem, len(listUserReply.Users))
 	for idx, user := range listUserReply.Users {
 		users[idx] = &pb.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    int32(user.Gender),
-			Status:    int32(user.Status),
+			Id:            user.Id,
+			FullName:      user.FullName,
+			CreatedAt:     user.CreatedAt,
+			UpdatedAt:     user.UpdatedAt,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			Gender:        int32(user.Gender),
+			Status:        int32(user.Status),
+			ResourcePools: user.ResourcePools,
 		}
 	}
 
@@ -92,14 +93,15 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 
 	return &pb.GetUserReply{
 		User: &pb.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    int32(user.Gender),
-			Status:    int32(user.Status),
+			Id:            user.Id,
+			FullName:      user.FullName,
+			CreatedAt:     user.CreatedAt,
+			UpdatedAt:     user.UpdatedAt,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			Gender:        int32(user.Gender),
+			Status:        int32(user.Status),
+			ResourcePools: user.ResourcePools,
 		},
 		Workspaces: workspaces,
 	}, nil
