@@ -35,8 +35,8 @@
                 </el-form-item>
 
                 <div>
-                    <el-form-item label="资源池" prop="poolItem" style="display:inline-block;">
-                        <el-select v-model="ruleForm.poolItem" placeholder="请选择资源池" @change="getResourceList">
+                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList">
                             <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
                         </el-select>
                     </el-form-item>
@@ -51,17 +51,6 @@
                         </el-select>
                     </el-form-item>
                 </div>
-
-                <!-- <el-form-item label="资源规格" prop="resourceSpecId">
-                    <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
-                        <el-option
-                            v-for="item in resourceOptions"
-                            :key="item.id"
-                            :label="item.label"
-                            :value="item.value"
-                        />
-                    </el-select>
-                </el-form-item> -->
                 <el-form-item label="副本个数" prop="taskNumber">
                     <el-input v-model.number="ruleForm.taskNumber" />
                 </el-form-item>
@@ -117,7 +106,7 @@
                         key: "",
                         value: ""
                     }],
-                    poolItem: "",
+                    resourcePool: "",
                 },
                 CreateFormVisible: true,
                 resourceOptions: [],
@@ -152,7 +141,7 @@
                     isMainRole: [
                         { required: true, message: '请选择是否为主任务', trigger: 'change' }
                     ],
-                    poolItem: [
+                    resourcePool: [
                         { required: true, message: "请选择资源池", trigger: "blur" }
                     ]
                 },
@@ -243,7 +232,7 @@
             // 获取资源规格
             getResourceList() {
                 this.specificationVisible = true
-                getResourceList(this.ruleForm.poolItem).then(response => {
+                getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {
