@@ -4,12 +4,12 @@
       :close-on-click-modal="false" width="35%">
       <el-form :model="ruleForm" ref="ruleForm" label-width="100px">
         <el-form-item label="资源池"  prop="pool">
-            <el-select v-model="ruleForm.pool" placeholder="请绑定资源池" value-key="id" multiple>
+            <el-select v-model="ruleForm.pool" placeholder="请绑定资源池" multiple>
                 <el-option
                     v-for="item in resourcePoolList"
                     :key="item.id"
                     :label="item.id"
-                    :value="item">
+                    :value="item.id">
                 </el-option>
             </el-select>
         </el-form-item>
@@ -42,20 +42,14 @@
         userInfo: {},
         resourcePoolList: [],
         ruleForm: {
-          pool: ""
+          pool: []
         }
       }
     },
     created() {
       this.resourcePoolList = this.userResourcePoolList
       this.userInfo = this.row
-      this.resourcePoolList.forEach(
-        item => {
-          if(item.default) {
-            this.ruleForm.pool = [item]
-          }
-        }
-      )
+      this.ruleForm.pool = this.row.resourcePools
     },
     methods: {
       handleDialogClose() {
@@ -79,6 +73,7 @@
                     message: '资源池绑定成功',
                     type: 'success'
                 });
+                this.$emit('close', false)
             } else {
                 this.$message({
                     message: response.error.message,
