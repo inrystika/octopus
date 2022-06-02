@@ -451,6 +451,7 @@
                             this.ruleForm.config[0].taskNumber = 1
                             this.ruleForm.config[0].minFailedTaskCount = 1
                             this.ruleForm.config[0].minSucceededTaskCount = 1
+                            this.ruleForm.config[0].resourcePool = this.ruleForm.resourcePool
                             delete this.ruleForm.config[0].isMainRole
                         }
                         var data = JSON.parse(JSON.stringify(this.ruleForm))
@@ -459,6 +460,7 @@
                         delete data.algorithmSource
                         delete data.imageSource
                         delete data.dataSetSource
+                        
                         if (this.flag === 3) {
                             if (!this.algorithmChange) {
                                 data.algorithmId = this.temp.algorithmId

@@ -175,6 +175,17 @@
             this.ruleForm = this.row
             // this.getResourceList()
             this.getSpacePools();
+            if(!this.flag) {
+              this.specificationVisible = true
+              this.ruleForm.resourceOptions.forEach(
+                item => {
+                  if(item.value == this.ruleForm.resourceSpecId) {
+                    this.ruleForm.resourceSpecId = item.label
+                  }
+                }
+              )
+              this.getResourceList()
+            }
         },
         beforeDestroy() {
             this.ruleForm = {}
@@ -231,14 +242,15 @@
             },
             // 获取资源规格
             getResourceList() {
-                this.specificationVisible = true
-                getResourceList(this.ruleForm.resourcePool).then(response => {
-                    if (response.success) {
+              getResourceList(this.ruleForm.resourcePool).then(response => {
+                if (response.success) {
+                        this.specificationVisible = true
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {
                                 this.resourceOptions.push({ label: item.name + ' ' + item.price + '机时/h', value: item.id })
                             }
                         )
+                        this.ruleForm.resourceOptions = this.resourceOptions
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
