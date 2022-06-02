@@ -2,17 +2,23 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
+
 
 package openaiserver.api.v1;
 
 option go_package = "server/openai-server/api/v1;v1";
 
 service ResourceSpecService {
-  rpc ListResourceSpec(google.protobuf.Empty) returns (ListResourceSpecReply){
+  rpc ListResourceSpec(ListResourceSpecRequest) returns (ListResourceSpecReply){
     option (google.api.http) = {
       get: "/v1/resourcemanage/resourcespec",
     };
   };
+}
+
+message ListResourceSpecRequest {
+  string resourcePool = 1[(validate.rules).string = {min_len: 1}];
 }
 
 message ListResourceSpecReply {

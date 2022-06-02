@@ -194,7 +194,7 @@ openaiserver:
       systemNameZh:
       organization:
       manualInvisible:
-      thirdPlatform: "pcl"
+      thirdPlatform:
 
 # platform-server
 platformserver:
@@ -483,9 +483,6 @@ sftpgo:
     ports:
       sftp:
         nodePort: "30022"
-      http:
-        port: "80"
-        nodePort: "30080"
   volumes:
     - name: "data"
       persistentVolumeClaim:

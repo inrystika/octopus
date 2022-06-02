@@ -84,7 +84,7 @@
         },
         created() {
             this.tableData = this.trainingTable
-            this.getResourceList()
+            // this.getResourceList()
         },
         methods: {
             add() {
@@ -117,9 +117,9 @@
             },
             showResource(row) {
                 let name = ''
-                this.resourceOptions.forEach(item => {
-                    if (item.id === row.resourceSpecId) {
-                        name = item.name
+                row.resourceOptions.forEach(item => {
+                    if (item.value === row.resourceSpecId) {
+                        name = item.label
                     }
                 })
                 return name

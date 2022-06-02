@@ -80,16 +80,17 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			}
 		}
 		item := &api.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    api.GenderType(user.Gender),
-			Status:    api.UserStatus(user.Status),
-			Password:  user.Password,
-			CreatedAt: user.CreatedAt.Unix(),
-			UpdatedAt: user.UpdatedAt.Unix(),
-			Bind:      bindInfo,
+			Id:            user.Id,
+			FullName:      user.FullName,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			Gender:        api.GenderType(user.Gender),
+			Status:        api.UserStatus(user.Status),
+			Password:      user.Password,
+			CreatedAt:     user.CreatedAt.Unix(),
+			UpdatedAt:     user.UpdatedAt.Unix(),
+			Bind:          bindInfo,
+			ResourcePools: user.ResourcePools,
 		}
 		users[idx] = item
 	}
@@ -143,17 +144,18 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 	}
 	reply := &api.FindUserReply{
 		User: &api.UserItem{
-			Id:          user.Id,
-			FullName:    user.FullName,
-			Email:       user.Email,
-			Phone:       user.Phone,
-			FtpUserName: user.FtpUserName,
-			Gender:      api.GenderType(user.Gender),
-			Status:      api.UserStatus(user.Status),
-			Password:  	 user.Password,
-			CreatedAt:   user.CreatedAt.Unix(),
-			UpdatedAt:   user.UpdatedAt.Unix(),
-			Bind:        bindInfo,
+			Id:            user.Id,
+			FullName:      user.FullName,
+			Email:         user.Email,
+			Phone:         user.Phone,
+			FtpUserName:   user.FtpUserName,
+			Gender:        api.GenderType(user.Gender),
+			Status:        api.UserStatus(user.Status),
+			Password:      user.Password,
+			CreatedAt:     user.CreatedAt.Unix(),
+			UpdatedAt:     user.UpdatedAt.Unix(),
+			Bind:          bindInfo,
+			ResourcePools: user.ResourcePools,
 		},
 	}
 
@@ -161,7 +163,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 }
 
 func (s *UserService) initUser(ctx context.Context, userId string) error {
-	err := s.data.Minio.CreateBucket(common.GetUserHomeBucket(userId))
+	err := s.data.Minio.CreateBucket(common.GetUserBucket(userId))
 	if err != nil {
 		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
 			return err
@@ -235,6 +237,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.Gender = int32(req.Gender)
 	user.Status = int32(api.UserStatus_ACTIVITY)
 	user.Bind = cond.Bind
+	user.ResourcePools = []string{s.conf.Service.Resource.DefaultPoolName}
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err
@@ -286,12 +289,15 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		}
 	}
 	user := model.UserUpdate{
-		FullName: req.FullName,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Gender:   int32(req.Gender),
-		Status:   int32(req.Status),
-		Bind:     bindInfo,
+		FullName:      req.FullName,
+		Email:         req.Email,
+		Phone:         req.Phone,
+		Gender:        int32(req.Gender),
+		Status:        int32(req.Status),
+		ResourcePools: req.ResourcePools,
+	}
+	if len(bindInfo) > 0 {
+		user.Bind = bindInfo
 	}
 	if req.Password != "" {
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -419,8 +425,8 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 		Username:     req.FtpUserName,
 		Email:        user.Email,
 		Password:     req.FtpPassword,
-		HomeS3Bucket: common.GetUserHomeBucket(req.UserId),
-		HomeS3Object: "",
+		HomeS3Bucket: common.GetUserBucket(req.UserId),
+		HomeS3Object: common.GetUserHomeObject(),
 	})
 	if err != nil {
 		return nil, err

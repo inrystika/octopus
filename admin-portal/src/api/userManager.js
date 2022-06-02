@@ -28,7 +28,7 @@ export function editUser(data) {
   return request({
     url: `/v1/usermanage/user/${data.id}`,
     method: 'put',
-    data: { fullname: data.fullname, password: data.password }
+    data: { fullname: data.fullname, password: data.password, resourcePools: data.resourcePools }
   })
 }
 // 冻结账号

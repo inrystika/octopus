@@ -91,10 +91,10 @@ export function deleteTemplate(data) {
   })
 }
 // 获取资源规格列表
-export function getResourceList() {
+export function getResourceList(param) {
   return request({
-    url: '/v1/resourcemanage/resourcespec',
-    method: 'get'
+    url: `/v1/resourcemanage/resourcespec?resourcePool=${param}`,
+    method: 'get',
   })
 }
 // 编辑任务模板
