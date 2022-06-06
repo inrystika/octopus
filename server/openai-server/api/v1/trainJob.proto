@@ -109,7 +109,7 @@ message TrainJobRequest {
   repeated Config config = 10[(validate.rules).repeated.min_items = 1];
   //镜像地址，非必填，镜像地址和镜像ID填一个
   string imageUrl = 11[(validate.rules).string = {min_len: 0}];
-  string resourcePool = 12;
+  string resourcePool = 12[(validate.rules).string = {min_len: 1}];
 }
 
 message Config {
@@ -176,6 +176,7 @@ message TrainJobTemplateRequest {
   bool isDistributed = 9;
   //job子任务及其配置信息，必填
   repeated Config config = 10[(validate.rules).repeated.min_items = 1];
+  string resourcePool = 11[(validate.rules).string = {min_len: 1}];
 }
 
 message TrainJobTemplateReply {
@@ -370,6 +371,7 @@ message TrainJobTemplate{
   string dataSetName = 17;
   //镜像版本
   string imageVersion = 18;
+  string resourcePool = 19;
 }
 
 message TrainJobInfoRequest {

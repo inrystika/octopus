@@ -10,3 +10,5 @@ update train_job set resource_pool = 'common-pool' where workspace_id = 'default
 update train_job as n set n.resource_pool = (select w.r_pool_id from workspace as w where n.workspace_id = w.id) where n.workspace_id != 'default-workspace';
 update model_deploy set resource_pool = 'common-pool' where workspace_id = 'default-workspace';
 update model_deploy as n set n.resource_pool = (select w.r_pool_id from workspace as w where n.workspace_id = w.id) where n.workspace_id != 'default-workspace';
+update train_job_template set resource_pool = 'common-pool' where workspace_id = 'default-workspace';
+update train_job_template as n set n.resource_pool = (select w.r_pool_id from workspace as w where n.workspace_id = w.id) where n.workspace_id != 'default-workspace';

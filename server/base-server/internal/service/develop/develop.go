@@ -47,6 +47,7 @@ type developService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type DevelopService interface {
@@ -82,7 +83,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
-	billingService api.BillingServiceServer) (DevelopService, error) {
+	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
 	log := log.NewHelper("DevelopService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -105,6 +106,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.startNotebookTask()
@@ -147,16 +149,15 @@ func upsertFeature(data *data.Data, baseServerAddr string) error {
 type closeFunc func(ctx context.Context) error
 
 func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) (*startJobInfo, error) {
-	queue := ""
+	queue := nb.ResourcePool
 	if nb.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		if nb.ResourcePool == "" {
-			pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-			if err != nil {
-				return nil, err
-			}
-			queue = pool.ResourcePool.Name
-		} else {
-			queue = nb.ResourcePool
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: nb.UserId})
+		if err != nil {
+			return nil, err
+		}
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
 		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: nb.WorkspaceId})
@@ -164,7 +165,9 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
+		}
 	}
 
 	image, err := s.imageService.FindImage(ctx, &api.FindImageRequest{ImageId: nb.ImageId})

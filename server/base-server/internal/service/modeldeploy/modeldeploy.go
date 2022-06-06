@@ -62,6 +62,7 @@ type modelDeployService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type ModelDeployService interface {
@@ -84,7 +85,7 @@ type startJobInfo struct {
 func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (ModelDeployService, error) {
+	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer, userService api.UserServiceServer) (ModelDeployService, error) {
 	log := log.NewHelper("ModelDeployService", logger)
 
 	s := &modelDeployService{
@@ -97,6 +98,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.modelServiceBilling(context.Background())
@@ -449,16 +451,15 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//资源队列
-	queue := ""
+	queue := deployJob.ResourcePool
 	if deployJob.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		if deployJob.ResourcePool == "" {
-			pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-			if err != nil {
-				return nil, err
-			}
-			queue = pool.ResourcePool.Name
-		} else {
-			queue = deployJob.ResourcePool
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: deployJob.UserId})
+		if err != nil {
+			return nil, err
+		}
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorModelDeployResourcePoolForbidden)
 		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: deployJob.WorkspaceId})
@@ -466,8 +467,11 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorModelDeployResourcePoolForbidden)
+		}
 	}
+
 	// 校验模型框架
 	modelFrameType := deployJob.ModelFrame
 	if modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame {
