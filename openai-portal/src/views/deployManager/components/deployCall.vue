@@ -14,14 +14,14 @@
                     <div>模型:<span>{{ data.modelName+ ":" + data.modelVersion }}</span></div>
                 </el-col>
             </el-row>
-            <el-row>
+            <!-- <el-row>
                 <el-col :span="24">
                     <div>推理路径:<span>{{ data.serviceUrl }}</span></div>
                 </el-col>
-            </el-row>
+            </el-row> -->
             <el-row>
                 <el-col :span="24">
-                    <div>swagger推理路径:<a href="https://octopus.openi.org.cn/docs/manual/infer" class="text">使用文档</a>
+                    <div>推理路径使用说明:<a href="https://octopus.openi.org.cn/docs/manual/infer" class="text">参考详细文档</a>
                     </div>
                 </el-col>
             </el-row>
