@@ -82,8 +82,8 @@
                 </div>
                 <!-- 资源二级框 -->
                 <div>
-                    <el-form-item label="资源池" prop="poolItem" style="display:inline-block;">
-                        <el-select v-model="ruleForm.poolItem" placeholder="请选择资源池" @change="getResource">
+                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResource">
                             <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
                         </el-select>
                     </el-form-item>
@@ -94,21 +94,6 @@
                         </el-select>
                     </el-form-item>
                 </div>
-
-
-                <!-- <el-form-item label="资源池" :label-width="formLabelWidth" prop="poolItem">
-                    <el-select v-model="ruleForm.poolItem" placeholder="请选择资源池" style="width:35%">
-                        <el-option v-for="(item, index) in poolList" :key="index" :label="item"
-                            :value="item" />
-                    </el-select>
-                </el-form-item>
-
-                <el-form-item label="资源规格" :label-width="formLabelWidth" prop="specification">
-                    <el-select v-model="ruleForm.specification" placeholder="请选择资源规格" style="width:35%">
-                        <el-option v-for="(item, index) in resourceList" :key="index" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item> -->
                 <el-form-item>
                     <el-button type="text" @click="showMultitask">高级设置</el-button>
                 </el-form-item>
@@ -167,7 +152,7 @@
                     dataSetId: "",
                     dataSetVersion: "",
                     taskNumber: 1,
-                    poolItem: "",
+                    resourcePool: "",
                     specification: ""
                 },
                 rules: {
@@ -220,7 +205,7 @@
                             trigger: "blur"
                         }
                     ],
-                    poolItem: [
+                    resourcePool: [
                         {
                             required: true,
                             message: "请选择资源池",
@@ -307,7 +292,7 @@
             },
             getResource() {               
                 this.specificationVisible = true
-                getResourceList(this.ruleForm.poolItem).then(response => {
+                getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.debug.resourceSpecs.forEach(
                             item => {
@@ -342,7 +327,8 @@
                             algorithmVersion: this.ruleForm.algorithmVersion || "",
                             datasetId: this.ruleForm.dataSetId || "",
                             datasetVersion: this.ruleForm.dataSetVersion || "",
-                            taskNumber: this.ruleForm.taskNumber
+                            taskNumber: this.ruleForm.taskNumber,
+                            resourcePool: this.ruleForm.resourcePool
                         };
                         const confirmInfo = this.$createElement
                         this.$confirm(
