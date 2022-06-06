@@ -78,7 +78,7 @@ message CreateNotebookRequest {
   string datasetId = 7;
   string datasetVersion = 8;
   int32 taskNumber = 9[(validate.rules).int32 = {gte:1}];
-  string resourcePool = 10;
+  string resourcePool = 10[(validate.rules).string = {min_len: 1}];
 }
 
 message CreateNotebookReply {
