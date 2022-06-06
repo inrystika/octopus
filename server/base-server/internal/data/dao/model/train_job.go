@@ -133,6 +133,7 @@ type TrainJobTemplate struct {
 	DataSetVersion   string  `gorm:"type:varchar(100);not null;default:'';comment:'数据集版本'"`
 	IsDistributed    bool    `gorm:"default:false;comment:'是否是分布式'"`
 	Config           Configs `gorm:"type:json;comment:'task信息'"`
+	ResourcePool     string  `gorm:"type:varchar(300);default:'';comment:资源池"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }

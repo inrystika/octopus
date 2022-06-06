@@ -48,6 +48,7 @@ type trainJobService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type TrainJobService interface {
@@ -59,7 +60,7 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (TrainJobService, error) {
+	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer, userService api.UserServiceServer) (TrainJobService, error) {
 	log := log.NewHelper("TrainJobService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -83,6 +84,7 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.trainJobBilling(context.Background())
@@ -287,16 +289,15 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
-	queue := ""
+	queue := job.ResourcePool
 	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		if job.ResourcePool == "" {
-			pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
-			if err != nil {
-				return nil, err
-			}
-			queue = pool.ResourcePool.Name
-		} else {
-			queue = job.ResourcePool
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
+		if err != nil {
+			return nil, err
+		}
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
 		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: job.WorkspaceId})
@@ -304,7 +305,9 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
+		}
 	}
 
 	imageAddr := ""
