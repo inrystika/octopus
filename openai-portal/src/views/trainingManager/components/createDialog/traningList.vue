@@ -111,6 +111,7 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
+                console.log(this.tableData,val)
                 // flag为true新增
                 // flag为false编辑
                 if (this.flag) { this.tableData.push(val); }
