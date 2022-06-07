@@ -29,7 +29,7 @@
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button type="text" @click="handleEdit(scope.$index,scope.row)">编辑</el-button>
                         <el-button type="text" @click.native.prevent="handleDelete(scope.$index, tableData)">删除
                         </el-button>
                     </template>
@@ -73,8 +73,8 @@
                 FormVisible: false,
                 row: {},
                 flag: true,
-                resourceOptions: []
-
+                resourceOptions: [],
+                currentIndex: undefined
             }
         },
         watch: {
@@ -90,9 +90,10 @@
             add() {
                 this.FormVisible = true
                 this.flag = true
-                this.row = { parameters: [] }
+                this.row = { parameters: [], resourceOptions: [] }
             },
-            handleEdit(row) {
+            handleEdit(index,row) {
+                this.currentIndex = index
                 this.FormVisible = true
                 this.row = row
                 this.flag = false
@@ -111,12 +112,22 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
+                this.tableData[this.currentIndex] = val
                 // flag为true新增
                 // flag为false编辑
                 if (this.flag) { this.tableData.push(val); }
             },
             showResource(row) {
                 let name = ''
+                if(row.resourceSpecId.slice(-2) == "/h") {
+                  name = row.resourceSpecId
+                  row.resourceOptions.forEach(item => {
+                      if (item.label === row.resourceSpecId) {
+                          row.resourceSpecId = item.value
+                      }
+                  })
+                  return name
+                }
                 row.resourceOptions.forEach(item => {
                     if (item.value === row.resourceSpecId) {
                         name = item.label

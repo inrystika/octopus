@@ -36,15 +36,17 @@
 
                 <div>
                     <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
-                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList">
+                        <!-- <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList"> -->
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="changeResourceItem">
                             <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
                         </el-select>
                     </el-form-item>
                     <el-form-item v-if="specificationVisible" label="资源规格" prop="resourceSpecId" style="display:inline-block;">
-                        <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
+                        <!-- <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格"> -->
+                        <el-select @click.native="getResourceItem" v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
                             <el-option
-                                v-for="item in resourceOptions"
-                                :key="item.id"
+                                v-for="(item,index) in resourceOptions"
+                                :key="index"
                                 :label="item.label"
                                 :value="item.value"
                             />
@@ -173,19 +175,19 @@
         },
         created() {
             this.ruleForm = this.row
-            // this.getResourceList()
             this.getSpacePools();
             if(!this.flag) {
               this.specificationVisible = true
               this.ruleForm.resourceOptions.forEach(
                 item => {
                   if(item.value == this.ruleForm.resourceSpecId) {
-                    this.ruleForm.resourceSpecId = item.label
+                      this.ruleForm.resourceSpecId = item.label
                   }
                 }
               )
-              this.getResourceList()
             }
+            const data = JSON.parse(JSON.stringify(this.ruleForm))
+            this.ruleForm = data
         },
         beforeDestroy() {
             this.ruleForm = {}
@@ -240,8 +242,14 @@
                     }
                 )
             },
+            changeResourceItem() {
+              this.ruleForm.resourceSpecId = ""
+              this.resourceOptions = []
+              this.specificationVisible = true
+            },
             // 获取资源规格
-            getResourceList() {
+            getResourceItem() {
+              this.resourceOptions = []
               getResourceList(this.ruleForm.resourcePool).then(response => {
                 if (response.success) {
                         this.specificationVisible = true
@@ -258,6 +266,10 @@
                         });
                     }
                 })
+                // 层级太深时检测不到option变化，可以对表单数据进行拷贝再重新赋值
+                // 或在select的change事件中添加this.$forceUpdate()
+                const data = JSON.parse(JSON.stringify(this.ruleForm))
+                this.ruleForm = data
             },
             // 运行参数预览
             open() {
