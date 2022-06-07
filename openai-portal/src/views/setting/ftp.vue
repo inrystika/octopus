@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <div style="float:left;width:126px;height:40px;text-align:center;padding-top:12px;">ftp设置</div>
     </el-row>
-    <el-divider class="demo"></el-divider>
+    <el-divider class="dividerClass"></el-divider>
     <el-row :gutter="20">
       <el-col :span="12" :offset="6">
         <el-form ref="ftpForm" :rules="ftpRules" :model="ftpForm" style="margin: 0 auto;">
@@ -14,8 +14,8 @@
             <el-input v-model="ftpForm.ftpUserName" placeholder="请填写账号" :disabled="isShow" minlength="4" maxlength="30" show-word-limit/>
           </el-form-item>
           <el-form-item label="ftp密码:" prop="ftpPassword">
-            <el-input v-model="ftpForm.ftpPassword" :type="[passFlag?'text':'password']" placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit>
-              <i slot="suffix" :class="[passFlag?'el-icon-minus':'el-icon-view']" style="margin-top:8px;font-size:18px;" autocomplete="auto" @click="passFlag=!passFlag" />
+            <el-input v-model="ftpForm.ftpPassword" show-password placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit>
+              <!-- <i slot="suffix" :class="[passFlag?'el-icon-minus':'el-icon-view']" style="margin-top:8px;font-size:18px;" autocomplete="auto" @click="passFlag=!passFlag" /> -->
             </el-input>
           </el-form-item>
           <el-button style="float: right;" type="primary" @click="submit">创建</el-button>
@@ -113,7 +113,7 @@ export default {
     padding: 20px;
     min-height: 900px;
   }
-  .demo {
+  .dividerClass {
     margin:5px 0 5px 0 !important;
   }
 </style>
