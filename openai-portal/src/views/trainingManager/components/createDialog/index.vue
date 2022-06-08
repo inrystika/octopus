@@ -82,12 +82,19 @@
                     </el-form-item>
                 </div>
                 <el-divider />
-                <el-form-item label="分布式" prop="distributed ">
+                <el-form-item label="分布式" prop="distributed" style="display:inline-block;">
                     <el-select v-model="ruleForm.isDistributed">
                         <el-option label="是" :value="true" />
                         <el-option label="否" :value="false" />
                     </el-select>
                 </el-form-item>
+                <div v-if="!show" style="display:inline-block;">
+                    <el-form-item label="资源池" prop="disResourcePool">
+                        <el-select v-model="ruleForm.disResourcePool" placeholder="请选择资源池" @change="getResourceList">
+                            <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
+                        </el-select>
+                    </el-form-item>
+                </div>
                 <div v-if="show">
                     <el-form-item label="运行命令" prop="command">
                         <el-input v-model="ruleForm.command" type="textarea" />
@@ -120,7 +127,7 @@
                     </div>
                 </div>
                 <div v-if="!show">
-                    <traningList :training-table="table" :resource="resourceOptions" @tableData="getTableData" />
+                    <traningList :training-table="table" :disResourcePool="ruleForm.disResourcePool" @tableData="getTableData" />
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -191,6 +198,7 @@
                     }],
                     resourceSpecId: "",
                     resourcePool: "",
+                    disResourcePool: "",
                     command: ''
                 },
                 CreateFormVisible: true,
@@ -233,6 +241,9 @@
                         { required: true, message: '请选择活资源规格', trigger: 'change' }
                     ],
                     resourcePool: [
+                        { required: true, message: "请选择资源池", trigger: "blur" }
+                    ],
+                    disResourcePool: [
                         { required: true, message: "请选择资源池", trigger: "blur" }
                     ]
                 },
@@ -453,15 +464,17 @@
                             this.ruleForm.config[0].taskNumber = 1
                             this.ruleForm.config[0].minFailedTaskCount = 1
                             this.ruleForm.config[0].minSucceededTaskCount = 1
-                            this.ruleForm.config[0].resourcePool = this.ruleForm.resourcePool
+                            this.ruleForm.disResourcePool = this.ruleForm.resourcePool
                             delete this.ruleForm.config[0].isMainRole
                         }
                         var data = JSON.parse(JSON.stringify(this.ruleForm))
+                        data.resourcePool = data.disResourcePool
                         delete data.command;
                         delete data.resourceSpecId
                         delete data.algorithmSource
                         delete data.imageSource
                         delete data.dataSetSource
+                        delete data.disResourcePool
                         
                         if (this.flag === 3) {
                             if (!this.algorithmChange) {

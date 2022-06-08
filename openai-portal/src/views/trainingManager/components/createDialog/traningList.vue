@@ -62,9 +62,9 @@
                 type: Array,
                 default: () => []
             },
-            resource: {
-                type: Array,
-                default: () => []
+            disResourcePool: {
+                type: String,
+                default: () => ""
             }
         },
         data() {
@@ -84,13 +84,19 @@
         },
         created() {
             this.tableData = this.trainingTable
-            // this.getResourceList()
         },
         methods: {
             add() {
+                if(!this.disResourcePool) {
+                    this.$message({
+                        message: '请先选择资源池',
+                        type: 'warning'
+                    });
+                    return
+                }
                 this.FormVisible = true
                 this.flag = true
-                this.row = { parameters: [], resourceOptions: [] }
+                this.row = { parameters: [], disResourcePool: this.disResourcePool }
             },
             handleEdit(index,row) {
                 this.currentIndex = index
@@ -119,15 +125,6 @@
             },
             showResource(row) {
                 let name = ''
-                if(row.resourceSpecId.slice(-2) == "/h") {
-                  name = row.resourceSpecId
-                  row.resourceOptions.forEach(item => {
-                      if (item.label === row.resourceSpecId) {
-                          row.resourceSpecId = item.value
-                      }
-                  })
-                  return name
-                }
                 row.resourceOptions.forEach(item => {
                     if (item.value === row.resourceSpecId) {
                         name = item.label
