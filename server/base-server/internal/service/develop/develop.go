@@ -625,7 +625,11 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 		for k, _ := range startJobInfo.resources {
 			if strings.HasPrefix(string(k), common.RdmaPrefix) {
-				task.Template.Spec.Containers[0].SecurityContext.Capabilities.Add = []v1.Capability{"IPC_LOCK"}
+				task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
+					Capabilities: &v1.Capabilities{
+						Add: []v1.Capability{"IPC_LOCK"},
+					},
+				}
 			}
 		}
 		tasks = append(tasks, task)
