@@ -449,3 +449,16 @@ seldon-core-operator:
         seldon:
           defaultImageVersion: "2.0.1"
           image: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+
+rdma:
+  enabled: false
+  config: |
+    {
+        "periodicUpdateInterval": 300,
+        "configList": [{
+             "resourceName": "hca",
+             "rdmaHcaMax": 1000,
+             "devices": ["ib0"]
+           }
+        ]
+    }
