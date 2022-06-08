@@ -66,6 +66,7 @@ message TrainJobTemplateRequest {
   string userId = 10[(validate.rules).string = {min_len: 1}];
   string workspaceId =11[(validate.rules).string = {min_len: 1}];
   string id = 12;
+  string resourcePool = 13;
 }
 
 message GetJobTemplateRequest{
@@ -205,6 +206,7 @@ message TrainJobTemplate{
   string algorithmName = 16;
   string imageName = 17;
   string dataSetName = 18;
+  string resourcePool = 19;
 }
 
 message TrainJob{

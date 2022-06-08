@@ -75,14 +75,14 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 
 	service.DevelopService, err = develop.NewDevelopService(conf, logger, data,
 		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
-		service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService)
+		service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService, service.UserService)
 	if err != nil {
 		return nil, err
 	}
 
 	service.TrainJobService, err = trainjob.NewTrainJobService(conf, logger, data,
 		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
-		service.ModelService, service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService)
+		service.ModelService, service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService, service.UserService)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 
 	service.ModelDeployService, err = modeldeploy.NewModelDeployService(conf, logger, data,
 		service.WorkspaceService, service.ModelService, service.ResourceSpecService, service.ResourceService,
-		service.ResourcePoolService, service.BillingService)
+		service.ResourcePoolService, service.BillingService, service.UserService)
 	if err != nil {
 		return nil, err
 	}
