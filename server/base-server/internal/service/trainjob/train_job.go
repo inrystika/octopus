@@ -579,6 +579,12 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				{Event: vcBus.TaskCompletedEvent, Action: vcBus.CompleteJobAction},
 			}
 		}
+
+		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
+			if strings.HasPrefix(string(k), common.RdmaPrefix) {
+				task.Template.Spec.Containers[0].SecurityContext.Capabilities.Add = []v1.Capability{"IPC_LOCK"}
+			}
+		}
 		tasks = append(tasks, task)
 	}
 

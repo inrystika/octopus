@@ -5,7 +5,7 @@ metadata:
   name: rdma-devices
   namespace: kube-system
 data:
-  config.json: {{ .Values.rdma.config }}
+  config.json: {{ .Values.rdma.config | toJson }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
