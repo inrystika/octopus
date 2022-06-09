@@ -265,6 +265,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		}
 	}
 
+	//thread num in work process
+	env := []v1.EnvVar{
+		{
+			Name:  "GUNICORN_THREADS",
+			Value: "1",
+		},
+	}
+
 	volumes := []v1.Volume{
 		{
 			Name: "modelfilepath",
@@ -335,6 +343,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						},
 						Image: imageInfo,
+						Env:   env,
 					},
 				},
 				Volumes: volumes,

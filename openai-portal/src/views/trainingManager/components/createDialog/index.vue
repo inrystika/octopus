@@ -238,7 +238,7 @@
                         { required: true, message: '请填写运行命令', trigger: 'blur' }
                     ],
                     resourceSpecId: [
-                        { required: true, message: '请选择活资源规格', trigger: 'change' }
+                        { required: true, message: '请选择资源规格', trigger: 'change' }
                     ],
                     resourcePool: [
                         { required: true, message: "请选择资源池", trigger: "blur" }
