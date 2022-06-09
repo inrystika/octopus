@@ -2,6 +2,7 @@ package common
 
 const (
 	BillingPrecision = 2
+	RdmaPrefix       = "rdma/"
 )
 
 const (
