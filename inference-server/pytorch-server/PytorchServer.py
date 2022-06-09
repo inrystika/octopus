@@ -22,15 +22,21 @@ class PytorchServer(SeldonComponent):
             self.load()
 
         def load(self):
-            logger.info("-----------2.0.2-----load model--------------")
-            user_model_from_path = os.path.join(self.model_volume_path, self.model_userId, self.model_Id,self.model_version)
+            logger.info("-----------2.0.5-----load model--------------")
+            user_model_from_path = os.path.join(self.model_volume_path, self.model_userId, self.model_Id,
+                                                            self.model_version, self.pyModelDir)
             logger.info(f"model full path in docker is: {user_model_from_path}....")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            logger.info("use {} device to run this model service!".format(device))
+            torch.multiprocessing.set_start_method('spawn')
+            logger.info("set start method use spawn test!")
             if not os.path.isdir(user_model_from_path):
-               logger.error("model file path is invalid! can not deploy model service!")
-            loaded_model = mlflow.pytorch.load_model(user_model_from_path)
+                logger.error("model file path is invalid! caln not deploy model service!")
+            loaded_model = mlflow.pytorch.load_model(user_model_from_path, map_location = device)
             self.model = loaded_model.eval()
             self.ready = True
             logger.info(f"model is loaded, waiting to predict")
+
 
         def predict(self, X: np.ndarray, names: Iterable[str], meta: Dict = None) -> Union[np.ndarray, List, str, bytes]:
             try:
