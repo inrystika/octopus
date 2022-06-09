@@ -79,6 +79,10 @@
             flag: {
                 type: Boolean,
                 default: false
+            },
+            resourcePool: {
+              type: String,
+              default: () => ""
             }
         },
         data() {
@@ -201,7 +205,8 @@
             },
             // 获取资源规格
             getResourceList() {
-                getResourceList().then(response => {
+                this.resourceOptions = []
+                getResourceList(this.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {

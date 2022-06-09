@@ -147,7 +147,7 @@ baseserver:
       baseUrl: 192.168.202.73
     pytorchServer:
       imageAddr: 192.168.202.110:5000/octopus/pytorchserver
-      version: 2.0.4
+      version: 2.0.5
     sftpgo:
       username: admin
       password: abcde
@@ -471,7 +471,7 @@ seldon-core-operator:
     PYTORCH_SERVER:
       protocols:
         seldon:
-          defaultImageVersion: "2.0.4"
+          defaultImageVersion: "2.0.5"
           image: "192.168.202.110:5000/octopus/pytorchserver"
 
 sftpgo:
