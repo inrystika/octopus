@@ -17,18 +17,18 @@ global:
   affinity: &affinity
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
 
 common:
   resourceTagKey: octopus.pcl.ac.cn/type
@@ -250,7 +250,7 @@ scheduler:
   replicaCount: 1
   image:
     name: "scheduler"
-    
+
 
 # controller
 controller:
@@ -382,13 +382,13 @@ influxdb:
     enabled: true
     existingClaim: "octopus-influxdb-pvc"
   volumes:
-  - name: influxdb-initdb
-    configMap:
-      name: influxdb-initdb-config
+    - name: influxdb-initdb
+      configMap:
+        name: influxdb-initdb-config
   mountPoints:
-  - name: influxdb-initdb
-    mountPath: /docker-entrypoint-initdb.d
-    readOnly: true
+    - name: influxdb-initdb
+      mountPath: /docker-entrypoint-initdb.d
+      readOnly: true
   nodeSelector:
     <<: *nodeSelector
   affinity:
@@ -504,3 +504,16 @@ sftpgo:
       create_default_admin: true
   nodeSelector:
     <<: *nodeSelector
+
+rdma:
+  enabled: false
+  config: |
+    {
+        "periodicUpdateInterval": 300,
+        "configList": [{
+             "resourceName": "hca",
+             "rdmaHcaMax": 1000,
+             "devices": ["ib0"]
+           }
+        ]
+    }
