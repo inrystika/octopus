@@ -29,7 +29,7 @@
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button type="text" @click="handleEdit(scope.$index,scope.row)">编辑</el-button>
                         <el-button type="text" @click.native.prevent="handleDelete(scope.$index, tableData)">删除
                         </el-button>
                     </template>
@@ -41,6 +41,8 @@
             v-if="FormVisible"
             :row="row"
             :flag="flag"
+            :resourcePool="resourcePool"
+            :disResourceOptions="resourceOptions"
             @cancel="cancel"
             @confirm="confirm"
             @close="close"
@@ -62,9 +64,9 @@
                 type: Array,
                 default: () => []
             },
-            resource: {
-                type: Array,
-                default: () => []
+            resourcePool: {
+              type: String,
+              default: () => ""
             }
         },
         data() {
@@ -73,13 +75,16 @@
                 FormVisible: false,
                 row: {},
                 flag: true,
-                resourceOptions: []
-
+                resourceOptions: [],
+                currentIndex: undefined
             }
         },
         watch: {
             tableData() {
                 this.$emit('tableData', this.tableData)
+            },
+            resourcePool() {
+              this.getResourceList()
             }
         },
         created() {
@@ -92,7 +97,8 @@
                 this.flag = true
                 this.row = { parameters: [] }
             },
-            handleEdit(row) {
+            handleEdit(index,row) {
+                this.currentIndex = index
                 this.FormVisible = true
                 this.row = row
                 this.flag = false
@@ -114,6 +120,7 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
+                this.tableData[this.currentIndex] = val
                 // flag为true新增
                 // flag为false编辑
 
@@ -130,7 +137,7 @@
             },
             // 获取资源规格
             getResourceList() {
-                getResourceList().then(response => {
+                getResourceList(this.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {

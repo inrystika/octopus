@@ -347,6 +347,8 @@
             // 获取资源规格
             getResourceList() {
                 this.specificationVisible = true
+                this.ruleForm.resourceSpecId = ""
+                this.resourceOptions = []
                 getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.deploy.resourceSpecs.forEach(

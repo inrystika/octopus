@@ -33,24 +33,16 @@
                     <el-button type="primary" @click="addItem">增加</el-button>
                     <el-button type="text" :disabled="showArg" @click="open">预览</el-button>
                 </el-form-item>
-
-                <div>
-                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
-                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList">
-                            <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item v-if="specificationVisible" label="资源规格" prop="resourceSpecId" style="display:inline-block;">
-                        <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
-                            <el-option
-                                v-for="item in resourceOptions"
-                                :key="item.id"
-                                :label="item.label"
-                                :value="item.value"
-                            />
-                        </el-select>
-                    </el-form-item>
-                </div>
+                <el-form-item label="资源规格" prop="resourceSpecId">
+                    <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
+                        <el-option
+                            v-for="item in resourceOptions"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
                 <el-form-item label="副本个数" prop="taskNumber">
                     <el-input v-model.number="ruleForm.taskNumber" />
                 </el-form-item>
@@ -76,7 +68,6 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
     import { getResourceList } from '@/api/trainingManager.js'
     export default {
         name: "DistributedTask",
@@ -92,8 +83,6 @@
         },
         data() {
             return {
-                specificationVisible:false,
-                poolList: [],
                 ruleForm: {
                     name: '',
                     command: '',
@@ -106,7 +95,6 @@
                         key: "",
                         value: ""
                     }],
-                    resourcePool: "",
                 },
                 CreateFormVisible: true,
                 resourceOptions: [],
@@ -140,9 +128,6 @@
                     ],
                     isMainRole: [
                         { required: true, message: '请选择是否为主任务', trigger: 'change' }
-                    ],
-                    resourcePool: [
-                        { required: true, message: "请选择资源池", trigger: "blur" }
                     ]
                 },
                 formLabelWidth: '160px',
@@ -166,26 +151,11 @@
 
                     return flag
                 }
-            },
-            ...mapGetters([
-                'workspaces'
-            ])
+            }
         },
         created() {
             this.ruleForm = this.row
-            // this.getResourceList()
-            this.getSpacePools();
-            if(!this.flag) {
-              this.specificationVisible = true
-              this.ruleForm.resourceOptions.forEach(
-                item => {
-                  if(item.value == this.ruleForm.resourceSpecId) {
-                    this.ruleForm.resourceSpecId = item.label
-                  }
-                }
-              )
-              this.getResourceList()
-            }
+            this.getResourceItem()
         },
         beforeDestroy() {
             this.ruleForm = {}
@@ -229,22 +199,10 @@
             handleDialogClose() {
                 this.$emit('close', false)
             },
-            getSpacePools() {
-                let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
-                this.workspaces.forEach(
-                    item => {
-                        // 获取当前群组绑定资源池列表
-                        if(item.name == workspaceName) {
-                            this.poolList = item.resourcePools
-                        }
-                    }
-                )
-            },
             // 获取资源规格
-            getResourceList() {
-              getResourceList(this.ruleForm.resourcePool).then(response => {
+            getResourceItem() {
+              getResourceList(this.row.disResourcePool).then(response => {
                 if (response.success) {
-                        this.specificationVisible = true
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {
                                 this.resourceOptions.push({ label: item.name + ' ' + item.price + '机时/h', value: item.id })

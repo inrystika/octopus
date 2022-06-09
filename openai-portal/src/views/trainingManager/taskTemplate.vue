@@ -127,16 +127,6 @@
                     if (response.success) {
                         this.tableData = response.data.jobTemplates
                         this.total = response.data.totalSize
-                        getResourceList().then(response => {
-                            if (response.success) {
-                                this.resourceOptions = response.data.mapResourceSpecIdList.train.resourceSpecs
-                            } else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
-                            }
-                        })
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
@@ -146,9 +136,7 @@
                 })
             },
             handleEdit(val, name) {
-                getResourceList().then(response => {
-                    if (response.success && response.data.mapResourceSpecIdList.train.resourceSpecs.length !== 0) {
-                        getTempalteDetail(val.id).then(response => {
+                getTempalteDetail(val.id).then(response => {
                             if (response.success) {
                                 this.editDialog = true
                                 this.row = response.data.jobTemplate
@@ -160,13 +148,6 @@
                                 });
                             }
                         })
-                    } else {
-                        this.$message({
-                            message: '资源规格为空',
-                            type: 'warning'
-                        });
-                    }
-                })
             },
             handleDelete(val) {
                 let templateIds = []

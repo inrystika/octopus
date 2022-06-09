@@ -292,6 +292,8 @@
             },
             getResource() {               
                 this.specificationVisible = true
+                this.ruleForm.specification = ""
+                this.resourceList = []
                 getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.debug.resourceSpecs.forEach(
