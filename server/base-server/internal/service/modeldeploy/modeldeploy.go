@@ -268,7 +268,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 	//thread num in work process
 	env := []v1.EnvVar{
 		{
-			Name:  "GUNICORN_THREADS",
+			Name:  "SELDON_DEBUG",
 			Value: "1",
 		},
 	}
