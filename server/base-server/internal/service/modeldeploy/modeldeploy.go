@@ -488,17 +488,52 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
-		deployJob.ModelVersion)
-	if queryModelVersionReply == nil || err != nil {
-		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+	//首先判断是否是共享模型
+	commModelReq := &api.ListCommModelVersionRequest{}
+	commModelReq.ModelId = deployJob.ModelId
+	commModelReq.SpaceId = deployJob.WorkspaceId
+	commModelReply, err := s.modelService.ListCommModelVersion(ctx, commModelReq)
+	if err != nil {
+		return nil, err
 	}
+	var isCommModel bool
+	if commModelReply.TotalSize != 0 {
+		for _, modelVersionInfo := range commModelReply.ModelVersions {
+			if modelVersionInfo.ModelId == deployJob.ModelId && modelVersionInfo.Version == deployJob.ModelVersion {
+				isCommModel = true
+				break
+			}
+		}
+	}
+	queryModelVersionReply := &api.QueryModelVersionReply{}
 	//获取模型路径
 	var modelFilePath string
-	if queryModelVersionReply.Model.IsPrefab {
-		modelFilePath = s.getPreFebModelSubPath(deployJob)
+	if isCommModel {
+		queryModelVersion := &api.QueryModelVersionRequest{}
+		queryModelVersion.ModelId = deployJob.ModelId
+		queryModelVersion.Version = deployJob.ModelVersion
+		commModelInfo, _ := s.modelService.QueryModelVersion(ctx, queryModelVersion)
+		if commModelInfo != nil {
+			//公共模型路径
+			commModelUserId := commModelInfo.Model.UserId
+			//因为模型分享设计只是在同一群组中分享公共模型，所以这里只需要替换源模型的用户userid，即可复用方法来查询模型路径
+			deployJob.UserId = commModelUserId
+			//源模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
 	} else {
-		modelFilePath = s.getUserModelSubPath(deployJob)
+		queryModelVersionReply, err = s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
+			deployJob.ModelVersion)
+		if queryModelVersionReply == nil || err != nil {
+			return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+		}
+		if queryModelVersionReply.Model.IsPrefab {
+			//预置模型路径
+			modelFilePath = s.getPreFebModelSubPath(deployJob)
+		} else {
+			//我的模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
 	}
 	//模型名称
 	deployJob.ModelName = queryModelVersionReply.Model.ModelName
