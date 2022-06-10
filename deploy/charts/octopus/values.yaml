@@ -483,6 +483,8 @@ sftpgo:
     ports:
       sftp:
         nodePort: "30022"
+      http:
+        port: "80"
   volumes:
     - name: "data"
       persistentVolumeClaim:
