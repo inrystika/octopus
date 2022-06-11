@@ -51,7 +51,7 @@
                 <el-form-item label="资源类型" prop="resourceType">
                     <el-select v-model="ruleForm.resourceType" placeholder="请选择服务类型">
                         <el-option label="cpu" value="cpu"></el-option>
-                        <el-option label="gpu" value="gpu"></el-option>
+                        <el-option label="gpu" value="gpu" disabled></el-option>
                     </el-select>
                 </el-form-item>
 
