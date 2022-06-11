@@ -37,7 +37,7 @@ service TrainJobService {
 
 
 message TrainJobRequest {
-  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 40}];
   string desc = 2;
   string algorithmId = 3[(validate.rules).string = {min_len: 0}];
   string algorithmVersion = 4[(validate.rules).string = {min_len: 0}];
@@ -54,7 +54,7 @@ message TrainJobRequest {
 }
 
 message TrainJobTemplateRequest {
-  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 40}];
   string desc = 2;
   string algorithmId = 3[(validate.rules).string = {min_len: 1}];
   string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
@@ -78,7 +78,7 @@ message GetJobTemplateReply{
 }
 
 message Config {
-  string name = 1[(validate.rules).string = {min_len: 0, max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 0, max_len: 40}];
   string command = 2[(validate.rules).string = {min_len: 1}];
   repeated Parameter parameters = 3;
   string resourceSpecId = 4;

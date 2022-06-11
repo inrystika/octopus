@@ -42,7 +42,7 @@ service TrainJobService {
 
 message Config {
   //子任务名称，非必填，校验规则"^[0-9a-zA-Z_]*$"，最大长度15个字符
-  string name = 1[(validate.rules).string = {min_len: 0, max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 0, max_len: 40}];
   //子任务执行命令
   string command = 2[(validate.rules).string = {min_len: 1}];
   //command执行命令参数,key-value

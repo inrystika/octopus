@@ -19,7 +19,7 @@
                     <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork"
                         :disabled="chooseFrame">
                         <el-option label="pytorch" value="pytorch"></el-option>
-                        <el-option label="tensorflow" value="tensorflow"></el-option>
+                        <el-option label="tensorflow" value="tensorflow" disabled></el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 模型三级框 -->

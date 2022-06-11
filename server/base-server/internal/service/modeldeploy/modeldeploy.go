@@ -265,6 +265,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		}
 	}
 
+	//thread num in work process
+	env := []v1.EnvVar{
+		{
+			Name:  "SELDON_DEBUG",
+			Value: "1",
+		},
+	}
+
 	volumes := []v1.Volume{
 		{
 			Name: "modelfilepath",
@@ -335,6 +343,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						},
 						Image: imageInfo,
+						Env:   env,
 					},
 				},
 				Volumes: volumes,
@@ -450,6 +459,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	deployUserId := deployJob.UserId
 	//资源队列
 	queue := deployJob.ResourcePool
 	if deployJob.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
@@ -479,20 +489,61 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
-		deployJob.ModelVersion)
-	if queryModelVersionReply == nil || err != nil {
-		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+	//首先判断是否是共享模型
+	commModelReq := &api.ListCommModelVersionRequest{}
+	commModelReq.ModelId = deployJob.ModelId
+	commModelReq.SpaceId = deployJob.WorkspaceId
+	commModelReply, err := s.modelService.ListCommModelVersion(ctx, commModelReq)
+	if err != nil {
+		return nil, err
 	}
+	var isCommModel bool
+	if commModelReply.TotalSize != 0 {
+		for _, modelVersionInfo := range commModelReply.ModelVersions {
+			if modelVersionInfo.ModelId == deployJob.ModelId && modelVersionInfo.Version == deployJob.ModelVersion {
+				isCommModel = true
+				break
+			}
+		}
+	}
+	queryModelVersionReply := &api.QueryModelVersionReply{}
 	//获取模型路径
 	var modelFilePath string
-	if queryModelVersionReply.Model.IsPrefab {
-		modelFilePath = s.getPreFebModelSubPath(deployJob)
+	if isCommModel {
+		queryModelVersion := &api.QueryModelVersionRequest{}
+		queryModelVersion.ModelId = deployJob.ModelId
+		queryModelVersion.Version = deployJob.ModelVersion
+		commModelInfo, _ := s.modelService.QueryModelVersion(ctx, queryModelVersion)
+		if commModelInfo != nil {
+			//公共模型路径
+			commModelUserId := commModelInfo.Model.UserId
+			//因为模型分享设计只是在同一群组中分享公共模型，所以这里只需要替换源模型的用户userid，即可复用方法来查询模型路径
+			deployJob.UserId = commModelUserId
+			//模型名称
+			deployJob.ModelName = commModelInfo.Model.ModelName
+			//源模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
 	} else {
-		modelFilePath = s.getUserModelSubPath(deployJob)
+		queryModelVersionReply, err = s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
+			deployJob.ModelVersion)
+		if queryModelVersionReply == nil || err != nil {
+			return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+		}
+		if queryModelVersionReply.Model.IsPrefab {
+			//预置模型路径
+			modelFilePath = s.getPreFebModelSubPath(deployJob)
+		} else {
+			//我的模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
+		//模型名称
+		deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	}
-	//模型名称
-	deployJob.ModelName = queryModelVersionReply.Model.ModelName
+	//如果是使用公共模型发布服务，用户的名称需要为发布者名称，重写回来。
+	if isCommModel {
+		deployJob.UserId = deployUserId
+	}
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
