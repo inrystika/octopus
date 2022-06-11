@@ -518,6 +518,8 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 			commModelUserId := commModelInfo.Model.UserId
 			//因为模型分享设计只是在同一群组中分享公共模型，所以这里只需要替换源模型的用户userid，即可复用方法来查询模型路径
 			deployJob.UserId = commModelUserId
+			//模型名称
+			deployJob.ModelName = commModelInfo.Model.ModelName
 			//源模型路径
 			modelFilePath = s.getUserModelSubPath(deployJob)
 		}
@@ -534,9 +536,10 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 			//我的模型路径
 			modelFilePath = s.getUserModelSubPath(deployJob)
 		}
+		//模型名称
+		deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	}
-	//模型名称
-	deployJob.ModelName = queryModelVersionReply.Model.ModelName
+
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
