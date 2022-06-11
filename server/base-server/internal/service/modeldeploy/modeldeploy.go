@@ -459,6 +459,7 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	deployUserId := deployJob.UserId
 	//资源队列
 	queue := deployJob.ResourcePool
 	if deployJob.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
@@ -539,7 +540,10 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 		//模型名称
 		deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	}
-
+	//如果是使用公共模型发布服务，用户的名称需要为发布者名称，重写回来。
+	if isCommModel {
+		deployJob.UserId = deployUserId
+	}
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
