@@ -19,6 +19,31 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "scheduler.fullname" . }}
+  labels:
+{{ include "scheduler.labels" . | indent 4 }}
+data:
+  scheduler-conf.yaml: |
+    actions: "enqueue, allocate, privilege, backfill"
+    tiers:
+    - plugins:
+      - name: priority
+      - name: gang
+    - plugins:
+      - name: drf
+      - name: predicates
+      - name: proportion
+      - name: binpack
+        arguments:
+          binpack.weight: 20
+          binpack.cpu: 1
+          binpack.memory: 1
+          binpack.resources: nvidia.com/gpu
+          binpack.resources.nvidia.com/gpu: 50
+---
 
 apiVersion: apps/v1
 kind: Deployment
@@ -39,13 +64,19 @@ spec:
       - name: localtime
         hostPath:
           path: /etc/localtime
+      - name: scheduler-conf
+        configMap:
+          name: {{ template "scheduler.fullname" . }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.global.image.repository.address }}{{ .Values.global.image.repository.pathname }}/{{ .Values.scheduler.image.name }}:{{ default .Chart.AppVersion .Values.scheduler.image.tag }}"
         imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        args: [ "--scheduler-conf","/etc/scheduler/conf/scheduler-conf.yaml" ]
         volumeMounts:
           - name: localtime
             mountPath: /etc/localtime
+          - name: scheduler-conf
+            mountPath: /etc/scheduler/conf/
         resources:
 {{ toYaml .Values.resources | indent 10 }}
 {{- with .Values.global.nodeSelector }}
