@@ -58,7 +58,6 @@ export default {
   },
   data() {
     return {
-      showUpload: false,
       uploadData: { data: {}, type: undefined },
       ruleForm: {
         desc: ""
