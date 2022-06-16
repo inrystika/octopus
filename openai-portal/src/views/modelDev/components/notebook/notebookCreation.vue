@@ -370,15 +370,6 @@
                 });
             },
             // 算法三级对话框实现
-            changealgorithmSource() {
-                this.algorithmName = true;
-                this.algorithmNameCount = 1;
-                this.algorithmNameOption = []
-                this.ruleForm.algorithmId = ""
-                this.ruleForm.algorithmVersion = "";
-                this.algorithmChange = true;
-                this.getAlgorithmNameList();
-            },
             changeAlgorithmName() {
                 this.algorithmVersion = true;
                 this.algorithmVersionCount = 1;

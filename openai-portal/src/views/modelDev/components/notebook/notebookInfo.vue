@@ -129,9 +129,6 @@
           });
         });
       },
-      handleDialogClose() {
-        this.$emit('close', false)
-      },
       handleSizeChange(val) {
         this.pageSize = val
         this.getNotebookInfo()
