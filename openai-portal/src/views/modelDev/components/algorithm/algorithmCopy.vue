@@ -48,6 +48,7 @@
       return {
         ruleForm: {
           name: "",
+          modelName: "",
           version: "",
           desc: ""
         },
