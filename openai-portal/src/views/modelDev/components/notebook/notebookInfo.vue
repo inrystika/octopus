@@ -43,7 +43,6 @@
     data() {
       return {
         notebookInfo: {},
-        infoVisible: true,
         subTaskInfo: "",
         total: 0,
         pageIndex: 1,

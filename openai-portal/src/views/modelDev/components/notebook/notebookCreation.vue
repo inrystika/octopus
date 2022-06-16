@@ -241,7 +241,6 @@
                 dataSetVersionCount: 1,
                 dataSetNameTotal: undefined,
                 dataSetVersionTotal: undefined,
-                resourceOptions: [],
                 data: {},
                 resourceList: [],
                 algorithmNameTemp: '',
