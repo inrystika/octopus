@@ -47,10 +47,7 @@ export default {
   },
   data() {
     return {
-      isEmpty: false,
-      showUpload: false,
       show: true,
-      showConfirm: false,
       ruleForm: {
         path: ''
       },
