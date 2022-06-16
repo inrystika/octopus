@@ -59,7 +59,7 @@
     </div>
 
     <versionList v-if="versionListVisible" :row="row" :algorithm-type="typeChange" @close="close" />
-    <preAlgorithmVersionCreation v-if="standardDialogVisible" :row="row" :dialog-type="dialogType" @close="close"
+    <preAlgorithmVersionCreation v-if="standardDialogVisible" :row="row" @close="close"
       @cancel="cancel" @confirm="confirm" />
     <preAlgorithmCreation v-if="creationVisible" @cancel="cancel" @close="close" @confirm="confirm" />
     <algotithmEdit v-if="editAlgorithm" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
@@ -92,7 +92,6 @@
         versionListVisible: false,
         standardDialogVisible: false,
         algorithmName: "",
-        dialogType: false,
         creationVisible: false,
         editAlgorithm: false,
         typeChange: undefined,
