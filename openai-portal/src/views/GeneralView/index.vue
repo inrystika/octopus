@@ -582,9 +582,6 @@
         this.recordRuleVisible = true;
         this.recordType = 2
       },
-      view() {
-        this.recordRuleVisible = true;
-      },
       close(val) {
         this.recordRuleVisible = val;
       },
