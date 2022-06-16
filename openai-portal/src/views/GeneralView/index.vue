@@ -397,7 +397,6 @@
         this.groupName = workspaceId
         if (workspaceId === "default-workspace") {
           this.billRecordVisible = true  //充值记录按钮只在默认群组中展示
-          console.log(workspaceId)
           getUserHour().then(response => {
             if (response.success) {
               this.billAmount = response.data.billingUser.amount

@@ -125,7 +125,6 @@
             },
             // 注册并绑定
             register() {
-                console.log(this.loginForm)
                 this.$refs['loginForm'].validate((valid) => {
                     if (valid) {
                         register(this.loginForm).then(

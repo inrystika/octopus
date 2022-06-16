@@ -123,7 +123,6 @@
             })
           }
         }).catch(err => {
-          console.log("err:", err)
           this.$message({
             message: "未知错误",
             type: 'warning'
