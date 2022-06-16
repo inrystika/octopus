@@ -350,6 +350,7 @@ func (h *algorithmHandle) ListCommAlgorithmVersionHandle(ctx context.Context, re
 		if err != nil {
 			continue
 		}
+		m.Algorithm.CreatedAt = mc.CreatedAt.Unix()
 		algorithms = append(algorithms, m.Algorithm)
 	}
 
