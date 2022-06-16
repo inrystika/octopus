@@ -240,7 +240,6 @@
   .create {
     float: right;
   }
-
   .block {
     float: right;
     margin: 20px;

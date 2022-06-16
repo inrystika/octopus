@@ -167,7 +167,6 @@
     float: right;
     margin: 20px;
   }
-
   .searchForm {
     display: inline-block;
   }
