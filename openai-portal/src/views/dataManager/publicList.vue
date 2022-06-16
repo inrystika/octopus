@@ -81,7 +81,6 @@
       return {
         input: "",
         row: {},
-        formLabelWidth: "120px",
         versionListVisible: false,
         datasetList: [],
         total: undefined,
