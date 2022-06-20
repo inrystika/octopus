@@ -434,7 +434,6 @@ spec:
         - name: tmp
           hostPath:
             path: /tmp
-
 ---
 kind: Service
 apiVersion: v1
