@@ -124,6 +124,17 @@ data:
         target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_ingress_name]
         target_label: kubernetes_name
+    - job_name: 'kubernetes-npu-exporter'
+      kubernetes_sd_configs:
+      - role: pod
+      scheme: http
+      relabel_configs:
+      - action: keep
+        source_labels: [__meta_kubernetes_namespace]
+        regex: npu-exporter
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: job
+        replacement: ${1}
     - job_name: 'kubernetes-pods'
       kubernetes_sd_configs:
       - role: pod
