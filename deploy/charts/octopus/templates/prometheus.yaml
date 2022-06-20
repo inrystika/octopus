@@ -341,7 +341,7 @@ spec:
       annotations:
         seccomp.security.alpha.kubernetes.io/pod: runtime/default
       labels:
-        {{ include "prometheus.common-labels" . | indent 8 }}
+{{ include "prometheus.common-labels" . | indent 8 }}
         app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
         app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
         app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
