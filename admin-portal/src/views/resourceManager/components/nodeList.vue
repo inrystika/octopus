@@ -44,7 +44,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="使用百分比" align="center" width="100px">
+                <el-table-column label="使用百分比" align="center" min-width="100px">
                     <template slot-scope="scope">
                         <el-progress type="circle" :percentage="scope.row.percentage" :width="40" :height="40"
                             v-if="!scope.row.children" />
