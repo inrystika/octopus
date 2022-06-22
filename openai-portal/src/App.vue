@@ -56,7 +56,6 @@
             this.isShow = true
           }
         }).catch(err => {
-          console.log('err:', err)
           Vue.prototype.GLOBAL.THEME_COLOR = ''
           Vue.prototype.GLOBAL.THEME_TITLE_ZH = ''
           Vue.prototype.GLOBAL.THEME_TITLE_EN = ''

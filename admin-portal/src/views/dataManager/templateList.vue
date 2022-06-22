@@ -78,12 +78,10 @@
       dataSetEdit
     },
     props: {
-      payload: { type: Array, default: () => [] },
       dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
-        input: "",
         data: undefined,
         versionListVisible: false,
         editDataSet: false,

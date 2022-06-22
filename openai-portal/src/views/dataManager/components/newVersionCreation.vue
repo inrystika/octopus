@@ -113,8 +113,8 @@ export default {
       this.$emit("confirm", val);
     },
     isCloseX(val) {
-        this.close = val
-      }
+      this.close = val
+    }
   }
 }
 </script>

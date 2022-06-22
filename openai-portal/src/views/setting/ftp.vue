@@ -56,7 +56,6 @@ export default {
         ftpUserName: '',
         ftpPassword: ''
       },
-      formLabelWidth: "120px",
     }
   },
   created() {

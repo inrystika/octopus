@@ -76,12 +76,10 @@
       searchForm
     },
     props: {
-      payload: { type: Array, default: () => [] },
       dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
-        input: "",
         row: {},
         versionListVisible: false,
         versionListType: 1,

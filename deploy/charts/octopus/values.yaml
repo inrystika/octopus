@@ -146,7 +146,7 @@ baseserver:
     ambassador: #需要修改为实际的值
       baseUrl: 192.168.202.73
     pytorchServer:
-      imageAddr: 192.168.202.110:5000/octopus/pytorchserver
+      imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
       version: 2.0.4
     sftpgo:
       username: admin
@@ -472,7 +472,7 @@ seldon-core-operator:
       protocols:
         seldon:
           defaultImageVersion: "2.0.4"
-          image: "192.168.202.110:5000/octopus/pytorchserver"
+          image: "swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver"
 
 sftpgo:
   image:
@@ -483,6 +483,8 @@ sftpgo:
     ports:
       sftp:
         nodePort: "30022"
+      http:
+        port: "80"
   volumes:
     - name: "data"
       persistentVolumeClaim:

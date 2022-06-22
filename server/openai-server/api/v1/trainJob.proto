@@ -90,7 +90,7 @@ service TrainJobService {
 
 message TrainJobRequest {
   //训练任务名称，必填，长度1-30
-  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 40}];
   //训练任务描述，非必填
   string desc = 2[(validate.rules).string = {max_len: 300}];
   //算法ID，非必填
@@ -114,7 +114,7 @@ message TrainJobRequest {
 
 message Config {
   //子任务名称，非必填，校验规则"^[0-9a-zA-Z_]*$"，最大长度15个字符
-  string name = 1[(validate.rules).string = {min_len: 0, max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 0, max_len: 40}];
   //子任务执行命令
   string command = 2[(validate.rules).string = {min_len: 1}];
   //command执行命令参数,key-value
@@ -159,7 +159,7 @@ message TrainJobReply {
 
 message TrainJobTemplateRequest {
   //模板名称，必填，长度1-30
-  string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
+  string name = 1[(validate.rules).string = {min_len: 1, max_len: 40}];
   //模板描述，非必填
   string desc = 2[(validate.rules).string = {max_len: 300}];
   //算法ID，必填
