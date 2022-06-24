@@ -463,12 +463,13 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    {{ include "prometheus.common-labels" . | indent 4 }}
+{{ include "prometheus.common-labels" . | indent 4 }}
     app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
     app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
   annotations:
-    prometheus.io/port: "8082"
+    prometheus.io/port: "9400"
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
   name: {{ template "prometheus.fullname" . }}-npu-exporter
 spec:
