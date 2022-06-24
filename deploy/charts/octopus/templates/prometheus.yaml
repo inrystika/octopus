@@ -363,7 +363,7 @@ spec:
           # NOTE: enable HTTPS needs to use
           # ./cert-importer -certFile=../cert/rsa_aes.crt -keyFile=../cert/rsa_aes_private.key to import certificate
           # pair firstly
-          args: [ "umask 027;npu-exporter -port=8082 -ip=0.0.0.0  -updateTime=5 -enableHTTP
+          args: [ "umask 027;npu-exporter -port=8082 -ip=0.0.0.0  -updateTime=5 -enableHTTP=true
                  -logFile=/var/log/mindx-dl/npu-exporter/npu-exporter.log -logLevel=0 -containerMode=docker" ]
           securityContext:
             privileged: true
