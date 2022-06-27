@@ -61,6 +61,7 @@ const (
 	shmResource               = "shm"
 	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId    = "image.octopus.dev/id"
+	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
 func buildTaskName(idx int) string {
@@ -788,7 +789,9 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
-				Annotations: map[string]string{"nginx.ingress.kubernetes.io/proxy-body-size":"2m"},
+				Annotations: map[string]string{
+					kubeAnnotationsProxyBodySize: "20m",
+				},
 			},
 			Spec: v1beta1.IngressSpec{
 				Rules: []v1beta1.IngressRule{
