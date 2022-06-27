@@ -788,6 +788,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
+				Annotations: map[string]string{"nginx.ingress.kubernetes.io/proxy-body-size":"2m"},
 			},
 			Spec: v1beta1.IngressSpec{
 				Rules: []v1beta1.IngressRule{
