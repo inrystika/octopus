@@ -790,7 +790,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
 				Annotations: map[string]string{
-					kubeAnnotationsProxyBodySize: "1000m",
+					kubeAnnotationsProxyBodySize: "100m",
 				},
 			},
 			Spec: v1beta1.IngressSpec{
