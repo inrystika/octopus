@@ -3,6 +3,7 @@ package common
 const (
 	BillingPrecision = 2
 	RdmaPrefix       = "rdma/"
+	NPUResourceName  = "npu.huawei.com/NPU"
 )
 
 const (
