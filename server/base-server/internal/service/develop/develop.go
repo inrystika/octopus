@@ -783,10 +783,10 @@ func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, 
 	return nil
 }
 
-func (s *developService) createIngress(conf *conf.Bootstrap, ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
+func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
 		var upLoadFileSize string = ""
-		if conf.Data.Kubernetes.IsSetUploadFileSize {
+		if s.conf.Data.Kubernetes.IsSetUploadFileSize {
 			upLoadFileSize = "1000m"
 		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
