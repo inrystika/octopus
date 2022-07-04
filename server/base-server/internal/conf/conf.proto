@@ -47,6 +47,7 @@ message Pipeline {
 message Kubernetes {
   string masterUrl = 1;
   string configPath = 2;
+  bool isSetUploadFileSize = 3;
 }
 message MinioBase {
   string endPoint = 1;
