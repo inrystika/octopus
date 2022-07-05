@@ -70,5 +70,4 @@ replace (
 	nodeagent => ../controller/nodeagent
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
 	volcano.sh/volcano => ./taskset/pkg/volcano
-	git.openi.org.cn/OpenI/octopus/server/apis => git.openi.org.cn/openioctopus/octopus/server/apis
 )

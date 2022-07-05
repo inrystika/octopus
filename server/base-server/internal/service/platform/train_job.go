@@ -18,14 +18,13 @@ import (
 	"strings"
 	"time"
 
-	vcBatch "git.openi.org.cn/OpenI/octopus/server/apis/pkg/apis/batch/v1alpha1"
-	vcBus "git.openi.org.cn/OpenI/octopus/server/apis/pkg/apis/bus/v1alpha1"
-
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
+	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
 )
 
 const (
