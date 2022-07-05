@@ -19,13 +19,15 @@ import (
 	"strings"
 	"time"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
-	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
+	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 )
 
 const (
@@ -504,7 +506,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	}
 
 	minAvailable := 0
-	tasks := make([]vcBatch.TaskSpec, 0)
+	tasks := make([]typeJob.TaskSpec, 0)
 
 	for idx, i := range job.Config {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
@@ -576,34 +578,34 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			})
 		}
 		//pod template
-		task := vcBatch.TaskSpec{
-			Name:     taskName,
-			Replicas: int32(i.TaskNumber),
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
-				},
-				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
-					Containers: []v1.Container{
-						{
-							Name:  taskName,
-							Image: startJobInfo.imageAddr,
-							Resources: v1.ResourceRequirements{
-								Requests: startJobInfo.specs[i.ResourceSpecId].resources,
-								Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
-							},
-							VolumeMounts: volumeMounts,
-							Command:      s.buildCmd(i),
-						},
-					},
-					NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
-					Volumes:      volumes,
-				},
-			},
-			CompletionPolicy: vcBatch.CompletionPolicy{
+		task := typeJob.TaskSpec{
+			CompletionPolicy: typeJob.CompletionPolicy{
 				MaxFailed:    int32(i.MinFailedTaskCount),
 				MinSucceeded: int32(i.MinSucceededTaskCount),
+			},
+		}
+		task.Name = taskName
+		task.Replicas = int32(i.TaskNumber)
+		task.Template = v1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
+			},
+			Spec: v1.PodSpec{
+				RestartPolicy: "Never",
+				Containers: []v1.Container{
+					{
+						Name:  taskName,
+						Image: startJobInfo.imageAddr,
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.specs[i.ResourceSpecId].resources,
+							Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
+						},
+						VolumeMounts: volumeMounts,
+						Command:      s.buildCmd(i),
+					},
+				},
+				NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
+				Volumes:      volumes,
 			},
 		}
 		if i.IsMainRole {
@@ -627,8 +629,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				//1. privileged
 				//处理空情况
 				if task.Template.Spec.Containers[0].SecurityContext == nil {
-					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
-					}
+					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{}
 				}
 				privileged := true
 				task.Template.Spec.Containers[0].SecurityContext.Privileged = &privileged
@@ -640,7 +641,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 							Path: "/usr/local/Ascend/driver",
 						},
 					},
-				},v1.Volume{
+				}, v1.Volume{
 					Name: "ascend-driver-info",
 					VolumeSource: v1.VolumeSource{
 						HostPath: &v1.HostPathVolumeSource{
@@ -655,41 +656,39 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						MountPath: "/usr/local/Ascend/driver",
 					},
 					v1.VolumeMount{
-						Name:  "ascend-driver-info",
+						Name:      "ascend-driver-info",
 						MountPath: "/etc/ascend_install.info",
-				})
+					})
 
 			}
 		}
 		tasks = append(tasks, task)
 	}
 
-	param.Job = &vcBatch.Job{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "batch.volcano.sh/v1alpha1",
-			Kind:       "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: job.UserId,
-			//Namespace: "default",
-			Name: job.Id,
-		},
-		Spec: vcBatch.JobSpec{
-			MinAvailable:  int32(minAvailable),
-			Queue:         startJobInfo.queue,
-			SchedulerName: "volcano",
-			Plugins: map[string][]string{
-				"env": {},
-				"svc": {},
-			},
-			Policies: []vcBatch.LifecyclePolicy{
-				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
-				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
-			},
-			Tasks: tasks,
-		},
-		Status: vcBatch.JobStatus{},
+	param.Job = &typeJob.Job{}
+	param.Job.TypeMeta = metav1.TypeMeta{
+		APIVersion: "batch.volcano.sh/v1alpha1",
+		Kind:       "Job",
 	}
+
+	param.Job.ObjectMeta = metav1.ObjectMeta{
+		Namespace: job.UserId,
+		Name:      job.Id,
+	}
+	param.Job.Spec = typeJob.JobSpec{}
+	param.Job.Spec.MinAvailable = int32(minAvailable)
+	param.Job.Spec.Queue = startJobInfo.queue
+	param.Job.Spec.SchedulerName = "volcano"
+	param.Job.Spec.Plugins = map[string][]string{
+		"env": {},
+		"svc": {},
+	}
+	param.Job.Spec.Policies = []vcBatch.LifecyclePolicy{
+		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
+		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
+	}
+	param.Job.Spec.Tasks = tasks
+	param.Job.Status = typeJob.JobStatus{}
 
 	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
 	closes = append(closes, func(ctx context.Context) error {

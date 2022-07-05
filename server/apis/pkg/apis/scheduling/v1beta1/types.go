@@ -260,6 +260,8 @@ type Queue struct {
 	// The status of queue.
 	// +optional
 	Status QueueStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+
+	NodeSelector map[string]string `json:"nodeSelector,omitempty" protobuf:"bytes,4,opt,name=nodeSelector"`
 }
 
 // Guarantee represents configuration of queue resource reservation
@@ -301,8 +303,8 @@ type QueueStatus struct {
 
 // CluterSpec represents the template of Cluster
 type Cluster struct {
-	Name string              `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	Weight int32             `json:"weight,omitempty" protobuf:"bytes,2,opt,name=weight"`
+	Name     string          `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Weight   int32           `json:"weight,omitempty" protobuf:"bytes,2,opt,name=weight"`
 	Capacity v1.ResourceList `json:"capacity,omitempty" protobuf:"bytes,3,opt,name=capacity"`
 }
 
@@ -314,7 +316,7 @@ type QueueSpec struct {
 	// Reclaimable indicate whether the queue can be reclaimed by other queue
 	Reclaimable *bool `json:"reclaimable,omitempty" protobuf:"bytes,3,opt,name=reclaimable"`
 
-    // extendCluster indicate the jobs in this Queue will be dispatched to these clusters.
+	// extendCluster indicate the jobs in this Queue will be dispatched to these clusters.
 	ExtendClusters []Cluster `json:"extendClusters,omitempty" protobuf:"bytes,4,opt,name=extendClusters"`
 
 	// Guarantee indicate configuration about resource reservation

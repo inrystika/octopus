@@ -16,13 +16,15 @@ import (
 	"strings"
 	"time"
 
-	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
+	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 
 	"server/common/log"
 
 	commapi "server/common/api/v1"
 
 	nav1 "nodeagent/apis/agent/v1"
+
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
 
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -31,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
+	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
 type developService struct {
@@ -56,11 +58,11 @@ type DevelopService interface {
 }
 
 const (
-	k8sTaskNamePrefix         = "task"
-	servicePort               = 8888
-	shmResource               = "shm"
-	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
-	nodeActionLabelImageId    = "image.octopus.dev/id"
+	k8sTaskNamePrefix            = "task"
+	servicePort                  = 8888
+	shmResource                  = "shm"
+	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
+	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
@@ -606,34 +608,33 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		})
 	}
 
-	tasks := make([]vcBatch.TaskSpec, 0)
+	tasks := make([]typeJob.TaskSpec, 0)
 	for i := 0; i < nb.TaskNumber; i++ {
 		taskName := buildTaskName(i)
-		task := vcBatch.TaskSpec{
-			Name:     taskName,
-			Replicas: 1,
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					RestartPolicy: v1.RestartPolicyNever,
-					Containers: []v1.Container{
-						{
-							Name:    taskName,
-							Image:   startJobInfo.imageAddr,
-							Command: []string{"sh", "-c", startJobInfo.command},
-							Resources: v1.ResourceRequirements{
-								Requests: startJobInfo.resources,
-								Limits:   startJobInfo.resources,
-							},
-							VolumeMounts: VolumeMounts,
-							Env: []v1.EnvVar{{
-								Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-								Value: buildNotebookUrl(nbJob.Id, i),
-							}},
+		task := typeJob.TaskSpec{}
+		task.Name = taskName
+		task.Replicas = 1
+		task.Template = v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				RestartPolicy: v1.RestartPolicyNever,
+				Containers: []v1.Container{
+					{
+						Name:    taskName,
+						Image:   startJobInfo.imageAddr,
+						Command: []string{"sh", "-c", startJobInfo.command},
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.resources,
+							Limits:   startJobInfo.resources,
 						},
+						VolumeMounts: VolumeMounts,
+						Env: []v1.EnvVar{{
+							Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
+							Value: buildNotebookUrl(nbJob.Id, i),
+						}},
 					},
-					NodeSelector: startJobInfo.nodeSelectors,
-					Volumes:      volumes,
 				},
+				NodeSelector: startJobInfo.nodeSelectors,
+				Volumes:      volumes,
 			},
 		}
 
@@ -649,31 +650,29 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		tasks = append(tasks, task)
 	}
 
-	param.Job = &vcBatch.Job{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "batch.volcano.sh/v1alpha1",
-			Kind:       "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: nb.UserId,
-			Name:      nbJob.Id,
-		},
-		Spec: vcBatch.JobSpec{
-			MinAvailable:  int32(nb.TaskNumber),
-			Queue:         startJobInfo.queue,
-			SchedulerName: "volcano",
-			//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
-			Plugins: map[string][]string{
-				"env": {},
-				"svc": {"--disable-network-policy"},
-			},
-			Policies: []vcBatch.LifecyclePolicy{
-				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
-				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
-			},
-			Tasks: tasks,
-		},
+	param.Job = &typeJob.Job{}
+	param.Job.TypeMeta = metav1.TypeMeta{
+		APIVersion: "batch.volcano.sh/v1alpha1",
+		Kind:       "Job",
 	}
+	param.Job.ObjectMeta = metav1.ObjectMeta{
+		Namespace: nb.UserId,
+		Name:      nbJob.Id,
+	}
+	param.Job.Spec = typeJob.JobSpec{}
+	param.Job.Spec.MinAvailable = int32(nb.TaskNumber)
+	param.Job.Spec.Queue = startJobInfo.queue
+	param.Job.Spec.SchedulerName = "volcano"
+	//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
+	param.Job.Spec.Plugins = map[string][]string{
+		"env": {},
+		"svc": {"--disable-network-policy"},
+	}
+	param.Job.Spec.Policies = []vcBatch.LifecyclePolicy{
+		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
+		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
+	}
+	param.Job.Spec.Tasks = tasks
 
 	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
 	if err != nil {
@@ -790,7 +789,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
 				Annotations: map[string]string{
-					kubeAnnotationsProxyBodySize: "100m",
+					kubeAnnotationsProxyBodySize:     "100m",
 					"nginx.org/client-max-body-size": "100m",
 				},
 			},

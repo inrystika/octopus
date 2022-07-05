@@ -5,9 +5,10 @@ import (
 	"strings"
 	"time"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	typeJob "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
 )
 
 type Reply struct {
