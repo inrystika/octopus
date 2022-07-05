@@ -61,6 +61,7 @@ const (
 	shmResource               = "shm"
 	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId    = "image.octopus.dev/id"
+	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
 func buildTaskName(idx int) string {
@@ -784,10 +785,17 @@ func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, 
 
 func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
+		var upLoadFileSize string = ""
+		if s.conf.Data.Kubernetes.IsSetUploadFileSize {
+			upLoadFileSize = "1000m"
+		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
+				Annotations: map[string]string{
+					kubeAnnotationsProxyBodySize: upLoadFileSize,
+				},
 			},
 			Spec: v1beta1.IngressSpec{
 				Rules: []v1beta1.IngressRule{
