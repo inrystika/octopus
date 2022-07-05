@@ -6,7 +6,6 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/bsm/redislock v0.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/evanphx/json-patch v4.11.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/go-dockerclient v1.7.2
@@ -20,7 +19,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/minio/minio-go/v7 v7.0.11
 	github.com/seldonio/seldon-core/operator v1.11.2
 	github.com/sony/sonyflake v1.0.0
@@ -71,4 +70,5 @@ replace (
 	nodeagent => ../controller/nodeagent
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.7.0
 	volcano.sh/volcano => ./taskset/pkg/volcano
+	git.openi.org.cn/OpenI/octopus/server/apis => git.openi.org.cn/openioctopus/octopus/server/apis
 )

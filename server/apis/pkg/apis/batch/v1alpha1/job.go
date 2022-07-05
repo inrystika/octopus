@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 )
 
@@ -331,6 +332,14 @@ type JobStatus struct {
 	// +patchMergeKey=status
 	// +patchStrategy=merge
 	Conditions []JobCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"status" protobuf:"bytes,13,rep,name=conditions"`
+
+	TaskRoleStatus []TaskRoleStatus `json:"roleStatus,omitempty" protobuf:"bytes,12,opt,name=roleStatus"`
+
+	CreatedAt metav1.Time `json:"createdAt,omitempty" protobuf:"bytes,13,opt,name=createdAt"` //任务创建时间
+
+	StartAt *metav1.Time `json:"startAt,omitempty" protobuf:"bytes,14,opt,name=startAt"` //任务开始时间
+
+	FinishAt *metav1.Time `json:"finishAt,omitempty" protobuf:"bytes,15,opt,name=finishAt"` //任务结束时
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -379,4 +388,43 @@ type DependsOn struct {
 	// all tasks must be changed to the specified state to trigger the task scheduling
 	// +optional
 	Iteration Iteration `json:"iteration,omitempty" protobuf:"bytes,2,opt,name=iteration"`
+}
+
+// TaskRoleStatus record the status of a task role
+type TaskRoleStatus struct {
+	Name            string          `json:"name"`
+	Phase           string          `json:"phase"`
+	PhaseMessage    string          `json:"phaseMessage"`
+	TransitionTime  metav1.Time     `json:"transitionTime"`
+	State           string          `json:"state"`
+	ReplicaStatuses []ReplicaStatus `json:"replicaStatus"`
+}
+
+// ReplicaStatus record the  status of a replica
+type ReplicaStatus struct {
+	Index             uint                     `json:"index"`
+	Name              string                   `json:"name"`
+	Phase             string                   `json:"phase"`
+	PhaseMessage      string                   `json:"phaseMessage"`
+	Stopped           bool                     `json:"stopped"`
+	TransitionTime    metav1.Time              `json:"transitionTime"`
+	StartAt           *metav1.Time             `json:"startAt"`
+	FinishAt          *metav1.Time             `json:"finishAt"`
+	TotalRetriedCount uint                     `json:"totalRetriedCount"`
+	PodName           string                   `json:"podName"`
+	PodReason         string                   `json:"podReason"`
+	PodUID            *types.UID               `json:"podUID"`
+	PodIP             string                   `json:"podIP"`
+	PodHostIP         string                   `json:"podHostIP"`
+	ContainerName     string                   `json:"containerName"`
+	ContainerID       string                   `json:"containerID"`
+	TerminatedInfo    *ContainerTerminatedInfo `json:"terminatedInfo"`
+}
+
+//ContainerTerminatedInfo contains the terminated information
+type ContainerTerminatedInfo struct {
+	ExitCode    int32  `json:"exitCode"`
+	ExitMessage string `json:"exitMessage"`
+	Signal      int32  `json:"signal"`
+	Reason      string `json:"reason"`
 }
