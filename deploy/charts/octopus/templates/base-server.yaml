@@ -163,6 +163,7 @@ data:
         jpyCommand: {{ .Values.baseserver.service.develop.jpyCommand }}
         jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
+        isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}
       resource:
         customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
         customizedResourceBindingNodeLabelValue: bound

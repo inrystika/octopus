@@ -786,8 +786,8 @@ func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, 
 func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
 		var upLoadFileSize string = ""
-		if s.conf.Data.Kubernetes.IsSetUploadFileSize {
-			upLoadFileSize = "1000m"
+		if s.conf.Service.Develop.IsSetUploadFileSize {
+			upLoadFileSize = "1000m"  // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
 		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
