@@ -63,6 +63,8 @@ type AlgorithmDao interface {
 	BatchQueryAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersionBatchQuery) ([]*model.AlgorithmAccessVersion, error)
 	// 添加公共算法版本
 	AddAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersion) (*model.AlgorithmAccessVersion, error)
+	// 修改公共算法版本
+	UpdateAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersion) error
 	// 删除公共算法版本
 	DeleteAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersionDelete) error
 	// 批量删除公共算法所有版本

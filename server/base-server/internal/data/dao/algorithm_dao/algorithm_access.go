@@ -405,6 +405,20 @@ func (d *algorithmDao) AddAlgorithmAccessVersion(ctx context.Context, req *model
 	return req, nil
 }
 
+func (d *algorithmDao) UpdateAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersion) error {
+	db := d.db.Model(&model.AlgorithmAccessVersion{})
+
+	if req.Id == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := db.Where("id = ?", req.Id).Updates(req)
+
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
+}
+
 // 批量删除公共算法
 func (d *algorithmDao) BatchDeleteAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersionBatchDelete) error {
 	db := d.db.Model(&model.AlgorithmAccessVersion{})
