@@ -26,7 +26,7 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
 	v1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
-	scheme "volcano.sh/apis/pkg/client/clientset/versioned/scheme"
+	scheme "server/apis/pkg/client/clientset/versioned/scheme"
 )
 
 // PodGroupsGetter has a method to return a PodGroupInterface.

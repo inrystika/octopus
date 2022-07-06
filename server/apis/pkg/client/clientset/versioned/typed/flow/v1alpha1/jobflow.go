@@ -26,7 +26,7 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
 	v1alpha1 "volcano.sh/apis/pkg/apis/flow/v1alpha1"
-	scheme "volcano.sh/apis/pkg/client/clientset/versioned/scheme"
+	scheme "server/apis/pkg/client/clientset/versioned/scheme"
 )
 
 // JobFlowsGetter has a method to return a JobFlowInterface.

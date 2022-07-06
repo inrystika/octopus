@@ -21,12 +21,14 @@ import (
 	"context"
 	"time"
 
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
 	v1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
-	scheme "volcano.sh/apis/pkg/client/clientset/versioned/scheme"
+	scheme "server/apis/pkg/client/clientset/versioned/scheme"
 )
 
 // QueuesGetter has a method to return a QueueInterface.
@@ -37,15 +39,15 @@ type QueuesGetter interface {
 
 // QueueInterface has methods to work with Queue resources.
 type QueueInterface interface {
-	Create(ctx context.Context, queue *v1beta1.Queue, opts v1.CreateOptions) (*v1beta1.Queue, error)
-	Update(ctx context.Context, queue *v1beta1.Queue, opts v1.UpdateOptions) (*v1beta1.Queue, error)
-	UpdateStatus(ctx context.Context, queue *v1beta1.Queue, opts v1.UpdateOptions) (*v1beta1.Queue, error)
+	Create(ctx context.Context, queue *typeQueue.Queue, opts v1.CreateOptions) (*typeQueue.Queue, error)
+	Update(ctx context.Context, queue *typeQueue.Queue, opts v1.UpdateOptions) (*typeQueue.Queue, error)
+	UpdateStatus(ctx context.Context, queue *typeQueue.Queue, opts v1.UpdateOptions) (*typeQueue.Queue, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.Queue, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*typeQueue.Queue, error)
 	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.QueueList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Queue, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *typeQueue.Queue, err error)
 	QueueExpansion
 }
 
@@ -62,8 +64,8 @@ func newQueues(c *SchedulingV1beta1Client) *queues {
 }
 
 // Get takes name of the queue, and returns the corresponding queue object, and an error if there is any.
-func (c *queues) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Queue, err error) {
-	result = &v1beta1.Queue{}
+func (c *queues) Get(ctx context.Context, name string, options v1.GetOptions) (result *typeQueue.Queue, err error) {
+	result = &typeQueue.Queue{}
 	err = c.client.Get().
 		Resource("queues").
 		Name(name).
@@ -104,8 +106,8 @@ func (c *queues) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interfac
 }
 
 // Create takes the representation of a queue and creates it.  Returns the server's representation of the queue, and an error, if there is any.
-func (c *queues) Create(ctx context.Context, queue *v1beta1.Queue, opts v1.CreateOptions) (result *v1beta1.Queue, err error) {
-	result = &v1beta1.Queue{}
+func (c *queues) Create(ctx context.Context, queue *typeQueue.Queue, opts v1.CreateOptions) (result *typeQueue.Queue, err error) {
+	result = &typeQueue.Queue{}
 	err = c.client.Post().
 		Resource("queues").
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -116,8 +118,8 @@ func (c *queues) Create(ctx context.Context, queue *v1beta1.Queue, opts v1.Creat
 }
 
 // Update takes the representation of a queue and updates it. Returns the server's representation of the queue, and an error, if there is any.
-func (c *queues) Update(ctx context.Context, queue *v1beta1.Queue, opts v1.UpdateOptions) (result *v1beta1.Queue, err error) {
-	result = &v1beta1.Queue{}
+func (c *queues) Update(ctx context.Context, queue *typeQueue.Queue, opts v1.UpdateOptions) (result *typeQueue.Queue, err error) {
+	result = &typeQueue.Queue{}
 	err = c.client.Put().
 		Resource("queues").
 		Name(queue.Name).
@@ -130,8 +132,8 @@ func (c *queues) Update(ctx context.Context, queue *v1beta1.Queue, opts v1.Updat
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *queues) UpdateStatus(ctx context.Context, queue *v1beta1.Queue, opts v1.UpdateOptions) (result *v1beta1.Queue, err error) {
-	result = &v1beta1.Queue{}
+func (c *queues) UpdateStatus(ctx context.Context, queue *typeQueue.Queue, opts v1.UpdateOptions) (result *typeQueue.Queue, err error) {
+	result = &typeQueue.Queue{}
 	err = c.client.Put().
 		Resource("queues").
 		Name(queue.Name).
@@ -169,8 +171,8 @@ func (c *queues) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, li
 }
 
 // Patch applies the patch and returns the patched queue.
-func (c *queues) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Queue, err error) {
-	result = &v1beta1.Queue{}
+func (c *queues) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *typeQueue.Queue, err error) {
+	result = &typeQueue.Queue{}
 	err = c.client.Patch(pt).
 		Resource("queues").
 		Name(name).

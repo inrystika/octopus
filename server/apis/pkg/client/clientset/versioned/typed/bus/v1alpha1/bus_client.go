@@ -22,7 +22,7 @@ import (
 
 	rest "k8s.io/client-go/rest"
 	v1alpha1 "volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/apis/pkg/client/clientset/versioned/scheme"
+	"server/apis/pkg/client/clientset/versioned/scheme"
 )
 
 type BusV1alpha1Interface interface {

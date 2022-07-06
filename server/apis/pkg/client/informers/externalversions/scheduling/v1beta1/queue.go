@@ -21,14 +21,15 @@ import (
 	"context"
 	time "time"
 
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
-	versioned "volcano.sh/apis/pkg/client/clientset/versioned"
-	internalinterfaces "volcano.sh/apis/pkg/client/informers/externalversions/internalinterfaces"
-	v1beta1 "volcano.sh/apis/pkg/client/listers/scheduling/v1beta1"
+	versioned "server/apis/pkg/client/clientset/versioned"
+	internalinterfaces "server/apis/pkg/client/informers/externalversions/internalinterfaces"
+	v1beta1 "server/apis/pkg/client/listers/scheduling/v1beta1"
 )
 
 // QueueInformer provides access to a shared informer and lister for
@@ -69,7 +70,7 @@ func NewFilteredQueueInformer(client versioned.Interface, resyncPeriod time.Dura
 				return client.SchedulingV1beta1().Queues().Watch(context.TODO(), options)
 			},
 		},
-		&schedulingv1beta1.Queue{},
+		&typeQueue.Queue{},
 		resyncPeriod,
 		indexers,
 	)
@@ -80,7 +81,7 @@ func (f *queueInformer) defaultInformer(client versioned.Interface, resyncPeriod
 }
 
 func (f *queueInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&schedulingv1beta1.Queue{}, f.defaultInformer)
+	return f.factory.InformerFor(&typeQueue.Queue{}, f.defaultInformer)
 }
 
 func (f *queueInformer) Lister() v1beta1.QueueLister {

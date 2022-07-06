@@ -26,9 +26,9 @@ import (
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
 	flowv1alpha1 "volcano.sh/apis/pkg/apis/flow/v1alpha1"
-	versioned "volcano.sh/apis/pkg/client/clientset/versioned"
-	internalinterfaces "volcano.sh/apis/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "volcano.sh/apis/pkg/client/listers/flow/v1alpha1"
+	versioned "server/apis/pkg/client/clientset/versioned"
+	internalinterfaces "server/apis/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "server/apis/pkg/client/listers/flow/v1alpha1"
 )
 
 // JobFlowInformer provides access to a shared informer and lister for

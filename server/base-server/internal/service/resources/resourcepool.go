@@ -11,10 +11,12 @@ import (
 
 	"server/common/log"
 
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	"volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
+	"volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 )
 
 type ResourcePoolService struct {
@@ -121,7 +123,7 @@ func (rsps *ResourcePoolService) GetResourcePool(ctx context.Context, req *api.G
 		return &api.GetResourcePoolReply{}, errors.Errorf(err, errors.ErrorGetResourcePool)
 	}
 
-	queue := &v1beta1.Queue{}
+	queue := &typeQueue.Queue{}
 	err = json.Unmarshal(replyBytes, queue)
 
 	if err != nil {

@@ -20,6 +20,8 @@ package fake
 import (
 	"context"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -40,14 +42,14 @@ var jobsResource = schema.GroupVersionResource{Group: "batch.volcano.sh", Versio
 var jobsKind = schema.GroupVersionKind{Group: "batch.volcano.sh", Version: "v1alpha1", Kind: "Job"}
 
 // Get takes name of the job, and returns the corresponding job object, and an error if there is any.
-func (c *FakeJobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Job, err error) {
+func (c *FakeJobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *typeJob.Job, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(jobsResource, c.ns, name), &v1alpha1.Job{})
+		Invokes(testing.NewGetAction(jobsResource, c.ns, name), &typeJob.Job{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Job), err
+	return obj.(*typeJob.Job), err
 }
 
 // List takes label and field selectors, and returns the list of Jobs that match those selectors.
@@ -80,43 +82,43 @@ func (c *FakeJobs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interf
 }
 
 // Create takes the representation of a job and creates it.  Returns the server's representation of the job, and an error, if there is any.
-func (c *FakeJobs) Create(ctx context.Context, job *v1alpha1.Job, opts v1.CreateOptions) (result *v1alpha1.Job, err error) {
+func (c *FakeJobs) Create(ctx context.Context, job *typeJob.Job, opts v1.CreateOptions) (result *typeJob.Job, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(jobsResource, c.ns, job), &v1alpha1.Job{})
+		Invokes(testing.NewCreateAction(jobsResource, c.ns, job), &typeJob.Job{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Job), err
+	return obj.(*typeJob.Job), err
 }
 
 // Update takes the representation of a job and updates it. Returns the server's representation of the job, and an error, if there is any.
-func (c *FakeJobs) Update(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (result *v1alpha1.Job, err error) {
+func (c *FakeJobs) Update(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (result *typeJob.Job, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(jobsResource, c.ns, job), &v1alpha1.Job{})
+		Invokes(testing.NewUpdateAction(jobsResource, c.ns, job), &typeJob.Job{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Job), err
+	return obj.(*typeJob.Job), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeJobs) UpdateStatus(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (*v1alpha1.Job, error) {
+func (c *FakeJobs) UpdateStatus(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (*typeJob.Job, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(jobsResource, "status", c.ns, job), &v1alpha1.Job{})
+		Invokes(testing.NewUpdateSubresourceAction(jobsResource, "status", c.ns, job), &typeJob.Job{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Job), err
+	return obj.(*typeJob.Job), err
 }
 
 // Delete takes name of the job and deletes it. Returns an error if one occurs.
 func (c *FakeJobs) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(jobsResource, c.ns, name, opts), &v1alpha1.Job{})
+		Invokes(testing.NewDeleteActionWithOptions(jobsResource, c.ns, name, opts), &typeJob.Job{})
 
 	return err
 }
@@ -130,12 +132,12 @@ func (c *FakeJobs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, 
 }
 
 // Patch applies the patch and returns the patched job.
-func (c *FakeJobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Job, err error) {
+func (c *FakeJobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *typeJob.Job, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(jobsResource, c.ns, name, pt, data, subresources...), &v1alpha1.Job{})
+		Invokes(testing.NewPatchSubresourceAction(jobsResource, c.ns, name, pt, data, subresources...), &typeJob.Job{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Job), err
+	return obj.(*typeJob.Job), err
 }

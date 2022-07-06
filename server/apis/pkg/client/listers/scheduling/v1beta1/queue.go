@@ -18,6 +18,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
@@ -29,10 +31,10 @@ import (
 type QueueLister interface {
 	// List lists all Queues in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.Queue, err error)
+	List(selector labels.Selector) (ret []*typeQueue.Queue, err error)
 	// Get retrieves the Queue from the index for a given name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta1.Queue, error)
+	Get(name string) (*typeQueue.Queue, error)
 	QueueListerExpansion
 }
 
@@ -47,15 +49,15 @@ func NewQueueLister(indexer cache.Indexer) QueueLister {
 }
 
 // List lists all Queues in the indexer.
-func (s *queueLister) List(selector labels.Selector) (ret []*v1beta1.Queue, err error) {
+func (s *queueLister) List(selector labels.Selector) (ret []*typeQueue.Queue, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.Queue))
+		ret = append(ret, m.(*typeQueue.Queue))
 	})
 	return ret, err
 }
 
 // Get retrieves the Queue from the index for a given name.
-func (s *queueLister) Get(name string) (*v1beta1.Queue, error) {
+func (s *queueLister) Get(name string) (*typeQueue.Queue, error) {
 	obj, exists, err := s.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
@@ -63,5 +65,5 @@ func (s *queueLister) Get(name string) (*v1beta1.Queue, error) {
 	if !exists {
 		return nil, errors.NewNotFound(v1beta1.Resource("queue"), name)
 	}
-	return obj.(*v1beta1.Queue), nil
+	return obj.(*typeQueue.Queue), nil
 }

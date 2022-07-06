@@ -18,8 +18,8 @@ limitations under the License.
 package nodeinfo
 
 import (
-	internalinterfaces "volcano.sh/apis/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "volcano.sh/apis/pkg/client/informers/externalversions/nodeinfo/v1alpha1"
+	internalinterfaces "server/apis/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "server/apis/pkg/client/informers/externalversions/nodeinfo/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

@@ -21,12 +21,14 @@ import (
 	"context"
 	"time"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
 	v1alpha1 "volcano.sh/apis/pkg/apis/batch/v1alpha1"
-	scheme "volcano.sh/apis/pkg/client/clientset/versioned/scheme"
+	scheme "server/apis/pkg/client/clientset/versioned/scheme"
 )
 
 // JobsGetter has a method to return a JobInterface.
@@ -37,15 +39,15 @@ type JobsGetter interface {
 
 // JobInterface has methods to work with Job resources.
 type JobInterface interface {
-	Create(ctx context.Context, job *v1alpha1.Job, opts v1.CreateOptions) (*v1alpha1.Job, error)
-	Update(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (*v1alpha1.Job, error)
-	UpdateStatus(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (*v1alpha1.Job, error)
+	Create(ctx context.Context, job *typeJob.Job, opts v1.CreateOptions) (*typeJob.Job, error)
+	Update(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (*typeJob.Job, error)
+	UpdateStatus(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (*typeJob.Job, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Job, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*typeJob.Job, error)
 	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.JobList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Job, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *typeJob.Job, err error)
 	JobExpansion
 }
 
@@ -64,8 +66,8 @@ func newJobs(c *BatchV1alpha1Client, namespace string) *jobs {
 }
 
 // Get takes name of the job, and returns the corresponding job object, and an error if there is any.
-func (c *jobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Job, err error) {
-	result = &v1alpha1.Job{}
+func (c *jobs) Get(ctx context.Context, name string, options v1.GetOptions) (result *typeJob.Job, err error) {
+	result = &typeJob.Job{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("jobs").
@@ -109,8 +111,8 @@ func (c *jobs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface,
 }
 
 // Create takes the representation of a job and creates it.  Returns the server's representation of the job, and an error, if there is any.
-func (c *jobs) Create(ctx context.Context, job *v1alpha1.Job, opts v1.CreateOptions) (result *v1alpha1.Job, err error) {
-	result = &v1alpha1.Job{}
+func (c *jobs) Create(ctx context.Context, job *typeJob.Job, opts v1.CreateOptions) (result *typeJob.Job, err error) {
+	result = &typeJob.Job{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("jobs").
@@ -122,8 +124,8 @@ func (c *jobs) Create(ctx context.Context, job *v1alpha1.Job, opts v1.CreateOpti
 }
 
 // Update takes the representation of a job and updates it. Returns the server's representation of the job, and an error, if there is any.
-func (c *jobs) Update(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (result *v1alpha1.Job, err error) {
-	result = &v1alpha1.Job{}
+func (c *jobs) Update(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (result *typeJob.Job, err error) {
+	result = &typeJob.Job{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("jobs").
@@ -137,8 +139,8 @@ func (c *jobs) Update(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOpti
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *jobs) UpdateStatus(ctx context.Context, job *v1alpha1.Job, opts v1.UpdateOptions) (result *v1alpha1.Job, err error) {
-	result = &v1alpha1.Job{}
+func (c *jobs) UpdateStatus(ctx context.Context, job *typeJob.Job, opts v1.UpdateOptions) (result *typeJob.Job, err error) {
+	result = &typeJob.Job{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("jobs").
@@ -179,8 +181,8 @@ func (c *jobs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, list
 }
 
 // Patch applies the patch and returns the patched job.
-func (c *jobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Job, err error) {
-	result = &v1alpha1.Job{}
+func (c *jobs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *typeJob.Job, err error) {
+	result = &typeJob.Job{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("jobs").
