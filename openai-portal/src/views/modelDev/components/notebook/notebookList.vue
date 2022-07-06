@@ -152,7 +152,6 @@
     },
     created() {
       this.getNotebookList(this.searchData);
-      // this.getResource()
       if (this.notebook) {
         this.notebookVisible = true
       }

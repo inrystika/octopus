@@ -42,12 +42,6 @@
     components: {
       upload
     },
-    props: {
-      // row: {
-      //   type: Object,
-      //   default: {}
-      // }
-    },
     created() {
       this.datasetType()
       this.datasetUse()

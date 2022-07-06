@@ -43,7 +43,6 @@
     data() {
       return {
         notebookInfo: {},
-        infoVisible: true,
         subTaskInfo: "",
         total: 0,
         pageIndex: 1,
@@ -124,15 +123,11 @@
             })
           }
         }).catch(err => {
-          console.log("err:", err)
           this.$message({
             message: "未知错误",
             type: 'warning'
           });
         });
-      },
-      handleDialogClose() {
-        this.$emit('close', false)
       },
       handleSizeChange(val) {
         this.pageSize = val

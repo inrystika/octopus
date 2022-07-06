@@ -109,7 +109,6 @@
       confirm(val) {
         this.$refs['ruleForm'].validate((valid) => {
           if (valid) {
-            console.log(this.ruleForm.LayerDescription)
             saveNoteBook({ id: this.id, taskName: this.ruleForm.taskName, imageName: this.ruleForm.imageName, imageVersion: this.ruleForm.imageVersion, layerDescription: this.ruleForm.LayerDescription }).then(response => {
               if (response.success) {
                 this.$message({
@@ -130,7 +129,6 @@
             return false;
           }
         });
-
       },
     }
   };

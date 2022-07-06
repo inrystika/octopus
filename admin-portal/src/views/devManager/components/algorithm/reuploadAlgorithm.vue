@@ -35,7 +35,6 @@
     },
     data() {
       return {
-        showUpload: false,
         ruleForm: {
           path: ''
         },

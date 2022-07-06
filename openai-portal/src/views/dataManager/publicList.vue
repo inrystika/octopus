@@ -81,7 +81,6 @@
       return {
         input: "",
         row: {},
-        formLabelWidth: "120px",
         versionListVisible: false,
         datasetList: [],
         total: undefined,
@@ -168,7 +167,6 @@
     float: right;
     margin: 20px;
   }
-
   .searchForm {
     display: inline-block;
   }

@@ -59,7 +59,6 @@
         show: false,
         apply: false,
         framework: false
-
       };
     },
     watch: {

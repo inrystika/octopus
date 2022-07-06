@@ -104,7 +104,7 @@
       reupload(row) {
         this.myDatasetVisible = true
         this.versionData = row,
-          store.commit('user/SET_PROGRESSID', row.datasetId + row.version)
+        store.commit('user/SET_PROGRESSID', row.datasetId + row.version)
       },
       handlePreview(row) {
         this.preVisible = true

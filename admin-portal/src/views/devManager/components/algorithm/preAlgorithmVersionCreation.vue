@@ -34,10 +34,6 @@
       row: {
         type: Object,
         default: () => { }
-      },
-      dialogType: {
-        type: Boolean,
-        default: ""
       }
     },
     data() {
@@ -58,10 +54,7 @@
           ]
         },
         CreateFormVisible: true,
-        pageIndex: 1,
-        pageSize: 20,
         formLabelWidth: "120px",
-        algorithmList: [],
         close: true
       }
     },

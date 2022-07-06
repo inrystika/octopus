@@ -54,12 +54,6 @@
     components: {
       upload
     },
-    props: {
-      // row: {
-      //   type: Object,
-      //   default: {}
-      // }
-    },
     data() {
       return {
         isEmpty: false,

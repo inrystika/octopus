@@ -259,10 +259,6 @@ export default {
         cpuSize: 1,
         gpuSize: 1,
         gpuUnits: "nvidia.com/gpu",
-        parameters: [{
-          key: "",
-          value: ""
-        }],
       },
       rules: {
         taskName: [
