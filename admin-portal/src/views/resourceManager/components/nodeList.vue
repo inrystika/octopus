@@ -48,11 +48,11 @@
                     <template slot-scope="scope">
                         <div class="circleBox" v-if="!scope.row.children">
                             <el-progress color="#409EFF" type="circle" :show-text="false"
-                                :percentage="scope.row.percentage" :width="80" :height="80">
+                                :percentage="scope.row.percentage" :width="60" :height="60">
                             </el-progress>
                             <div class="circleCenter">
-                                <div style=" font-weight: bold; font-size: 18px;"> {{scope.row.percentage?scope.row.percentage:0}}%</div>
-                                <div style="  font-size: 10px;">使用率 </div>
+                                <div style=" font-weight: bold; font-size: 12px;"> {{scope.row.percentage?scope.row.percentage:0}}%</div>
+                                <!-- <div style="  font-size: 10px;">使用率 </div> -->
                             </div>
                         </div>
                     </template>
@@ -200,7 +200,7 @@
 
     .circleCenter {
         position: relative;
-        top: -65px;
+        top: -45px;
 
     }
 
