@@ -25,6 +25,10 @@ import (
 	nainformer "nodeagent/clients/agent/informers/externalversions"
 	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
+	vcclient "server/apis/pkg/client/clientset/versioned"
+
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -42,8 +46,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
-	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
+	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 )
 
 func buildConfigWithDefaultPath(kubeconfig string) (*rest.Config, error) {
@@ -311,18 +314,22 @@ func (kc *kubernetesCluster) CreateQueue(ctx context.Context, queueName string, 
 
 	resReclaimable := false
 
-	_, err := kc.vcClient.SchedulingV1beta1().Queues().Create(ctx, &schedulingv1beta1.Queue{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        queueName,
-			Labels:      map[string]string{queueSelectLabelKey: queueSelectLabelValue},
-			Annotations: meta,
-		},
-		Spec: schedulingv1beta1.QueueSpec{
-			Weight:       100,
-			Reclaimable:  &resReclaimable,
-			NodeSelector: map[string]string{nodeSelectorLabelKey: nodeSelectorLabelValue},
-		},
-	}, metav1.CreateOptions{})
+	spec := typeQueue.QueueSpec{
+		NodeSelector: map[string]string{nodeSelectorLabelKey: nodeSelectorLabelValue},
+	}
+	spec.Weight = 100
+	spec.Reclaimable = &resReclaimable
+
+	queue := &typeQueue.Queue{
+		Spec: spec,
+	}
+	queue.ObjectMeta = metav1.ObjectMeta{
+		Name:        queueName,
+		Labels:      map[string]string{queueSelectLabelKey: queueSelectLabelValue},
+		Annotations: meta,
+	}
+
+	_, err := kc.vcClient.SchedulingV1beta1().Queues().Create(ctx, queue, metav1.CreateOptions{})
 
 	return err
 }
