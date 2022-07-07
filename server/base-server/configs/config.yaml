@@ -17,7 +17,6 @@ data:
   kubernetes:
     masterUrl: https://192.168.202.73:6443/
     configPath: ./73kubeconfig
-    isSetUploadFileSize: true  #是否允许jupyter上传文件
   pipeline:
     baseUrl: http://127.0.0.1:8080
     token: KLtmMug9BDvvRjlg
@@ -74,6 +73,7 @@ service:
     jpyCommand: "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='/code' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
     jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
     autoStopIntervalSec: 7200
+    isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制
   resource:
     customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
     customizedResourceBindingNodeLabelValue: bound
