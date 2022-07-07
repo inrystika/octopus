@@ -163,6 +163,11 @@
             }
         },
         data() {
+            var checkDatasetVersion = (rule, value, callback) => {
+                if(this.ruleForm.dataSetId && !value) {
+                    callback(new Error("请选择数据集版本"));
+                }
+            };
             return {
                 poolList: [],
                 // 模板id
@@ -220,9 +225,10 @@
                     // dataSetId: [
                     //     { required: true, message: '请选择数据集名称', trigger: 'change' }
                     // ],
-                    // dataSetVersion: [
-                    //     { required: true, message: '请选择数据集版本', trigger: 'change' }
-                    // ],
+                    dataSetVersion: [
+                        // { required: true, message: '请选择数据集版本', trigger: 'change' },
+                        { validator: checkDatasetVersion, trigger: "blur" }
+                    ],
                     isDistributed: [
                         { required: true, message: '请选择是否为分布式', trigger: 'change' }
                     ],
