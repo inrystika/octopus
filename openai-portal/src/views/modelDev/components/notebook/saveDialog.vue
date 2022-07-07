@@ -57,7 +57,7 @@
         if (regName.test(value)) {
           return callback();
         }
-        callback(new Error("镜像名称由小写字母数字或者-组成，小写字母开头，数字或小写字母结尾"));
+        callback(new Error("镜像名称由小写字母、数字或者-组成，小写字母开头，数字或小写字母结尾"));
       };
       var checkLabel = (rule, value, callback) => {
         const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;
