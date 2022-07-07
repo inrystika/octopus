@@ -137,6 +137,11 @@
             }
         },
         data() {
+            var checkDatasetVersion = (rule, value, callback) => {
+                if(this.ruleForm.dataSetId && !value) {
+                    callback(new Error("请选择数据集版本"));
+                }
+            };
             return {
                 specificationVisible:false,
                 poolList: [],
@@ -197,6 +202,9 @@
                             message: "请选择镜像名称",
                             trigger: "change"
                         }
+                    ],
+                    dataSetVersion: [
+                        { validator: checkDatasetVersion, trigger: "blur" }
                     ],
                     specification: [
                         {

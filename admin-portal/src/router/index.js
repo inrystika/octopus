@@ -212,30 +212,30 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/platformManager',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'platformManager',
-        component: () => import('@/views/platformManager/index'),
-        meta: { title: '平台管理', icon: 'platform' }
-      },
-    ]
-  },
-  {
-    path: '/cloudInterconnection',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'cloudInterconnection',
-        component: () => import('@/views/cloudInterconnection/index'),
-        meta: { title: '云际互联', icon: 'cloudConnection' }
-      }
-    ]
-  },
+  // {
+  //   path: '/platformManager',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'platformManager',
+  //       component: () => import('@/views/platformManager/index'),
+  //       meta: { title: '平台管理', icon: 'platform' }
+  //     },
+  //   ]
+  // },
+  // {
+  //   path: '/cloudInterconnection',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'cloudInterconnection',
+  //       component: () => import('@/views/cloudInterconnection/index'),
+  //       meta: { title: '云际互联', icon: 'cloudConnection' }
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: 'external-link',
