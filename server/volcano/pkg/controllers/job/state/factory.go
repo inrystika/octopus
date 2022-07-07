@@ -19,22 +19,25 @@ package state
 import (
 	v1 "k8s.io/api/core/v1"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 //PhaseMap to store the pod phases.
 type PhaseMap map[v1.PodPhase]struct{}
 
 //UpdateStatusFn updates the job status.
-type UpdateStatusFn func(status *vcbatch.JobStatus) (jobPhaseChanged bool)
+type UpdateStatusFn func(status *typeJob.JobStatus) (jobPhaseChanged bool)
 
 //ActionFn will create or delete Pods according to Job's spec.
-type ActionFn func(job *apis.JobInfo, fn UpdateStatusFn) error
+type ActionFn func(job *typeApis.JobInfo, fn UpdateStatusFn) error
 
 //KillActionFn kill all Pods of Job with phase not in podRetainPhase.
-type KillActionFn func(job *apis.JobInfo, podRetainPhase PhaseMap, fn UpdateStatusFn) error
+type KillActionFn func(job *typeApis.JobInfo, podRetainPhase PhaseMap, fn UpdateStatusFn) error
 
 //PodRetainPhaseNone stores no phase.
 var PodRetainPhaseNone = PhaseMap{}
@@ -59,7 +62,7 @@ type State interface {
 }
 
 // NewState gets the state from the volcano job Phase.
-func NewState(jobInfo *apis.JobInfo) State {
+func NewState(jobInfo *typeApis.JobInfo) State {
 	job := jobInfo.Job
 	switch job.Status.State.Phase {
 	case vcbatch.Pending:

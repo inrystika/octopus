@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Volcano Authors.
+Copyright 2020 The Volcano Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package env
+package framework
 
-const (
-	// ConfigMapMountPath mount path
-	ConfigMapMountPath = "/etc/volcano"
+import (
+	vcclientset "server/apis/pkg/client/clientset/versioned"
 
-	// TaskVkIndex  used as key in container env
-	TaskVkIndex = "VK_TASK_INDEX"
-
-	// TaskIndex is used as key in container env
-	TaskIndex = "VC_TASK_INDEX"
-
-	// TaskName is used as key in container env
-	TaskName = "VC_TASK_NAME"
+	"volcano.sh/volcano/pkg/controllers/framework"
 )
+
+// ControllerOption is the main context object for the controllers.
+type ControllerOption struct {
+	framework.ControllerOption
+	VolcanoClient vcclientset.Interface
+}
+
+// Controller is the interface of all controllers.
+type Controller interface {
+	Name() string
+	Initialize(opt *ControllerOption) error
+	// Run run the controller
+	Run(stopCh <-chan struct{})
+}

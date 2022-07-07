@@ -34,17 +34,24 @@ import (
 	quotacore "k8s.io/kubernetes/pkg/quota/v1/evaluator/core"
 	"k8s.io/utils/clock"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
+	"server/volcano/pkg/controllers/job/state"
+
+	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
+
+	jobhelpers "server/volcano/pkg/controllers/job/helpers"
+
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/helpers"
 	scheduling "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
-	"volcano.sh/volcano/pkg/controllers/apis"
-	jobhelpers "volcano.sh/volcano/pkg/controllers/job/helpers"
-	"volcano.sh/volcano/pkg/controllers/job/state"
 )
 
 var calMutex sync.Mutex
 
-func (cc *jobcontroller) killJob(jobInfo *apis.JobInfo, podRetainPhase state.PhaseMap, updateStatus state.UpdateStatusFn) error {
+func (cc *jobcontroller) killJob(jobInfo *typeApis.JobInfo, podRetainPhase state.PhaseMap, updateStatus state.UpdateStatusFn) error {
 	job := jobInfo.Job
 	klog.V(3).Infof("Killing Job <%s/%s>, current version %d", job.Namespace, job.Name, job.Status.Version)
 	defer klog.V(3).Infof("Finished Job <%s/%s> killing, current version %d", job.Namespace, job.Name, job.Status.Version)
@@ -164,7 +171,7 @@ func (cc *jobcontroller) killJob(jobInfo *apis.JobInfo, podRetainPhase state.Pha
 	return nil
 }
 
-func (cc *jobcontroller) initiateJob(job *batch.Job) (*batch.Job, error) {
+func (cc *jobcontroller) initiateJob(job *typeJob.Job) (*typeJob.Job, error) {
 	klog.V(3).Infof("Starting to initiate Job <%s/%s>", job.Namespace, job.Name)
 	jobInstance, err := cc.initJobStatus(job)
 	if err != nil {
@@ -195,7 +202,7 @@ func (cc *jobcontroller) initiateJob(job *batch.Job) (*batch.Job, error) {
 	return newJob, nil
 }
 
-func (cc *jobcontroller) initOnJobUpdate(job *batch.Job) error {
+func (cc *jobcontroller) initOnJobUpdate(job *typeJob.Job) error {
 	klog.V(3).Infof("Starting to initiate Job <%s/%s> on update", job.Namespace, job.Name)
 
 	if err := cc.pluginOnJobUpdate(job); err != nil {
@@ -213,7 +220,7 @@ func (cc *jobcontroller) initOnJobUpdate(job *batch.Job) error {
 	return nil
 }
 
-func (cc *jobcontroller) GetQueueInfo(queue string) (*scheduling.Queue, error) {
+func (cc *jobcontroller) GetQueueInfo(queue string) (*typeQueue.Queue, error) {
 	queueInfo, err := cc.queueLister.Get(queue)
 	if err != nil {
 		klog.Errorf("Failed to get queue from queueLister, error: %s", err.Error())
@@ -222,7 +229,7 @@ func (cc *jobcontroller) GetQueueInfo(queue string) (*scheduling.Queue, error) {
 	return queueInfo, err
 }
 
-func (cc *jobcontroller) syncJob(jobInfo *apis.JobInfo, updateStatus state.UpdateStatusFn) error {
+func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.UpdateStatusFn) error {
 	job := jobInfo.Job
 	klog.V(3).Infof("Starting to sync up Job <%s/%s>, current version %d", job.Namespace, job.Name, job.Status.Version)
 	defer klog.V(3).Infof("Finished Job <%s/%s> sync up, current version %d", job.Namespace, job.Name, job.Status.Version)
@@ -440,22 +447,20 @@ func (cc *jobcontroller) syncJob(jobInfo *apis.JobInfo, updateStatus state.Updat
 			fmt.Sprintf("Error deleting pods: %+v", deletionErrs))
 		return fmt.Errorf("failed to delete %d pods of %d", len(deletionErrs), len(podToDelete))
 	}
-	job.Status = batch.JobStatus{
-		State: job.Status.State,
-
-		Pending:             pending,
-		Running:             running,
-		Succeeded:           succeeded,
-		Failed:              failed,
-		Terminating:         terminating,
-		Unknown:             unknown,
-		Version:             job.Status.Version,
-		MinAvailable:        job.Spec.MinAvailable,
-		TaskStatusCount:     taskStatusCount,
-		ControlledResources: job.Status.ControlledResources,
-		Conditions:          job.Status.Conditions,
-		RetryCount:          job.Status.RetryCount,
-	}
+	job.Status = typeJob.JobStatus{}
+	job.Status.State = job.Status.State
+	job.Status.Pending = pending
+	job.Status.Running = running
+	job.Status.Succeeded = succeeded
+	job.Status.Failed = failed
+	job.Status.Terminating = terminating
+	job.Status.Unknown = unknown
+	job.Status.Version = job.Status.Version
+	job.Status.MinAvailable = job.Spec.MinAvailable
+	job.Status.TaskStatusCount = taskStatusCount
+	job.Status.ControlledResources = job.Status.ControlledResources
+	job.Status.Conditions = job.Status.Conditions
+	job.Status.RetryCount = job.Status.RetryCount
 
 	if updateStatus != nil {
 		if updateStatus(&job.Status) {
@@ -479,7 +484,7 @@ func (cc *jobcontroller) syncJob(jobInfo *apis.JobInfo, updateStatus state.Updat
 	return nil
 }
 
-func (cc *jobcontroller) waitDependsOnTaskMeetCondition(taskName string, taskIndex int, podToCreateEachTask []*v1.Pod, job *batch.Job) {
+func (cc *jobcontroller) waitDependsOnTaskMeetCondition(taskName string, taskIndex int, podToCreateEachTask []*v1.Pod, job *typeJob.Job) {
 	if job.Spec.Tasks[taskIndex].DependsOn != nil {
 		dependsOn := *job.Spec.Tasks[taskIndex].DependsOn
 		if len(dependsOn.Name) > 1 && dependsOn.Iteration == batch.IterationAny {
@@ -504,7 +509,7 @@ func (cc *jobcontroller) waitDependsOnTaskMeetCondition(taskName string, taskInd
 	}
 }
 
-func (cc *jobcontroller) isDependsOnPodsReady(task string, job *batch.Job) bool {
+func (cc *jobcontroller) isDependsOnPodsReady(task string, job *typeJob.Job) bool {
 	dependsOnPods := jobhelpers.GetPodsNameUnderTask(task, job)
 	dependsOnTaskIndex := jobhelpers.GetTasklndexUnderJob(task, job)
 	runningPodCount := 0
@@ -541,7 +546,7 @@ func (cc *jobcontroller) isDependsOnPodsReady(task string, job *batch.Job) bool 
 	return true
 }
 
-func (cc *jobcontroller) createJobIOIfNotExist(job *batch.Job) (*batch.Job, error) {
+func (cc *jobcontroller) createJobIOIfNotExist(job *typeJob.Job) (*typeJob.Job, error) {
 	// If PVC does not exist, create them for Job.
 	var needUpdate bool
 	if job.Status.ControlledResources == nil {
@@ -595,7 +600,7 @@ func (cc *jobcontroller) createJobIOIfNotExist(job *batch.Job) (*batch.Job, erro
 	return job, nil
 }
 
-func (cc *jobcontroller) checkPVCExist(job *batch.Job, pvc string) (bool, error) {
+func (cc *jobcontroller) checkPVCExist(job *typeJob.Job, pvc string) (bool, error) {
 	if _, err := cc.pvcLister.PersistentVolumeClaims(job.Namespace).Get(pvc); err != nil {
 		if apierrors.IsNotFound(err) {
 			return false, nil
@@ -607,7 +612,7 @@ func (cc *jobcontroller) checkPVCExist(job *batch.Job, pvc string) (bool, error)
 	return true, nil
 }
 
-func (cc *jobcontroller) createPVC(job *batch.Job, vcName string, volumeClaim *v1.PersistentVolumeClaimSpec) error {
+func (cc *jobcontroller) createPVC(job *typeJob.Job, vcName string, volumeClaim *v1.PersistentVolumeClaimSpec) error {
 	pvc := &v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: job.Namespace,
@@ -629,7 +634,7 @@ func (cc *jobcontroller) createPVC(job *batch.Job, vcName string, volumeClaim *v
 	return nil
 }
 
-func (cc *jobcontroller) createOrUpdatePodGroup(job *batch.Job) error {
+func (cc *jobcontroller) createOrUpdatePodGroup(job *typeJob.Job) error {
 	// If PodGroup does not exist, create one for Job.
 	pgName := job.Name + "-" + string(job.UID)
 	pg, err := cc.pgLister.PodGroups(job.Namespace).Get(pgName)
@@ -739,7 +744,7 @@ func (cc *jobcontroller) deleteJobPod(jobName string, pod *v1.Pod) error {
 	return nil
 }
 
-func (cc *jobcontroller) calcPGMinResources(job *batch.Job) *v1.ResourceList {
+func (cc *jobcontroller) calcPGMinResources(job *typeJob.Job) *v1.ResourceList {
 	// sort task by priorityClasses
 	var tasksPriority TasksPriority
 	for _, task := range job.Spec.Tasks {
@@ -779,7 +784,7 @@ func (cc *jobcontroller) calcPGMinResources(job *batch.Job) *v1.ResourceList {
 	return &minReq
 }
 
-func (cc *jobcontroller) initJobStatus(job *batch.Job) (*batch.Job, error) {
+func (cc *jobcontroller) initJobStatus(job *typeJob.Job) (*typeJob.Job, error) {
 	if job.Status.State.Phase != "" {
 		return job, nil
 	}
@@ -847,7 +852,7 @@ func calcPodStatus(pod *v1.Pod, taskStatusCount map[string]batch.TaskState) {
 	}
 }
 
-func isInitiated(job *batch.Job) bool {
+func isInitiated(job *typeJob.Job) bool {
 	if job.Status.State.Phase == "" || job.Status.State.Phase == batch.Pending {
 		return false
 	}

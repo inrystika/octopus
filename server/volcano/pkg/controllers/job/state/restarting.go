@@ -17,23 +17,29 @@ limitations under the License.
 package state
 
 import (
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+	"time"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type restartingState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *restartingState) Execute(action v1alpha1.Action) error {
-	return KillJob(ps.job, PodRetainPhaseNone, func(status *vcbatch.JobStatus) bool {
+	return KillJob(ps.job, PodRetainPhaseNone, func(status *typeJob.JobStatus) bool {
 		// Get the maximum number of retries.
 		maxRetry := ps.job.Job.Spec.MaxRetry
 
 		if status.RetryCount >= maxRetry {
 			// Failed is the phase that the job is restarted failed reached the maximum number of retries.
 			status.State.Phase = vcbatch.Failed
+			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		}
 		total := int32(0)

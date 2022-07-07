@@ -17,22 +17,28 @@ limitations under the License.
 package state
 
 import (
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+	"time"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type completingState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *completingState) Execute(action v1alpha1.Action) error {
-	return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+	return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 		// If any "alive" pods, still in Completing phase
 		if status.Terminating != 0 || status.Pending != 0 || status.Running != 0 {
 			return false
 		}
 		status.State.Phase = vcbatch.Completed
+		status.FinishAt = &metav1.Time{Time: time.Now()}
 		return true
 	})
 }

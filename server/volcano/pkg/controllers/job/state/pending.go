@@ -17,43 +17,51 @@ limitations under the License.
 package state
 
 import (
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+	"time"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type pendingState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *pendingState) Execute(action v1alpha1.Action) error {
 	switch action {
 	case v1alpha1.RestartJobAction:
-		return KillJob(ps.job, PodRetainPhaseNone, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseNone, func(status *typeJob.JobStatus) bool {
 			status.RetryCount++
 			status.State.Phase = vcbatch.Restarting
 			return true
 		})
 
 	case v1alpha1.AbortJobAction:
-		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 			status.State.Phase = vcbatch.Aborting
 			return true
 		})
 	case v1alpha1.CompleteJobAction:
-		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 			status.State.Phase = vcbatch.Completing
 			return true
 		})
 	case v1alpha1.TerminateJobAction:
-		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 			status.State.Phase = vcbatch.Terminating
 			return true
 		})
 	default:
-		return SyncJob(ps.job, func(status *vcbatch.JobStatus) bool {
+		return SyncJob(ps.job, func(status *typeJob.JobStatus) bool {
 			if ps.job.Job.Spec.MinAvailable <= status.Running+status.Succeeded+status.Failed {
 				status.State.Phase = vcbatch.Running
+				if nil == status.StartAt {
+					status.StartAt = &metav1.Time{Time: time.Now()}
+				}
 				return true
 			}
 			return false

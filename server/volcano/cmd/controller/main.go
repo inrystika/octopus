@@ -34,7 +34,8 @@ import (
 	_ "volcano.sh/volcano/pkg/controllers/podgroup"
 	_ "volcano.sh/volcano/pkg/controllers/queue"
 
-	"volcano.sh/volcano/cmd/controller-manager/app"
+	"server/volcano/cmd/controller/app"
+
 	"volcano.sh/volcano/cmd/controller-manager/app/options"
 	"volcano.sh/volcano/pkg/version"
 )

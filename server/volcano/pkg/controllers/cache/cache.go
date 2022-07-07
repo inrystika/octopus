@@ -28,6 +28,11 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+	"server/volcano/pkg/controllers/job/state"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
 	"volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/volcano/pkg/controllers/apis"
 )
@@ -35,7 +40,7 @@ import (
 type jobCache struct {
 	sync.Mutex
 
-	jobs        map[string]*apis.JobInfo
+	jobs        map[string]*typeApis.JobInfo
 	deletedJobs workqueue.RateLimitingInterface
 }
 
@@ -54,11 +59,11 @@ func JobKeyByReq(req *apis.Request) string {
 }
 
 //JobKey gets the "ns"/"name" format of the given job.
-func JobKey(job *v1alpha1.Job) string {
+func JobKey(job *typeJob.Job) string {
 	return keyFn(job.Namespace, job.Name)
 }
 
-func jobTerminated(job *apis.JobInfo) bool {
+func jobTerminated(job *typeApis.JobInfo) bool {
 	return job.Job == nil && len(job.Pods) == 0
 }
 
@@ -81,12 +86,12 @@ func New() Cache {
 	)
 
 	return &jobCache{
-		jobs:        map[string]*apis.JobInfo{},
+		jobs:        map[string]*typeApis.JobInfo{},
 		deletedJobs: workqueue.NewRateLimitingQueue(queue),
 	}
 }
 
-func (jc *jobCache) Get(key string) (*apis.JobInfo, error) {
+func (jc *jobCache) Get(key string) (*typeApis.JobInfo, error) {
 	jc.Lock()
 	defer jc.Unlock()
 
@@ -102,7 +107,7 @@ func (jc *jobCache) Get(key string) (*apis.JobInfo, error) {
 	return job.Clone(), nil
 }
 
-func (jc *jobCache) GetStatus(key string) (*v1alpha1.JobStatus, error) {
+func (jc *jobCache) GetStatus(key string) (*typeJob.JobStatus, error) {
 	jc.Lock()
 	defer jc.Unlock()
 
@@ -120,7 +125,7 @@ func (jc *jobCache) GetStatus(key string) (*v1alpha1.JobStatus, error) {
 	return &status, nil
 }
 
-func (jc *jobCache) Add(job *v1alpha1.Job) error {
+func (jc *jobCache) Add(job *typeJob.Job) error {
 	jc.Lock()
 	defer jc.Unlock()
 	key := JobKey(job)
@@ -133,18 +138,16 @@ func (jc *jobCache) Add(job *v1alpha1.Job) error {
 		return fmt.Errorf("duplicated jobInfo <%v>", key)
 	}
 
-	jc.jobs[key] = &apis.JobInfo{
-		Name:      job.Name,
-		Namespace: job.Namespace,
-
-		Job:  job,
-		Pods: make(map[string]map[string]*v1.Pod),
-	}
+	jc.jobs[key] = &typeApis.JobInfo{}
+	jc.jobs[key].Name = job.Name
+	jc.jobs[key].Namespace = job.Namespace
+	jc.jobs[key].Job = job
+	jc.jobs[key].Pods = make(map[string]map[string]*v1.Pod)
 
 	return nil
 }
 
-func (jc *jobCache) Update(obj *v1alpha1.Job) error {
+func (jc *jobCache) Update(obj *typeJob.Job) error {
 	jc.Lock()
 	defer jc.Unlock()
 
@@ -170,7 +173,7 @@ func (jc *jobCache) Update(obj *v1alpha1.Job) error {
 	return nil
 }
 
-func (jc *jobCache) Delete(obj *v1alpha1.Job) error {
+func (jc *jobCache) Delete(obj *typeJob.Job) error {
 	jc.Lock()
 	defer jc.Unlock()
 
@@ -196,9 +199,8 @@ func (jc *jobCache) AddPod(pod *v1.Pod) error {
 
 	job, found := jc.jobs[key]
 	if !found {
-		job = &apis.JobInfo{
-			Pods: make(map[string]map[string]*v1.Pod),
-		}
+		job = &typeApis.JobInfo{}
+		job.Pods = make(map[string]map[string]*v1.Pod)
 		jc.jobs[key] = job
 	}
 
@@ -216,9 +218,8 @@ func (jc *jobCache) UpdatePod(pod *v1.Pod) error {
 
 	job, found := jc.jobs[key]
 	if !found {
-		job = &apis.JobInfo{
-			Pods: make(map[string]map[string]*v1.Pod),
-		}
+		job = &typeApis.JobInfo{}
+		job.Pods = make(map[string]map[string]*v1.Pod)
 		jc.jobs[key] = job
 	}
 
@@ -236,9 +237,8 @@ func (jc *jobCache) DeletePod(pod *v1.Pod) error {
 
 	job, found := jc.jobs[key]
 	if !found {
-		job = &apis.JobInfo{
-			Pods: make(map[string]map[string]*v1.Pod),
-		}
+		job = &typeApis.JobInfo{}
+		job.Pods = make(map[string]map[string]*v1.Pod)
 		jc.jobs[key] = job
 	}
 
@@ -261,7 +261,7 @@ func (jc *jobCache) TaskCompleted(jobKey, taskName string) bool {
 	jc.Lock()
 	defer jc.Unlock()
 
-	var taskReplicas, completed int32
+	var isCompleted, isSuccess bool
 
 	jobInfo, found := jc.jobs[jobKey]
 	if !found {
@@ -278,22 +278,43 @@ func (jc *jobCache) TaskCompleted(jobKey, taskName string) bool {
 		return false
 	}
 
-	for _, task := range jobInfo.Job.Spec.Tasks {
-		if task.Name == taskName {
-			taskReplicas = task.Replicas
-			break
-		}
-	}
-	if taskReplicas <= 0 {
-		return false
-	}
+	completionPolicy := state.GetTaskCompletionPolicy(jobInfo.Job, taskName)
+
+	taskStatus := state.GetTaskStatus(jobInfo.Job, taskName)
+
+	var (
+		failed    int32 = 0
+		succeeded int32 = 0
+	)
 
 	for _, pod := range taskPods {
 		if pod.Status.Phase == v1.PodSucceeded {
-			completed++
+			succeeded++
+		}
+		if pod.Status.Phase == v1.PodFailed {
+			failed++
 		}
 	}
-	return completed >= taskReplicas
+
+	if completionPolicy.MinSucceeded <= succeeded {
+		isCompleted, isSuccess = true, true
+	}
+
+	if completionPolicy.MaxFailed <= failed {
+		isCompleted, isSuccess = true, false
+	}
+
+	if isCompleted {
+		if isSuccess {
+			taskStatus.Phase = string(typeJob.Completed)
+		} else {
+			taskStatus.Phase = string(typeJob.Failed)
+		}
+		state.StopReplicas(taskStatus)
+		return true
+	}
+
+	return false
 }
 
 func (jc *jobCache) TaskFailed(jobKey, taskName string) bool {
@@ -358,7 +379,7 @@ func (jc *jobCache) processCleanupJob() bool {
 	}
 	defer jc.deletedJobs.Done(obj)
 
-	job, ok := obj.(*apis.JobInfo)
+	job, ok := obj.(*typeApis.JobInfo)
 	if !ok {
 		klog.Errorf("failed to convert %v to *apis.JobInfo", obj)
 		return true
@@ -379,7 +400,7 @@ func (jc *jobCache) processCleanupJob() bool {
 	return true
 }
 
-func (jc *jobCache) deleteJob(job *apis.JobInfo) {
+func (jc *jobCache) deleteJob(job *typeApis.JobInfo) {
 	klog.V(3).Infof("Try to delete Job <%v/%v>",
 		job.Namespace, job.Name)
 

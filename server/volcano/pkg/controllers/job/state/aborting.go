@@ -17,30 +17,37 @@ limitations under the License.
 package state
 
 import (
+	"time"
+
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type abortingState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *abortingState) Execute(action v1alpha1.Action) error {
 	switch action {
 	case v1alpha1.ResumeJobAction:
-		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 			status.State.Phase = vcbatch.Restarting
 			status.RetryCount++
 			return true
 		})
 	default:
-		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+		return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 			// If any "alive" pods, still in Aborting phase
 			if status.Terminating != 0 || status.Pending != 0 || status.Running != 0 {
 				return false
 			}
 			status.State.Phase = vcbatch.Aborted
+			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		})
 	}

@@ -25,5 +25,5 @@ const (
 	EnvHostNumFmt = "VC_%s_NUM"
 
 	// ConfigMapMountPath mount path
-	ConfigMapMountPath = "/etc/volcano"
+	ConfigMapMountPath = "/etc/taskInfo"
 )

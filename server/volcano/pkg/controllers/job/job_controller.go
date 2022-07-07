@@ -35,21 +35,32 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
+	"server/volcano/pkg/controllers/job/state"
+
+	jobcache "server/volcano/pkg/controllers/cache"
+
+	vcclientset "server/apis/pkg/client/clientset/versioned"
+
+	"server/volcano/pkg/controllers/framework"
+
+	informerfactory "server/apis/pkg/client/informers/externalversions"
+
+	batchinformer "server/apis/pkg/client/informers/externalversions/batch/v1alpha1"
+
+	batchlister "server/apis/pkg/client/listers/batch/v1alpha1"
+
+	businformer "server/apis/pkg/client/informers/externalversions/bus/v1alpha1"
+
+	buslister "server/apis/pkg/client/listers/bus/v1alpha1"
+
+	schedulinginformers "server/apis/pkg/client/informers/externalversions/scheduling/v1beta1"
+	schedulinglisters "server/apis/pkg/client/listers/scheduling/v1beta1"
+
+	vcscheme "server/apis/pkg/client/clientset/versioned/scheme"
+
 	batchv1alpha1 "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	busv1alpha1 "volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	vcclientset "volcano.sh/apis/pkg/client/clientset/versioned"
-	vcscheme "volcano.sh/apis/pkg/client/clientset/versioned/scheme"
-	informerfactory "volcano.sh/apis/pkg/client/informers/externalversions"
-	batchinformer "volcano.sh/apis/pkg/client/informers/externalversions/batch/v1alpha1"
-	businformer "volcano.sh/apis/pkg/client/informers/externalversions/bus/v1alpha1"
-	schedulinginformers "volcano.sh/apis/pkg/client/informers/externalversions/scheduling/v1beta1"
-	batchlister "volcano.sh/apis/pkg/client/listers/batch/v1alpha1"
-	buslister "volcano.sh/apis/pkg/client/listers/bus/v1alpha1"
-	schedulinglisters "volcano.sh/apis/pkg/client/listers/scheduling/v1beta1"
 	"volcano.sh/volcano/pkg/controllers/apis"
-	jobcache "volcano.sh/volcano/pkg/controllers/cache"
-	"volcano.sh/volcano/pkg/controllers/framework"
-	"volcano.sh/volcano/pkg/controllers/job/state"
 )
 
 func init() {

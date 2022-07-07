@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	bus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 	"volcano.sh/apis/pkg/apis/helpers"
@@ -48,7 +50,7 @@ func (cc *jobcontroller) addCommand(obj interface{}) {
 }
 
 func (cc *jobcontroller) addJob(obj interface{}) {
-	job, ok := obj.(*batch.Job)
+	job, ok := obj.(*typeJob.Job)
 	if !ok {
 		klog.Errorf("obj is not Job")
 		return
@@ -72,13 +74,13 @@ func (cc *jobcontroller) addJob(obj interface{}) {
 }
 
 func (cc *jobcontroller) updateJob(oldObj, newObj interface{}) {
-	newJob, ok := newObj.(*batch.Job)
+	newJob, ok := newObj.(*typeJob.Job)
 	if !ok {
 		klog.Errorf("newObj is not Job")
 		return
 	}
 
-	oldJob, ok := oldObj.(*batch.Job)
+	oldJob, ok := oldObj.(*typeJob.Job)
 	if !ok {
 		klog.Errorf("oldJob is not Job")
 		return
@@ -113,7 +115,7 @@ func (cc *jobcontroller) updateJob(oldObj, newObj interface{}) {
 }
 
 func (cc *jobcontroller) deleteJob(obj interface{}) {
-	job, ok := obj.(*batch.Job)
+	job, ok := obj.(*typeJob.Job)
 	if !ok {
 		// If we reached here it means the Job was deleted but its final state is unrecorded.
 		tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
@@ -121,7 +123,7 @@ func (cc *jobcontroller) deleteJob(obj interface{}) {
 			klog.Errorf("Couldn't get object from tombstone %#v", obj)
 			return
 		}
-		job, ok = tombstone.Obj.(*batch.Job)
+		job, ok = tombstone.Obj.(*typeJob.Job)
 		if !ok {
 			klog.Errorf("Tombstone contained object that is not a volcano Job: %#v", obj)
 			return

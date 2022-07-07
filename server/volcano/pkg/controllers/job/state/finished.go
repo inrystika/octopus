@@ -17,12 +17,13 @@ limitations under the License.
 package state
 
 import (
+	typeApis "server/volcano/pkg/controllers/apis"
+
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type finishedState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *finishedState) Execute(action v1alpha1.Action) error {

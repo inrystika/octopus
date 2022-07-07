@@ -25,6 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog"
 
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 	"volcano.sh/apis/pkg/apis/helpers"
@@ -40,7 +42,7 @@ func MakePodName(jobName string, taskName string, index int) string {
 	return fmt.Sprintf(jobhelpers.PodNameFmt, jobName, taskName, index)
 }
 
-func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy batch.NumaPolicy, ix int, jobForwarding bool) *v1.Pod {
+func createJobPod(job *typeJob.Job, template *v1.PodTemplateSpec, topologyPolicy batch.NumaPolicy, ix int, jobForwarding bool) *v1.Pod {
 	templateCopy := template.DeepCopy()
 
 	pod := &v1.Pod{
@@ -149,7 +151,7 @@ func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy b
 	return pod
 }
 
-func applyPolicies(job *batch.Job, req *apis.Request) v1alpha1.Action {
+func applyPolicies(job *typeJob.Job, req *apis.Request) v1alpha1.Action {
 	if len(req.Action) != 0 {
 		return req.Action
 	}
@@ -228,7 +230,7 @@ func checkEventExist(policyEvents []v1alpha1.Event, reqEvent v1alpha1.Event) boo
 type TaskPriority struct {
 	priority int32
 
-	batch.TaskSpec
+	typeJob.TaskSpec
 }
 
 // TasksPriority is a slice of TaskPriority.

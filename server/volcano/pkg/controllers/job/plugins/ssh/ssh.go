@@ -28,10 +28,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
-	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
-	"volcano.sh/apis/pkg/apis/helpers"
-	jobhelpers "volcano.sh/volcano/pkg/controllers/job/helpers"
-	pluginsinterface "volcano.sh/volcano/pkg/controllers/job/plugins/interface"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	jobhelpers "server/volcano/pkg/controllers/job/helpers"
+
+	"server/apis/pkg/apis/helpers"
+
+	pluginsinterface "server/volcano/pkg/controllers/job/plugins/interface"
 )
 
 type sshPlugin struct {
@@ -67,13 +70,13 @@ func (sp *sshPlugin) Name() string {
 	return "ssh"
 }
 
-func (sp *sshPlugin) OnPodCreate(pod *v1.Pod, job *batch.Job) error {
+func (sp *sshPlugin) OnPodCreate(pod *v1.Pod, job *typeJob.Job) error {
 	sp.mountRsaKey(pod, job)
 
 	return nil
 }
 
-func (sp *sshPlugin) OnJobAdd(job *batch.Job) error {
+func (sp *sshPlugin) OnJobAdd(job *typeJob.Job) error {
 	if job.Status.ControlledResources["plugin-"+sp.Name()] == sp.Name() {
 		return nil
 	}
@@ -99,7 +102,7 @@ func (sp *sshPlugin) OnJobAdd(job *batch.Job) error {
 	return nil
 }
 
-func (sp *sshPlugin) OnJobDelete(job *batch.Job) error {
+func (sp *sshPlugin) OnJobDelete(job *typeJob.Job) error {
 	if job.Status.ControlledResources["plugin-"+sp.Name()] != sp.Name() {
 		return nil
 	}
@@ -114,7 +117,7 @@ func (sp *sshPlugin) OnJobDelete(job *batch.Job) error {
 // TODO: currently a container using a Secret as a subPath volume mount will not receive Secret updates.
 // we may not update the job secret due to the above reason now.
 // related issue: https://github.com/volcano-sh/volcano/issues/1420
-func (sp *sshPlugin) OnJobUpdate(job *batch.Job) error {
+func (sp *sshPlugin) OnJobUpdate(job *typeJob.Job) error {
 	//data, err := generateRsaKey(job)
 	//if err != nil {
 	//	return err
@@ -128,7 +131,7 @@ func (sp *sshPlugin) OnJobUpdate(job *batch.Job) error {
 	return nil
 }
 
-func (sp *sshPlugin) mountRsaKey(pod *v1.Pod, job *batch.Job) {
+func (sp *sshPlugin) mountRsaKey(pod *v1.Pod, job *typeJob.Job) {
 	secretName := sp.secretName(job)
 
 	sshVolume := v1.Volume{
@@ -186,7 +189,7 @@ func (sp *sshPlugin) mountRsaKey(pod *v1.Pod, job *batch.Job) {
 	}
 }
 
-func generateRsaKey(job *batch.Job) (map[string][]byte, error) {
+func generateRsaKey(job *typeJob.Job) (map[string][]byte, error) {
 	bitSize := 2048
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, bitSize)
@@ -219,7 +222,7 @@ func generateRsaKey(job *batch.Job) (map[string][]byte, error) {
 	return data, nil
 }
 
-func withUserProvidedRsaKey(job *batch.Job, sshPrivateKey string, sshPublicKey string) (map[string][]byte, error) {
+func withUserProvidedRsaKey(job *typeJob.Job, sshPrivateKey string, sshPublicKey string) (map[string][]byte, error) {
 	data := make(map[string][]byte)
 	data[SSHPrivateKey] = []byte(sshPrivateKey)
 	data[SSHPublicKey] = []byte(sshPublicKey)
@@ -229,7 +232,7 @@ func withUserProvidedRsaKey(job *batch.Job, sshPrivateKey string, sshPublicKey s
 	return data, nil
 }
 
-func (sp *sshPlugin) secretName(job *batch.Job) string {
+func (sp *sshPlugin) secretName(job *typeJob.Job) string {
 	return fmt.Sprintf("%s-%s", job.Name, sp.Name())
 }
 
@@ -245,7 +248,7 @@ func (sp *sshPlugin) addFlags() {
 	}
 }
 
-func generateSSHConfig(job *batch.Job) string {
+func generateSSHConfig(job *typeJob.Job) string {
 	config := "StrictHostKeyChecking no\nUserKnownHostsFile /dev/null\n"
 
 	for _, ts := range job.Spec.Tasks {

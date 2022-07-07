@@ -17,17 +17,20 @@ limitations under the License.
 package state
 
 import (
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	typeApis "server/volcano/pkg/controllers/apis"
+
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	"volcano.sh/volcano/pkg/controllers/apis"
 )
 
 type terminatingState struct {
-	job *apis.JobInfo
+	job *typeApis.JobInfo
 }
 
 func (ps *terminatingState) Execute(action v1alpha1.Action) error {
-	return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
+	return KillJob(ps.job, PodRetainPhaseSoft, func(status *typeJob.JobStatus) bool {
 		// If any "alive" pods, still in Terminating phase
 		if status.Terminating != 0 || status.Pending != 0 || status.Running != 0 {
 			return false

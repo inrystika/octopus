@@ -19,9 +19,10 @@ package env
 import (
 	v1 "k8s.io/api/core/v1"
 
-	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
-	jobhelpers "volcano.sh/volcano/pkg/controllers/job/helpers"
-	pluginsinterface "volcano.sh/volcano/pkg/controllers/job/plugins/interface"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+
+	jobhelpers "server/volcano/pkg/controllers/job/helpers"
+	pluginsinterface "server/volcano/pkg/controllers/job/plugins/interface"
 )
 
 type envPlugin struct {
@@ -42,25 +43,28 @@ func (ep *envPlugin) Name() string {
 	return "env"
 }
 
-func (ep *envPlugin) OnPodCreate(pod *v1.Pod, job *batch.Job) error {
+func (ep *envPlugin) OnPodCreate(pod *v1.Pod, job *typeJob.Job) error {
 	index := jobhelpers.GetPodIndexUnderTask(pod)
+	name := jobhelpers.GetTaskName(pod)
 
 	// add VK_TASK_INDEX and VC_TASK_INDEX env to each container
 	for i := range pod.Spec.Containers {
 		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, v1.EnvVar{Name: TaskVkIndex, Value: index})
 		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, v1.EnvVar{Name: TaskIndex, Value: index})
+		pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, v1.EnvVar{Name: TaskName, Value: name})
 	}
 
 	// add VK_TASK_INDEX and VC_TASK_INDEX env to each init container
 	for i := range pod.Spec.InitContainers {
 		pod.Spec.InitContainers[i].Env = append(pod.Spec.InitContainers[i].Env, v1.EnvVar{Name: TaskVkIndex, Value: index})
 		pod.Spec.InitContainers[i].Env = append(pod.Spec.InitContainers[i].Env, v1.EnvVar{Name: TaskIndex, Value: index})
+		pod.Spec.InitContainers[i].Env = append(pod.Spec.InitContainers[i].Env, v1.EnvVar{Name: TaskName, Value: name})
 	}
 
 	return nil
 }
 
-func (ep *envPlugin) OnJobAdd(job *batch.Job) error {
+func (ep *envPlugin) OnJobAdd(job *typeJob.Job) error {
 	if job.Status.ControlledResources["plugin-"+ep.Name()] == ep.Name() {
 		return nil
 	}
@@ -70,7 +74,7 @@ func (ep *envPlugin) OnJobAdd(job *batch.Job) error {
 	return nil
 }
 
-func (ep *envPlugin) OnJobDelete(job *batch.Job) error {
+func (ep *envPlugin) OnJobDelete(job *typeJob.Job) error {
 	if job.Status.ControlledResources["plugin-"+ep.Name()] != ep.Name() {
 		return nil
 	}
@@ -78,6 +82,6 @@ func (ep *envPlugin) OnJobDelete(job *batch.Job) error {
 	return nil
 }
 
-func (ep *envPlugin) OnJobUpdate(job *batch.Job) error {
+func (ep *envPlugin) OnJobUpdate(job *typeJob.Job) error {
 	return nil
 }
