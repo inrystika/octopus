@@ -58,7 +58,7 @@
                 <!-- 数据集三级框 -->
                 <div>
                     <el-form-item label="数据集类型" prop="dataSetSource" :class="{inline:dataSetName}">
-                        <el-select v-model="ruleForm.dataSetSource" placeholder="请选择" @change="changedataSetSource">
+                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择" @change="changedataSetSource">
                             <el-option label="我的数据集" value="my" />
                             <el-option label="预置数据集" value="pre" />
                             <el-option label="公共数据集" value="common" />
@@ -222,15 +222,15 @@
                     imageId: [
                         { required: true, message: '请选择镜像名称', trigger: 'change' }
                     ],
-                    dataSetSource: [
-                        { required: true, message: '请选择数据集类型', trigger: 'change' }
-                    ],
-                    dataSetId: [
-                        { required: true, message: '请选择数据集名称', trigger: 'change' }
-                    ],
-                    dataSetVersion: [
-                        { required: true, message: '请选择数据集版本', trigger: 'change' }
-                    ],
+                    // dataSetSource: [
+                    //     { required: true, message: '请选择数据集类型', trigger: 'change' }
+                    // ],
+                    // dataSetId: [
+                    //     { required: true, message: '请选择数据集名称', trigger: 'change' }
+                    // ],
+                    // dataSetVersion: [
+                    //     { required: true, message: '请选择数据集版本', trigger: 'change' }
+                    // ],
                     isDistributed: [
                         { required: true, message: '请选择是否为分布式', trigger: 'change' }
                     ],
