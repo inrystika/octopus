@@ -169,6 +169,7 @@
                 if(this.ruleForm.dataSetId && !value) {
                     callback(new Error("请选择数据集版本"));
                 }
+                return callback();
             };
             return {
                 specificationVisible:false,
