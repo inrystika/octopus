@@ -875,10 +875,13 @@ func (s *trainJobService) checkParamForTemplate(ctx context.Context, template *m
 		return err
 	}
 	//数据集
-	_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
-	if err != nil {
-		return err
+	if template.DataSetId != "" {  //判空，允许通过API调用不传此参数
+		_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
+		if err != nil {
+			return err
+		}
 	}
+
 	//资源规格信息
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
 	if err != nil {
