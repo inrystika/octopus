@@ -168,10 +168,10 @@ message TrainJobTemplateRequest {
   string algorithmVersion = 4[(validate.rules).string = {min_len: 1}];
   //镜像ID，必填
   string imageId = 5[(validate.rules).string = {min_len: 1}];
-  //数据集ID，必填
-  string dataSetId = 7[(validate.rules).string = {min_len: 1}];
-  //数据集版本，必填
-  string dataSetVersion = 8[(validate.rules).string = {min_len: 1}];
+  //数据集ID，非必填
+  string dataSetId = 7[(validate.rules).string = {min_len: 0}];
+  //数据集版本，非必填
+  string dataSetVersion = 8[(validate.rules).string = {min_len: 0}];
   //是否分布式任务，非必填，默认false，若为分布式任务则为true
   bool isDistributed = 9;
   //job子任务及其配置信息，必填
