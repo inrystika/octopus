@@ -476,6 +476,10 @@
                         }
                         var data = JSON.parse(JSON.stringify(this.ruleForm))
                         data.resourcePool = data.disResourcePool
+                        if(!data.datasetId) {
+                            delete data.datasetId
+                            delete data.dataSetVersion
+                        }
                         delete data.command;
                         delete data.resourceSpecId
                         delete data.algorithmSource
