@@ -58,6 +58,9 @@ func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	if err != nil {
 		return nil, err
 	}
+	if trainJob.TrainJob.Status == "failed" || trainJob.TrainJob.Status == "succeeded" || trainJob.TrainJob.Status == "stopped" {
+		return nil, errors.Errorf(nil, errors.ErrorStopTerminatedJob)
+	}
 	if trainJob.TrainJob.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
