@@ -22,8 +22,8 @@ const (
 	ErrorHttpReadBody       = 10022 // http读取回包失败
 	ErrorJsonMarshal        = 10023 // json序列化失败
 	ErrorJsonUnmarshal      = 10024 // json反序列化失败
-	ErrorHttpWriteFailed    = 10025 //http写入失败
-	ErrorHttpBindFormFailed = 10026 //http绑定form失败
+	ErrorHttpWriteFailed    = 10025 // http写入失败
+	ErrorHttpBindFormFailed = 10026 // http绑定form失败
 	// minio操作相关错误
 	ErrorMinioBucketInitFailed         = 10030 // minio初始化失败
 	ErrorMinioBucketExisted            = 10031 // 桶已存在
@@ -106,7 +106,7 @@ const (
 
 	/* 13001~14000 镜像管理错误*/
 	ErrorImageStatusMakeError      = 13001 // 制作镜像状态异常
-	ErrorImageSourceTypeToUpload   = 13002 //上传错误镜像来源类型
+	ErrorImageSourceTypeToUpload   = 13002 // 上传错误镜像来源类型
 	ErrorImageExisted              = 13003 // 镜像已存在
 	ErrorImageNotExist             = 13004 // 镜像不存在
 	ErrorImageOpForbidden          = 13005 // 无权限镜像操作
@@ -127,7 +127,7 @@ const (
 	ErrorNotebookDatasetStatusForbidden   = 14010 // notebook使用数据集状态不允许操作
 	ErrorNotebookRepeatedToSave           = 14011 // notebook保存中，禁止重复保存
 	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
-	ErrorNotebookResourcePoolForbidden    = 14013 // otebook使用资源池不允许操作
+	ErrorNotebookResourcePoolForbidden    = 14013 // notebook使用资源池不允许操作
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -169,8 +169,8 @@ const (
 	ErrorUserAccountBinded          = 16028 // 账号已绑定
 
 	/* 17001~18000 计费管理错误*/
-	ErrorBillingObtainLockFailed = 17001 //获取锁失败
-	ErrorBillingStatusForbidden  = 17002 //状态不允许操作
+	ErrorBillingObtainLockFailed = 17001 // 获取锁失败
+	ErrorBillingStatusForbidden  = 17002 // 状态不允许操作
 
 	/* 18001~19000 模型管理错误*/
 	ErrorModelNoPermission              = 18001 // 没权限操作模型
