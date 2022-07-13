@@ -27,14 +27,14 @@ metadata:
 {{ include "scheduler.labels" . | indent 4 }}
 data:
   scheduler-conf.yaml: |
-    actions: "enqueue, allocate, privilege, backfill"
+    actions: "enqueue, allocate, backfill"
     tiers:
     - plugins:
       - name: priority
       - name: gang
     - plugins:
       - name: drf
-      - name: predicates
+      - name: predicatesResourcepool
       - name: proportion
       - name: binpack
         arguments:

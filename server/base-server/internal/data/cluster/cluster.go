@@ -9,11 +9,14 @@ import (
 	nav1 "nodeagent/apis/agent/v1"
 	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 
+	typejob "server/apis/pkg/apis/batch/v1alpha1"
+
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	infov1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 type ClusterClient interface {
@@ -60,4 +63,8 @@ type Cluster interface {
 	DeleteSeldonDeployment(ctx context.Context, namespace string, serviceName string) error
 	GetSeldonDeployment(ctx context.Context, namespace string, serviceName string) (*seldonv1.SeldonDeployment, error)
 	RegisterDeploymentInformerCallback(onAdd common.OnDeploymentAdd, onUpdate common.OnDeploymentUpdate, onDelete common.OnDeploymentDelete)
+	RegisterJobEventHandler(cache.ResourceEventHandler)
+	GetJob(ctx context.Context, namespace, name string) (*typejob.Job, error)
+	CreateJob(ctx context.Context, job *typejob.Job) error
+	DeleteJob(ctx context.Context, namespace, name string) error
 }

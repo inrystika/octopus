@@ -28,6 +28,11 @@ import (
 	typeQueue "server/apis/pkg/apis/scheduling/v1beta1"
 
 	vcclient "server/apis/pkg/client/clientset/versioned"
+	libInformer "server/apis/pkg/client/informers/externalversions"
+	typejobInformer "server/apis/pkg/client/informers/externalversions/batch/v1alpha1"
+	typejobLister "server/apis/pkg/client/listers/batch/v1alpha1"
+
+	typejob "server/apis/pkg/apis/batch/v1alpha1"
 
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
@@ -118,6 +123,11 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 
 	kc.nodeActionInformer = naInformerFactory.Agent().V1().NodeActions()
 
+	jobInformerFactory := libInformer.NewSharedInformerFactory(kc.vcClient, 0)
+	vcjobInformer := jobInformerFactory.Batch().V1alpha1().Jobs()
+	kc.vcjobInformer = vcjobInformer
+	kc.vcjobLister = vcjobInformer.Lister()
+
 	kc.Run()
 	kc.WaitForCacheSync()
 	return kc, cancel
@@ -129,6 +139,8 @@ type kubernetesCluster struct {
 	log                *log.Helper
 	kubeclient         *kubernetes.Clientset
 	vcClient           *vcclient.Clientset
+	vcjobInformer      typejobInformer.JobInformer
+	vcjobLister        typejobLister.JobLister
 	naClient           *naclient.Clientset
 	seldonClient       *seldonclient.Clientset
 	seldonInformer     informers.GenericInformer
@@ -598,4 +610,49 @@ func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(onAdd common.OnD
 		}
 		return informerSynced
 	}()...)
+}
+
+func (kc *kubernetesCluster) RegisterJobEventHandler(handlers cache.ResourceEventHandler) {
+	kc.vcjobInformer.Informer().AddEventHandler(handlers)
+	go kc.vcjobInformer.Informer().Run(kc.ctx.Done())
+	cache.WaitForCacheSync(kc.ctx.Done(),
+		func() []cache.InformerSynced {
+			informerSynced := []cache.InformerSynced{
+				kc.vcjobInformer.Informer().HasSynced,
+			}
+			return informerSynced
+		}()...,
+	)
+}
+
+func (kc *kubernetesCluster) GetJob(ctx context.Context, namespace, name string) (*typejob.Job, error) {
+
+	job, err := kc.vcjobLister.Jobs(namespace).Get(name)
+
+	if err == nil && job != nil {
+		return job, err
+	}
+	job, err = kc.vcClient.BatchV1alpha1().Jobs(namespace).Get(ctx, name, metav1.GetOptions{})
+
+	if kubeerrors.IsNotFound(err) {
+		return nil, nil
+	}
+
+	return job, err
+}
+
+func (kc *kubernetesCluster) CreateJob(ctx context.Context, job *typejob.Job) error {
+	kc.CreateNamespace(ctx, job.Namespace)
+	_, err := kc.vcClient.BatchV1alpha1().Jobs(job.Namespace).Create(ctx, job, metav1.CreateOptions{})
+	return err
+}
+
+func (kc *kubernetesCluster) DeleteJob(ctx context.Context, namespace, name string) error {
+	err := kc.vcClient.BatchV1alpha1().Jobs(namespace).
+		Delete(ctx, name, metav1.DeleteOptions{})
+
+	if nil != err && kubeerrors.IsNotFound(err) {
+		return nil
+	}
+	return err
 }

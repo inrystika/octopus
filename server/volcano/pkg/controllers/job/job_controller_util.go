@@ -143,6 +143,27 @@ func createJobPod(job *typeJob.Job, template *v1.PodTemplateSpec, topologyPolicy
 		}
 	}
 
+	predefinedEnvs := []v1.EnvVar{
+		{Name: EnvNameNamespace, Value: job.Namespace},
+		{Name: EnvNameTaskSetName, Value: job.Name},
+		{Name: EnvNameTaskRoleName, Value: template.Name},
+		{Name: EnvNameTaskRoleReplicaIndex, Value: fmt.Sprintf("%d", ix)},
+	}
+
+	for i := range pod.Spec.Containers {
+		pod.Spec.Containers[i].Env = append(predefinedEnvs, pod.Spec.Containers[i].Env...)
+		if len(pod.Spec.Containers[i].TerminationMessagePolicy) == 0 {
+			pod.Spec.Containers[i].TerminationMessagePolicy = v1.TerminationMessageFallbackToLogsOnError
+		}
+	}
+
+	for i := range pod.Spec.InitContainers {
+		pod.Spec.InitContainers[i].Env = append(predefinedEnvs, pod.Spec.InitContainers[i].Env...)
+		if len(pod.Spec.InitContainers[i].TerminationMessagePolicy) == 0 {
+			pod.Spec.InitContainers[i].TerminationMessagePolicy = v1.TerminationMessageFallbackToLogsOnError
+		}
+	}
+
 	if jobForwarding {
 		pod.Annotations[batch.JobForwardingKey] = "true"
 		pod.Labels[batch.JobForwardingKey] = "true"

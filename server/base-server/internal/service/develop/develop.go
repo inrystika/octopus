@@ -8,7 +8,6 @@ import (
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/service/algorithm"
 	"server/common/constant"
 	"server/common/errors"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/tools/cache"
 	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
@@ -54,7 +54,6 @@ type developService struct {
 
 type DevelopService interface {
 	api.DevelopServer
-	common.PipelineCallback
 }
 
 const (
@@ -89,7 +88,6 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
 	log := log.NewHelper("DevelopService", logger)
 
-	err := upsertFeature(data, conf.Service.BaseServerAddr)
 	if err != nil {
 		if !conf.App.IsDev {
 			return nil, err
@@ -112,41 +110,14 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		userService:         userService,
 	}
 
-	s.startNotebookTask()
-	return s, nil
-}
-
-func upsertFeature(data *data.Data, baseServerAddr string) error {
-	err := data.Pipeline.UpsertFeature(context.Background(), &pipeline.UpsertFeatureParam{
-		FeatureName: "notebook",
-		Author:      "octopus",
-		Description: "notebook",
-		Enabled:     true,
-		JobSelector: &pipeline.JobSelector{
-			Conditions: []*pipeline.Condition{{
-				Name:   "type",
-				Key:    "jobKind",
-				Expect: "notebook",
-			}},
-			Expression: "type",
-		},
-		Plugins: []*pipeline.Plugin{
-			{
-				Key:         "bindlifehook",
-				PluginType:  "LifeHook",
-				CallAddress: baseServerAddr + "/v1/developmanage/pipelinecallback",
-				Description: "notebook lifehook",
-				JobSelector: &pipeline.JobSelector{
-					States: []string{"*"},
-				},
-			}},
+	s.data.Cluster.RegisterJobEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    s.onJobAdd,
+		UpdateFunc: s.onJobUpdate,
+		DeleteFunc: s.onJobDelete,
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	s.startNotebookTask()
+	return s, nil
 }
 
 type closeFunc func(ctx context.Context) error
@@ -345,7 +316,7 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 	}
 
 	closes = append(closes, func(ctx context.Context) error {
-		err1 := s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: nbJob.Id, Reason: "stop job because error"})
+		err1 := s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
 		return err1
 	})
 
@@ -399,14 +370,14 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			return err
 		}
 		nb.Id = nbId
-		nb.Status = pipeline.PREPARING
+		nb.Status = constant.PREPARING
 		nb.NotebookJobId = jobId
 		nb.TaskNumber = int(req.TaskNumber)
 
 		nbJob := &model.NotebookJob{
 			Id:         jobId,
 			NotebookId: nbId,
-			Status:     pipeline.PREPARING,
+			Status:     constant.PREPARING,
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
@@ -471,7 +442,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			return err
 		}
 
-		if !pipeline.IsCompletedState(nb.Status) {
+		if !utils.IsCompletedState(nb.Status) {
 			return errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 		}
 
@@ -479,7 +450,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 		nbJob := &model.NotebookJob{
 			Id:         jobId,
 			NotebookId: nb.Id,
-			Status:     pipeline.PREPARING,
+			Status:     constant.PREPARING,
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
@@ -495,7 +466,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 		err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
 			Id:            nb.Id,
 			NotebookJobId: jobId,
-			Status:        pipeline.PREPARING,
+			Status:        constant.PREPARING,
 		})
 		if err != nil {
 			return err
@@ -537,14 +508,6 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 }
 
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
-	param := &pipeline.SubmitJobParam{
-		UserID:       nb.UserId,
-		JobKind:      "notebook",
-		JobName:      nbJob.Id,
-		Header:       nil,
-		JobNamespace: nb.UserId,
-		Cluster:      "",
-	}
 
 	VolumeMounts := []v1.VolumeMount{
 		{
@@ -650,36 +613,33 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		tasks = append(tasks, task)
 	}
 
-	param.Job = &typeJob.Job{}
-	param.Job.TypeMeta = metav1.TypeMeta{
+	Job := &typeJob.Job{}
+	Job.TypeMeta = metav1.TypeMeta{
 		APIVersion: "batch.volcano.sh/v1alpha1",
 		Kind:       "Job",
 	}
-	param.Job.ObjectMeta = metav1.ObjectMeta{
+	Job.ObjectMeta = metav1.ObjectMeta{
 		Namespace: nb.UserId,
 		Name:      nbJob.Id,
 	}
-	param.Job.Spec = typeJob.JobSpec{}
-	param.Job.Spec.MinAvailable = int32(nb.TaskNumber)
-	param.Job.Spec.Queue = startJobInfo.queue
-	param.Job.Spec.SchedulerName = "volcano"
+	Job.Spec = typeJob.JobSpec{}
+	Job.Spec.MinAvailable = int32(nb.TaskNumber)
+	Job.Spec.Queue = startJobInfo.queue
+	Job.Spec.SchedulerName = "volcano"
 	//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
-	param.Job.Spec.Plugins = map[string][]string{
+	Job.Spec.Plugins = map[string][]string{
 		"env": {},
 		"svc": {"--disable-network-policy"},
 	}
-	param.Job.Spec.Policies = []vcBatch.LifecyclePolicy{
+	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
 		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
 		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
 	}
-	param.Job.Spec.Tasks = tasks
+	Job.Spec.Tasks = tasks
 
-	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
+	err := s.data.Cluster.CreateJob(ctx, Job)
 	if err != nil {
 		return err
-	}
-	if nbJob.Id != submitJobReply.JobId {
-		return errors.Errorf(err, errors.ErrorPipelineDoRequest)
 	}
 	return nil
 }
@@ -695,11 +655,11 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, err
 	}
 
-	if pipeline.IsCompletedState(nb.Status) {
+	if utils.IsCompletedState(nb.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
-	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: nbJob.Id, Reason: "stop job"})
+	err = s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -716,7 +676,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 
 	err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
 		Id:     nb.Id,
-		Status: pipeline.STOPPED,
+		Status: constant.STOPPED,
 	})
 	if err != nil {
 		return nil, err
@@ -725,7 +685,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 	now := time.Now()
 	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
 		Id:        nbJob.Id,
-		Status:    pipeline.STOPPED,
+		Status:    constant.STOPPED,
 		StoppedAt: &now,
 	})
 	if err != nil {
@@ -839,7 +799,7 @@ func (s *developService) DeleteNotebook(ctx context.Context, req *api.DeleteNote
 		return nil, err
 	}
 
-	if !pipeline.IsCompletedState(nb.Status) {
+	if !utils.IsCompletedState(nb.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
@@ -960,7 +920,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	if err != nil {
 		return nil, err
 	}
-	if !pipeline.JobRunningState(notebook.Status) {
+	if !utils.JobRunningState(notebook.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 

@@ -3,10 +3,10 @@ package develop
 import (
 	"context"
 	"fmt"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	commapi "server/common/api/v1"
 	"server/common/constant"
 	"server/common/leaderleaselock"
@@ -59,7 +59,7 @@ func (s *developService) startNotebookTask() {
 							PageIndex:   pageIndex,
 							PageSize:    taskPageSize,
 							StartedAtLt: time.Now().Add(-time.Second * time.Duration(s.conf.Service.Develop.AutoStopIntervalSec)).Unix(),
-							StatusList:  pipeline.NonCompletedStates(),
+							StatusList:  utils.NonCompletedStates(),
 						})
 
 						if err != nil {
@@ -124,14 +124,25 @@ func (s *developService) startNotebookTask() {
 							nbMap[n.Id] = n
 						}
 
-						details, err := s.data.Pipeline.BatchGetJobDetail(ctx, jobIds)
-						if err != nil {
-							s.log.Errorf(ctx, "BatchGetJobDetail err: %s", err)
-							continue
+						nbjNs := map[string]string{}
+						for _, j := range nbJobs {
+							nb := nbMap[j.NotebookId]
+							nbjNs[j.Id] = nb.UserId
 						}
-						detailMap := map[string]*pipeline.JobStatusDetail{}
-						for _, d := range details.Details {
-							detailMap[d.Job.ID] = d
+
+						details := make([]*typeJob.Job, 0)
+						for _, id := range jobIds {
+							info, err := s.data.Cluster.GetJob(ctx, nbjNs[id], id)
+							if err != nil {
+								s.log.Errorf(ctx, "GetJob err: %s", err)
+							} else {
+								details = append(details, info)
+							}
+						}
+
+						detailMap := map[string]*typeJob.Job{}
+						for _, d := range details {
+							detailMap[d.Name] = d
 						}
 
 						for _, j := range nbJobs {
@@ -141,7 +152,7 @@ func (s *developService) startNotebookTask() {
 
 								var payEndAt int64
 								var payStatus api.BillingPayRecordStatus
-								if pipeline.IsCompletedState(j.Status) {
+								if utils.IsCompletedState(j.Status) {
 									payEndAt = j.StoppedAt.Unix()
 									payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 								} else {

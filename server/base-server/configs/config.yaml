@@ -16,7 +16,7 @@ data:
     source: root:root@tcp(192.168.202.73:30336)/octopus?charset=utf8&parseTime=True&loc=Local
   kubernetes:
     masterUrl: https://192.168.202.73:6443/
-    configPath: E:\pcl\openI_octopus\k8s_config\73_k8s_config
+    configPath: /home/hackmong/openi/73config
   pipeline:
     baseUrl: http://127.0.0.1:8080
     token: KLtmMug9BDvvRjlg

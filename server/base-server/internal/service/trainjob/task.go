@@ -5,7 +5,6 @@ import (
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/common/constant"
 	"server/common/leaderleaselock"
 	"server/common/utils"
@@ -76,7 +75,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
 						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
 						for _, j := range trainJobs {
-							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status) {
+							if j.StartedAt == nil && utils.IsCompletedState(j.Status) {
 								j.PayStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 								err = s.data.TrainJobDao.UpdateTrainJob(ctx, j)
 								if err != nil {
@@ -149,7 +148,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 								for _, r := range t.Replicas { //计算副本消费
 									var endAt int64
 									//查看副本任务是否终止，以便获取副本终止时间。
-									if pipeline.IsCompletedState(r.State) {
+									if utils.IsCompletedState(r.State) {
 										// 副本状态终止，但无终止时间。
 										if r.FinishedAt == nil {
 											//若job终止时间也缺失，系统级错误，结束时间 = 启动时间，不计入费用！

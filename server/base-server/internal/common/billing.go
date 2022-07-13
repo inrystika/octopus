@@ -2,26 +2,29 @@ package common
 
 import (
 	"context"
-	"server/base-server/internal/data/pipeline"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
+	"server/common/constant"
 	"server/common/log"
+	"server/common/utils"
 	"strings"
 	"time"
 )
 
-func CalculateAmount(ctx context.Context, job *pipeline.JobStatusDetail, prices []uint32) (float64, time.Time) {
+func CalculateAmount(ctx context.Context, job *typeJob.Job, prices []uint32) (float64, time.Time) {
 	var rs float64
 	var startTime time.Time
-	for ti, t := range job.Tasks {
-		for _, r := range t.Replicas {
+	for ti, t := range job.Status.TaskRoleStatus {
+		for _, r := range t.ReplicaStatuses {
 			var startAt, finishedAt int64
-			if pipeline.IsCompletedState(r.State) && r.FinishedAt != nil && r.StartAt != nil {
+			state := utils.ConvertTaskRoleReplicaState(&r)
+			if utils.IsCompletedState(state) && r.FinishAt != nil && r.StartAt != nil {
 				startAt = r.StartAt.Unix()
-				finishedAt = r.FinishedAt.Unix()
-			} else if strings.EqualFold(r.State, pipeline.RUNNING) && r.StartAt != nil {
+				finishedAt = r.FinishAt.Unix()
+			} else if strings.EqualFold(state, constant.RUNNING) && r.StartAt != nil {
 				startAt = r.StartAt.Unix()
 				finishedAt = time.Now().Unix()
 			} else {
-				log.Infof(ctx, "calculate amount abnormal,jobId:%v", job.Job.ID)
+				log.Infof(ctx, "calculate amount abnormal,jobId:%v", job.Name)
 			}
 			rs += float64(finishedAt-startAt) * float64(prices[ti]) / 3600.0
 			if r.StartAt != nil {

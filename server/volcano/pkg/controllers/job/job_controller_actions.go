@@ -44,9 +44,11 @@ import (
 
 	jobhelpers "server/volcano/pkg/controllers/job/helpers"
 
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/helpers"
 	scheduling "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
+	jobcache "volcano.sh/volcano/pkg/controllers/cache"
 )
 
 var calMutex sync.Mutex
@@ -126,6 +128,22 @@ func (cc *jobcontroller) killJob(jobInfo *typeApis.JobInfo, podRetainPhase state
 	job.Status.Unknown = unknown
 	job.Status.TaskStatusCount = taskStatusCount
 
+	taskRoleStatus := job.Status.TaskRoleStatus
+	for i := 0; i < len(taskRoleStatus); i++ {
+		for j := 0; j < len(taskRoleStatus[i].ReplicaStatuses); j++ {
+			podName := taskRoleStatus[i].ReplicaStatuses[j].PodName
+			if pods, found := jobInfo.Pods[taskRoleStatus[i].Name]; found {
+				for _, pod := range pods {
+					if podName == pod.Name {
+						jobhelpers.UpdateReplicaStatus(&taskRoleStatus[i].ReplicaStatuses[j], pod)
+						break
+					}
+				}
+			}
+		}
+		jobhelpers.UpdateTaskRoleStatus(&taskRoleStatus[i])
+	}
+
 	// Update running duration
 	klog.V(3).Infof("Running duration is %s", metav1.Duration{Duration: time.Since(jobInfo.Job.CreationTimestamp.Time)}.ToUnstructured())
 	job.Status.RunningDuration = &metav1.Duration{Duration: time.Since(jobInfo.Job.CreationTimestamp.Time)}
@@ -197,6 +215,26 @@ func (cc *jobcontroller) initiateJob(job *typeJob.Job) (*typeJob.Job, error) {
 		cc.recorder.Event(job, v1.EventTypeWarning, string(batch.PodGroupError),
 			fmt.Sprintf("Failed to create PodGroup, err: %v", err))
 		return nil, err
+	}
+
+	newJob.Status.CreatedAt = meta.Now()
+	if len(newJob.Status.TaskRoleStatus) == 0 {
+		for _, ts := range newJob.Spec.Tasks {
+			trst := typeJob.TaskRoleStatus{
+				Name:  ts.Name,
+				Phase: string(batch.Pending),
+			}
+			for i := 0; i < int(ts.Replicas); i++ {
+				podName := fmt.Sprintf(jobhelpers.PodNameFmt, newJob.Name, ts.Name, i)
+				replicaStatus := typeJob.ReplicaStatus{
+					Index:   uint(i),
+					PodName: podName,
+					Phase:   string(v1.PodPending),
+				}
+				trst.ReplicaStatuses = append(trst.ReplicaStatuses, replicaStatus)
+			}
+			newJob.Status.TaskRoleStatus = append(newJob.Status.TaskRoleStatus, trst)
+		}
 	}
 
 	return newJob, nil
@@ -330,6 +368,8 @@ func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.U
 	var podToDelete []*v1.Pod
 	var creationErrs []error
 	var deletionErrs []error
+	var podToCreateIdx = map[string]int{}
+	var taskRoleStatus = job.Status.TaskRoleStatus
 	appendMutex := sync.Mutex{}
 
 	appendError := func(container *[]error, err error) {
@@ -340,7 +380,7 @@ func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.U
 
 	waitCreationGroup := sync.WaitGroup{}
 
-	for _, ts := range job.Spec.Tasks {
+	for idx, ts := range job.Spec.Tasks {
 		ts.Template.Name = ts.Name
 		tc := ts.Template.DeepCopy()
 		name := ts.Template.Name
@@ -360,6 +400,7 @@ func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.U
 				}
 				podToCreateEachTask = append(podToCreateEachTask, newPod)
 				waitCreationGroup.Add(1)
+				podToCreateIdx[podName] = idx
 			} else {
 				delete(pods, podName)
 				if pod.DeletionTimestamp != nil {
@@ -400,6 +441,31 @@ func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.U
 							pod.Name, job.Name, err)
 						appendError(&creationErrs, fmt.Errorf("failed to create pod %s, err: %#v", pod.Name, err))
 					} else {
+						if err == nil {
+							idx := podToCreateIdx[newPod.Name]
+							replicaStatus := typeJob.ReplicaStatus{
+								PodName:      newPod.Name,
+								PodUID:       &newPod.UID,
+								PodIP:        newPod.Status.PodIP,
+								PodHostIP:    newPod.Status.HostIP,
+								StartAt:      newPod.Status.StartTime,
+								Phase:        string(newPod.Status.Phase),
+								PhaseMessage: newPod.Status.Message,
+							}
+							statusExisted := false
+							for i := 0; i < len(taskRoleStatus[idx].ReplicaStatuses); i++ {
+								if taskRoleStatus[idx].ReplicaStatuses[i].PodName == newPod.Name {
+									replicaStatus.Index = uint(i)
+									taskRoleStatus[idx].ReplicaStatuses[i] = replicaStatus
+									statusExisted = true
+									break
+								}
+							}
+							if !statusExisted {
+								replicaStatus.Index = uint(len(taskRoleStatus[idx].ReplicaStatuses))
+								taskRoleStatus[idx].ReplicaStatuses = append(taskRoleStatus[idx].ReplicaStatuses, replicaStatus)
+							}
+						}
 						classifyAndAddUpPodBaseOnPhase(newPod, &pending, &running, &succeeded, &failed, &unknown)
 						calcPodStatus(pod, taskStatusCount)
 						klog.V(5).Infof("Created Task <%s> of Job <%s/%s>",
@@ -447,6 +513,26 @@ func (cc *jobcontroller) syncJob(jobInfo *typeApis.JobInfo, updateStatus state.U
 			fmt.Sprintf("Error deleting pods: %+v", deletionErrs))
 		return fmt.Errorf("failed to delete %d pods of %d", len(deletionErrs), len(podToDelete))
 	}
+
+	jobKeyName := jobcache.JobKeyByName(job.Namespace, job.Name)
+	jobInfoCp, err := cc.cache.Get(jobKeyName)
+	if err == nil {
+		for i := 0; i < len(taskRoleStatus); i++ {
+			for j := 0; j < len(taskRoleStatus[i].ReplicaStatuses); j++ {
+				podName := taskRoleStatus[i].ReplicaStatuses[j].PodName
+				if pods, found := jobInfoCp.Pods[taskRoleStatus[i].Name]; found {
+					for _, pod := range pods {
+						if podName == pod.Name {
+							jobhelpers.UpdateReplicaStatus(&taskRoleStatus[i].ReplicaStatuses[j], pod)
+							break
+						}
+					}
+				}
+			}
+			jobhelpers.UpdateTaskRoleStatus(&taskRoleStatus[i])
+		}
+	}
+
 	job.Status = typeJob.JobStatus{}
 	job.Status.State = job.Status.State
 	job.Status.Pending = pending

@@ -30,4 +30,13 @@ const (
 	// SuccessfulDeletePodReason is added in an event when a pod for a replica set
 	// is successfully deleted.
 	SuccessfulDeletePodReason = "SuccessfulDelete"
+
+	//EnvNameNamespace define which namespace the taskset is running
+	EnvNameNamespace = "TASKSET_NAMESPACE"
+	// EnvNameTaskSetName define the key of TaskSet name which will be injected in  the pod
+	EnvNameTaskSetName = "TASKSET_NAME"
+	// EnvNameTaskRoleName define the key of TaskRole name which will be injected in the pod
+	EnvNameTaskRoleName = "TASKROLE_NAME"
+	// EnvNameTaskRoleReplicaIndex define the key of TaskRole replica index
+	EnvNameTaskRoleReplicaIndex = "TASKROLE_REPLICA_INDEX"
 )

@@ -1,16 +1,9 @@
 package server
 
 import (
-	"context"
-	"encoding/json"
-	"io/ioutil"
-	nethttp "net/http"
-	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/service"
 	"server/common/middleware/logging"
-
-	"server/common/log"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -42,44 +35,5 @@ func NewHTTPServer(c *conf.Server, service *service.Service) *http.Server {
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 	srv := http.NewServer(opts...)
-
-	//实现pipeline回调 request和response编码是pipeline要求的格式 先单独写
-	srv.HandleFunc("/v1/developmanage/pipelinecallback", func(w nethttp.ResponseWriter, r *nethttp.Request) {
-		pipelineCallback(w, r, service.DevelopService)
-	})
-
-	srv.HandleFunc("/v1/trainmanage/pipelinecallback", func(w nethttp.ResponseWriter, r *nethttp.Request) {
-		pipelineCallback(w, r, service.TrainJobService)
-	})
-
-	srv.HandleFunc("/v1/platform/pipelinecallback", func(w nethttp.ResponseWriter, r *nethttp.Request) {
-		pipelineCallback(w, r, service.PlatformTrainJobService)
-	})
 	return srv
-}
-
-func pipelineCallback(w nethttp.ResponseWriter, r *nethttp.Request, callback common.PipelineCallback) {
-	ctx := context.TODO()
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		_, err := w.Write([]byte(common.PipeLineCallbackRE))
-		if err != nil {
-			log.Error(ctx, err)
-		}
-	}
-
-	p := &common.PipelineCallbackReq{}
-	err = json.Unmarshal(data, p)
-	if err != nil {
-		_, err := w.Write([]byte(common.PipeLineCallbackRE))
-		if err != nil {
-			log.Error(ctx, err)
-		}
-	}
-
-	res := callback.PipelineCallback(context.Background(), p)
-	_, err = w.Write([]byte(res))
-	if err != nil {
-		log.Error(ctx, err)
-	}
 }

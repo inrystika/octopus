@@ -3,7 +3,6 @@ module server
 go 1.16
 
 require (
-	github.com/agiledragon/gomonkey/v2 v2.1.0
 	github.com/antihax/optional v1.0.0
 	github.com/bsm/redislock v0.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -12,8 +11,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/go-kratos/kratos/v2 v2.0.0-beta3
-	github.com/go-oauth2/oauth2/v4 v4.4.2
-	github.com/go-oauth2/redis/v4 v4.1.1
 	github.com/go-redis/redis/v8 v8.10.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
@@ -22,6 +19,7 @@ require (
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
 	github.com/minio/minio-go/v7 v7.0.11
+	github.com/prometheus/client_golang v1.12.0
 	github.com/seldonio/seldon-core/operator v1.11.2
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -35,7 +33,6 @@ require (
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/errgo.v2 v2.1.0
-	gopkg.in/resty.v1 v1.12.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.0.4
 	gorm.io/gorm v1.21.7
@@ -55,10 +52,7 @@ require (
 )
 
 replace (
-	//volcano.sh/volcano => ./taskset/pkg/volcano
-
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
-	google.golang.org/grpc => google.golang.org/grpc v1.29.1
 	k8s.io/api => k8s.io/api v0.23.0
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.23.0
