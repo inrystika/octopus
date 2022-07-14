@@ -58,7 +58,7 @@
                 <!-- 数据集三级框 -->
                 <div>
                     <el-form-item label="数据集类型" prop="dataSetSource" :class="{inline:dataSetName}">
-                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择" @change="changedataSetSource">
+                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择" @change="changedataSetSource" @clear="clearDataSetVersionOption">
                             <el-option label="我的数据集" value="my" />
                             <el-option label="预置数据集" value="pre" />
                             <el-option label="公共数据集" value="common" />
@@ -356,6 +356,9 @@
             }
         },
         methods: {
+            clearDataSetVersionOption() {
+                this.dataSetVersionOption = []
+            },
             getSpacePools() {
                 let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
                 this.workspaces.forEach(
