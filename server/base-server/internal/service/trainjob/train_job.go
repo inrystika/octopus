@@ -711,6 +711,10 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 		return nil, err
 	}
 
+	if pipeline.IsCompletedState(job.Status) {
+		return nil, errors.Errorf(nil, errors.ErrorStopTerminatedJob)
+	}
+
 	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
 	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: req.Id, Reason: req.Operation})
 	if err != nil {
