@@ -29,7 +29,6 @@ type Data struct {
 	ResourcePoolClient       api.ResourcePoolServiceClient
 	BillingClient            api.BillingServiceClient
 	LableClient              api.LableServiceClient
-	JointCloudClient         api.JointCloudServiceClient
 	ModelDeployClient        api.ModelDeployServiceClient
 	PlatformStatisticsClient api.PlatformStatisticsClient
 }
@@ -71,7 +70,6 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 		ResourcePoolClient:       api.NewResourcePoolServiceClient(conn),
 		BillingClient:            api.NewBillingServiceClient(conn),
 		LableClient:              api.NewLableServiceClient(conn),
-		JointCloudClient:         api.NewJointCloudServiceClient(conn),
 		ModelDeployClient:        api.NewModelDeployServiceClient(conn),
 		PlatformStatisticsClient: api.NewPlatformStatisticsClient(conn),
 	}, nil

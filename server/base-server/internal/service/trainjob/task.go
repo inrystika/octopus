@@ -2,6 +2,7 @@ package trainjob
 
 import (
 	"context"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
@@ -72,7 +73,6 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							break
 						}
 
-						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
 						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
 						for _, j := range trainJobs {
 							if j.StartedAt == nil && utils.IsCompletedState(j.Status) {
@@ -114,14 +114,24 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							trainJobMap[job.Id] = job
 						}
 
-						details, err := s.data.Pipeline.BatchGetJobDetail(ctx, trainJobIds)
-						if err != nil {
-							s.log.Errorf(ctx, "Batch Get Job Detail err: %s", err)
-							continue
+						jobNs := map[string]string{}
+						for _, id := range trainJobIds {
+							jobNs[id] = trainJobMap[id].UserId
 						}
-						detailMap := map[string]*pipeline.JobStatusDetail{}
-						for _, d := range details.Details {
-							detailMap[d.Job.ID] = d
+
+						details := make([]*typeJob.Job, 0)
+						for _, id := range trainJobIds {
+							info, err := s.data.Cluster.GetJob(ctx, jobNs[id], id)
+							if err != nil {
+								s.log.Errorf(ctx, "GetJob err: %s", err)
+							} else {
+								details = append(details, info)
+							}
+						}
+
+						detailMap := map[string]*typeJob.Job{}
+						for _, d := range details {
+							detailMap[d.Name] = d
 						}
 
 						for _, j := range trainJobs {
@@ -144,13 +154,14 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							ownerId, ownerType := s.getOwner(trainJob)
 
 							detail := detailMap[j.Id]
-							for ti, t := range detail.Tasks {
-								for _, r := range t.Replicas { //计算副本消费
+							for ti, t := range detail.Status.TaskRoleStatus {
+								for _, r := range t.ReplicaStatuses { //计算副本消费
 									var endAt int64
 									//查看副本任务是否终止，以便获取副本终止时间。
-									if utils.IsCompletedState(r.State) {
+									state := utils.ConvertTaskRoleReplicaState(&r)
+									if utils.IsCompletedState(state) {
 										// 副本状态终止，但无终止时间。
-										if r.FinishedAt == nil {
+										if r.FinishAt == nil {
 											//若job终止时间也缺失，系统级错误，结束时间 = 启动时间，不计入费用！
 											if j.CompletedAt == nil {
 												s.log.Errorf(ctx, j.Id+"'s replica finished-time is null && job finished time is also null!")
@@ -162,9 +173,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 												endAt = j.CompletedAt.Unix()
 											}
 										} else {
-											endAt = r.FinishedAt.Unix()
+											endAt = r.FinishAt.Unix()
 										}
-									} else if strings.EqualFold(r.State, pipeline.RUNNING) {
+									} else if strings.EqualFold(state, constant.RUNNING) {
 										//副本仍在running，则取当前系统时间，作为该周期计费终止点。
 										endAt = now
 									}
@@ -178,8 +189,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 
 							var payStatus api.BillingPayRecordStatus
 							var payEndAt int64
-							if pipeline.IsCompletedState(detail.Job.State) {
-								payEndAt = detail.Job.FinishedAt.Unix()
+							jobState := utils.MapPhaseToState(typeJob.JobPhase((detail.Status.State.Phase)))
+							if utils.IsCompletedState(jobState) {
+								payEndAt = detail.Status.FinishAt.Unix()
 								payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 							} else {
 								payEndAt = now

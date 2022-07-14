@@ -98,16 +98,15 @@ message PytorchServer {
 
 message Data {
   Database database = 1;
-  Pipeline pipeline = 2;
-  Kubernetes kubernetes = 3;
-  Minio minio = 4;
-  Harbor harbor = 5;
-  Redis redis = 6;
-  Influxdb influxdb = 7;
-  JointCloud jointCloud = 8;
-  Ambassador ambassador = 9;
-  PytorchServer pytorchServer = 10;
-  sftpgo sftpgo = 11;
+  Kubernetes kubernetes = 2;
+  Minio minio = 3;
+  Harbor harbor = 4;
+  Redis redis = 5;
+  Influxdb influxdb = 6;
+  JointCloud jointCloud = 7;
+  Ambassador ambassador = 8;
+  PytorchServer pytorchServer = 9;
+  sftpgo sftpgo = 10;
 }
 
 message Develop {

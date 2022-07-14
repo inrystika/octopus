@@ -17,9 +17,6 @@ data:
   kubernetes:
     masterUrl: https://192.168.202.73:6443/
     configPath: /home/hackmong/openi/73config
-  pipeline:
-    baseUrl: http://127.0.0.1:8080
-    token: KLtmMug9BDvvRjlg
   minio:
     base:
       endPoint: 192.168.202.73:31311

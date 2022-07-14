@@ -86,14 +86,8 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
 	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
-	log := log.NewHelper("DevelopService", logger)
 
-	if err != nil {
-		if !conf.App.IsDev {
-			return nil, err
-		}
-		log.Error(context.TODO(), err)
-	}
+	log := log.NewHelper("DevelopService", logger)
 
 	s := &developService{
 		conf:                conf,

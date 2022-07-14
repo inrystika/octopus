@@ -38,8 +38,6 @@ type Data struct {
 	Registry              registry.ArtifactRegistry
 	Redis                 redis.Redis
 	Influxdb              influxdb.Influxdb
-	JointCloudDao         jointcloud.JointcloudDao
-	JointCloud            jointcloud.JointCloud
 	ModelDeployDao        dao.ModelDeployDao
 	PlatformStatisticsDao dao.PlatformStatisticsDao
 }

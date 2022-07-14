@@ -2,7 +2,7 @@ package develop
 
 import (
 	"context"
-	"server/base-server/internal/common"
+	typeJob "server/apis/pkg/apis/batch/v1alpha1"
 	"server/base-server/internal/data/dao/model"
 	commapi "server/common/api/v1"
 	"server/common/constant"
@@ -53,18 +53,18 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 	}
 
 	nbUp := &model.Notebook{
-		NotebookJobId: req.Id,
+		NotebookJobId: newjob.Name,
 		Status:        newState,
 	}
 
 	nbJobUp := &model.NotebookJob{
-		Id:     req.Id,
+		Id:     newjob.Name,
 		Status: newState,
 	}
 
 	now := time.Now()
 	record := &model.NotebookEventRecord{
-		Time:       &now,
+		Time:       now,
 		NotebookId: nb.Id,
 	}
 
@@ -98,12 +98,10 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 		s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+newjob.Name, err)
 	}
 
-	if utils.IsRunningOrCompletedState(req.CurrentState) {
+	if utils.IsRunningOrCompletedState(newState) {
 		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
 		if err != nil { // 插入事件记录出错只打印
 			s.log.Error(ctx, "create notebook event record error:", err)
 		}
 	}
-
-	return common.PipeLineCallbackOK
 }

@@ -70,7 +70,6 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 							s.log.Info(ctx, "There is no model deploy service to pay!")
 							break
 						}
-						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
 						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
 						for _, j := range seldonServices {
 							if j.StartedAt == nil && utils.IsCompletedState(j.Status) {
