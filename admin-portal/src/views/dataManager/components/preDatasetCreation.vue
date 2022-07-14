@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="标注类型" :label-width="formLabelWidth">
-          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择标注类型">
+          <el-select v-model="ruleForm.applyIds" :disabled="disabled" placeholder="请选择标注类型" multiple>
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -36,14 +36,12 @@
 
 <script>
   import upload from '@/components/upload/index.vue'
-  import { createPreDataset, datasetType,datasetUse } from "@/api/dataManager"
-  import { getErrorMsg } from '@/error/index'
+  import { createPreDataset, datasetType, datasetUse } from "@/api/dataManager"
   export default {
     name: "PreDatasetCreation",
     components: {
       upload
     },
-    props: {},
     props: {
       row: {
         type: Object,
@@ -60,7 +58,9 @@
         disabled: false,
         uploadData: { data: {}, type: undefined },
         ruleForm: {
-
+          name: "",
+          typeId: "",
+          path: ""
         },
         rules: {
           name: [
@@ -82,9 +82,6 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       nextStep(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
@@ -121,7 +118,7 @@
       },
       // 获取数据集类型
       datasetType() {
-        datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
           } else {
@@ -135,7 +132,7 @@
       },
        // 获取数据集用途
        datasetUse() {
-        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetUse({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
           } else {

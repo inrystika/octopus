@@ -1,0 +1,195 @@
+syntax = "proto3";
+
+package openaiserver.api.v1;
+
+option go_package = "server/openai-server/api/v1;v1";
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service ModelDeployService {
+
+  // 创建部署服务
+  rpc DeployModel (DepRequest) returns (DepReply) {
+    option (google.api.http) = {
+      post: "/v1/deploymanage/modeldeploy"
+      body: "*"
+    };
+  };
+  //停止部署服务
+  rpc StopDepModel (StopDepRequest) returns (StopDepReply) {
+    option (google.api.http) = {
+      post: "/v1/deploymanage/modeldeploy/{id}/stop"
+      body: "*"
+    };
+  };
+  //删除部署服务
+  rpc DeleteDepModel (DeleteDepRequest) returns (DeleteDepReply) {
+    option (google.api.http) = {
+      delete: "/v1/deploymanage/modeldeploy"
+    };
+  };
+
+  //模型服务调用
+  rpc DepServiceInvoke (ServiceRequest) returns (StopDepReply) {
+    option (google.api.http) = {
+      post: "/v1/deploymanage/modeldeploy/infer"
+    };
+  };
+
+  // 获取模型部署详情
+  rpc GetModelDepInfo(DepInfoRequest) returns (DepInfoReply){
+    option (google.api.http) = {
+      get: "/v1/deploymanage/modeldeploy/{id}"
+    };
+  };
+  // 获取模型部署列表
+  rpc ListDepModel(DepListRequest) returns (DepListReply){
+    option (google.api.http) = {
+      get: "/v1/deploymanage/modeldeploy"
+    };
+  };
+
+  // 获取模型部署事件列表
+  rpc ListDepEvent (DepEventListRequest) returns (DepEventListReply) {
+    option (google.api.http) = {
+        get: "/v1/deploymanage/modeldeployevent"
+    };
+  };
+}
+
+message DepRequest {
+  string name = 1[(validate.rules).string = {min_len: 1,max_len: 30}];
+  string desc = 2;
+  string serviceType = 3;
+  string modelFrame = 4;
+  string modelId = 5[(validate.rules).string = {min_len: 1}];
+  string modelVersion = 6[(validate.rules).string = {min_len: 1}];
+  string resourceType = 7;
+  string resourceSpecId = 9;
+  // 域名，必须http或https开头，满足url的格式
+  string domain = 10[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+  string resourcePool = 11[(validate.rules).string = {min_len: 1}];
+}
+
+message DepReply {
+  string serviceId = 1;
+  string serviceUrl = 2;
+  string message = 3;
+}
+
+message ServiceRequest{
+  string  serviceUrl = 1;
+  string  contentType = 2;
+  ReqData data = 3;
+}
+
+message ReqData{
+  string ndarray = 1;
+}
+
+message ServiceReply{
+  string response = 1;
+}
+
+message StopDepRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+
+message StopDepReply {
+  //停止时间
+  int64 stoppedAt = 1;
+}
+
+message DeleteDepRequest {
+  //任务ID
+  repeated string jobIds = 1[(validate.rules).repeated.min_items = 1];
+}
+
+message DeleteDepReply {
+  //删除时间
+  int64 deletedAt = 1;
+}
+
+
+message DepInfo {
+  string id = 1;      
+	string userId = 2;          
+	string workspaceId = 3;      
+	string name = 4;                      
+	string desc = 5;                             
+	string modelId = 6;      	                      
+	string modelVersion = 7;                          
+	string modelName = 8;                     
+	string serviceUrl = 9;    					
+	string status = 10;                       
+	int64 completedAt = 11;                    
+	int64 startedAt = 12;
+	string modelFrame = 13;
+  int64 runSec = 14;
+  int64 createdAt = 15;
+  int64 updatedAt = 16;
+}
+
+message DepInfoRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+}
+message DepInfoReply {
+  DepInfo depInfo = 1;
+}
+message DepListRequest {
+  // 页码，从1开始，非必填
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  // 页大小，最小1条，最大100条，非必填
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
+  // 分组依据，非必填
+  string sortBy = 3;
+  //升序、降序，非必填
+  string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
+  //大于某个时间创建，非必填
+  int64 createdAtGte = 5;
+  //小于某个时间创建，非必填
+  int64 createdAtLt = 6;
+  //状态查询，非必填
+  string status = 7;
+  //模糊查找字段，可用于name等模糊查找，非必填
+  string searchKey = 8;
+  //用户ID，非必填
+  string userId = 9;
+  //工作空间ID，非必填
+  string workspaceId = 10;
+  //用户名，非必填
+  string userNameLike = 11;
+}
+message DepListReply {
+  int64  totalSize = 1;
+  repeated DepInfo depInfos = 2;
+}
+
+message DepEventListRequest {
+  int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  //服务Id
+  string id = 3[(validate.rules).string = {min_len: 1}];
+  //是否总任务事件
+  bool isMain = 4;
+}
+
+message DepEventListReply {
+  //查询结果总数
+  int64  totalSize = 1;
+  //任务事件
+  repeated DepEvent depEvents = 2;
+}
+
+message DepEvent{
+  //发生时间
+  string timestamp = 1;
+  //名称
+  string name = 2;
+  //原因
+  string reason = 3;
+  //消息
+  string message = 4;
+}

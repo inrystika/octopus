@@ -6,8 +6,7 @@ import (
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	"server/common/session"
-	ss "server/common/session"
+	"server/common/utils/collections/set"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -30,27 +29,27 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 	}
 }
 
-func (s *DatasetService) checkDatasetPerm(ctx context.Context, datasetId string, session *session.Session) error {
+func (s *DatasetService) checkDatasetPerm(ctx context.Context, datasetId string, userId string) error {
 	reply, err := s.data.DatasetClient.GetDataset(ctx, &innerapi.GetDatasetRequest{Id: datasetId})
 	if err != nil {
 		return err
 	}
 
-	if reply.Dataset.UserId != session.UserId {
+	if reply.Dataset.UserId != userId {
 		return errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 	return nil
 }
 
-func (s *DatasetService) checkVersionQueryPerm(ctx context.Context, datasetId string, version string, session *session.Session) error {
+func (s *DatasetService) checkVersionQueryPerm(ctx context.Context, datasetId string, version string, userId string, spaceId string) error {
 	reply, err := s.data.DatasetClient.GetDatasetVersion(ctx, &innerapi.GetDatasetVersionRequest{DatasetId: datasetId, Version: version})
 	if err != nil {
 		return err
 	}
-	if session.UserId != reply.Dataset.UserId && reply.Dataset.SourceType == innerapi.DatasetSourceType_DST_USER {
+	if userId != reply.Dataset.UserId && reply.Dataset.SourceType == innerapi.DatasetSourceType_DST_USER {
 		hasPerm := false
 		for _, i := range reply.VersionAccesses {
-			if session.GetWorkspace() == i.SpaceId {
+			if spaceId == i.SpaceId {
 				hasPerm = true
 			}
 		}
@@ -108,18 +107,15 @@ func (s *DatasetService) ListDatasetApply(ctx context.Context, req *api.ListData
 }
 
 func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatasetRequest) (*api.CreateDatasetReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.CreateDatasetRequest{
-		SpaceId:    session.GetWorkspace(),
-		UserId:     session.UserId,
+		SpaceId:    spaceId,
+		UserId:     userId,
 		SourceType: innerapi.DatasetSourceType_DST_USER,
 		Name:       req.Name,
 		TypeId:     req.TypeId,
-		ApplyId:    req.ApplyId,
+		ApplyIds:   req.ApplyIds,
 		Desc:       req.Desc,
 	}
 
@@ -138,10 +134,7 @@ func (s *DatasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 }
 
 func (s *DatasetService) ListMyDataset(ctx context.Context, req *api.ListMyDatasetRequest) (*api.ListMyDatasetReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.ListDatasetRequest{}
 	err := copier.Copy(innerReq, req)
@@ -149,8 +142,8 @@ func (s *DatasetService) ListMyDataset(ctx context.Context, req *api.ListMyDatas
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 	innerReq.SourceType = innerapi.DatasetSourceType_DST_USER
-	innerReq.UserId = session.UserId
-	innerReq.SpaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.SpaceId = spaceId
 
 	innerReply, err := s.data.DatasetClient.ListDataset(ctx, innerReq)
 	if err != nil {
@@ -167,11 +160,6 @@ func (s *DatasetService) ListMyDataset(ctx context.Context, req *api.ListMyDatas
 }
 
 func (s *DatasetService) ListPreDataset(ctx context.Context, req *api.ListPreDatasetRequest) (*api.ListPreDatasetReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	innerReq := &innerapi.ListDatasetRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
@@ -194,10 +182,7 @@ func (s *DatasetService) ListPreDataset(ctx context.Context, req *api.ListPreDat
 }
 
 func (s *DatasetService) ListCommDataset(ctx context.Context, req *api.ListCommDatasetRequest) (*api.ListCommDatasetReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.ListCommDatasetRequest{}
 	err := copier.Copy(innerReq, req)
@@ -205,7 +190,7 @@ func (s *DatasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 	innerReq.SourceType = innerapi.DatasetSourceType_DST_USER
-	innerReq.ShareSpaceId = session.GetWorkspace()
+	innerReq.ShareSpaceId = spaceId
 
 	innerReply, err := s.data.DatasetClient.ListCommDataset(ctx, innerReq)
 	if err != nil {
@@ -217,10 +202,17 @@ func (s *DatasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 	if err != nil {
 		return nil, err
 	}
+
+	userIds := make([]string, 0)
+	for _, i := range innerReply.Datasets {
+		userIds = append(userIds, i.UserId)
+	}
+
+	users, err := s.listUserInCond(ctx, set.NewStrings(userIds...).Values())
 	for _, i := range reply.Datasets {
 		for _, j := range innerReply.Datasets {
 			if i.Id == j.Id {
-				i.LatestVersion = j.LatestVersion
+				i.UserName = users[j.UserId].FullName
 			}
 		}
 	}
@@ -228,13 +220,24 @@ func (s *DatasetService) ListCommDataset(ctx context.Context, req *api.ListCommD
 	return reply, nil
 }
 
-func (s *DatasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatasetRequest) (*api.DeleteDatasetReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
+func (s *DatasetService) listUserInCond(ctx context.Context, ids []string) (map[string]*innerapi.UserItem, error) {
+	userMap := map[string]*innerapi.UserItem{}
+	users, err := s.data.UserClient.ListUserInCond(ctx, &innerapi.ListUserInCondRequest{
+		Ids: ids,
+	})
+	if err != nil {
+		return nil, err
 	}
+	for _, i := range users.Users {
+		userMap[i.Id] = i
+	}
+	return userMap, nil
+}
 
-	err := s.checkDatasetPerm(ctx, req.Id, session)
+func (s *DatasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatasetRequest) (*api.DeleteDatasetReply, error) {
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
+
+	err := s.checkDatasetPerm(ctx, req.Id, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -250,12 +253,9 @@ func (s *DatasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 }
 
 func (s *DatasetService) CreateDatasetVersion(ctx context.Context, req *api.CreateDatasetVersionRequest) (*api.CreateDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -275,19 +275,16 @@ func (s *DatasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 }
 
 func (s *DatasetService) ListDatasetVersion(ctx context.Context, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	if req.Shared {
-		return s.listCommDatasetVersion(ctx, session, req)
+		return s.listCommDatasetVersion(ctx, spaceId, req)
 	} else {
-		return s.listDatasetVersion(ctx, session, req)
+		return s.listDatasetVersion(ctx, spaceId, req)
 	}
 }
 
-func (s *DatasetService) listDatasetVersion(ctx context.Context, session *session.Session, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
+func (s *DatasetService) listDatasetVersion(ctx context.Context, spaceId string, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
 	reply := &api.ListDatasetVersionReply{}
 
 	innerReq := &innerapi.ListDatasetVersionRequest{}
@@ -306,7 +303,7 @@ func (s *DatasetService) listDatasetVersion(ctx context.Context, session *sessio
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	commReq.ShareSpaceId = session.GetWorkspace()
+	commReq.ShareSpaceId = spaceId
 	commReply, err := s.data.DatasetClient.ListCommDatasetVersion(ctx, commReq)
 	if err != nil {
 		return nil, err
@@ -329,7 +326,7 @@ func (s *DatasetService) listDatasetVersion(ctx context.Context, session *sessio
 	return reply, nil
 }
 
-func (s *DatasetService) listCommDatasetVersion(ctx context.Context, session *session.Session, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
+func (s *DatasetService) listCommDatasetVersion(ctx context.Context, spaceId string, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
 	reply := &api.ListDatasetVersionReply{}
 
 	innerReq := &innerapi.ListCommDatasetVersionRequest{}
@@ -337,7 +334,7 @@ func (s *DatasetService) listCommDatasetVersion(ctx context.Context, session *se
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.ShareSpaceId = session.GetWorkspace()
+	innerReq.ShareSpaceId = spaceId
 
 	innerReply, err := s.data.DatasetClient.ListCommDatasetVersion(ctx, innerReq)
 	if err != nil {
@@ -357,12 +354,9 @@ func (s *DatasetService) listCommDatasetVersion(ctx context.Context, session *se
 }
 
 func (s *DatasetService) DeleteDatasetVersion(ctx context.Context, req *api.DeleteDatasetVersionRequest) (*api.DeleteDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -379,12 +373,9 @@ func (s *DatasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 }
 
 func (s *DatasetService) ShareDatasetVersion(ctx context.Context, req *api.ShareDatasetVersionRequest) (*api.ShareDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +383,7 @@ func (s *DatasetService) ShareDatasetVersion(ctx context.Context, req *api.Share
 	reply, err := s.data.DatasetClient.ShareDatasetVersion(ctx, &innerapi.ShareDatasetVersionRequest{
 		DatasetId:    req.DatasetId,
 		Version:      req.Version,
-		ShareSpaceId: session.GetWorkspace(),
+		ShareSpaceId: spaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -402,12 +393,9 @@ func (s *DatasetService) ShareDatasetVersion(ctx context.Context, req *api.Share
 }
 
 func (s *DatasetService) CloseShareDatasetVersion(ctx context.Context, req *api.CloseShareDatasetVersionRequest) (*api.CloseShareDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -415,7 +403,7 @@ func (s *DatasetService) CloseShareDatasetVersion(ctx context.Context, req *api.
 	reply, err := s.data.DatasetClient.CloseShareDatasetVersion(ctx, &innerapi.CloseShareDatasetVersionRequest{
 		DatasetId:    req.DatasetId,
 		Version:      req.Version,
-		ShareSpaceId: session.GetWorkspace(),
+		ShareSpaceId: spaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -425,12 +413,9 @@ func (s *DatasetService) CloseShareDatasetVersion(ctx context.Context, req *api.
 }
 
 func (s *DatasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *api.ConfirmUploadDatasetVersionRequest) (*api.ConfirmUploadDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -448,12 +433,9 @@ func (s *DatasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 }
 
 func (s *DatasetService) UploadDatasetVersion(ctx context.Context, req *api.UploadDatasetVersionRequest) (*api.UploadDatasetVersionReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkDatasetPerm(ctx, req.DatasetId, session)
+	err := s.checkDatasetPerm(ctx, req.DatasetId, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -474,12 +456,9 @@ func (s *DatasetService) UploadDatasetVersion(ctx context.Context, req *api.Uplo
 }
 
 func (s *DatasetService) ListDatasetVersionFile(ctx context.Context, req *api.ListDatasetVersionFileRequest) (*api.ListDatasetVersionFileReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkVersionQueryPerm(ctx, req.DatasetId, req.Version, session)
+	err := s.checkVersionQueryPerm(ctx, req.DatasetId, req.Version, userId, spaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -503,10 +482,7 @@ func (s *DatasetService) ListDatasetVersionFile(ctx context.Context, req *api.Li
 }
 
 func (s *DatasetService) UpdateMyDataset(ctx context.Context, req *api.UpdateMyDatasetRequest) (*api.UpdateMyDatasetReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.DatasetClient.UpdateDataset(ctx, &innerapi.UpdateDatasetRequest{
 		SpaceId:    spaceId,
@@ -514,7 +490,7 @@ func (s *DatasetService) UpdateMyDataset(ctx context.Context, req *api.UpdateMyD
 		Id:         req.DatasetId,
 		SourceType: innerapi.DatasetSourceType_DST_USER,
 		TypeId:     req.TypeId,
-		ApplyId:    req.ApplyId,
+		ApplyIds:   req.ApplyIds,
 		Desc:       req.Desc,
 	})
 	if err != nil {
@@ -527,10 +503,7 @@ func (s *DatasetService) UpdateMyDataset(ctx context.Context, req *api.UpdateMyD
 }
 
 func (s *DatasetService) UpdateMyDatasetVersion(ctx context.Context, req *api.UpdateMyDatasetVersionRequest) (*api.UpdateMyDatasetVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.DatasetClient.UpdateDatasetVersion(ctx, &innerapi.UpdateDatasetVersionRequest{
 		SpaceId:    spaceId,
@@ -547,22 +520,4 @@ func (s *DatasetService) UpdateMyDatasetVersion(ctx context.Context, req *api.Up
 	return &api.UpdateMyDatasetVersionReply{
 		UpdatedAt: reply.UpdatedAt,
 	}, nil
-}
-
-func (s *DatasetService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if userId == "" {
-		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	return userId, session.GetWorkspace(), nil
 }

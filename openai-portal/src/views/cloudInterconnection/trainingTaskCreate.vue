@@ -227,7 +227,6 @@
   </div>
 </template>
 <script>
-import { getErrorMsg } from '@/error/index'
 import { 
   createCloudTrainJob,
   getCloudDatasetList,
@@ -260,10 +259,6 @@ export default {
         cpuSize: 1,
         gpuSize: 1,
         gpuUnits: "nvidia.com/gpu",
-        parameters: [{
-          key: "",
-          value: ""
-        }],
       },
       rules: {
         taskName: [
@@ -470,9 +465,6 @@ export default {
     },
     changeMountPath(){
       this.mountPathVisible = true
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
     },
     handleDialogClose() {
       this.$emit("close", false);

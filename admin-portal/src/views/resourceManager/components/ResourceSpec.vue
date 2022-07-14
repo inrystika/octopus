@@ -31,17 +31,6 @@
                 </template>
             </el-table-column>
         </el-table>
-        <div class="block">
-            <el-pagination
-                :current-page="pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="pageSize"
-                :total="total"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
-        </div>
         <!-- 操作对话框 -->
         <el-dialog title="添加规格" :visible.sync="addDialog" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
@@ -82,7 +71,6 @@
 
 <script>
     import { getResource, deleteSpecification, createResource, getResourceList } from '@/api/resourceManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "Resource",
         components: {},
@@ -106,9 +94,6 @@
                     ],
                     resourceQuantity: { required: true, message: '请输入资源信息', trigger: ['change', 'blur'] }
                 },
-                total: 0,
-                pageIndex: 1,
-                pageSize: 10,
                 options: []
 
             }
@@ -118,10 +103,6 @@
             this.getResourceList()
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleDelete(val) {
                 deleteSpecification(val.id).then(response => {
                     if (response.success) {
@@ -201,7 +182,7 @@
             },
             cancel() { this.addDialog = false },
             getResource() {
-                getResource({ pageSize: this.pageSize, pageIndex: this.pageIndex }).then(response => {
+                getResource().then(response => {
                     if (response.success) {
                         if (response.data !== null && response.data.resourceSpecs !== null) {
                             response.data.resourceSpecs.forEach(
@@ -210,7 +191,6 @@
                                 }
                             )
                             this.tableData = response.data.resourceSpecs
-                            this.total = response.data.resourceSpecs.length
                         } else {
                           this.tableData = []
                         }

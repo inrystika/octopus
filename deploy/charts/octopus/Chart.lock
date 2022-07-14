@@ -11,5 +11,9 @@ dependencies:
 - name: nginx-ingress-controller
   repository: https://charts.bitnami.com/bitnami
   version: 7.6.9
+- name: sftpgo
+  repository: https://charts.sagikazarmark.dev/
+  version: 0.12.0
+
 digest: sha256:2ed3b97bc0f2f470508372a0d68181c79a7d5533cbbf23f8a72b43426a8bd316
 generated: "2021-06-07T16:49:20.238863502+08:00"

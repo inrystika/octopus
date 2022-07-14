@@ -13,6 +13,8 @@ export function judgeParam(params) {
   params.fileStatus ? conditions.push(`fileStatus=` + params.fileStatus) : null;
   params.algorithmVersion ? conditions.push(`algorithmVersion=` + params.algorithmVersion) : null;
   params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
+  params.modelName ? conditions.push(`modelName=` + params.modelName) : null;
+  params.modelId ? conditions.push(`modelId=` + params.modelId) : null;
   return conditions
 }
 
@@ -243,11 +245,20 @@ export async function algorithmFrame(params) {
   return res
 }
 // 修改我的算法
-export async function editeAlgorithm(params) {
+export async function editAlgorithm(params) {
   const res = await request({
     url: `/v1/algorithmmanage/myalgorithm/${params.algorithmId}`,
     method: "put",
-    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript }
+    params: { applyId: params.applyId, frameworkId: params.frameworkId, algorithmDescript: params.algorithmDescript, modelName: params.modelName }
+  })
+  return res
+}
+// notebook镜像保存
+export async function saveNoteBook(data) {
+  const res = await request({
+    url: `/v1/developmanage/notebook/${data.id}/save`,
+    method: "post",
+    data: { taskName: data.taskName, imageName: data.imageName, imageVersion: data.imageVersion, layerDescription: data.layerDescription }
   })
   return res
 }

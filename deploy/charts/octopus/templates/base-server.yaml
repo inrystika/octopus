@@ -102,7 +102,7 @@ data:
     data:
       database:
         driver: mysql
-        source: root:root@tcp({{ include "mysql.serviceAddr" . }})/octopus?charset=utf8&parseTime=True&loc=Local
+        source: root:{{ .Values.mysql.auth.rootPassword }}@tcp({{ include "mysql.serviceAddr" . }})/octopus?charset=utf8&parseTime=True&loc=Local
       kubernetes:
         masterUrl: ""
         configPath: ""
@@ -141,18 +141,29 @@ data:
         username: {{ .Values.baseserver.data.jointCloud.username }}
         password: {{ .Values.baseserver.data.jointCloud.password }}
         sessionExpirySec: {{ .Values.baseserver.data.jointCloud.sessionExpirySec }}
+      ambassador:
+        baseUrl:  {{ .Values.baseserver.data.ambassador.baseUrl }}
+      pytorchServer:
+        imageAddr:  {{ .Values.baseserver.data.pytorchServer.imageAddr }}
+        version:  {{ .Values.baseserver.data.pytorchServer.version }}
+      sftpgo:
+        baseUrl: {{ include "sftpgo.serviceAddr" . }}
+        username: {{ .Values.baseserver.data.sftpgo.username }}
+        password: {{ .Values.baseserver.data.sftpgo.password }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
       dockerDatasetPath: /dataset
       dockerCodePath:  /code
       dockerModelPath: /model
+      dockerUserHomePath: /userhome
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       develop:
         jpyCommand: {{ .Values.baseserver.service.develop.jpyCommand }}
         jpyBaseUrlEnv: OCTOPUS_JPY_BASE_URL
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
+        isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}
       resource:
         customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
         customizedResourceBindingNodeLabelValue: bound

@@ -380,6 +380,8 @@ func (h *algorithmHandle) ListAllUserAlgorithmHandle(ctx context.Context, req *a
 		FileStatus:       int(req.FileStatus),
 		CreatedAtGte:     req.CreatedAtGte,
 		CreatedAtLt:      req.CreatedAtLt,
+		UserId:           req.UserId,
+		SpaceId:          req.SpaceId,
 	})
 	if err != nil {
 		return nil, err
@@ -565,6 +567,12 @@ func (h *algorithmHandle) ShareAlgorithmVersionHandle(ctx context.Context, req *
 			if err != nil {
 				continue
 			}
+			//更新algorithm_access表的创建时间与源算法的创建时间保持一致。
+			algorithmAccess.CreatedAt = algorithm.CreatedAt
+			err = algorithmDao.UpdateAlgorithmAccess(ctx, algorithmAccess)
+			if err != nil {
+				continue
+			}
 		}
 
 		algorithmAccessId := algorithmAccess.Id
@@ -580,7 +588,7 @@ func (h *algorithmHandle) ShareAlgorithmVersionHandle(ctx context.Context, req *
 		}
 
 		// 插入可见算法版本信息
-		_, err = algorithmDao.AddAlgorithmAccessVersion(ctx, &model.AlgorithmAccessVersion{
+		algorithmAccessVersion, err := algorithmDao.AddAlgorithmAccessVersion(ctx, &model.AlgorithmAccessVersion{
 			Id:                utils.GetUUIDWithoutSeparator(),
 			AlgorithmAccessId: algorithmAccessId,
 			AlgorithmVersion:  version,
@@ -588,6 +596,13 @@ func (h *algorithmHandle) ShareAlgorithmVersionHandle(ctx context.Context, req *
 			AlgorithmName:     algorithm.AlgorithmName,
 			SpaceId:           spaceId,
 		})
+		if err != nil {
+			continue
+		}
+
+		//更新algorithm_access_version表的创建时间与源算法的创建时间保持一致。
+		algorithmAccessVersion.CreatedAt = algorithm.CreatedAt
+		err = algorithmDao.UpdateAlgorithmAccessVersion(ctx, algorithmAccessVersion)
 		if err != nil {
 			continue
 		}
@@ -1007,6 +1022,7 @@ func (h *algorithmHandle) UpdateAlgorithmHandle(ctx context.Context, req *api.Up
 	algorithm.ApplyId = req.ApplyId
 	algorithm.FrameworkId = req.FrameworkId
 	algorithm.AlgorithmDescript = req.AlgorithmDescript
+	algorithm.ModelName = req.ModelName
 	err = algorithmDao.UpdateAlgorithm(ctx, algorithm)
 	if err != nil {
 		return nil, err

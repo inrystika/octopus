@@ -7,6 +7,7 @@ export function judgeParam(params) {
   params.orderBy ? conditions.push(`orderBy=` + params.orderBy) : null;
   params.sortBy ? conditions.push(`sortBy=` + params.sortBy) : null;
   params.searchKey ? conditions.push(`searchKey=` + params.searchKey) : null;
+  params.nameLike ? conditions.push(`nameLike=` + params.nameLike) : null;
   params.createdAtGte ? conditions.push(`createdAtGte=` + params.createdAtGte) : null;
   params.createdAtLt ? conditions.push(`createdAtLt=` + params.createdAtLt) : null;
   params.shared ? conditions.push(`shared=` + params.shared) : null;
@@ -175,11 +176,11 @@ export async function datasetUse(params) {
   return res
 }
 // 修改数据集
-export async function editeDataSet(params) {
+export async function editDataSet(data) {
   const res = await request({
-    url: `/v1/datasetmanage/mydataset/${params.datasetId}`,
+    url: `/v1/datasetmanage/mydataset/${data.datasetId}`,
     method: "put",
-    params: { typeId: params.typeId, applyId: params.applyId, desc: params.desc }
+    data: { typeId: data.typeId, applyIds: data.applyIds, desc: data.desc }
   })
   return res
 }

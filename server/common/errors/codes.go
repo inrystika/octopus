@@ -22,8 +22,8 @@ const (
 	ErrorHttpReadBody       = 10022 // http读取回包失败
 	ErrorJsonMarshal        = 10023 // json序列化失败
 	ErrorJsonUnmarshal      = 10024 // json反序列化失败
-	ErrorHttpWriteFailed    = 10025 //http写入失败
-	ErrorHttpBindFormFailed = 10026 //http绑定form失败
+	ErrorHttpWriteFailed    = 10025 // http写入失败
+	ErrorHttpBindFormFailed = 10026 // http绑定form失败
 	// minio操作相关错误
 	ErrorMinioBucketInitFailed         = 10030 // minio初始化失败
 	ErrorMinioBucketExisted            = 10031 // 桶已存在
@@ -105,11 +105,14 @@ const (
 	ErrorAlgorithmVersionUploadAuth            = 12011 // 无权提交此算法版本文件
 
 	/* 13001~14000 镜像管理错误*/
-	ErrorImageStatusMakeError    = 13001 // 制作镜像状态异常
-	ErrorImageSourceTypeToUpload = 13002 //上传错误镜像来源类型
-	ErrorImageExisted            = 13003 // 镜像已存在
-	ErrorImageNotExist           = 13004 // 镜像不存在
-	ErrorImageOpForbidden        = 13005 // 无权限镜像操作
+	ErrorImageStatusMakeError      = 13001 // 制作镜像状态异常
+	ErrorImageSourceTypeToUpload   = 13002 // 上传错误镜像来源类型
+	ErrorImageExisted              = 13003 // 镜像已存在
+	ErrorImageNotExist             = 13004 // 镜像不存在
+	ErrorImageOpForbidden          = 13005 // 无权限镜像操作
+	ErrorImageSourceType           = 13006 // 不支持的镜像来源
+	ErrorImageContainerCommitError = 13007 // 容器提交操作失败
+	ErrorImagePushFailed           = 13008 // 推送镜像操作失败
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden          = 14001 // notebook状态不允许操作
@@ -122,6 +125,9 @@ const (
 	ErrorNotebookRepeat                   = 14008 // notebook重复
 	ErrorNotebookDatasetNoPermission      = 14009 // notebook使用数据集不在权限范围内
 	ErrorNotebookDatasetStatusForbidden   = 14010 // notebook使用数据集状态不允许操作
+	ErrorNotebookRepeatedToSave           = 14011 // notebook保存中，禁止重复保存
+	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
+	ErrorNotebookResourcePoolForbidden    = 14013 // notebook使用资源池不允许操作
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -136,6 +142,7 @@ const (
 	ErrorJobDatasetStatusForbidden   = 15010 // job使用数据集,状态不允许操作
 	ErrorJobUniqueIndexConflict      = 15011 // job任务重名
 	ErrorRepeatJobConfigName         = 15022 // 分布式子任务重名
+	ErrorTrainResourcePoolForbidden  = 15023 // 训练使用资源池不允许操作
 
 	/* 16001~17000 用户管理错误*/
 	// 用户登录
@@ -159,10 +166,11 @@ const (
 	ErrorUserWorkSpaceNoPermission  = 16025 // 用户无空间权限
 	ErrorWorkSpaceResourcePoolBound = 16026 // 空间与资源池已绑定
 	ErrorUserConfigKeyNotExist      = 16027 // 配置项不存在
+	ErrorUserAccountBinded          = 16028 // 账号已绑定
 
 	/* 17001~18000 计费管理错误*/
-	ErrorBillingObtainLockFailed = 17001 //获取锁失败
-	ErrorBillingStatusForbidden  = 17002 //状态不允许操作
+	ErrorBillingObtainLockFailed = 17001 // 获取锁失败
+	ErrorBillingStatusForbidden  = 17002 // 状态不允许操作
 
 	/* 18001~19000 模型管理错误*/
 	ErrorModelNoPermission              = 18001 // 没权限操作模型
@@ -196,6 +204,19 @@ const (
 	/* 21001-22000 云际错误*/
 	ErrorJointCloudRequestFailed = 21001 // 云际请求失败
 	ErrorJointCloudNoPermission  = 21002 // 无权限访问
+
+	/* 25001~25000 训练管理错误*/
+	ErrorModelDeployForbidden             = 25001 // 部署使用计算框架非TF或者PT
+	ErrorModelDeployFailed                = 25002 // 创建模型部署服务失败
+	ErrorModelDeployDeleteFailed          = 25003 // 删除模型部署服务失败
+	ErrorModelInferRequest                = 25004 // 模型部署服务请求失败
+	ErrorModelAuthFailed                  = 25005 // 模型权限校验失败
+	ErrorModelDeployResourcePoolForbidden = 25006 // 模型部署使用资源池不允许操作
+
+	/* 22001-23000 ftp服务错误*/
+	ErrorSFtpGOAPIRequestFailed     = 22001 // 接口请求错误
+	ErrorSFtpGOUserNotExist         = 22002 // 用户未存在
+	ErrorSFtpGOUserNotOwnVirtualDir = 22003 // 虚拟目录未属于用户
 )
 
 type codeMsg struct {
@@ -300,11 +321,14 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorAlgorithmVersionUploadAuth:            {codeType: InvalidArgument, msg: "AlgorithmVersionUpload Auth Wrong"},
 
 	/* 13001~14000 镜像管理错误*/
-	ErrorImageStatusMakeError:    {codeType: OutOfRange, msg: "make image status error"},
-	ErrorImageSourceTypeToUpload: {codeType: OutOfRange, msg: "error image source to upload"},
-	ErrorImageExisted:            {codeType: AlreadyExists, msg: "image exists"},
-	ErrorImageNotExist:           {codeType: NotFound, msg: "image not exists"},
-	ErrorImageOpForbidden:        {codeType: PermissionDenied, msg: "image operation forbidden"},
+	ErrorImageStatusMakeError:      {codeType: OutOfRange, msg: "make image status error"},
+	ErrorImageSourceTypeToUpload:   {codeType: OutOfRange, msg: "error image source to upload"},
+	ErrorImageExisted:              {codeType: AlreadyExists, msg: "image exists"},
+	ErrorImageNotExist:             {codeType: NotFound, msg: "image not exists"},
+	ErrorImageOpForbidden:          {codeType: PermissionDenied, msg: "image operation forbidden"},
+	ErrorImageSourceType:           {codeType: Unimplemented, msg: "error image source type"},
+	ErrorImageContainerCommitError: {codeType: Unimplemented, msg: "error commit container"},
+	ErrorImagePushFailed:           {codeType: OutOfRange, msg: "error push image"},
 
 	/* 14001~15000 开发管理错误*/
 	ErrorNotebookStatusForbidden:          {codeType: OutOfRange, msg: "status forbidden"},
@@ -317,6 +341,9 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorNotebookRepeat:                   {codeType: AlreadyExists, msg: "notebook repeat"},
 	ErrorNotebookDatasetNoPermission:      {codeType: PermissionDenied, msg: "dataset no permission"},
 	ErrorNotebookDatasetStatusForbidden:   {codeType: OutOfRange, msg: "dataset status forbidden"},
+	ErrorNotebookRepeatedToSave:           {codeType: AlreadyExists, msg: "repeated notebook saveing"},
+	ErrorNotebookNoFoundRuntimeContainer:  {codeType: NotFound, msg: "no found runtime container"},
+	ErrorNotebookResourcePoolForbidden:    {codeType: OutOfRange, msg: "resource pool forbidden"},
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden:         {codeType: PermissionDenied, msg: "image Auth forbidden"},
@@ -331,6 +358,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorJobDatasetStatusForbidden:   {codeType: OutOfRange, msg: "dataset status forbidden"},
 	ErrorJobUniqueIndexConflict:      {codeType: InvalidArgument, msg: "repeated job name causes conflict unique key"},
 	ErrorRepeatJobConfigName:         {codeType: InvalidArgument, msg: "repeated config name in distributed job"},
+	ErrorTrainResourcePoolForbidden:  {codeType: InvalidArgument, msg: "train resource pool forbidden"},
 
 	/* 16001~17000 用户管理错误*/
 	// 用户登录相关错误
@@ -347,6 +375,7 @@ var codeMsgMap = map[int]codeMsg{
 	// 用户管理
 	ErrorUserAccountNotExisted:      {codeType: NotFound, msg: "user account not exists"},
 	ErrorUserAccountExisted:         {codeType: AlreadyExists, msg: "user account exists"},
+	ErrorUserAccountBinded:          {codeType: AlreadyExists, msg: "user account exists"},
 	ErrorUserIdNotRight:             {codeType: InvalidArgument, msg: "userid not valid"},
 	ErrorWorkSpaceExisted:           {codeType: AlreadyExists, msg: "workspace existed"},
 	ErrorWorkSpaceNotExist:          {codeType: NotFound, msg: "workspace not existed"},
@@ -388,4 +417,15 @@ var codeMsgMap = map[int]codeMsg{
 	/* 21001-22000 云际请求错误*/
 	ErrorJointCloudRequestFailed: {codeType: Internal, msg: "joint cloud request failed"},
 	ErrorJointCloudNoPermission:  {codeType: PermissionDenied, msg: "no permission"},
+
+	/* 25001~26000 数据集管理错误*/
+	ErrorModelDeployForbidden:             {codeType: PermissionDenied, msg: "modelframe  uncorrect"},
+	ErrorModelDeployFailed:                {codeType: Internal, msg: "deploy seldon service failed"},
+	ErrorModelDeployDeleteFailed:          {codeType: Internal, msg: "delete seldon service failed"},
+	ErrorModelInferRequest:                {codeType: Internal, msg: "seldon service http request failed"},
+	ErrorModelAuthFailed:                  {codeType: Internal, msg: "model can`t access"},
+	ErrorModelDeployResourcePoolForbidden: {codeType: Internal, msg: "resource pool forbidden"},
+
+	/* 21001-22000 云际请求错误*/
+	ErrorSFtpGOAPIRequestFailed: {codeType: Internal, msg: "sftpgo api request failed"},
 }

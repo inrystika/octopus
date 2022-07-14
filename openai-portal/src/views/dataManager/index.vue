@@ -17,6 +17,7 @@
   import myList from "./myList.vue";
   import publicList from "./publicList.vue"
   import presetList from "./presetList.vue"
+  import { clearProgress } from '@/utils/index.js'
   export default {
     components: {
       myList,
@@ -42,16 +43,14 @@
       }
     },
     mounted() {
-      window.addEventListener('beforeunload', e => {
-        sessionStorage.clear()
+      window.addEventListener("beforeunload", (e) => {
+        clearProgress()
       });
-
     },
     destroyed() {
-      window.removeEventListener('beforeunload', e => {
-        sessionStorage.clear()
-      })
-
+      window.removeEventListener("beforeunload", (e) => {
+        clearProgress()
+      });
     },
     methods: {
       handleClick(tab, event) {
@@ -80,7 +79,6 @@
       }
     }
   }
-    ;
 </script>
 
 <style lang="scss" scoped>

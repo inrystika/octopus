@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="标注类型" :label-width="formLabelWidth">
-          <el-select v-model="ruleForm.applyId" :disabled="disabled" placeholder="请选择标注类型">
+          <el-select v-model="ruleForm.applyIds" :disabled="disabled" placeholder="请选择标注类型" multiple>
             <el-option v-for="item in useOptions" :key="item.id" :label="item.lableDesc" :value="item.id">
             </el-option>
           </el-select>
@@ -37,17 +37,10 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { createMyDataset, datasetType, datasetUse } from "@/api/datasetManager.js"
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "MyDatasetCreation",
     components: {
       upload
-    },
-    props: {
-      // row: {
-      //   type: Object,
-      //   default: {}
-      // }
     },
     created() {
       this.datasetType()
@@ -63,7 +56,7 @@
           desc: '',
           typeId: '',
           path: '',
-          applyId: ''
+          applyIds: []
         },
         rules: {
           name: [
@@ -93,9 +86,6 @@
       };
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       nextStep(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
@@ -104,7 +94,7 @@
               name: this.ruleForm.name,
               typeId: this.ruleForm.typeId,
               desc: this.ruleForm.desc,
-              applyId:this.ruleForm.applyId
+              applyIds: this.ruleForm.applyIds
             }
             createMyDataset(param).then(response => {
               if (response.success) {
@@ -140,7 +130,7 @@
       },
       // 获取数据集类型
       datasetType() {
-        datasetType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.typeOptions = response.data.lables
           } else {
@@ -154,7 +144,7 @@
       },
       // 获取数据集用途
       datasetUse() {
-        datasetUse({ pageIndex: 1, pageSize: 20 }).then(response => {
+        datasetUse({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.useOptions = response.data.lables
           } else {

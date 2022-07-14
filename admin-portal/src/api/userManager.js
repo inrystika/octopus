@@ -24,11 +24,11 @@ export function createUser(data) {
   })
 }
 // 修改用户信息
-export function editeUser(data) {
+export function editUser(data) {
   return request({
     url: `/v1/usermanage/user/${data.id}`,
     method: 'put',
-    data: { fullname: data.fullname, password: data.password }
+    data: { fullname: data.fullname, password: data.password, resourcePools: data.resourcePools }
   })
 }
 // 冻结账号
@@ -61,7 +61,7 @@ export function createGroup(data) {
   })
 }
 // 编辑群组
-export function editeGroup(data) {
+export function editGroup(data) {
   return request({
     url: `/v1/usermanage/workspace/${data.id}`,
     method: 'put',
@@ -69,7 +69,7 @@ export function editeGroup(data) {
   })
 }
 // 群组列表
-export function groupList(params) {
+export function getGroupList(params) {
   return request({
     url: '/v1/usermanage/workspace',
     method: 'get',

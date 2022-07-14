@@ -1,19 +1,28 @@
 <template>
     <div>
+        <div>
+            <el-select v-model="userId" filterable :filter-method="getUserOptions" v-loadmore="loadUserName"
+                @focus='userClick' v-if="type=='user'" placeholder="用户 搜索">
+                <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
+                    :value="op.id" />
+            </el-select>
+            <el-select v-model="spaceId" v-loadmore="loadGroupName"
+            @focus='groupClick' v-if="type=='group'" placeholder="群组 搜索">
+                <el-option v-for="op in groupOptions" :key="op.id" :label="op.name" :value="op.id" />
+            </el-select>
+            <el-button type="primary" @click="reset" class="reset">重置</el-button>
+            <el-button type="primary" @click="search" class="reset">搜索</el-button>
+        </div>
         <el-table :data="tableData" style="width: 100%;font-size: 15px;"
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
-                    <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                    </el-tooltip>
                     <span v-if="type==='group'" style="margin-left: 10px">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <!-- <el-table-column :label="type=='user'?'用户ID':'群组ID'" align="center">
-                <template slot-scope="scope">
-                    <span style="margin-left: 10px" v-if="type=='user'">{{ scope.row.userId }}</span>
-                    <span style="margin-left: 10px" v-if="type=='group'">{{ scope.row.spaceId }}</span>
-                </template>
-            </el-table-column> -->
             <el-table-column label="当前机时剩余(小时)" align="center">
                 <template slot-scope="scope">
                     <span style="margin-left: 10px">{{ scope.row.amount }}</span>
@@ -27,9 +36,9 @@
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
-                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-                @current-change="handleCurrentChange" />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 对话框 -->
         <el-dialog :title="title" :visible.sync="dialogFormVisible" width="25%" :close-on-click-modal="false">
@@ -63,20 +72,18 @@
 </template>
 <script>
     import { groupList, userList, groupRecharge, userRecharge } from '@/api/machineManager.js'
-    // import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
+    import { getUserList, getGroupList } from '@/api/userManager.js'
     export default {
         name: "UserMachineTime",
-        // components: {
-        //     searchForm
-        // },
         props: {
             timeTabType: { type: Number, default: undefined }
         },
         data() {
             return {
-                pageIndex: 1,
-                pageSize: 10,
+                searchData: {
+                    pageIndex: 1,
+                    pageSize: 10
+                },
                 total: undefined,
                 tableData: [],
                 dialogFormVisible: false,
@@ -84,8 +91,17 @@
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined, title: '' },
                 searchForm: [{ type: 'Input', label: 'ID', prop: 'id', placeholder: '请输入ID' }],
-                type: ''
-                // timer: null
+                type: '',
+                userId: '',
+                spaceId: '',
+                userOptions: [],
+                groupOptions: [],
+                usersCount: 1,
+                usersTotal: undefined,
+                groupCount: 1,
+                groupTotal: undefined,
+                userTemp: '',
+                groupTemp: ''
 
             }
         },
@@ -106,23 +122,30 @@
             } else {
                 this.type = 'group'
             }
-          
+
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
-                this.pageSize = val
-                this.getTime()
+                this.searchData.pageSize = val
+                let data = {}
+                if (this.type == 'user') {
+                    data = Object.assign(this.searchData, { userId: this.userId })
+                }
+                
+                else { data = Object.assign(this.searchData, { spaceId: this.spaceId }) }
+                this.getTime(data)
             },
             handleCurrentChange(val) {
-                this.pageIndex = val
-                this.getTime()
+                this.searchData.pageIndex = val
+                let data = {}
+                if (this.type == 'user') {
+                    data = Object.assign(this.searchData, { userId: this.userId })
+                }
+                else { data = Object.assign(this.searchData, { spaceId: this.spaceId }) }
+                this.getTime(data)
             },
             getTime(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (!data) { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize } }
                 if (this.timeTabType === 1) {
                     userList(data).then(response => {
                         if (response.success) {
@@ -151,7 +174,7 @@
             },
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
+                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
                 if (this.timeTabType === 1) {
                     data.userId = data.id
                 } else {
@@ -163,7 +186,7 @@
             addTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                this.form.title=''
+                this.form.title = ''
                 if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
                 } else {
@@ -174,7 +197,7 @@
             deleteTime(val) {
                 this.dialogFormVisible = true
                 this.form.amount = ''
-                this.form.title=''
+                this.form.title = ''
                 if (this.timeTabType === 1) {
                     this.form.userName = val.userName; this.form.userId = val.userId
                 } else {
@@ -229,6 +252,81 @@
                 }
 
                 this.dialogFormVisible = false
+            },
+            getUserOptions(val) {
+                this.usersCount = 1
+                if (val != '') {
+                    this.userTemp = val
+                    this.userOptions = []
+                    getUserList({
+                        pageIndex: this.usersCount,
+                        pageSize: 10,
+                        searchKey: val
+                    }).then(response => {
+                        if (response.success) {
+                            this.usersTotal = response.data.totalSize
+                            this.userOptions = response.data.users
+                        }
+                    })
+                }
+                else { this.userOptions = [] }
+            },
+            groupClick() { this.getGroupOptions() },
+            getGroupOptions() {
+                this.groupCount = 1
+                this.groupOptions = [{ name: '默认群组', id: 'default-workspace' }]
+                getGroupList({
+                    pageIndex: this.groupCount,
+                    pageSize: 10,
+                }).then(response => {
+                    if (response.success) {
+                        this.groupTotal = response.data.totalSize
+                        this.groupOptions = this.groupOptions.concat(response.data.workspaces)
+                    }
+                })
+            },
+            loadUserName() {
+                this.usersCount = this.usersCount + 1
+                if (this.userOptions.length < this.usersTotal) {
+                    getUserList({
+                        pageIndex: this.usersCount,
+                        pageSize: 10,
+                        searchKey: this.userTemp
+                    }).then(response => {
+                        if (response.success) {
+                            this.usersTotal = response.data.totalSize
+                            this.userOptions = this.userOptions.concat(response.data.users)
+
+                        }
+                    })
+                }
+            },
+            loadGroupName() {
+                this.groupCount = this.groupCount + 1
+                if (this.groupOptions.length < this.groupTotal + 1) {
+                    getGroupList({
+                        pageIndex: this.groupCount,
+                        pageSize: 10,
+                    }).then(response => {
+                        if (response.success) {
+                            this.groupTotal = response.data.totalSize
+                            this.groupOptions = this.groupOptions.concat(response.data.workspaces)
+                        }
+                    })
+                }
+            },
+            userClick() {this.getUserOptions() },
+            search() {
+                let data = {}
+                if (this.type == 'user') {
+                    data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, userId: this.userId }
+                }
+                else { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
+                this.getTime(data)
+            },
+            reset() {
+                this.userId = ''
+                this.spaceId = ''
             }
 
         }
@@ -243,5 +341,9 @@
     .block {
         float: right;
         margin: 20px;
+    }
+
+    .reset {
+        margin-left: 10px;
     }
 </style>

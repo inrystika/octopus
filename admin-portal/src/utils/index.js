@@ -116,7 +116,11 @@ export function param2Obj(url) {
   return obj
 }
 export function formatSize(size) {
-  if (size.indexOf('Ki') !== -1) {
+  if (size.indexOf('m') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 0.001
+    return size
+  } else if (size.indexOf('Ki') !== -1) {
     size = size.substring(0, size.length - 2)
     size = size * 1024
     return size
@@ -131,6 +135,42 @@ export function formatSize(size) {
   } else if (size.indexOf('Ti') !== -1) {
     size = size.substring(0, size.length - 2)
     size = size * 1024 * 1024 * 1024 * 1024
+    return size
+  }
+  if (size.indexOf('k') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000
+    return size
+  }
+  if (size.indexOf('m') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000 * 1000
+    return size
+  }
+
+  if (size.indexOf('g') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000 * 1000 * 1000
+    return size
+  }
+
+  if (size.indexOf('t') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000 * 1000 * 1000 * 1000
+    return size
+  }
+
+  if (size.indexOf('p') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000 * 1000 * 1000 * 1000 * 1000
+    return size
+  }
+  if (size.indexOf('e') !== -1) {
+    size = size.substring(0, size.length - 1)
+    size = size * 1000 * 1000 * 1000 * 1000 * 1000 * 1000
+    return size
+  }
+  else {
     return size
   }
 }

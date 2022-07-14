@@ -6,6 +6,7 @@
                 <div class="login-container">
                     <div class="grid-content">
                         <el-form
+                            @submit.native.prevent
                             ref="loginForm"
                             :model="loginForm"
                             :rules="rules"
@@ -33,13 +34,13 @@
                             </el-form-item>
                             <!-- <el-checkbox v-model="checked" class="rememberme">记住密码</el-checkbox> -->
                             <el-form-item style="width:100%;">
-                                <el-button type="primary" style="width:100%;" :loading="logining" @click="handleLogin">
+                                <el-button type="primary" style="width:100%;" native-type='submit' :loading="logining" @click="handleLogin">
                                     登录
                                 </el-button>
                             </el-form-item>
                         </el-form>
                     </div>
-                    <div class="note">Powered by Openl Octopus V4.0.1</div>
+                    <div class="note">Powered by Openl Octopus V4.0.5</div>
                     <div class="octopus"></div>
                 </div>
             </div>

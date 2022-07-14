@@ -41,7 +41,6 @@
 <script>
 import upload from '@/components/upload/index.vue'
 import { createNewVersion } from "@/api/datasetManager.js";
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "NewVersionCreation",
   components: {
@@ -79,9 +78,6 @@ export default {
     this.ruleForm = { name, type }
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     nextStep(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -117,8 +113,8 @@ export default {
       this.$emit("confirm", val);
     },
     isCloseX(val) {
-        this.close = val
-      }
+      this.close = val
+    }
   }
 }
 </script>

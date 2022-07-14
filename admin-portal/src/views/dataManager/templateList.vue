@@ -19,9 +19,9 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标注类型">
+        <el-table-column label="标注类型" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.applyDesc }}</span>
+            <span>{{ getLabels(scope.row.applies) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -31,7 +31,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="数据集描述" :show-overflow-tooltip="true">
@@ -43,7 +43,7 @@
           <template slot-scope="scope">
             <el-button type="text" @click="getVersionList(scope.$index, scope.row)">版本列表</el-button>
             <el-button style="padding-right:10px" type="text" @click="createNewVersion(scope.row)">创建新版本</el-button>
-            <el-button type="text" @click="handleEdite(scope.row)">编辑</el-button>
+            <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button slot="reference" type="text" @click="confirmDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -57,7 +57,7 @@
     <preDatasetCreation v-if="preDatasetVisible" @cancel="cancel" @close="close" @confirm="confirm" />
     <versionList v-if="versionListVisible" :data="data" :version-list-type="versionListType" @close="close" />
     <newVersion v-if="newVersionVisible" :row="data" @cancel="cancel" @confirm="confirm" @close="close" />
-    <dataSetEdite v-if="editeDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+    <dataSetEdit v-if="editDataSet" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
   </div>
 </template>
 
@@ -65,11 +65,9 @@
   import versionList from "./components/versionList.vue"
   import newVersion from "./components/newVersion.vue"
   import preDatasetCreation from "./components/preDatasetCreation.vue";
-  import dataSetEdite from "./components/dataSetEdite.vue";
+  import dataSetEdit from "./components/dataSetEdit.vue";
   import searchForm from '@/components/search/index.vue'
   import { deleteDataset, getPresetDatasetList } from "@/api/dataManager"
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "TemplateList",
     components: {
@@ -77,18 +75,16 @@
       newVersion,
       preDatasetCreation,
       searchForm,
-      dataSetEdite
+      dataSetEdit
     },
     props: {
-      payload: { type: Array, default: () => [] },
       dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
-        input: "",
         data: undefined,
         versionListVisible: false,
-        editeDataSet: false,
+        editDataSet: false,
         versionListType: 1,
         total: undefined,
         newVersionVisible: false,
@@ -109,9 +105,6 @@
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
@@ -184,19 +177,19 @@
         })
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.preDatasetVisible = val
         this.newVersionVisible = val
         this.versionListVisible = val    
       },
       cancel(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.newVersionVisible = val;
         this.preDatasetVisible = val;
         this.getDataList(this.searchData)
       },
       confirm(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.preDatasetVisible = val
         this.newVersionVisible = val
         this.getDataList(this.searchData)
@@ -206,13 +199,20 @@
         this.versionListVisible = true;
         this.versionListType = this.typeChange
       },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
-      },
-      handleEdite(val) {
-        this.editeDataSet = true
+      handleEdit(val) {
+        this.editDataSet = true
         this.data = val
+      },
+      getLabels: function (val) {
+        if (val) {
+          let label = ''
+          val.forEach(item => {
+            label += item.desc + ','
+          })
+          var reg = /,$/gi;
+          label = label.replace(reg, "");
+          return label
+        }
       }
     }
   }

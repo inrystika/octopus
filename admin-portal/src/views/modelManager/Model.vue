@@ -12,15 +12,21 @@
                 <el-table-column prop="algorithmName" label="算法名称" />
                 <el-table-column prop="algorithmVersion" label="算法版本" />
                 <el-table-column prop="modelDescript" label="模型描述" />
-                <el-table-column label="群组名">
+                <el-table-column label="群组名" v-if="type===1">
                     <template slot-scope="scope">
                         <span>{{ scope.row.spaceName===''?'默认群组':scope.row.spaceName }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column v-if="modelTabType===1" prop="userName" label="提供者" />
+                <el-table-column v-if="modelTabType===1" label="提供者">
+                    <template slot-scope="scope">
+                        <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                            <span>{{ scope.row.userName }}</span>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
                 <el-table-column label="创建时间">
                     <template slot-scope="scope">
-                        <span>{{ parseTime(scope.row.createdAt) }}</span>
+                        <span>{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作">
@@ -49,10 +55,8 @@
 <script>
     import versionList from './components/versionList.vue'
     import createDialog from './components/createDialog.vue'
-    import { getMyModel, getPreModel, deletePreModel } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
+    import { getUserModel, getPreModel, deletePreModel } from '@/api/modelManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "MyModel",
         components: {
@@ -88,13 +92,18 @@
         },
         created() {
             this.getModel(this.searchData)
-            // this.timer = setInterval(this.getModel, 1000);
+            if (this.type == 1) {
+                this.searchForm = [
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' },
+                    { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' }
+                ]
+            }
+            else {
+                this.searchForm = [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择时间段' }]
+            }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getModel(this.searchData)
@@ -142,10 +151,14 @@
                 })
             },
             getModel(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (data.time && data.time.length !== 0) {
+                    data.createdAtGte = data.time[0] / 1000
+                    data.createdAtLt = data.time[1] / 1000
+                    delete data.time
+                }
                 this.type = this.modelTabType
                 if (this.type === 1) {
-                    getMyModel(data).then(response => {
+                    getUserModel(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.models
@@ -185,10 +198,6 @@
                 this.isList = true
                 this.CreateVisible = true
                 this.row = val
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 删除确认
             open(val) {

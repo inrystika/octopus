@@ -105,8 +105,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 		SpaceId:       req.SpaceId,
 		SourceType:    int32(req.SourceType),
 		ImageNameLike: req.ImageNameLike,
-		UserNameLike:  req.UserNameLike,
-		SpaceNameLike: req.SpaceNameLike,
 		NameVerLike:   req.NameVerLike,
 		ImageVersion:  req.ImageVersion,
 		Status:        int32(req.ImageStatus),
@@ -128,8 +126,6 @@ func (s *ImageService) ListUserImage(ctx context.Context, req *pb.ListUserImageR
 			SpaceId:       req.SpaceId,
 			SourceType:    int32(req.SourceType),
 			ImageNameLike: req.ImageNameLike,
-			UserNameLike:  req.UserNameLike,
-			SpaceNameLike: req.SpaceNameLike,
 			NameVerLike:   req.NameVerLike,
 			ImageVersion:  req.ImageVersion,
 			Status:        int32(req.ImageStatus),
@@ -312,6 +308,18 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 			return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 		}
 		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_MADE)
+	} else if req.SourceType == pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED {
+		im := model.Image{
+			SpaceId:      imageAdd.SpaceId,
+			UserId:       imageAdd.UserId,
+			ImageName:    imageAdd.ImageName,
+			ImageVersion: imageAdd.ImageVersion,
+			IsPrefab:     imageAdd.IsPrefab,
+		}
+		imageAdd.ImageAddr = s.generateImageRepositoryPath(&im)
+		imageAdd.Status = int32(pb.ImageStatus_IMAGE_STATUS_NO_MADE)
+	} else {
+		return nil, errors.Errorf(nil, errors.ErrorImageSourceType)
 	}
 
 	image, err := s.data.ImageDao.Add(ctx, imageAdd)
@@ -321,6 +329,7 @@ func (s *ImageService) AddImage(ctx context.Context, req *pb.AddImageRequest) (*
 	return &pb.AddImageReply{
 		ImageId:   image.Id,
 		CreatedAt: image.CreatedAt.Unix(),
+		ImageAddr: image.ImageAddr,
 	}, nil
 }
 
@@ -360,6 +369,7 @@ func (s *ImageService) UpdateImage(ctx context.Context, req *pb.UpdateImageReque
 		ImageName:    req.ImageName,
 		ImageVersion: req.ImageVersion,
 		ImageDesc:    req.ImageDesc,
+		Status:       int32(req.ImageStatus),
 	}
 	if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_REMOTE) {
 		if imageUpdated.ImageAddr != "" {
@@ -457,6 +467,15 @@ func (s *ImageService) generateImageRepository(image *model.Image) string {
 func (s *ImageService) generateImageRepositoryPath(image *model.Image) string {
 	if image == nil {
 		return ""
+	}
+
+	// support the historical data inversion function
+	if image.ImageType > 0 {
+		if image.IsPrefab == int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES) {
+			return fmt.Sprintf("%s/%s/%s/%v", common.PREAB_FOLDER, image.UserId, image.ImageName, image.ImageType)
+		} else {
+			return fmt.Sprintf("%s/%s/%s/%v", image.SpaceId, image.UserId, image.ImageName, image.ImageType)
+		}
 	}
 
 	if image.IsPrefab == int32(pb.ImageIsPrefab_IMAGE_IS_PREFAB_YES) {
@@ -610,6 +629,8 @@ func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) 
 	}
 	var imageFullAddr string
 	if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_UPLOADED) {
+		imageFullAddr = s.generateImageAddress(image)
+	} else if image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED) {
 		imageFullAddr = s.generateImageAddress(image)
 	} else {
 		imageFullAddr = image.ImageAddr

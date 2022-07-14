@@ -69,7 +69,6 @@
 
 <script>
     import { getResourceList } from '@/api/trainingManager.js'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DistributedTask",
         props: {
@@ -95,8 +94,7 @@
                     parameters: [{
                         key: "",
                         value: ""
-                    }]
-
+                    }],
                 },
                 CreateFormVisible: true,
                 resourceOptions: [],
@@ -157,16 +155,12 @@
         },
         created() {
             this.ruleForm = this.row
-            this.getResourceList()
+            this.getResourceItem()
         },
         beforeDestroy() {
             this.ruleForm = {}
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             addItem() {
                 this.ruleForm.parameters.push({
                     key: '',
@@ -206,14 +200,15 @@
                 this.$emit('close', false)
             },
             // 获取资源规格
-            getResourceList() {
-                getResourceList().then(response => {
-                    if (response.success) {
+            getResourceItem() {
+              getResourceList(this.row.disResourcePool).then(response => {
+                if (response.success) {
                         response.data.mapResourceSpecIdList.train.resourceSpecs.forEach(
                             item => {
                                 this.resourceOptions.push({ label: item.name + ' ' + item.price + '机时/h', value: item.id })
                             }
                         )
+                        this.ruleForm.resourceOptions = this.resourceOptions
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),

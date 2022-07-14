@@ -63,6 +63,11 @@ func (d *lableDao) ListLable(ctx context.Context, query *model.LableListQuery) (
 		params = append(params, query.LableType)
 	}
 
+	if len(query.Ids) != 0 {
+		querySql += " and id in ? "
+		params = append(params, query.Ids)
+	}
+
 	db := d.db(ctx).Model(&model.Lable{}).Where(querySql, params...)
 
 	var totalSize int64

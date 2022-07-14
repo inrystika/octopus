@@ -16,9 +16,9 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标注类型">
+        <el-table-column label="标注类型" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.applyDesc }}</span>
+            <span>{{ getLabels(scope.row.applies) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -38,7 +38,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -65,8 +65,6 @@
   import versionList from "./components/versionList.vue";
   import searchForm from '@/components/search/index.vue'
   import { getPublicDatasetList } from "@/api/datasetManager";
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PublicList",
     components: {
@@ -79,12 +77,10 @@
         default: undefined
       }
     },
-
     data() {
       return {
         input: "",
         row: {},
-        formLabelWidth: "120px",
         versionListVisible: false,
         datasetList: [],
         total: undefined,
@@ -104,9 +100,6 @@
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
@@ -154,9 +147,16 @@
         this.versionListVisible = val;
         this.getDataList(this.searchData)
       },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
+      getLabels: function (val) {
+        if (val) {
+          let label = ''
+          val.forEach(item => {
+            label += item.desc + ','
+          })
+          var reg = /,$/gi;
+          label = label.replace(reg, "");
+          return label
+        }
       }
     }
   };
@@ -167,7 +167,6 @@
     float: right;
     margin: 20px;
   }
-
   .searchForm {
     display: inline-block;
   }

@@ -66,11 +66,37 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 	db := d.db
 
 	var user model.User
-	result := db.Where(&model.User{
-		Id:    condition.Id,
-		Email: condition.Email,
-		Phone: condition.Phone,
-	}).First(&user)
+	var result *gorm.DB
+	if condition.Bind == nil {
+		result = db.Where(&model.User{
+			Id:          condition.Id,
+			Email:       condition.Email,
+			Phone:       condition.Phone,
+			FtpUserName: condition.FtpUserName,
+		}).First(&user)
+	} else {
+		querySql := "1 = 1"
+		params := make([]interface{}, 0)
+		if condition.Email != "" {
+			querySql += " and email = ? "
+			params = append(params, condition.Email)
+			if condition.Bind.UserId != "" {
+				querySql += " or (JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+				params = append(params, condition.Bind.Platform)
+				querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('userId', ?)))"
+				params = append(params, condition.Bind.UserId)
+			} else {
+				querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+				params = append(params, condition.Bind.Platform)
+			}
+		} else {
+			querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('platform', ?))"
+			params = append(params, condition.Bind.Platform)
+			querySql += " and JSON_CONTAINS(bind,JSON_OBJECT('userId', ?))"
+			params = append(params, condition.Bind.UserId)
+		}
+		result = db.Where(querySql, params...).First(&user)
+	}
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -83,18 +109,23 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 
 func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, error) {
 	db := d.db
-
+	bindInfo := make([]*model.Bind, 0)
+	if user.Bind != nil {
+		bindInfo = append(bindInfo, user.Bind)
+	}
 	u := model.User{
-		Id:       user.Id,
-		FullName: user.FullName,
-		Gender:   user.Gender,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Password: user.Password,
-		Status:   user.Status,
+		Id:            user.Id,
+		FullName:      user.FullName,
+		Gender:        user.Gender,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Password:      user.Password,
+		Status:        user.Status,
+		Bind:          bindInfo,
+		ResourcePools: user.ResourcePools,
 	}
 
-	result := db.Create(&u)
+	result := db.Omit("ftp_user_name").Create(&u)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -114,12 +145,15 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
-		FullName: user.FullName,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Gender:   user.Gender,
-		Password: user.Password,
-		Status:   user.Status,
+		FullName:      user.FullName,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Gender:        user.Gender,
+		Password:      user.Password,
+		Status:        user.Status,
+		Bind:          user.Bind,
+		FtpUserName:   user.FtpUserName,
+		ResourcePools: user.ResourcePools,
 	})
 	if result.Error != nil {
 		return nil, result.Error

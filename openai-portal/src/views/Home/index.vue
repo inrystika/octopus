@@ -24,16 +24,14 @@
             }
         },
         mounted() {
-            window.addEventListener('beforeunload', e => {
-                sessionStorage.clear()
+            window.addEventListener("beforeunload", (e) => {
+                clearProgress()
             });
-
         },
         destroyed() {
-            window.removeEventListener('beforeunload', e => {
-                sessionStorage.clear()
-            })
-
+            window.removeEventListener("beforeunload", (e) => {
+                clearProgress()
+            });
         },
         methods: {
             close() { this.dialogFormVisible = false }

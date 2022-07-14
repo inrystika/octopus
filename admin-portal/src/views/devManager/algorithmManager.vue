@@ -23,7 +23,6 @@
       userList,
       templateList,
       algorithmConfig
-
     },
     data() {
       return {

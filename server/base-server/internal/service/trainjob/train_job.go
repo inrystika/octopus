@@ -3,6 +3,7 @@ package trainjob
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -47,6 +48,7 @@ type trainJobService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type TrainJobService interface {
@@ -58,7 +60,7 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (TrainJobService, error) {
+	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer, userService api.UserServiceServer) (TrainJobService, error) {
 	log := log.NewHelper("TrainJobService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -82,6 +84,7 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.trainJobBilling(context.Background())
@@ -286,50 +289,75 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
-	queue := ""
+	queue := job.ResourcePool
 	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
 		if err != nil {
 			return nil, err
 		}
-		queue = pool.ResourcePool.Name
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
+		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: job.WorkspaceId})
 		if err != nil {
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
-	}
-	//image
-	image, err := s.getImageAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.ImageId)
-	if err != nil {
-		return nil, err
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
+		}
 	}
 
-	if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
-		return nil, errors.Errorf(nil, errors.ErrorJobImageStatusForbidden)
+	imageAddr := ""
+	if job.ImageId != "" { //判空，允许通过API调用不传此参数
+		//image
+		image, err := s.getImageAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.ImageId)
+		if err != nil {
+			return nil, err
+		}
+
+		if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
+			return nil, errors.Errorf(nil, errors.ErrorJobImageStatusForbidden)
+		}
+		job.ImageName = image.Image.ImageName
+		job.ImageVersion = image.Image.ImageVersion
+		imageAddr = image.ImageFullAddr
+	} else if job.ImageUrl != "" {
+		imageAddr = job.ImageUrl
+	} else {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	job.ImageName = image.Image.ImageName
-	job.ImageVersion = image.Image.ImageVersion
-	//algorithm
-	algorithmVersion, err := s.getAlgorithmAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.AlgorithmId, job.AlgorithmVersion)
-	if err != nil {
-		return nil, err
+
+	algorithmPath := ""
+	if job.AlgorithmId != "" { //判空，允许通过API调用不传此参数
+		//algorithm
+		algorithmVersion, err := s.getAlgorithmAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.AlgorithmId, job.AlgorithmVersion)
+		if err != nil {
+			return nil, err
+		}
+		if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
+			return nil, errors.Errorf(err, errors.ErrorJobAlgorithmStatusForbidden)
+		}
+		job.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
+		algorithmPath = algorithmVersion.Algorithm.Path
 	}
-	if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
-		return nil, errors.Errorf(err, errors.ErrorJobAlgorithmStatusForbidden)
+
+	datasetPath := ""
+	if job.DataSetId != "" { //判空，允许通过API调用不传此参数
+		//dataSet
+		dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
+		if err != nil {
+			return nil, err
+		}
+		if dataSetVersion.Version.Status != int32(api.DatasetVersionStatus_DVS_Unzipped) {
+			return nil, errors.Errorf(err, errors.ErrorJobImageStatusForbidden)
+		}
+		job.DatasetName = dataSetVersion.Dataset.Name
+		datasetPath = dataSetVersion.Version.Path
 	}
-	job.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
-	//dataSet
-	dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
-	if err != nil {
-		return nil, err
-	}
-	if dataSetVersion.Version.Status != int32(api.DatasetVersionStatus_DVS_Unzipped) {
-		return nil, errors.Errorf(err, errors.ErrorJobImageStatusForbidden)
-	}
-	job.DatasetName = dataSetVersion.Dataset.Name
+
 	//resource spec info
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
@@ -435,9 +463,9 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 	return &startJobInfo{
 		queue:         queue,
-		imageAddr:     image.ImageFullAddr,
-		algorithmPath: algorithmVersion.Algorithm.Path,
-		datasetPath:   dataSetVersion.Version.Path,
+		imageAddr:     imageAddr,
+		algorithmPath: algorithmPath,
+		datasetPath:   datasetPath,
 		specs:         startJobSpecs,
 	}, nil
 }
@@ -499,6 +527,12 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Name:      "data",
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
+				ReadOnly:  false,
+			},
+			{
+				Name:      "data",
+				MountPath: s.conf.Service.DockerUserHomePath,
+				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
 			},
 			{
@@ -578,6 +612,55 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				{Event: vcBus.TaskCompletedEvent, Action: vcBus.CompleteJobAction},
 			}
 		}
+		//根据资源类型任务区别挂载与配置
+		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
+			if strings.HasPrefix(string(k), common.RdmaPrefix) {
+				task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
+					Capabilities: &v1.Capabilities{
+						Add: []v1.Capability{"IPC_LOCK"},
+					},
+				}
+			}
+
+			//NPU挂载与权限
+			if string(k) == common.NPUResourceName {
+				//1. privileged
+				//处理空情况
+				if task.Template.Spec.Containers[0].SecurityContext == nil {
+					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
+					}
+				}
+				privileged := true
+				task.Template.Spec.Containers[0].SecurityContext.Privileged = &privileged
+				//2.挂载/usr/local/Ascend/driver驱动与/etc/ascend_install.info驱动信息
+				task.Template.Spec.Volumes = append(task.Template.Spec.Volumes, v1.Volume{
+					Name: "ascend-driver-volume",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{
+							Path: "/usr/local/Ascend/driver",
+						},
+					},
+				},v1.Volume{
+					Name: "ascend-driver-info",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{
+							Path: "/etc/ascend_install.info",
+						},
+					},
+				})
+
+				task.Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts,
+					v1.VolumeMount{
+						Name:      "ascend-driver-volume",
+						MountPath: "/usr/local/Ascend/driver",
+					},
+					v1.VolumeMount{
+						Name:  "ascend-driver-info",
+						MountPath: "/etc/ascend_install.info",
+				})
+
+			}
+		}
 		tasks = append(tasks, task)
 	}
 
@@ -623,7 +706,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 }
 
 func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) (*api.StopJobReply, error) {
-	_, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	job, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -643,6 +726,11 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.addModel(ctx, job)
+	if err != nil {
+		s.log.Error(ctx, err)
 	}
 
 	return &api.StopJobReply{StoppedAt: time.Now().Unix()}, nil
@@ -787,10 +875,13 @@ func (s *trainJobService) checkParamForTemplate(ctx context.Context, template *m
 		return err
 	}
 	//数据集
-	_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
-	if err != nil {
-		return err
+	if template.DataSetId != "" {  //判空，允许通过API调用不传此参数
+		_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
+		if err != nil {
+			return err
+		}
 	}
+
 	//资源规格信息
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
 	if err != nil {
@@ -985,24 +1076,18 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	info, err := s.data.Pipeline.GetJobDetail(ctx, req.Id)
-	if err != nil {
-		return common.PipeLineCallbackRE
-	}
-
-	if pipeline.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, info.Job.State) {
+	if pipeline.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, req.CurrentState) {
 		return common.PipeLineCallbackOK
 	}
 
 	update := &model.TrainJob{
 		Id:     req.Id,
-		Status: info.Job.State,
+		Status: req.CurrentState,
 	}
-	if strings.EqualFold(info.Job.State, pipeline.RUNNING) {
-		update.StartedAt = &info.Job.StartAt.Time
-	} else if strings.EqualFold(info.Job.State, pipeline.FAILED) ||
-		strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) {
-		update.CompletedAt = &info.Job.FinishedAt.Time
+	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
+		update.StartedAt = &req.CurrentTime
+	} else if pipeline.IsCompletedState(req.CurrentState) {
+		update.CompletedAt = &req.CurrentTime
 	}
 
 	err = s.data.TrainJobDao.UpdateTrainJob(ctx, update)
@@ -1010,19 +1095,29 @@ func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.Pipe
 		return common.PipeLineCallbackRE
 	}
 
-	if strings.EqualFold(info.Job.State, pipeline.SUCCEEDED) ||
-		strings.EqualFold(info.Job.State, pipeline.FAILED) {
-		_, err = s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-			SpaceId:          trainJob.WorkspaceId,
-			UserId:           trainJob.UserId,
-			AlgorithmId:      trainJob.AlgorithmId,
-			AlgorithmVersion: trainJob.AlgorithmVersion,
-			FilePath:         fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob)),
-		})
+	if pipeline.IsCompletedState(req.CurrentState) {
+		err = s.addModel(ctx, trainJob)
 		s.log.Error(ctx, err)
 	}
 
 	return common.PipeLineCallbackOK
+}
+
+func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
+	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
+	fileInfos, _ := ioutil.ReadDir(filePath)
+	if len(fileInfos) > 0 {
+		_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+			SpaceId:          trainJob.WorkspaceId,
+			UserId:           trainJob.UserId,
+			AlgorithmId:      trainJob.AlgorithmId,
+			AlgorithmVersion: trainJob.AlgorithmVersion,
+			FilePath:         filePath,
+		})
+		return err
+	}
+
+	return nil
 }
 
 func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {

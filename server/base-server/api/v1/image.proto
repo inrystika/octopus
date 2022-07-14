@@ -49,6 +49,7 @@ enum ImageSourceType
     IMAGE_SOURCE_TYPE_PLACEHOLDER = 0;
     IMAGE_SOURCE_TYPE_UPLOADED    = 1;
     IMAGE_SOURCE_TYPE_REMOTE      = 2;
+    IMAGE_SOURCE_TYPE_SAVED       = 3;
 }
 
 enum ImageIsPrefab
@@ -136,8 +137,6 @@ message ListUserImageRequest {
   ImageSourceType sourceType = 9[(validate.rules).enum = {defined_only: true}];
   ImageStatus imageStatus = 10[(validate.rules).enum = {defined_only: true}];
   string searchKey = 11[(validate.rules).string = {max_len: 50}];
-  string userNameLike = 12[(validate.rules).string = {max_len: 50}];
-  string spaceNameLike = 13[(validate.rules).string = {max_len: 50}];
   string nameVerLike = 14[(validate.rules).string = {max_len: 50}];
 }
 
@@ -189,7 +188,7 @@ message AddImageRequest {
   string imageName = 1[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", min_len:1,max_len: 50}];
   string imageDesc = 2;
   string imageVersion = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", min_len: 1, max_len: 50}];
-  ImageSourceType sourceType = 4[(validate.rules).enum = {in: [1,2]}];
+  ImageSourceType sourceType = 4[(validate.rules).enum = {in: [1,2,3]}];
   string spaceId = 5[(validate.rules).string = {max_len: 36}];
   string userId = 6[(validate.rules).string = {max_len: 36}];
   ImageIsPrefab isPrefab = 7[(validate.rules).enum = {in: [1,2]}];
@@ -199,6 +198,7 @@ message AddImageRequest {
 message AddImageReply {
   string imageId = 1;
   int64  createdAt = 2;
+  string imageAddr = 3[(validate.rules).string = {max_len: 254}];
 }
 
 message DeleteImageRequest {
@@ -218,6 +218,7 @@ message UpdateImageRequest {
   string imageDesc = 3;
   string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z0-9][\\w|\\-|\\.]*$", max_len: 50}];
   string imageAddr = 5[(validate.rules).string = {max_len: 254}];
+  ImageStatus imageStatus = 6 [(validate.rules).enum = {defined_only: true}];
   // ImageSourceType sourceType = 6;
   // string spaceId = 7;
   // string userId = 8;

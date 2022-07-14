@@ -36,12 +36,12 @@
           </el-table-column>
           <el-table-column label="开始时间" align="center" prop="startTime">
             <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.startedAt) }}</span>
+              <span>{{ scope.row.startedAt | parseTime }}</span>
             </template>
           </el-table-column>
           <el-table-column label="结束时间" align="center" prop="endTime">
             <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.endedAt) }}</span>
+              <span>{{ scope.row.endedAt | parseTime }}</span>
             </template>
           </el-table-column>
         </div>
@@ -53,7 +53,7 @@
           </el-table-column>
           <el-table-column label="充值时间" align="center" prop="rechargeTime">
             <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.updatedAt) }}</span>
+              <span>{{ scope.row.updatedAt | parseTime }}</span>
             </template>
           </el-table-column>
           <el-table-column label="充值机时(h)" align="center" prop="rechargeHour">
@@ -74,9 +74,7 @@
 </template>
 
 <script>
-  import { parseTime } from '@/utils/index'
   import { getUserConsumptionRecord, getGroupConsumptionRecord, getUserRechargeRecord, getGroupRechargeRecord } from "@/api/generalView";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "Record",
     props: {
@@ -106,15 +104,16 @@
       }
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       changeType(value) {
         switch (value) {
+          case 0:
+            return ''
           case 1:
             return '训练'
-          default:
+          case 2:
             return 'NoteBook'
+          default:
+            return '模型部署'
         }
       },
       handleSizeChange(val) {
@@ -189,10 +188,6 @@
       },
       handleDialogClose() {
         this.$emit("close", false);
-      },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
       }
     }
   };

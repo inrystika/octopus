@@ -25,30 +25,32 @@ import (
 )
 
 type Data struct {
-	UserDao             dao.UserDao
-	AdminUserDao        dao.AdminUserDao
-	AlgorithmDao        algorithm_dao.AlgorithmDao
-	ResourceDao         dao.ResourceDao
-	ResourceSpecDao     dao.ResourceSpecDao
-	DevelopDao          dao.DevelopDao
-	TrainJobDao         dao.TrainJobDao
-	ModelDao            dao.ModelDao
-	DatasetDao          dao.DatasetDao
-	WorkspaceDao        dao.WorkspaceDao
-	ImageDao            dao.ImageDao
-	BillingDao          dao.BillingDao
-	LableDao            dao.LableDao
-	PlatformTrainJobDao platformDao.PlatformTrainJobDao
-	Pipeline            pipeline.Pipeline
-	Cluster             cluster.Cluster
-	Minio               minio.Minio
-	Registry            registry.ArtifactRegistry
-	Redis               redis.Redis
-	Influxdb            influxdb.Influxdb
-	PlatformDao         platformDao.PlatformDao
-	Platform            platform.Platform
-	JointCloudDao       jointcloud.JointcloudDao
-	JointCloud          jointcloud.JointCloud
+	UserDao               dao.UserDao
+	AdminUserDao          dao.AdminUserDao
+	AlgorithmDao          algorithm_dao.AlgorithmDao
+	ResourceDao           dao.ResourceDao
+	ResourceSpecDao       dao.ResourceSpecDao
+	DevelopDao            dao.DevelopDao
+	TrainJobDao           dao.TrainJobDao
+	ModelDao              dao.ModelDao
+	DatasetDao            dao.DatasetDao
+	WorkspaceDao          dao.WorkspaceDao
+	ImageDao              dao.ImageDao
+	BillingDao            dao.BillingDao
+	LableDao              dao.LableDao
+	PlatformTrainJobDao   platformDao.PlatformTrainJobDao
+	Pipeline              pipeline.Pipeline
+	Cluster               cluster.Cluster
+	Minio                 minio.Minio
+	Registry              registry.ArtifactRegistry
+	Redis                 redis.Redis
+	Influxdb              influxdb.Influxdb
+	PlatformDao           platformDao.PlatformDao
+	Platform              platform.Platform
+	JointCloudDao         jointcloud.JointcloudDao
+	JointCloud            jointcloud.JointCloud
+	ModelDeployDao        dao.ModelDeployDao
+	PlatformStatisticsDao dao.PlatformStatisticsDao
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
@@ -68,6 +70,16 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 		log.Error(context.TODO(), err)
 	}
 
+	d.Minio = minio.NewMinio(confData, logger)
+	d.Registry = registry.NewRegistry(confData, logger)
+	redis, err := redis.NewRedis(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	d.Redis = redis
+	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	d.Cluster = cluster
+
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)
 	d.AlgorithmDao = algorithm_dao.NewAlgorithmDao(db, logger)
@@ -75,6 +87,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.ResourceSpecDao = dao.NewResourceSpecDao(db, logger)
 	d.DevelopDao = dao.NewDevelopDao(db, influxdb, logger)
 	d.ModelDao = dao.NewModelDao(db, logger)
+	d.ModelDeployDao = dao.NewModelDeployDao(db, influxdb, logger)
 	d.DatasetDao = dao.NewDatasetDao(db, logger)
 	d.WorkspaceDao = dao.NewWorkspaceDao(db, logger)
 	d.ImageDao = dao.NewImageDao(db, logger)
@@ -83,20 +96,14 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformTrainJobDao = platformDao.NewPlatformTrainJobDao(db, logger)
 	d.Pipeline = pipeline.NewPipeline(confData, logger)
-	d.Cluster = cluster.NewCluster(confData, logger)
-	d.Minio = minio.NewMinio(confData, logger)
-	d.Registry = registry.NewRegistry(confData, logger)
-	redis, err := redis.NewRedis(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	d.Redis = redis
 	d.PlatformDao = platformDao.NewPlatformDao(db)
 	d.Platform = platform.NewPlatform()
 	d.JointCloudDao = jointcloud.NewJointcloudDao(db)
 	d.JointCloud = jointcloud.NewJointCloud(confData.JointCloud.BaseUrl, confData.JointCloud.Username, confData.JointCloud.Password, confData.JointCloud.SessionExpirySec)
+	d.PlatformStatisticsDao = dao.NewPlatformStatisticsDao(db)
 
 	return d, func() {
+		clusterCancel()
 		redis.Close()
 	}, nil
 }
@@ -175,6 +182,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.TrainJobTemplate{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.ModelDeploy{})
 	if err != nil {
 		return nil, err
 	}

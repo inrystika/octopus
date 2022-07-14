@@ -16,9 +16,9 @@
             <span>{{ scope.row.typeDesc }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="标注类型">
+        <el-table-column label="标注类型" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.applyDesc }}</span>
+            <span>{{ getLabels(scope.row.applies) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="最新版本号">
@@ -38,12 +38,14 @@
         </el-table-column>
         <el-table-column label="提供者">
           <template slot-scope="scope">
-            <span>{{ scope.row.userName }}</span>
+            <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+              <span>{{ scope.row.userName }}</span>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt) }}</span>
+            <span>{{ scope.row.createdAt | parseTime }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -67,8 +69,6 @@
   import versionList from "./components/versionList.vue"
   import searchForm from '@/components/search/index.vue'
   import { getUserDatasetList } from "@/api/dataManager"
-  import { parseTime } from '@/utils/index'
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "UserList",
     components: {
@@ -76,12 +76,10 @@
       searchForm
     },
     props: {
-      payload: { type: Array, default: () => [] },
       dataTabType: { type: Number, default: undefined }
     },
     data() {
       return {
-        input: "",
         row: {},
         versionListVisible: false,
         versionListType: 1,
@@ -90,21 +88,20 @@
         datasetList: [],
         typeChange: undefined,
         searchForm: [
-          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }
+          { type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' },
+          { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+          { type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }
         ],
         searchData: {
           pageIndex: 1,
           pageSize: 10
-        }
+        },
       }
     },
     created() {
       this.getDataList(this.searchData);
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleSizeChange(val) {
         this.searchData.pageSize = val
         this.getDataList(this.searchData)
@@ -138,7 +135,7 @@
         this.getDataList(this.searchData)
       },
       close(val) {
-        this.editeDataSet = val;
+        this.editDataSet = val;
         this.versionListVisible = val;
       },
       getVersionList(index, row) {
@@ -146,10 +143,17 @@
         this.versionListVisible = true;
         this.versionListType = this.typeChange
       },
-      // 时间戳转换日期
-      parseTime(val) {
-        return parseTime(val)
-      }   
+      getLabels: function (val) {
+        if (val) {
+          let label = ''
+          val.forEach(item => {
+            label += item.desc + ','
+          })
+          var reg = /,$/gi;
+          label = label.replace(reg, "");
+          return label
+        }
+      }
     }
   }
 </script>

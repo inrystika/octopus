@@ -5,12 +5,11 @@ import { Message } from 'element-ui'
 
 const getDefaultState = () => {
   return {
-    token: getToken(),
+    token: '',
     name: '',
     avatar: '',
     id: '',
     workspaces: [],
-    workspaceId: '',
     progressId: undefined
   }
 }
@@ -35,9 +34,6 @@ const mutations = {
   },
   SET_SPACE: (state, workspaces) => {
     state.workspaces = workspaces
-  },
-  SET_WORKSPACEID: (state, workspaceId) => {
-    state.workspaceId = workspaceId
   },
   SET_PROGRESSID: (state, progressId) => {
     state.progressId = progressId
@@ -70,16 +66,14 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo(getToken()).then(response => {
         const { data } = response
         if (!data) {
           return reject('验证失败，请重新登录。')
         }
         const { fullName, id } = data.user
-        const workspaceId = data.workspaceId
         commit('SET_NAME', fullName)
         commit('SET_ID', id)
-        commit('SET_WORKSPACEID', workspaceId)
         resolve()
       }).catch(error => {
         reject(error)

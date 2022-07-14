@@ -13,6 +13,7 @@
 </template>
 <script>
   import Model from "./Model.vue";
+  import { clearProgress } from '@/utils/index.js'
   export default {
     components: {
       Model
@@ -29,16 +30,14 @@
       }
     },
     mounted() {
-      window.addEventListener('beforeunload', e => {
-        sessionStorage.clear()
+      window.addEventListener("beforeunload", (e) => {
+        clearProgress()
       });
-
     },
     destroyed() {
-      window.removeEventListener('beforeunload', e => {
-        sessionStorage.clear()
-      })
-
+      window.removeEventListener("beforeunload", (e) => {
+        clearProgress()
+      });
     },
     methods: {
       handleTabClick(tab) {

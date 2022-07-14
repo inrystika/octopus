@@ -37,9 +37,8 @@
     </div>
 </template>
 <script>
-    import { createPreImage, editePreImage } from '@/api/imageManager.js'
+    import { createPreImage, editPreImage } from '@/api/imageManager.js'
     import upload from '@/components/upload/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "DialogCreateForm",
         components: {
@@ -57,11 +56,11 @@
         },
         data() {
             var checkName = (rule, value, callback) => {
-                const regName = /^[a-zA-Z][\w|\-]*$/;
+                const regName = /^[a-z][a-z0-9\-]*[a-z0-9]$/;
                 if (regName.test(value)) {
                     return callback();
                 }
-                callback(new Error("请输入合法的镜像名称:首字母为大小写字母，其他大小写字母数字或者-"));
+                callback(new Error("镜像名称由小写字母、数字或者-组成，小写字母开头，数字或小写字母结尾"));
             };
             var checkLabel = (rule, value, callback) => {
                 const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;
@@ -131,10 +130,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             submitUpload() {
                 if (this.ruleForm.sourceType === 1) {
                     delete this.rules.imageAddr
@@ -177,8 +172,8 @@
                     })
                 }
             },
-            editePreImage(data) {
-                editePreImage(data).then(response => {
+            editPreImage(data) {
+                editPreImage(data).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '编辑镜像成功',
@@ -200,7 +195,7 @@
                             this.createPreImage(this.ruleForm)
                         } else {
                             const data = { ...this.ruleForm, id: this.id }
-                            this.editePreImage(data)
+                            this.editPreImage(data)
                         }
                     } else {
                         console.log('error submit!!');

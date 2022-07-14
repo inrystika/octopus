@@ -47,10 +47,7 @@ export default {
   },
   data() {
     return {
-      isEmpty: false,
-      showUpload: false,
       show: true,
-      showConfirm: false,
       ruleForm: {
         path: ''
       },
@@ -87,8 +84,8 @@ export default {
       this.$emit("confirm", val);
     },
     isCloseX(val) {
-        this.close = val
-      }
+      this.close = val
+    }
   }
 };
 </script>

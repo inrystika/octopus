@@ -28,12 +28,12 @@
                 </el-table-column>
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span>{{ parseTime(scope.row.createdAt) }}</span>
+                        <span>{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="250">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handleEdit(scope.row,'editeTemplate')">编辑</el-button>
+                        <el-button type="text" @click="handleEdit(scope.row,'editTemplate')">编辑</el-button>
                         <el-button type="text" @click="open(scope.row)">删除</el-button>
                         <el-button type="text" @click="handleEdit(scope.row,'createTask')">创建训练任务</el-button>
                         <el-button type="text" @click="handleCopy(scope.row)">复制</el-button>
@@ -45,8 +45,8 @@
         <!-- 创建任务模板 -->
         <createDialog v-if="createDialog" :flag="flag" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 编辑对话框 -->
-        <editeDialog
-            v-if="editeDialog"
+        <editDialog
+            v-if="editDialog"
             :flag="flag"
             :row="row"
             @cancel="cancel"
@@ -70,15 +70,13 @@
 <script>
     import { getTemplate, getTempalteDetail, deleteTemplate, getResourceList, copyTemplate } from '@/api/trainingManager'
     import createDialog from "./components/createDialog/index.vue";
-    import editeDialog from "./components/editeDialog/index.vue";
+    import editDialog from "./components/editDialog/index.vue";
     import searchForm from '@/components/search/index.vue'
-    import { parseTime } from '@/utils/index'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "PreImage",
         components: {
             createDialog,
-            editeDialog,
+            editDialog,
             searchForm
 
         },
@@ -92,7 +90,7 @@
             return {
                 tableData: [],
                 createDialog: false,
-                editeDialog: false,
+                editDialog: false,
                 row: {},
                 flag: undefined,
                 pageIndex: 1,
@@ -119,10 +117,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             getTemplate(data) {
                 if (data.time && data.time.length !== 0) {
                     data.createAtGte = data.time[0] / 1000
@@ -133,16 +127,6 @@
                     if (response.success) {
                         this.tableData = response.data.jobTemplates
                         this.total = response.data.totalSize
-                        getResourceList().then(response => {
-                            if (response.success) {
-                                this.resourceOptions = response.data.mapResourceSpecIdList.train.resourceSpecs
-                            } else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
-                            }
-                        })
                     } else {
                         this.$message({
                             message: this.getErrorMsg(response.error.subcode),
@@ -152,13 +136,11 @@
                 })
             },
             handleEdit(val, name) {
-                getResourceList().then(response => {
-                    if (response.success && response.data.mapResourceSpecIdList.train.resourceSpecs.length !== 0) {
-                        getTempalteDetail(val.id).then(response => {
+                getTempalteDetail(val.id).then(response => {
                             if (response.success) {
-                                this.editeDialog = true
+                                this.editDialog = true
                                 this.row = response.data.jobTemplate
-                                if (name === 'editeTemplate') { this.flag = 1 } else { this.flag = 2 }
+                                if (name === 'editTemplate') { this.flag = 1 } else { this.flag = 2 }
                             } else {
                                 this.$message({
                                     message: this.getErrorMsg(response.error.subcode),
@@ -166,13 +148,6 @@
                                 });
                             }
                         })
-                    } else {
-                        this.$message({
-                            message: '资源规格为空',
-                            type: 'warning'
-                        });
-                    }
-                })
             },
             handleDelete(val) {
                 let templateIds = []
@@ -238,17 +213,17 @@
             cancel(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
-                this.editeDialog = val
+                this.editDialog = val
             },
             confirm(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
-                this.editeDialog = val
+                this.editDialog = val
             },
             close(val) {
                 this.getTemplate(this.searchData)
                 this.createDialog = val
-                this.editeDialog = val
+                this.editDialog = val
             },
             // 新增创建任务模板
             create() {
@@ -274,10 +249,6 @@
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
                 this.getTemplate(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 删除确认
             open(val) {

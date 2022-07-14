@@ -110,7 +110,8 @@ const error = {
   14008: 'NoteBook重复',
   14009: 'NoteBook使用数据集不在权限范围内',
   14010: 'NoteBook使用数据集状态不允许操作',
-
+  14011: 'NoteBook保存中，禁止重复保存',
+  14012: 'NoteBook未找到运行中的容器',
   /* 15001~16000 训练管理错误*/
   15001: '训练使用镜像不在权限范围内',
   15002: '训练使用数据集不在权限范围内',
@@ -142,9 +143,10 @@ const error = {
   16020: '用户不存在',
   16021: '用户已存在',
   16022: '用户id错误',
-  16023: '空间已存在',
-  16024: '空间不存在',
+  16023: '群组已存在',
+  16024: '群组不存在',
   16025: '用户无空间权限',
+  16028: '用户已绑定',
   /* 17001~18000 计费管理错误*/
   17001: '获取锁失败',
   17002: '状态不允许操作',
@@ -166,15 +168,39 @@ const error = {
 
   /* 21001-22000 云际错误*/
   21001: '云际请求失败',
-  21002: '无权限访问'
+  21002: '无权限访问',
+  //  模型部署错误
+  25001: '部署使用计算框架非TF或者PT',
+  25002: '创建模型部署服务失败',
+  25003: '删除模型部署服务失败',
+  25004: '模型部署服务请求失败',
+  25005: '模型权限校验失败',
+  /* 22001-23000 ftp服务错误*/
+  22001: '接口请求错误',
+  22002: '用户未存在',
+  22003: '虚拟目录未属于用户',
 }
-export function getErrorMsg(errorCode) {
-  let message = ''
-  for (var p in error) {
-    if (String(errorCode) === p) {
-      message = error[p]
-      return message
+// export function getErrorMsg(errorCode) {
+//   let message = ''
+//   for (var p in error) {
+//     if (String(errorCode) === p) {
+//       message = error[p]
+//       return message
+//     }
+//   }
+//   return '系统错误'
+// }
+export const mixin = {
+  methods: {
+    getErrorMsg(errorCode) {
+      let message = ''
+      for (var p in error) {
+        if (String(errorCode) === p) {
+          message = error[p]
+          return message
+        }
+      }
+      return '系统错误'
     }
   }
-  return '系统错误'
 }

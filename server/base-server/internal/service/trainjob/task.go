@@ -73,6 +73,37 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							break
 						}
 
+						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
+						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
+						for _, j := range trainJobs {
+							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status) {
+								j.PayStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
+								err = s.data.TrainJobDao.UpdateTrainJob(ctx, j)
+								if err != nil {
+									s.log.Errorf(ctx, "update ineffective job to completed err: %s", err)
+									break
+								}
+							}
+						}
+
+						//删除后再查询
+						trainJobs, _, err = s.data.TrainJobDao.GetTrainJobList(ctx, &model.TrainJobListQuery{
+							PageIndex: pageIndex,
+							PageSize:  taskPageSize,
+							PayStatus: api.BillingPayRecordStatus_BPRS_PAYING,
+						})
+
+						if err != nil {
+							s.log.Errorf(ctx, "List TrainJob err: %s", err)
+							break
+						}
+
+						if len(trainJobs) == 0 {
+							s.log.Info(ctx, "There is no trainJob to pay!")
+							break
+						}
+
+						//计费逻辑
 						trainJobIds := make([]string, 0)
 						for _, j := range trainJobs {
 							trainJobIds = append(trainJobIds, j.Id)
@@ -97,10 +128,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 						for _, j := range trainJobs {
 							//判断任务是否已经启动。如果没有启动时间，则说明未启动，不计费。
 							if j.StartedAt == nil {
-								s.log.Info(ctx, "job "+j.Id+"no need to pay, because it is not started!")
+								//s.log.Info(ctx, "job "+j.Id+"no need to pay, because it is not started!")
 								continue
 							}
-
 							payAmount := 0.0
 							//job已经启动，则以job的启动时间作为每个task的启动时间，以此为计费起始点。
 							payStartAt := j.StartedAt.Unix()

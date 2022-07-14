@@ -20,3 +20,16 @@ func (r *SqlJson) Scan(input interface{}) error {
 		return fmt.Errorf("cannot Scan() from: %#v", v)
 	}
 }
+
+func Value(r interface{}) (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func Scan(r interface{}, input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
+}

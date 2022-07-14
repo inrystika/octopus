@@ -8,18 +8,21 @@ import (
 )
 
 type Service struct {
-	Data                *data.Data
-	AlgorithmService    api.AlgorithmServer
-	AuthService         api.AuthServer
-	TrainJobService     api.TrainJobServiceServer
-	UserService         api.UserServer
-	DevelopService      api.DevelopServer
-	ModelService        api.ModelServer
-	ImageService        api.ImageServiceServer
-	DatasetService      api.DatasetServiceServer
-	ResourceSpecService api.ResourceSpecServiceServer
-	BillingService      api.BillingServiceServer
-	JointCloudService   api.JointCloudServiceServer
+	Data                      *data.Data
+	AlgorithmService          api.AlgorithmServer
+	AuthService               api.AuthServer
+	TrainJobService           api.TrainJobServiceServer
+	UserService               api.UserServer
+	DevelopService            api.DevelopServer
+	ModelService              api.ModelServer
+	ImageService              api.ImageServiceServer
+	DatasetService            api.DatasetServiceServer
+	ResourceSpecService       api.ResourceSpecServiceServer
+	BillingService            api.BillingServiceServer
+	JointCloudService         api.JointCloudServiceServer
+	SystemService             api.SystemServiceServer
+	ModelDeployService        api.ModelDeployServiceServer
+	PlatformStatisticsService api.PlatformStatisticsServer
 }
 
 func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Service {
@@ -36,5 +39,8 @@ func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Servi
 	service.ResourceSpecService = NewResourceSpecService(conf, logger, data)
 	service.BillingService = NewBillingService(conf, logger, data)
 	service.JointCloudService = NewJointCloudService(conf, data)
+	service.SystemService = NewSystemService(conf, data)
+	service.ModelDeployService = NewModelDeployService(conf, logger, data)
+	service.PlatformStatisticsService = NewPlatformStatisticsService(data)
 	return service
 }

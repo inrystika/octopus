@@ -26,7 +26,7 @@
         </el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createdAt)  }}</span>
+            <span>{{ scope.row.createdAt | parseTime  }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -71,8 +71,6 @@
 <script>
 import storageConfigCreation from "./storageConfigCreation.vue"
 import storageConfigDetails from "./storageConfigDetails.vue"
-import { getErrorMsg } from '@/error/index'
-import { parseTime } from '@/utils/index'
 import { getStorageConfigList, deleteStorageConfig } from "@/api/platformManager"
 export default {
   name: "storageConfigList",
@@ -124,9 +122,6 @@ export default {
     handleCurrentChange(val) {
       this.searchData.pageIndex = val
       this.getStorageConfigList()
-    },
-    getErrorMsg(code) {
-      return getErrorMsg(code)
     },
     handleDialogClose() {
       this.$emit('close', false)
@@ -198,10 +193,7 @@ export default {
             })
           }
       })
-    },
-    parseTime(val) {
-      return parseTime(val)
-    },
+    }
   }
 }
 </script>

@@ -29,7 +29,9 @@
             </el-table-column>
             <el-table-column label="用户名">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
                 </template>
             </el-table-column>
             <el-table-column label="状态">
@@ -40,7 +42,7 @@
             </el-table-column>
             <el-table-column label="创建时间">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="运行时长" align="center">
@@ -54,10 +56,9 @@
                         v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
                         type="text"
                         @click="open(scope.row)"
-                    >
-                        停止
+                    >停止
                     </el-button>
-                    <el-button type="text" @click="handledetail( scope.row)">详情</el-button>
+                    <el-button type="text" @click="handledetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -80,9 +81,8 @@
 <script>
     import detailDialog from "./components/index.vue";
     import { getTraining, stopTraining, trainingDetail } from '@/api/trainingManager.js'
-    import { parseTime, formatDuring } from '@/utils/index'
+    import { formatDuring } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "TraningTask",
         components: {
@@ -104,7 +104,8 @@
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '成功', value: 'succeeded' }, { label: '失败', value: 'failed' }, { label: '运行中', value: 'running' }, { label: '等待中', value: 'pending' }, { label: '已停止', value: 'stopped' }, { label: '初始中', value: 'preparing' }]
                     },
-                    { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
+                    { type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' },
+                    { type: 'InputSelectGroup', label: '群组', prop: 'workspaceId', placeholder: '请输入群组名' }
 
                 ],
                 searchData: {
@@ -121,10 +122,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handledetail(row) {
                 trainingDetail(row.id).then(response => {
                     if (response.success) {
@@ -212,9 +209,6 @@
                 this.getTraining(this.searchData)
             },
             // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
             formatDuring(val) {
                 return formatDuring(val)
             }

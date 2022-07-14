@@ -27,13 +27,6 @@ export function getSpace(params) {
     method: 'get'
   })
 }
-export function changeSpace(data) {
-  return request({
-    url: `/v1/usermanage/user/${data.userId}/workspace`,
-    method: 'put',
-    data: { workspaceId: data.workspaceId }
-  })
-}
 // 查询用户配置
 export function getUserConfig() {
   return request({

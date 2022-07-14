@@ -8,11 +8,10 @@
         >
             <el-table :data="tableData" height="300">
                 <el-table-column property="name" label="模型名称" />
-                <el-table-column property="contentType" label="模型类型" />
                 <el-table-column property="size" label="大小" />
                 <el-table-column label="最后修改时间">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.lastModified) }}</span>
+                        <span style="margin-left: 10px">{{ scope.row.lastModified | parseTime }}</span>
                     </template>
                 </el-table-column>
             </el-table>
@@ -22,8 +21,6 @@
 
 <script>
     import { preview } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "PreviewDialog",
         props: {
@@ -45,10 +42,6 @@
 
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleDialogClose() {
                 this.$emit('close', false)
             },
@@ -63,12 +56,7 @@
                         });
                     }
                 })
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             }
-
         }
     }
 </script>

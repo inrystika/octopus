@@ -1,7 +1,10 @@
 package model
 
 import (
+	"database/sql/driver"
 	"server/common/dao"
+
+	commsql "server/common/sql"
 
 	"gorm.io/plugin/soft_delete"
 )
@@ -14,13 +17,23 @@ type Dataset struct {
 	SourceType int                   `gorm:"type:tinyint;not null;default:0;comment:1预置数据集 2用户数据集"`
 	Name       string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:名称"`
 	TypeId     string                `gorm:"type:varchar(100);not null;default:'';comment:数据类型"`
-	ApplyId    string                `gorm:"type:varchar(100);not null;default:'';comment:数据用途"`
+	ApplyIds   ApplyIds              `gorm:"type:json;comment:数据用途"`
 	Desc       string                `gorm:"type:varchar(1024);not null;default:'';comment:描述"`
 	DeletedAt  soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
 func (Dataset) TableName() string {
 	return "dataset"
+}
+
+type ApplyIds []string
+
+func (r ApplyIds) Value() (driver.Value, error) {
+	return commsql.Value(r)
+}
+
+func (r *ApplyIds) Scan(input interface{}) error {
+	return commsql.Scan(r, input)
 }
 
 type DatasetVersion struct {

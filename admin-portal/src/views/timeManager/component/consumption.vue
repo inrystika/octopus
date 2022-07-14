@@ -5,11 +5,19 @@
             :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
             <el-table-column :label="type=='user'?'用户名':'群组名'" align="center">
                 <template slot-scope="scope">
-                    <span v-if="type=='user'">{{ scope.row.userName }}</span>
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span v-if="type=='user'">{{ scope.row.userName }}</span>
+                    </el-tooltip>
                     <span v-if="type=='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="userName" label="用户名" v-if="type=='group'"> </el-table-column>
+            <el-table-column label="用户名" v-if="type=='group'">
+                <template slot-scope="scope">
+                    <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
+                        <span>{{ scope.row.userName }}</span>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
             <el-table-column prop="title" label="任务名称"> </el-table-column>
             <el-table-column label="消费机时(h)" align="center">
                 <template slot-scope="scope">
@@ -18,32 +26,30 @@
             </el-table-column>
             <el-table-column label="开始时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="结束时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.endedAt) }}</span>
+                    <span>{{ scope.row.endedAt | parseTime }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="类型" align="center" v-if="type=='user'">
+            <el-table-column label="类型" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.bizType==1?'训练':'notebook' }}</span>
+                    <span>{{ changeType(scope.row.bizType) }}</span>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination :current-page="pageIndex" :page-sizes="[10, 20, 50, 80]" :page-size="pageSize" :total="total"
-                layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
-                @current-change="handleCurrentChange" />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" :total="total" layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
     </div>
 </template>
 <script>
     import { getUserPay, getGroupPay } from '@/api/machineManager.js'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
-    import { parseTime, formatDuring } from '@/utils/index'
     export default {
         name: "UserMachineTime",
         components: {
@@ -54,46 +60,58 @@
         },
         data() {
             return {
-                pageIndex: 1,
-                pageSize: 10,
+                searchData: {
+                    pageIndex: 1,
+                    pageSize: 10
+                },
                 total: undefined,
                 tableData: [],
                 formLabelWidth: '120px',
                 flag: undefined,
                 form: { userName: '', userId: '', spaceName: '', spaceId: '', amount: undefined },
-                searchForm: [
-                    // { type: 'Time', label: '开始时间', prop: 'time', placeholder: '请选择时间段' },
-                    // { type: 'Input', label: '用户名', prop: 'userNameLike', placeholder: '请输入用户名' }
-                ],
-                type: ''
+                searchForm: [],
+                type: '',
+                searchKey: ''
 
             }
         },
 
         created() {
-            this.getPay()
+            this.getPay(this.searchData)
             if (this.consumptionTabType === 1) {
                 this.type = 'user'
+                this.searchForm = [{ type: 'InputSelectUser', label: '用户', prop: 'userId', placeholder: '请输入用户名' }]
             } else {
                 this.type = 'group'
+                this.searchForm = [{ type: 'InputSelectGroup', label: '群组', prop: 'spaceId', placeholder: '请输入群组名' }]
             }
         },
 
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
+            changeType(value) {
+                switch (value) {
+                    case 0:
+                        return ''
+                    case 1:
+                        return '训练'
+                    case 2:
+                        return 'NoteBook'
+                    default:
+                        return '模型部署'
+                }
             },
             handleSizeChange(val) {
-                this.pageSize = val
-                this.getPay()
+                this.searchData.pageSize = val
+                this.searchData.searchKey = this.searchKey
+                this.getPay(this.searchData)
             },
             handleCurrentChange(val) {
-                this.pageIndex = val
-                this.getPay()
+                this.searchData.pageIndex = val
+                this.searchData.searchKey = this.searchKey
+                this.getPay(this.searchData)
             },
             getPay(data) {
-                if (!data) { data = { pageIndex: this.pageIndex, pageSize: this.pageSize } }
+                if (!data) { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize } }
                 if (data.time && data.time.length !== 0) {
                     data.startedAtGte = data.time[0] / 1000
                     data.startedAtLt = data.time[1] / 1000
@@ -125,15 +143,13 @@
                     })
                 }
             },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
-            },
-
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.pageIndex, pageSize: this.pageSize })
+                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
                 this.getPay(data)
+                if (val.searchKey) {
+                    this.searchKey = val.searchKey
+                }
             },
         }
     }

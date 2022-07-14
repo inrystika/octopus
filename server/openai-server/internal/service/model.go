@@ -6,7 +6,6 @@ import (
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	ss "server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -32,9 +31,12 @@ func NewModelService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) a
 // 查询预置模型列表
 func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRequest) (*api.ListPreModelReply, error) {
 	reply, err := s.data.ModelClient.ListPreModel(ctx, &innterapi.ListPreModelRequest{
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -58,17 +60,17 @@ func (s *ModelService) ListPreModel(ctx context.Context, req *api.ListPreModelRe
 
 // 查询我的模型列表
 func (s *ModelService) ListMyModel(ctx context.Context, req *api.ListMyModelRequest) (*api.ListMyModelReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.ListMyModel(ctx, &innterapi.ListMyModelRequest{
-		SpaceId:   spaceId,
-		UserId:    userId,
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		SpaceId:      spaceId,
+		UserId:       userId,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -92,16 +94,16 @@ func (s *ModelService) ListMyModel(ctx context.Context, req *api.ListMyModelRequ
 
 // 查询公共模型列表
 func (s *ModelService) ListCommModel(ctx context.Context, req *api.ListCommModelRequest) (*api.ListCommModelReply, error) {
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.ListCommModel(ctx, &innterapi.ListCommModelRequest{
-		SpaceId:   spaceId,
-		PageIndex: req.PageIndex,
-		PageSize:  req.PageSize,
-		SearchKey: req.SearchKey,
+		SpaceId:      spaceId,
+		PageIndex:    req.PageIndex,
+		PageSize:     req.PageSize,
+		SearchKey:    req.SearchKey,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -125,10 +127,7 @@ func (s *ModelService) ListCommModel(ctx context.Context, req *api.ListCommModel
 
 // 查询模型版本列表
 func (s *ModelService) ListModelVersion(ctx context.Context, req *api.ListModelVersionRequest) (*api.ListModelVersionReply, error) {
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.ListModelVersion(ctx, &innterapi.ListModelVersionRequest{
 		ModelId:   req.ModelId,
@@ -176,10 +175,7 @@ func (s *ModelService) ListModelVersion(ctx context.Context, req *api.ListModelV
 
 // 查询公共模型版本列表
 func (s *ModelService) ListCommModelVersion(ctx context.Context, req *api.ListCommModelVersionRequest) (*api.ListCommModelVersionReply, error) {
-	_, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.ListCommModelVersion(ctx, &innterapi.ListCommModelVersionRequest{
 		SpaceId:   spaceId,
@@ -209,10 +205,7 @@ func (s *ModelService) ListCommModelVersion(ctx context.Context, req *api.ListCo
 
 // 分享模型版本到公共模型
 func (s *ModelService) ShareModelVersion(ctx context.Context, req *api.ShareModelVersionRequest) (*api.ShareModelVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.ShareModelVersion(ctx, &innterapi.ShareModelVersionRequest{
 		SpaceId:          spaceId,
@@ -232,10 +225,7 @@ func (s *ModelService) ShareModelVersion(ctx context.Context, req *api.ShareMode
 
 // 取消分享模型版本到公共模型
 func (s *ModelService) CloseShareModelVersion(ctx context.Context, req *api.CloseShareModelVersionRequest) (*api.CloseShareModelVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.CloseShareModelVersion(ctx, &innterapi.CloseShareModelVersionRequest{
 		SpaceId:          spaceId,
@@ -255,10 +245,7 @@ func (s *ModelService) CloseShareModelVersion(ctx context.Context, req *api.Clos
 
 // 删除我的模型版本
 func (s *ModelService) DeleteMyModelVersion(ctx context.Context, req *api.DeleteMyModelVersionRequest) (*api.DeleteMyModelVersionReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.DeleteMyModelVersion(ctx, &innterapi.DeleteMyModelVersionRequest{
 		SpaceId: spaceId,
@@ -277,10 +264,7 @@ func (s *ModelService) DeleteMyModelVersion(ctx context.Context, req *api.Delete
 
 // 删除我的模型
 func (s *ModelService) DeleteMyModel(ctx context.Context, req *api.DeleteMyModelRequest) (*api.DeleteMyModelReply, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.DeleteMyModel(ctx, &innterapi.DeleteMyModelRequest{
 		SpaceId: spaceId,
@@ -392,6 +376,8 @@ func (s *ModelService) modelTransfer(ctx context.Context, model *innterapi.Model
 		modelDetail.AlgorithmName = ""
 	} else {
 		modelDetail.AlgorithmName = algorithmReply.Algorithm.AlgorithmName
+		modelDetail.FrameWorkId = algorithmReply.Algorithm.FrameworkId
+		modelDetail.FrameWorkName = algorithmReply.Algorithm.FrameworkName
 	}
 
 	return modelDetail, nil
@@ -410,29 +396,8 @@ func (s *ModelService) modelVersionTransfer(modelVersion *innterapi.VersionDetai
 	return modelVersionDetail, nil
 }
 
-func (s *ModelService) getUserIdAndSpaceId(ctx context.Context) (string, string, error) {
-	userId := commctx.UserIdFromContext(ctx)
-	if userId == "" {
-		err := errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	session := ss.SessionFromContext(ctx)
-	if session == nil {
-		err := errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-		s.log.Errorw(ctx, err)
-		return "", "", err
-	}
-
-	return userId, session.GetWorkspace(), nil
-}
-
 func (s *ModelService) viewCtrl(ctx context.Context, modelId string, version string) (bool, error) {
-	userId, spaceId, err := s.getUserIdAndSpaceId(ctx)
-	if err != nil {
-		return false, err
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	reply, err := s.data.ModelClient.QueryModelVersion(ctx, &innterapi.QueryModelVersionRequest{
 		ModelId: modelId,

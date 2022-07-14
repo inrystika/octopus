@@ -47,7 +47,6 @@
 <script>
 import { createPlatform } from "@/api/platformManager"
 import { getResourcePool } from '@/api/resourceManager.js'
-import { getErrorMsg } from '@/error/index'
 export default {
   name: "createDialog",
   data() {
@@ -83,9 +82,6 @@ export default {
     this.getResourcePool();
   },
   methods: {
-    getErrorMsg(code) {
-      return getErrorMsg(code)
-    },
     handleDialogClose() {
       this.$emit('close', false)
     },

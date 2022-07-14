@@ -25,7 +25,6 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { addPreAlgorithmVersion } from "@/api/modelDev.js";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreAlgorithmVersionCreation",
     components: {
@@ -35,10 +34,6 @@
       row: {
         type: Object,
         default: () => { }
-      },
-      dialogType: {
-        type: Boolean,
-        default: ""
       }
     },
     data() {
@@ -59,10 +54,7 @@
           ]
         },
         CreateFormVisible: true,
-        pageIndex: 1,
-        pageSize: 20,
         formLabelWidth: "120px",
-        algorithmList: [],
         close: true
       }
     },
@@ -71,9 +63,6 @@
 
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleDialogClose() {
         this.$emit('close', false)
       },

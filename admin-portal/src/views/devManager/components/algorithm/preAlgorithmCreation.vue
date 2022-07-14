@@ -40,17 +40,10 @@
 <script>
   import upload from '@/components/upload/index.vue'
   import { addPreAlgorithm, algorithmType, frameType } from "@/api/modelDev";
-  import { getErrorMsg } from '@/error/index'
   export default {
     name: "PreAlgorithmCreation",
     components: {
       upload
-    },
-    props: {
-      // row: {
-      //   type: Object,
-      //   default: {}
-      // }
     },
     data() {
       return {
@@ -112,9 +105,6 @@
       this.algorithmFrame()
     },
     methods: {
-      getErrorMsg(code) {
-        return getErrorMsg(code)
-      },
       handleDialogClose() {
         this.$emit('close', false)
       },
@@ -160,7 +150,7 @@
       },
       // 获取算法类型
       algorithmType() {
-        algorithmType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        algorithmType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.optionType = response.data.lables
           } else {
@@ -174,7 +164,7 @@
       },
       // 获取算法框架
       algorithmFrame() {
-        frameType({ pageIndex: 1, pageSize: 20 }).then(response => {
+        frameType({ pageIndex: 1, pageSize: 50 }).then(response => {
           if (response.success) {
             this.optionFrame = response.data.lables
           } else {

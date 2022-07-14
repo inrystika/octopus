@@ -18,7 +18,7 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 	params := make([]interface{}, 0)
 	querySql := "1 = 1"
 	if req.SpaceId != "" {
-		querySql += " and space_id = ? "
+		querySql += " and algorithm_access.space_id = ? "
 		params = append(params, req.SpaceId)
 	}
 	if req.AlgorithmId != "" {
@@ -27,29 +27,29 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 	}
 
 	if req.CreatedAtGte != 0 {
-		querySql += " and created_at >= ? "
+		querySql += " and algorithm_access.created_at >= ? "
 		params = append(params, time.Unix(req.CreatedAtGte, 0))
 	}
 
 	if req.CreatedAtLt != 0 {
-		querySql += " and created_at < ? "
+		querySql += " and algorithm_access.created_at < ? "
 		params = append(params, time.Unix(req.CreatedAtLt, 0))
 	}
 
 	// 模糊搜索
 	if req.SearchKey != "" {
-		querySql += " and (algorithm_name like ? "
+		querySql += " and (algorithm_access.algorithm_name like ? "
 		params = append(params, "%"+req.SearchKey+"%")
-		querySql += " or algorithm_descript like ? )"
+		querySql += " or algorithm_access.algorithm_descript like ? )"
 		params = append(params, "%"+req.SearchKey+"%")
 	}
 
 	if req.NameLike != "" {
-		querySql += " and algorithm_name like ? "
+		querySql += " and algorithm_access.algorithm_name like ? "
 		params = append(params, "%"+req.NameLike+"%")
 	}
-
-	db = db.Where(querySql, params...)
+	db = db.Joins("inner join (select algorithm_id as al_id from algorithm )al on al.al_id = algorithm_access.algorithm_id")
+	db = db.Model(&model.AlgorithmAccess{}).Where(querySql, params...)
 
 	var totalSize int64
 	res := db.Count(&totalSize)
@@ -59,7 +59,6 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		d.log.Errorw(ctx, err)
 		return 0, nil, err
 	}
-
 	// limit语句拼接
 	if req.PageSize > 0 && req.PageIndex > 0 {
 		db = db.Limit(req.PageSize).
@@ -76,15 +75,14 @@ func (d *algorithmDao) ListAlgorithmAccess(ctx context.Context, req *model.Algor
 		db = db.Order(orderSql)
 	}
 	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
+		orderSql := fmt.Sprintf("algorithm_access.created_at %s", req.CreatedAtSort)
 		db = db.Order(orderSql)
 	}
 
 	if req.SortBy != "" {
 		db = req.Order(db)
 	}
-
-	db = db.Find(&accessAlgorithms)
+	db = db.Select("algorithm_access.*").Find(&accessAlgorithms)
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		err := errors.Errorf(db.Error, errors.ErrorDBFindFailed)
 		d.log.Errorw(ctx, err)
@@ -405,6 +403,20 @@ func (d *algorithmDao) AddAlgorithmAccessVersion(ctx context.Context, req *model
 
 	d.log.Infof(ctx, "successfully AddAlgorithmAccessVersion, id=%s|accessId=%s|algorithmId=%s|Versi=%s", req.Id, req.AlgorithmAccessId, req.AlgorithmId, req.AlgorithmVersion)
 	return req, nil
+}
+
+func (d *algorithmDao) UpdateAlgorithmAccessVersion(ctx context.Context, req *model.AlgorithmAccessVersion) error {
+	db := d.db.Model(&model.AlgorithmAccessVersion{})
+
+	if req.Id == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := db.Where("id = ?", req.Id).Updates(req)
+
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
 }
 
 // 批量删除公共算法

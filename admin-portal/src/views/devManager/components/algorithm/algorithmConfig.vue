@@ -5,7 +5,7 @@
             <el-tag v-for="(tag,index) in dynamicType" :key="index" :closable="tag.sourceType!==1"
                 :disable-transitions="false" @click="editTag(tag,index,'TYPE')" @close="handleClose(tag,'TYPE')">
                 <span v-if="index!=typeNum"> {{tag.lableDesc }}</span>
-                <input class="custom_input" type="text" v-model="typeValue" v-if="index==typeNum" ref="editeTypeInput"
+                <input class="custom_input" type="text" v-model="typeValue" v-if="index==typeNum" ref="editTypeInput"
                     @keyup.enter.native="handleInput(tag,'TYPE')" @blur="handleInput(tag,'TYPE')">
             </el-tag>
             <el-input class="input-new-tag" v-if="inputTypeVisible" v-model="typeValue" ref="saveTypeInput" size="small"
@@ -20,7 +20,7 @@
                 :disable-transitions="false" @click="editTag(tag,index,'FRAME')" @close="handleClose(tag,'FRAME')">
                 <span v-if="index!=frameNum"> {{tag.lableDesc }}</span>
                 <input class="custom_input" type="text" v-model="frameValue" v-if="index==frameNum"
-                    ref="editeFrameInput" @keyup.enter.native="handleInput(tag,'FRAME')"
+                    ref="editFrameInput" @keyup.enter.native="handleInput(tag,'FRAME')"
                     @blur="handleInput(tag,'FRAME')">
             </el-tag>
             <el-input class="input-new-tag" v-if="inputFrameVisible" v-model="frameValue" ref="saveFrameInput"
@@ -32,7 +32,6 @@
 </template>
 <script>
     import { algorithmType, addAlgorithmType, deleteAlgorithmType, updateAlgorithmType, frameType, addFrameType, deleteFrameType, updateFrameType } from "@/api/modelDev"
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: 'star-input-tag',
         created() {
@@ -177,7 +176,7 @@
                     if (val === 'TYPE') {
                         this.typeNum = index;
                         this.$nextTick(_ => {
-                            this.$refs.editeTypeInput[0].focus();
+                            this.$refs.editTypeInput[0].focus();
                         });
                         this.typeValue = tag.lableDesc;
                         this.typeId = tag.id
@@ -185,7 +184,7 @@
                     else {
                         this.frameNum = index;
                         this.$nextTick(_ => {
-                            this.$refs.editeFrameInput[0].focus();
+                            this.$refs.editFrameInput[0].focus();
                         });
                         this.frameValue = tag.lableDesc;
                         this.frameId = tag.id
@@ -229,9 +228,6 @@
                     )
                 }
 
-            },
-            getErrorMsg(code) {
-                return getErrorMsg(code)
             },
             algorithmType() {
                 algorithmType({ pageIndex: 1, pageSize: 20 }).then(

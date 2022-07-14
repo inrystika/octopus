@@ -24,6 +24,8 @@ service Develop {
   rpc GetNotebook (GetNotebookRequest) returns (GetNotebookReply);
   //获取任务事件列表
   rpc GetNotebookEventList (NotebookEventListRequest) returns (NotebookEventListReply);
+  // 保存notebook
+  rpc SaveNotebook (SaveNotebookRequest) returns (SaveNotebookReply);
   // 查询事件记录列表
   rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply);
 }
@@ -40,6 +42,7 @@ message CreateNotebookRequest {
   string datasetId = 9;
   string datasetVersion = 10;
   int32 taskNumber = 11[(validate.rules).int32 = {gte:1}];
+  string resourcePool = 12;
 }
 
 message CreateNotebookReply {
@@ -72,7 +75,8 @@ message DeleteNotebookReply {
 
 message ListNotebookRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string sortBy = 3;
   string orderBy = 4[(validate.rules).string = {in: ["", "asc", "desc"]}];
   int64 createdAtGte = 5;
@@ -86,6 +90,7 @@ message ListNotebookRequest {
 message Notebook {
   message Task {
     string url = 1;
+    string name = 2;
   }
   int64 createdAt = 1;
   int64 updatedAt = 2;
@@ -128,13 +133,13 @@ message NotebookEventListRequest {
   // 页码，从1开始
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
   // 页大小，最小1条，最大100条
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   //任务ID
   string id = 3[(validate.rules).string = {min_len: 1}];
   //子任务序号，从0开始
-  int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lt:100}];
+  int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lte:100}];
   //副本序号，从0开始
-  int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lt:100}];
+  int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lte:100}];
 }
 
 message NotebookEventListReply {
@@ -155,6 +160,18 @@ message NotebookEvent{
   string message = 4;
 }
 
+message SaveNotebookRequest {
+  string notebookId = 1[(validate.rules).string = {min_len: 1}];
+  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  string imageName = 3[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|-]*$", max_len:50}];
+  string imageVersion = 4[(validate.rules).string = {pattern: "^[a-zA-Z][\\w|\\-|\\.]*$", max_len: 50}];
+  string layerDescription = 5;
+}
+
+message SaveNotebookReply {
+
+}
+
 message NotebookEventRecord {
   int64 time = 1;
   string notebookId = 2;
@@ -164,7 +181,8 @@ message NotebookEventRecord {
 
 message ListNotebookEventRecordRequest {
   int64 pageIndex = 1[(validate.rules).int64 = {gte:1}];
-  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lt:100}];
+  // 页大小，最小1条，最大100条
+  int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   string notebookId = 3[(validate.rules).string = {min_len: 1}];
 }
 

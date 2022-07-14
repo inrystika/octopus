@@ -10,6 +10,7 @@
 
 <script>
   import notebookList from "./components/notebook/notebookList.vue";
+  import { clearProgress } from '@/utils/index.js'
   export default {
     components: {
       notebookList
@@ -28,15 +29,14 @@
       }
     },
     mounted() {
-      window.addEventListener('beforeunload', e => {
-        sessionStorage.clear()
+      window.addEventListener("beforeunload", (e) => {
+        clearProgress()
       });
-
     },
     destroyed() {
-      window.removeEventListener('beforeunload', e => {
-        sessionStorage.clear()
-      })
+      window.removeEventListener("beforeunload", (e) => {
+        clearProgress()
+      });
     },
   }
 </script>

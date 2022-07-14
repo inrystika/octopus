@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户名称/邮箱 搜索':'群组名称 搜索'"
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户/邮箱 搜索':'群组 搜索'"
             @searchData="getSearchData" />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
@@ -35,22 +35,23 @@
             </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.createdAt) }}</span>
+                    <span>{{ scope.row.createdAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="修改时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ parseTime(scope.row.updatedAt) }}</span>
+                    <span>{{ scope.row.updatedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
+                    <el-button v-if="user" type="text" @click="handleUserEdit(scope.row)">编辑</el-button>
                     <el-button v-if="scope.row.status===2 && user" type="text" @click="handleFreeze(scope.row)">冻结
                     </el-button>
                     <el-button v-if="scope.row.status===1 && user" type="text" @click="handleThaw( scope.row)">激活
                     </el-button>
                     <el-button v-if="user" type="text" @click="handleReset(scope.row)">重置密码</el-button>
-                    <el-button v-if="group" type="text" @click="handleEdite(scope.row)">编辑</el-button>
+                    <el-button v-if="group" type="text" @click="handleEdit(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'用户详情':'群组详情' }}</el-button>
                     <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
@@ -65,23 +66,15 @@
         <!-- 新增对话框 -->
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
-        <operateDialog
-            v-if="operateVisible"
-            :row="row"
-            :user-type="change"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-        />
+        <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
+            @close="close" />
         <!-- 用户配置对话框 -->
-        <userConfig
-          v-if="userConfigVisible"
-          :row="row"
-          @cancel="cancel"
-          @confirm="confirm"
-          @close="close"
-        >
+        <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
+            @confirm="confirm" @close="close">
         </userConfig>
+        <!-- 资源池绑定对话框 -->
+        <userEdit v-if="userEdit" :userResourcePoolList="userResourcePoolList" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
+        </userEdit>
         <!-- 详情对话框 -->
         <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
             class="title" :close-on-click-modal="false">
@@ -100,20 +93,22 @@
 </template>
 
 <script>
-    import { getUserList, groupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
-    import { parseTime } from '@/utils/index'
+    import { getUserList, getGroupList, freeze, activation, deleteGroup, userDetail, groupDetail } from '@/api/userManager.js'
+    import { getResourcePool } from '@/api/resourceManager.js'
+    import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import operateDialog from "./components/operateDialog.vue";
     import addDialog from "./components/addDialog.vue";
     import userConfig from "./components/userConfig.vue";
+    import userEdit from "./components/userEdit.vue";
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
     export default {
         name: "UserList",
         components: {
             operateDialog,
             addDialog,
             searchForm,
-            userConfig
+            userConfig,
+            userEdit
         },
         props: {
             userTabType: { type: Number, default: undefined }
@@ -126,6 +121,8 @@
                 operateVisible: false,
                 detailVisible: false,
                 userConfigVisible: false,
+                userEdit: false,
+                userResourcePoolList: [],
                 show: false,
                 user: false,
                 group: false,
@@ -142,7 +139,9 @@
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
-                }
+                },
+                conKey: [],
+                conValue: {}
             }
         },
         created() {
@@ -153,10 +152,10 @@
                     {
                         type: 'Select', label: '状态', prop: 'status', placeholder: '请选择状态',
                         options: [{ label: '已冻结', value: 1 }, { label: '已激活', value: 2 }]
-                    },
-                    { type: 'Input', label: '用户名', prop: 'fullName', placeholder: '请输入用户名' }
+                    }
                 ]
                 this.flag = 'user'
+
             } else {
                 this.user = false
                 this.group = true
@@ -172,9 +171,23 @@
         //     this.timer = null;
         // },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
+            handleUserEdit(row) {
+                this.row = row
+                getResourcePool().then(response => {
+                    if (response.success) {
+                        if (response.data !== null && response.data.resourcePools !== null) {
+                            this.userEdit = true
+                            this.userResourcePoolList =response.data.resourcePools
+                        } else {
+                            this.userResourcePoolList = []
+                        }
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
             },
             handleFreeze(row) {
                 freeze(row.id).then(response => {
@@ -208,7 +221,7 @@
                     }
                 })
             },
-            handleEdite(row) {
+            handleEdit(row) {
                 this.row = row
                 this.operateVisible = true
             },
@@ -234,7 +247,8 @@
             },
             handleUserConfig(row) {
                 this.row = row
-                this.userConfigVisible = true
+                this.getUserConfigKey(row)
+                // this.userConfigVisible = true
             },
             handleDetail(row) {
                 if (this.user) {
@@ -276,18 +290,21 @@
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             confirm(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             close(val) {
                 this.CreateVisible = val
                 this.operateVisible = val
                 this.userConfigVisible = val
+                this.userEdit = val
                 this.getList(this.searchData)
             },
             create() {
@@ -307,7 +324,7 @@
                         }
                     })
                 } else {
-                    groupList(data).then(response => {
+                    getGroupList(data).then(response => {
                         if (response.success) {
                             this.total = response.data.totalSize
                             this.tableData = response.data.workspaces
@@ -325,11 +342,30 @@
                 this.searchData = Object.assign(val, this.searchData)
                 this.getList(this.searchData)
             },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
+            // 获取用户配置信息
+            getUserConfigKey(row) {
+                getUserConfigKey().then(response => {
+                    if (response.success) {
+                        this.conKey = response.data.configKeys
+                        getUserConfig(row.id).then(response => {
+                            if (response.success) {
+                                this.conValue = response.data.config
+                                this.userConfigVisible = true
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
             }
-
         }
     }
 </script>

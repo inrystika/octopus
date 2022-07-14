@@ -13,14 +13,13 @@
                 <el-table-column prop="modelDescript" label="模型描述" align="center" />
                 <el-table-column label="创建时间" align="center">
                     <template slot-scope="scope">
-                        <span style="margin-left: 10px">{{ parseTime(scope.row.createdAt) }}</span>
+                        <span>{{ scope.row.createdAt | parseTime }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
                         <el-button type="text" @click="getVersionList(scope.row)">版本列表</el-button>
                         <el-button v-if="type===1" type="text" @click="open(scope.row)">删除</el-button>
-                        <el-button v-if="type===3" type="text" @click="deploy(scope.row)">部署</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -32,16 +31,15 @@
         </div>
         <!-- 版本列表对话框 -->
         <versionList v-if="FormVisible" :model-id="modelId" :model-type="type" :model-name="modelName" @close="close"
-            @cancel="cancel" @confirm="confirm" />
+            @cancel="cancel" @confirm="confirm" :showDeploy="showDeploy" :model-frame="modelFrame" />
     </div>
 </template>
 
 <script>
     import versionList from './components/versionList.vue'
     import { getMyModel, getPreModel, getPublicModel, deleteMyModel } from '@/api/modelManager.js'
-    import { parseTime } from '@/utils/index'
     import searchForm from '@/components/search/index.vue'
-    import { getErrorMsg } from '@/error/index'
+    import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList } from '@/api/modelDev'
     export default {
         name: "MyModel",
         components: {
@@ -60,12 +58,14 @@
                 dialogVisible: false,
                 modelId: undefined,
                 type: undefined,
-                searchForm: [],
+                modelFrame: undefined,
+                searchForm: [{ type: 'Time', label: '创建时间', prop: 'time', placeholder: '请选择创建时间' }],
                 searchData: {
                     pageIndex: 1,
                     pageSize: 10
                 },
-                modelName: ''
+                modelName: '',
+                showDeploy: false
             }
         },
         created() {
@@ -75,10 +75,6 @@
             }
         },
         methods: {
-            // 错误码
-            getErrorMsg(code) {
-                return getErrorMsg(code)
-            },
             handleSizeChange(val) {
                 this.searchData.pageSize = val
                 this.getModel(this.searchData)
@@ -106,6 +102,14 @@
                 this.FormVisible = true;
                 this.modelId = val.modelId
                 this.modelName = val.modelName
+                this.modelFrame = val.frameWorkName
+                if (this.modelFrame === 'Pytorch' || this.modelFrame == 'TensorFlow') {
+                    this.showDeploy = true
+                }
+                else{
+                    this.showDeploy = false
+                }
+
             },
             handleDelete(row) {
                 const data = JSON.parse(JSON.stringify(row));
@@ -176,11 +180,12 @@
             getSearchData(val) {
                 this.searchData = { pageIndex: 1, pageSize: this.searchData.pageSize }
                 this.searchData = Object.assign(val, this.searchData)
+                if (this.searchData.time) {
+                    this.searchData.createdAtGte = this.searchData.time[0] / 1000
+                    this.searchData.createdAtLt = this.searchData.time[1] / 1000
+                    delete this.searchData.time
+                }
                 this.getModel(this.searchData)
-            },
-            // 时间戳转换日期
-            parseTime(val) {
-                return parseTime(val)
             },
             // 删除确认
             open(val) {
@@ -196,10 +201,6 @@
                         message: '已取消删除'
                     });
                 });
-            },
-            // 预制模型部署
-            deploy(val) {
-                this.$router.push({ name: 'modelDeploy', params: { data: val } })
             }
 
         }

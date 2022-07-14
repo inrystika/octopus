@@ -13,6 +13,7 @@ import (
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/utils"
+	"strings"
 	"time"
 
 	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
@@ -20,6 +21,8 @@ import (
 	"server/common/log"
 
 	commapi "server/common/api/v1"
+
+	nav1 "nodeagent/apis/agent/v1"
 
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -44,6 +47,7 @@ type developService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type DevelopService interface {
@@ -52,9 +56,12 @@ type DevelopService interface {
 }
 
 const (
-	k8sTaskNamePrefix = "task"
-	servicePort       = 8888
-	shmResource       = "shm"
+	k8sTaskNamePrefix         = "task"
+	servicePort               = 8888
+	shmResource               = "shm"
+	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
+	nodeActionLabelImageId    = "image.octopus.dev/id"
+	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
 func buildTaskName(idx int) string {
@@ -77,7 +84,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
-	billingService api.BillingServiceServer) (DevelopService, error) {
+	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
 	log := log.NewHelper("DevelopService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -100,6 +107,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.startNotebookTask()
@@ -142,20 +150,25 @@ func upsertFeature(data *data.Data, baseServerAddr string) error {
 type closeFunc func(ctx context.Context) error
 
 func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) (*startJobInfo, error) {
-	queue := ""
+	queue := nb.ResourcePool
 	if nb.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: nb.UserId})
 		if err != nil {
 			return nil, err
 		}
-		queue = pool.ResourcePool.Name
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
+		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: nb.WorkspaceId})
 		if err != nil {
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
+		}
 	}
 
 	image, err := s.imageService.FindImage(ctx, &api.FindImageRequest{ImageId: nb.ImageId})
@@ -539,6 +552,12 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			ReadOnly:  false,
 		},
 		{
+			Name:      "data",
+			MountPath: s.conf.Service.DockerUserHomePath,
+			SubPath:   common.GetUserHomePath(nb.UserId),
+			ReadOnly:  false,
+		},
+		{
 			Name:      "localtime",
 			MountPath: "/etc/localtime",
 		},
@@ -617,6 +636,16 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 				},
 			},
 		}
+
+		for k, _ := range startJobInfo.resources {
+			if strings.HasPrefix(string(k), common.RdmaPrefix) {
+				task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
+					Capabilities: &v1.Capabilities{
+						Add: []v1.Capability{"IPC_LOCK"},
+					},
+				}
+			}
+		}
 		tasks = append(tasks, task)
 	}
 
@@ -630,12 +659,13 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      nbJob.Id,
 		},
 		Spec: vcBatch.JobSpec{
-			MinAvailable:  1,
+			MinAvailable:  int32(nb.TaskNumber),
 			Queue:         startJobInfo.queue,
 			SchedulerName: "volcano",
+			//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
 			Plugins: map[string][]string{
 				"env": {},
-				"svc": {},
+				"svc": {"--disable-network-policy"},
 			},
 			Policies: []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
@@ -755,10 +785,17 @@ func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, 
 
 func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
+		var upLoadFileSize string = ""
+		if s.conf.Service.Develop.IsSetUploadFileSize {
+			upLoadFileSize = "1000m"  // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
+		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
+				Annotations: map[string]string{
+					kubeAnnotationsProxyBodySize: upLoadFileSize,
+				},
 			},
 			Spec: v1beta1.IngressSpec{
 				Rules: []v1beta1.IngressRule{
@@ -871,7 +908,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
 		for i := 0; i < n.TaskNumber; i++ {
-			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Url: buildNotebookUrl(n.NotebookJobId, i)})
+			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.NotebookJobId, i)})
 		}
 		notebooks = append(notebooks, notebook)
 	}
@@ -920,6 +957,102 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 		TotalSize:      totalSize,
 		NotebookEvents: notebookEvents,
 	}, nil
+}
+
+func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	if err != nil {
+		return nil, err
+	}
+	if !pipeline.JobRunningState(notebook.Status) {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
+
+	// check saveNotebook action existed
+	podName := s.GetPodNameFromNoteBookTask(notebook, req.TaskName)
+	nodeAction, err := s.data.Cluster.GetNodeAction(ctx, notebook.UserId, podName)
+	if err != nil {
+		return nil, err
+	}
+	if nodeAction != nil {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookRepeatedToSave)
+	}
+
+	nodeName, containerId, err := s.getNotebookTaskContainer(ctx, notebook, req.TaskName)
+	if err != nil {
+		return nil, err
+	}
+
+	imageReply, err := s.imageService.AddImage(ctx, &api.AddImageRequest{
+		ImageName:    req.ImageName,
+		ImageVersion: req.ImageVersion,
+		UserId:       notebook.UserId,
+		SpaceId:      notebook.WorkspaceId,
+		IsPrefab:     api.ImageIsPrefab_IMAGE_IS_PREFAB_NO,
+		SourceType:   api.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED,
+		ImageDesc:    req.LayerDescription,
+	})
+	if err != nil {
+		return nil, err
+	}
+	nodeAction = &nav1.NodeAction{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: podName,
+			Labels: map[string]string{
+				nodeActionLabelNotebookId: req.NotebookId,
+				nodeActionLabelImageId:    imageReply.ImageId,
+			},
+		},
+		Spec: nav1.NodeActionSpec{
+			NodeName: nodeName,
+			Actions: nav1.Action{
+				Docker: &nav1.DockerAction{
+					CommitAndPush: &nav1.DockerCommitCommand{
+						Container:  containerId,
+						Repository: fmt.Sprintf("%s/%s", s.conf.Data.Harbor.Host, imageReply.ImageAddr),
+						Tag:        req.ImageVersion,
+						Author:     notebook.UserId,
+						Message:    req.LayerDescription,
+						Changes:    []string{},
+					},
+				},
+			},
+		},
+	}
+	_, err = s.imageService.UpdateImage(ctx, &api.UpdateImageRequest{
+		ImageId:     imageReply.ImageId,
+		ImageStatus: api.ImageStatus_IMAGE_STATUS_MAKING,
+	})
+	if err != nil {
+		s.log.Errorw(ctx, err)
+		return nil, err
+	}
+	if _, err := s.data.Cluster.CreateNodeAction(ctx, notebook.UserId, nodeAction); err != nil {
+		return nil, err
+	}
+
+	// acc node agent to commit image
+	return &api.SaveNotebookReply{}, nil
+}
+
+func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, taskName string) string {
+	return fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
+}
+
+func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, string, error) {
+	pod, err := s.data.Cluster.GetPod(ctx, notebook.UserId, s.GetPodNameFromNoteBookTask(notebook, taskName))
+	if err != nil {
+		return "", "", err
+	}
+	if pod.Status.Phase != v1.PodRunning {
+		return "", "", errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
+	for _, cs := range pod.Status.ContainerStatuses {
+		if cs.Name == taskName {
+			return pod.Spec.NodeName, strings.TrimPrefix(cs.ContainerID, "docker://"), nil
+		}
+	}
+	return "", "", errors.Errorf(nil, errors.ErrorNotebookNoFoundRuntimeContainer)
 }
 
 func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
