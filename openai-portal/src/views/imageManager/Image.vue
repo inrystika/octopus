@@ -93,7 +93,6 @@
             :disabled="scope.row.progress && scope.row.progress != 0"
             >删除</el-button
           >
-          <!-- <el-button @click="handleDelete(scope.row)" type="text">删除</el-button> -->
           <el-button
             v-if="!scope.row.isShared && scope.row.imageStatus === 3"
             type="text"

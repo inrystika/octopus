@@ -223,11 +223,7 @@
                     imageId: [
                         { required: true, message: '请选择镜像名称', trigger: 'change' }
                     ],
-                    // dataSetId: [
-                    //     { required: true, message: '请选择数据集名称', trigger: 'change' }
-                    // ],
                     dataSetVersion: [
-                        // { required: true, message: '请选择数据集版本', trigger: 'change' },
                         { validator: checkDatasetVersion, trigger: "blur" }
                     ],
                     isDistributed: [

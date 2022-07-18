@@ -55,7 +55,6 @@
 </template>
 <script>
     import { getInterface } from '@/api/themeChange.js'
-    // import { GetUrlParam } from '@/utils/index.js'
     import { mapGetters } from 'vuex'
     import store from '@/store'
     import { setToken } from '@/utils/auth'
@@ -160,7 +159,6 @@
     .el-aside {
         background-color: #1a1a23 !important;
         background: url('../../assets/octopus-login-pic.svg');
-        /* background-position: 9vh 23vh; */
         background-position: 80px 200px;
         background-repeat: no-repeat;
         background-size: 100% 100%;

@@ -159,13 +159,11 @@
       overflow: hidden;
       margin: 0 auto;
 
-      /* background-color: #409EFF; */
       .title {
         float: right;
         margin: 0px 50px 0 0;
         font-size: 1.5rem;
         font-family: Adobe Heiti Std;
-        /* color: #d3e3ff; */
         color: #d3e3ff;
         text-shadow: 0px 2px 2px rgb(64, 158, 255);
 

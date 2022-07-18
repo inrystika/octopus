@@ -104,7 +104,6 @@
                 this.uploadData.type = "myDatasetCreation"
                 this.uploadData.version = response.data.version
               } else {
-                // this.showUpload = false
                 this.$message({
                   message: this.getErrorMsg(response.error.subcode),
                   type: 'warning'
@@ -134,7 +133,6 @@
           if (response.success) {
             this.typeOptions = response.data.lables
           } else {
-            // this.showUpload = false
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
               type: 'warning'
@@ -148,7 +146,6 @@
           if (response.success) {
             this.useOptions = response.data.lables
           } else {
-            // this.showUpload = false
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
               type: 'warning'
