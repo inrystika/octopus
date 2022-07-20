@@ -49,9 +49,10 @@ spec:
       annotations:
         seccomp.security.alpha.kubernetes.io/pod: runtime/default
     spec:
-{{- with .Values.global.nodeSelector }}
+      {{- with .Values.global.nodeSelector }}
       nodeSelector:
-{{ toYaml . | indent 8 }}
+        {{ toYaml . | indent 8 }}
+      {{- end }}}
       serviceAccountName: hccl-controller
       containers:
         - name: hccl-controller
