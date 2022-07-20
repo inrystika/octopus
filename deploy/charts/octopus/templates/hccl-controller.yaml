@@ -52,7 +52,6 @@ spec:
 {{- with .Values.global.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
-      {{- end }}
       serviceAccountName: hccl-controller
       containers:
         - name: hccl-controller
