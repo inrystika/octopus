@@ -105,17 +105,6 @@ storageType:
 | `pvc.logstash.requests`     | logstash服务请求存储空间                                     | `100Gi`                |
 
 
-#### 服务taskset参数
-
-| Parameter           | Description                                                          | Default                        |
-|---------------------|----------------------------------------------------------------------|--------------------------------|
-| `taskset.replicaCount`      | taskset服务实例数                   | `1`                          |
-| `taskset.adminToken`  | 访问taskset服务的管理员token                       | `KLtmMug9BDvvRjlg`                          |
-| `taskset.image.pullPolicy`      | taskset服务镜像拉取策略                                | `nil`                           |
-| `taskset.image.address` | taskset服务镜像地址                           | `nil`                           |
-| `taskset.image.pathname`     | taskset服务镜像目录名                                     | `nil`                |
-| `taskset.image.name`     | taskset服务镜像名称                                     | `pipeline`                |
-
 #### 服务base-server参数
 
 | Parameter           | Description                                                          | Default                        |

@@ -27,7 +27,7 @@ metadata:
 {{ include "scheduler.labels" . | indent 4 }}
 data:
   scheduler-conf.yaml: |
-    actions: "enqueue, allocate, privilege, backfill"
+    actions: "enqueue, allocate, backfill"
     tiers:
     - plugins:
       - name: priority

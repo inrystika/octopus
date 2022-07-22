@@ -74,76 +74,6 @@ app.kubernetes.io/instance: {{ include "storage.fullname" . }}
 {{- end -}}
 
 
-
-{{/******************taskset-core******************/}}
-
-{{- define "taskset-core.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "taskset-core.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- printf "%s-taskset-core" .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "taskset-core.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "taskset-core.core-labels" -}}
-helm.sh/chart: {{ include "taskset-core.chart" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end -}}
-
-{{- define "taskset-core.select-labels" -}}
-app.kubernetes.io/name: {{ include "taskset-core.name" . }}
-app.kubernetes.io/instance: {{ include "taskset-core.fullname" . }}
-app.kubernetes.io/part-of: {{ include "taskset-core.name" . }}
-{{- end -}}
-
-{{- define "taskset-core.resource-labels" -}}
-octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ include "taskset-core.fullname" . }}_{{ default .Chart.AppVersion .Values.taskset.image.tag }}
-{{- end -}}
-
-{{- define "taskset-core.labels" -}}
-{{ include "taskset-core.core-labels" . }}
-{{ include "taskset-core.select-labels" . }}
-{{ include "taskset-core.resource-labels" . }}
-{{- end -}}
-
-{{- define "taskset-core.serviceAccountName" -}}
-{{ include "taskset-core.core-labels" . }}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "octopus.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{- define "taskset-core.port" -}}
-{{- printf "8080" -}}
-{{- end -}}
-
-{{- define "taskset-core.serviceName" -}}
-{{- printf "%s" (include "taskset-core.fullname" .)  -}}
-{{- end -}}
-
-{{- define "taskset-core.serviceAddr" -}}
-{{- printf "http://%s:%s" (include "taskset-core.serviceName" .) (include "taskset-core.port" .) -}}
-{{- end -}}
-
-
 {{/******************admin-server******************/}}
 
 {{- define "adminserver.name" -}}
@@ -247,59 +177,6 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 
 {{- define "openaiserver.port" -}}
 {{- printf "8001" -}}
-{{- end -}}
-
-
-{{/******************platform-server******************/}}
-
-{{- define "platformserver.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "platformserver.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- printf "%s-platformserver" .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "platformserver.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "platformserver.core-labels" -}}
-helm.sh/chart: {{ include "platformserver.chart" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end -}}
-
-{{- define "platformserver.select-labels" -}}
-app.kubernetes.io/name: {{ include "platformserver.name" . }}
-app.kubernetes.io/instance: {{ include "platformserver.fullname" . }}
-app.kubernetes.io/part-of: {{ include "platformserver.name" . }}
-{{- end -}}
-
-{{- define "platformserver.resource-labels" -}}
-octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ include "platformserver.fullname" . }}_{{ default .Chart.AppVersion .Values.platformserver.image.tag }}
-{{- end -}}
-
-
-{{- define "platformserver.labels" -}}
-{{ include "platformserver.core-labels" . }}
-{{ include "platformserver.select-labels" . }}
-{{ include "platformserver.resource-labels" . }}
-{{- end -}}
-
-{{- define "platformserver.port" -}}
-{{- printf "8004" -}}
 {{- end -}}
 
 

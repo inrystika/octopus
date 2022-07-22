@@ -2,17 +2,17 @@ package modeldeploy
 
 import (
 	"context"
-	"gonum.org/v1/gonum/floats"
-	"k8s.io/apimachinery/pkg/util/wait"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/common/constant"
 	"server/common/leaderleaselock"
 	"server/common/utils"
 	"strings"
 	"time"
+
+	"gonum.org/v1/gonum/floats"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -70,10 +70,9 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 							s.log.Info(ctx, "There is no model deploy service to pay!")
 							break
 						}
-						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
 						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
 						for _, j := range seldonServices {
-							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status) {
+							if j.StartedAt == nil && utils.IsCompletedState(j.Status) {
 								j.PayStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 								err = s.data.ModelDeployDao.UpdateModelDeployService(ctx, j)
 								if err != nil {

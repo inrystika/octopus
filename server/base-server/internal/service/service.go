@@ -11,11 +11,9 @@ import (
 	"server/base-server/internal/service/develop"
 	"server/base-server/internal/service/ftpproxy"
 	"server/base-server/internal/service/image"
-	"server/base-server/internal/service/jointcloud"
 	"server/base-server/internal/service/lable"
 	"server/base-server/internal/service/model"
 	"server/base-server/internal/service/modeldeploy"
-	"server/base-server/internal/service/platform"
 	"server/base-server/internal/service/platformstatistics"
 	"server/base-server/internal/service/resources"
 	"server/base-server/internal/service/trainjob"
@@ -41,9 +39,6 @@ type Service struct {
 	ImageService              api.ImageServiceServer
 	BillingService            api.BillingServiceServer
 	LableService              api.LableServiceServer
-	PlatformService           api.PlatformServiceServer
-	PlatformTrainJobService   platform.PlatformTrainJobService
-	JointCloudService         api.JointCloudServiceServer
 	ModelDeployService        api.ModelDeployServiceServer
 	FtpProxyService           api.FtpProxyServiceServer
 	PlatformStatisticsService api.PlatformStatisticsServer
@@ -86,13 +81,6 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 	if err != nil {
 		return nil, err
 	}
-	service.PlatformService = platform.NewPlatformService(conf, data)
-	service.PlatformTrainJobService, err = platform.NewPlatformTrainJobService(conf, logger, data,
-		service.ResourceService, service.PlatformService)
-	if err != nil {
-		return nil, err
-	}
-	service.JointCloudService = jointcloud.NewJointCloudService(conf, data)
 
 	service.ModelDeployService, err = modeldeploy.NewModelDeployService(conf, logger, data,
 		service.WorkspaceService, service.ModelService, service.ResourceSpecService, service.ResourceService,

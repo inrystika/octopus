@@ -2,7 +2,7 @@ package dao
 
 import (
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
+	"server/common/constant"
 	"server/common/errors"
 
 	"gorm.io/gorm"
@@ -25,13 +25,13 @@ func NewPlatformStatisticsDao(db *gorm.DB) PlatformStatisticsDao {
 func (d platformStatisticsDao) Summary() (*model.PlatformStatSummary, error) {
 	db := d.db
 	var running int64
-	res := db.Where("status = ? ", pipeline.RUNNING).Model(&model.TrainJob{}).Count(&running)
+	res := db.Where("status = ? ", constant.RUNNING).Model(&model.TrainJob{}).Count(&running)
 	if res.Error != nil {
 		return nil, errors.Errorf(res.Error, errors.ErrorDBCountFailed)
 	}
 
 	var pending int64
-	res = db.Where("status = ? ", pipeline.PENDING).Model(&model.TrainJob{}).Count(&pending)
+	res = db.Where("status = ? ", constant.PENDING).Model(&model.TrainJob{}).Count(&pending)
 	if res.Error != nil {
 		return nil, errors.Errorf(res.Error, errors.ErrorDBCountFailed)
 	}
