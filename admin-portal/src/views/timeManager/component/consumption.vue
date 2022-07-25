@@ -26,7 +26,7 @@
             </el-table-column>
             <el-table-column label="开始时间" align="center">
                 <template slot-scope="scope">
-                    <span>{{ scope.row.createdAt | parseTime }}</span>
+                    <span>{{ scope.row.startedAt | parseTime }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="结束时间" align="center">
