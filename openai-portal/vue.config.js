@@ -42,14 +42,14 @@ module.exports = {
     },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
-        target: 'http://192.168.202.73/',
+        target: 'http://192.168.204.246/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: '/openaiserver'
         }
       },
       [process.env.VUE_APP_BASE_API2]: {
-        target: 'http://192.168.202.73/',
+        target: 'http://192.168.204.246/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
