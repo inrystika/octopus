@@ -18,6 +18,12 @@ router.beforeEach(async(to, from, next) => {
   // determine whether the user has logged in
   const hasToken = getToken()
   // next()
+  if (!hasToken) {
+    var url = window.location.href
+    if (url.indexOf('token') !== -1) {
+      setToken(GetUrlParam('token'))
+    }
+  }
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
