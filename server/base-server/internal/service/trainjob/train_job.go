@@ -9,7 +9,6 @@ import (
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/service/algorithm"
 	"server/common/constant"
 	"server/common/errors"
@@ -19,13 +18,16 @@ import (
 	"strings"
 	"time"
 
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
-	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
+	"k8s.io/client-go/tools/cache"
+	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 )
 
 const (
@@ -53,7 +55,6 @@ type trainJobService struct {
 
 type TrainJobService interface {
 	api.TrainJobServiceServer
-	common.PipelineCallback
 }
 
 func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
@@ -63,14 +64,6 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer, userService api.UserServiceServer) (TrainJobService, error) {
 	log := log.NewHelper("TrainJobService", logger)
 
-	err := upsertFeature(data, conf.Service.BaseServerAddr)
-	if err != nil {
-		if conf.App.IsDev {
-			log.Error(context.Background(), err) //todo 先只打印日志方便有些开发不启动taskset 后续修改为报错
-		} else {
-			return nil, err
-		}
-	}
 	s := &trainJobService{
 		conf:                conf,
 		log:                 log,
@@ -89,40 +82,13 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 
 	s.trainJobBilling(context.Background())
 
-	return s, nil
-}
-
-func upsertFeature(data *data.Data, baseServerAddr string) error {
-	err := data.Pipeline.UpsertFeature(context.Background(), &pipeline.UpsertFeatureParam{
-		FeatureName: "trainJob",
-		Author:      "octopus",
-		Description: "trainJob",
-		Enabled:     true,
-		JobSelector: &pipeline.JobSelector{
-			Conditions: []*pipeline.Condition{{
-				Name:   "type",
-				Key:    "jobKind",
-				Expect: "train_job",
-			}},
-			Expression: "type",
-		},
-		Plugins: []*pipeline.Plugin{
-			{
-				Key:         "bindlifehook",
-				PluginType:  "LifeHook",
-				CallAddress: baseServerAddr + "/v1/trainmanage/pipelinecallback",
-				Description: "train_job life hook to update status and time",
-				JobSelector: &pipeline.JobSelector{
-					States: []string{"*"},
-				},
-			}},
+	s.data.Cluster.RegisterJobEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    s.onJobAdd,
+		UpdateFunc: s.onJobUpdate,
+		DeleteFunc: s.onJobDelete,
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s, nil
 }
 
 func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest) (*api.TrainJobReply, error) {
@@ -139,7 +105,7 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 		return nil, err
 	}
 	trainJob.Id = trainJobId
-	trainJob.Status = pipeline.PREPARING
+	trainJob.Status = constant.PREPARING
 	//各类参数校验
 	startJobInfo, err := s.checkPermForJob(ctx, trainJob)
 	if err != nil {
@@ -493,18 +459,8 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		}
 	}()
 
-	param := &pipeline.SubmitJobParam{
-		UserID:       job.UserId,
-		JobKind:      "train_job",
-		JobName:      job.Id,
-		Header:       nil,
-		JobNamespace: job.UserId,
-		//JobNamespace: "default",
-		Cluster: "",
-	}
-
 	minAvailable := 0
-	tasks := make([]vcBatch.TaskSpec, 0)
+	tasks := make([]typeJob.TaskSpec, 0)
 
 	for idx, i := range job.Config {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
@@ -576,34 +532,34 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			})
 		}
 		//pod template
-		task := vcBatch.TaskSpec{
-			Name:     taskName,
-			Replicas: int32(i.TaskNumber),
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
-				},
-				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
-					Containers: []v1.Container{
-						{
-							Name:  taskName,
-							Image: startJobInfo.imageAddr,
-							Resources: v1.ResourceRequirements{
-								Requests: startJobInfo.specs[i.ResourceSpecId].resources,
-								Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
-							},
-							VolumeMounts: volumeMounts,
-							Command:      s.buildCmd(i),
-						},
-					},
-					NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
-					Volumes:      volumes,
-				},
-			},
-			CompletionPolicy: vcBatch.CompletionPolicy{
+		task := typeJob.TaskSpec{
+			CompletionPolicy: typeJob.CompletionPolicy{
 				MaxFailed:    int32(i.MinFailedTaskCount),
 				MinSucceeded: int32(i.MinSucceededTaskCount),
+			},
+		}
+		task.Name = taskName
+		task.Replicas = int32(i.TaskNumber)
+		task.Template = v1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
+			},
+			Spec: v1.PodSpec{
+				RestartPolicy: "Never",
+				Containers: []v1.Container{
+					{
+						Name:  taskName,
+						Image: startJobInfo.imageAddr,
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.specs[i.ResourceSpecId].resources,
+							Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
+						},
+						VolumeMounts: volumeMounts,
+						Command:      s.buildCmd(i),
+					},
+				},
+				NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
+				Volumes:      volumes,
 			},
 		}
 		if i.IsMainRole {
@@ -627,8 +583,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				//1. privileged
 				//处理空情况
 				if task.Template.Spec.Containers[0].SecurityContext == nil {
-					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
-					}
+					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{}
 				}
 				privileged := true
 				task.Template.Spec.Containers[0].SecurityContext.Privileged = &privileged
@@ -640,7 +595,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 							Path: "/usr/local/Ascend/driver",
 						},
 					},
-				},v1.Volume{
+				}, v1.Volume{
 					Name: "ascend-driver-info",
 					VolumeSource: v1.VolumeSource{
 						HostPath: &v1.HostPathVolumeSource{
@@ -655,52 +610,47 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						MountPath: "/usr/local/Ascend/driver",
 					},
 					v1.VolumeMount{
-						Name:  "ascend-driver-info",
+						Name:      "ascend-driver-info",
 						MountPath: "/etc/ascend_install.info",
-				})
+					})
 
 			}
 		}
 		tasks = append(tasks, task)
 	}
 
-	param.Job = &vcBatch.Job{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "batch.volcano.sh/v1alpha1",
-			Kind:       "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: job.UserId,
-			//Namespace: "default",
-			Name: job.Id,
-		},
-		Spec: vcBatch.JobSpec{
-			MinAvailable:  int32(minAvailable),
-			Queue:         startJobInfo.queue,
-			SchedulerName: "volcano",
-			Plugins: map[string][]string{
-				"env": {},
-				"svc": {},
-			},
-			Policies: []vcBatch.LifecyclePolicy{
-				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
-				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
-			},
-			Tasks: tasks,
-		},
-		Status: vcBatch.JobStatus{},
+	Job := &typeJob.Job{}
+	Job.TypeMeta = metav1.TypeMeta{
+		APIVersion: "batch.volcano.sh/v1alpha1",
+		Kind:       "Job",
 	}
 
-	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
+	Job.ObjectMeta = metav1.ObjectMeta{
+		Namespace: job.UserId,
+		Name:      job.Id,
+	}
+	Job.Spec = typeJob.JobSpec{}
+	Job.Spec.MinAvailable = int32(minAvailable)
+	Job.Spec.Queue = startJobInfo.queue
+	Job.Spec.SchedulerName = "volcano"
+	Job.Spec.Plugins = map[string][]string{
+		"env": {},
+		"svc": {},
+	}
+	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
+		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
+		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
+	}
+	Job.Spec.Tasks = tasks
+	Job.Status = typeJob.JobStatus{}
+
+	err = s.data.Cluster.CreateJob(ctx, Job)
 	closes = append(closes, func(ctx context.Context) error {
-		err1 := s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: job.Id, Reason: "stop job because error"})
+		err1 := s.data.Cluster.DeleteJob(ctx, job.UserId, job.Id)
 		return err1
 	})
 	if err != nil {
 		return nil, err
-	}
-	if job.Id != submitJobReply.JobId {
-		return nil, errors.Errorf(err, errors.ErrorPipelineDoRequest)
 	}
 	return resFunc, nil
 }
@@ -711,12 +661,7 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 		return nil, err
 	}
 
-	if pipeline.IsCompletedState(job.Status) {
-		return nil, errors.Errorf(nil, errors.ErrorStopTerminatedJob)
-	}
-
-	//pipeline删除任务成功后，任务从running转为terminate转态会触发callback机制,更新base-server中的任务状态信息。
-	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: req.Id, Reason: req.Operation})
+	err = s.data.Cluster.DeleteJob(ctx, job.UserId, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -725,7 +670,7 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	err = s.data.TrainJobDao.UpdateTrainJob(ctx, &model.TrainJob{
 		Id:          req.Id,
 		Operation:   req.Operation,
-		Status:      pipeline.STOPPED,
+		Status:      constant.STOPPED,
 		CompletedAt: &now,
 	})
 	if err != nil {
@@ -751,7 +696,7 @@ func (s *trainJobService) DeleteJob(ctx context.Context, req *api.DeleteJobReque
 
 	for _, i := range jobs {
 		//只有任务是终止状态，才可以删除
-		if !pipeline.IsCompletedState(i.Status) {
+		if !utils.IsCompletedState(i.Status) {
 			return nil, errors.Errorf(nil, errors.ErrorDeleteJobRequest)
 		}
 
@@ -771,8 +716,8 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	if err != nil {
 		return nil, err
 	}
-	//pipeline获取job最新任务信息
-	info, err := s.data.Pipeline.GetJobDetail(ctx, req.Id)
+
+	info, err := s.data.Cluster.GetJob(ctx, trainJob.UserId, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -780,11 +725,11 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	subTaskStateMap := make(map[int]string)
 
 	replicaNum := 0
-	for index, taskInfo := range info.Tasks {
-		subTaskStateMap[index] = taskInfo.State
-		for ri, replica := range taskInfo.Replicas {
+	for index, taskInfo := range info.Status.TaskRoleStatus {
+		subTaskStateMap[index] = utils.ConvertTaskRoleState(&taskInfo)
+		for ri, replica := range taskInfo.ReplicaStatuses {
 			stateKey := "task" + strconv.Itoa(index) + "-replica-" + strconv.Itoa(ri)
-			taskReplicaStatesMap[stateKey] = replica.State
+			taskReplicaStatesMap[stateKey] = utils.ConvertTaskRoleReplicaState(&replica)
 			replicaNum++
 		}
 	}
@@ -879,7 +824,7 @@ func (s *trainJobService) checkParamForTemplate(ctx context.Context, template *m
 		return err
 	}
 	//数据集
-	if template.DataSetId != "" {  //判空，允许通过API调用不传此参数
+	if template.DataSetId != "" { //判空，允许通过API调用不传此参数
 		_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
 		if err != nil {
 			return err
@@ -1073,40 +1018,6 @@ func (s *trainJobService) ListJobTemplate(ctx context.Context, req *api.TrainJob
 	}, nil
 }
 
-func (s *trainJobService) PipelineCallback(ctx context.Context, req *common.PipelineCallbackReq) string {
-	s.log.Info(ctx, "pipeline callback for job :"+req.Id)
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
-	if err != nil {
-		return common.PipeLineCallbackRE
-	}
-
-	if pipeline.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, req.CurrentState) {
-		return common.PipeLineCallbackOK
-	}
-
-	update := &model.TrainJob{
-		Id:     req.Id,
-		Status: req.CurrentState,
-	}
-	if strings.EqualFold(req.CurrentState, pipeline.RUNNING) {
-		update.StartedAt = &req.CurrentTime
-	} else if pipeline.IsCompletedState(req.CurrentState) {
-		update.CompletedAt = &req.CurrentTime
-	}
-
-	err = s.data.TrainJobDao.UpdateTrainJob(ctx, update)
-	if err != nil {
-		return common.PipeLineCallbackRE
-	}
-
-	if pipeline.IsCompletedState(req.CurrentState) {
-		err = s.addModel(ctx, trainJob)
-		s.log.Error(ctx, err)
-	}
-
-	return common.PipeLineCallbackOK
-}
-
 func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
 	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
 	fileInfos, _ := ioutil.ReadDir(filePath)
@@ -1152,4 +1063,64 @@ func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEvent
 		TotalSize: totalSize,
 		JobEvents: jobEvents,
 	}, nil
+}
+
+func (s *trainJobService) onJobAdd(obj interface{}) {
+}
+
+func (s *trainJobService) onJobDelete(obj interface{}) {
+
+}
+
+func (s *trainJobService) onJobUpdate(old, obj interface{}) {
+
+	oldjob := utils.ConvertObjToOtjob(old)
+	newjob := utils.ConvertObjToOtjob(obj)
+	if oldjob == nil || newjob == nil {
+		return
+	}
+
+	oldState := utils.MapPhaseToState(typeJob.JobPhase(oldjob.Status.State.Phase))
+	newState := utils.MapPhaseToState(typeJob.JobPhase(newjob.Status.State.Phase))
+
+	if newState == string(typeJob.Pending) && nil != oldjob {
+		if oldState == string(typeJob.Running) {
+			return
+		}
+	}
+
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
+	if err != nil {
+		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:"+newjob.Name, err)
+		return
+	}
+
+	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) {
+		return
+	}
+
+	update := &model.TrainJob{
+		Id:     newjob.Name,
+		Status: newState,
+	}
+
+	now := time.Now()
+	if strings.EqualFold(newState, constant.RUNNING) {
+		update.StartedAt = &now
+	} else if utils.IsCompletedState(newState) {
+		update.CompletedAt = &now
+	}
+
+	err = s.data.TrainJobDao.UpdateTrainJob(context.TODO(), update)
+	if err != nil {
+		s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
+		return
+	}
+
+	if utils.IsCompletedState(newState) {
+		err = s.addModel(context.TODO(), trainJob)
+		if err != nil {
+			s.log.Error(context.TODO(), err)
+		}
+	}
 }

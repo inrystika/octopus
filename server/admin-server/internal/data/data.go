@@ -16,26 +16,23 @@ import (
 )
 
 type Data struct {
-	log                    *log.Helper
-	AlgorithmClient        api.AlgorithmServiceClient
-	AdminUserClient        api.AdminUserClient
-	UserClient             api.UserServiceClient
-	DevelopClient          api.DevelopClient
-	WorkspaceClient        api.WorkspaceServiceClient
-	ModelClient            api.ModelServiceClient
-	TrainJobClient         api.TrainJobServiceClient
-	ImageClient            api.ImageServiceClient
-	NodeClient             api.NodeServiceClient
-	ResourceClient         api.ResourceServiceClient
-	ResourceSpecClient     api.ResourceSpecServiceClient
-	ResourcePoolClient     api.ResourcePoolServiceClient
-	DatasetClient          api.DatasetServiceClient
-	BillingClient          api.BillingServiceClient
-	LableClient            api.LableServiceClient
-	PlatformClient         api.PlatformServiceClient
-	JointCloudClient       api.JointCloudServiceClient
-	PlatformTrainJobClient api.PlatformTrainJobServiceClient
-	ModelDeployClient      api.ModelDeployServiceClient
+	log                *log.Helper
+	AlgorithmClient    api.AlgorithmServiceClient
+	AdminUserClient    api.AdminUserClient
+	UserClient         api.UserServiceClient
+	DevelopClient      api.DevelopClient
+	WorkspaceClient    api.WorkspaceServiceClient
+	ModelClient        api.ModelServiceClient
+	TrainJobClient     api.TrainJobServiceClient
+	ImageClient        api.ImageServiceClient
+	NodeClient         api.NodeServiceClient
+	ResourceClient     api.ResourceServiceClient
+	ResourceSpecClient api.ResourceSpecServiceClient
+	ResourcePoolClient api.ResourcePoolServiceClient
+	DatasetClient      api.DatasetServiceClient
+	BillingClient      api.BillingServiceClient
+	LableClient        api.LableServiceClient
+	ModelDeployClient  api.ModelDeployServiceClient
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
@@ -62,25 +59,22 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 	}
 
 	return &Data{
-		log:                    log,
-		AlgorithmClient:        api.NewAlgorithmServiceClient(conn),
-		AdminUserClient:        api.NewAdminUserClient(conn),
-		UserClient:             api.NewUserServiceClient(conn),
-		DevelopClient:          api.NewDevelopClient(conn),
-		WorkspaceClient:        api.NewWorkspaceServiceClient(conn),
-		ModelClient:            api.NewModelServiceClient(conn),
-		TrainJobClient:         api.NewTrainJobServiceClient(conn),
-		ImageClient:            api.NewImageServiceClient(conn),
-		NodeClient:             api.NewNodeServiceClient(conn),
-		ResourceClient:         api.NewResourceServiceClient(conn),
-		ResourceSpecClient:     api.NewResourceSpecServiceClient(conn),
-		ResourcePoolClient:     api.NewResourcePoolServiceClient(conn),
-		DatasetClient:          api.NewDatasetServiceClient(conn),
-		BillingClient:          api.NewBillingServiceClient(conn),
-		LableClient:            api.NewLableServiceClient(conn),
-		PlatformClient:         api.NewPlatformServiceClient(conn),
-		JointCloudClient:       api.NewJointCloudServiceClient(conn),
-		PlatformTrainJobClient: api.NewPlatformTrainJobServiceClient(conn),
-		ModelDeployClient:      api.NewModelDeployServiceClient(conn),
+		log:                log,
+		AlgorithmClient:    api.NewAlgorithmServiceClient(conn),
+		AdminUserClient:    api.NewAdminUserClient(conn),
+		UserClient:         api.NewUserServiceClient(conn),
+		DevelopClient:      api.NewDevelopClient(conn),
+		WorkspaceClient:    api.NewWorkspaceServiceClient(conn),
+		ModelClient:        api.NewModelServiceClient(conn),
+		TrainJobClient:     api.NewTrainJobServiceClient(conn),
+		ImageClient:        api.NewImageServiceClient(conn),
+		NodeClient:         api.NewNodeServiceClient(conn),
+		ResourceClient:     api.NewResourceServiceClient(conn),
+		ResourceSpecClient: api.NewResourceSpecServiceClient(conn),
+		ResourcePoolClient: api.NewResourcePoolServiceClient(conn),
+		DatasetClient:      api.NewDatasetServiceClient(conn),
+		BillingClient:      api.NewBillingServiceClient(conn),
+		LableClient:        api.NewLableServiceClient(conn),
+		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
 	}, nil
 }

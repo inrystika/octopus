@@ -106,9 +106,6 @@ data:
       kubernetes:
         masterUrl: ""
         configPath: ""
-      pipeline:
-        baseUrl: {{ include "taskset-core.serviceAddr" . }}
-        token: KLtmMug9BDvvRjlg
       minio:
         base:
           endPoint: {{ include "minio.serviceAddr" . }}

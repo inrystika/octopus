@@ -141,7 +141,6 @@ func GenSwagger() error {
 
 	dirs := []string{filepath.Join(baseDir, "admin-server", "api", "v1"),
 		filepath.Join(baseDir, "openai-server", "api", "v1"),
-		filepath.Join(baseDir, "platform-server", "api", "v1"),
 	}
 	for _, dir := range dirs {
 		err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
