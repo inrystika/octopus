@@ -25,6 +25,15 @@ import (
 	nainformer "nodeagent/clients/agent/informers/externalversions"
 	nainformerv1 "nodeagent/clients/agent/informers/externalversions/agent/v1"
 
+	typeQueue "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
+
+	vcclient "volcano.sh/apis/pkg/client/clientset/versioned"
+	libInformer "volcano.sh/apis/pkg/client/informers/externalversions"
+	typejobInformer "volcano.sh/apis/pkg/client/informers/externalversions/batch/v1alpha1"
+	typejobLister "volcano.sh/apis/pkg/client/listers/batch/v1alpha1"
+
+	typejob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -42,8 +51,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	schedulingv1beta1 "volcano.sh/volcano/pkg/apis/scheduling/v1beta1"
-	vcclient "volcano.sh/volcano/pkg/client/clientset/versioned"
+	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 )
 
 func buildConfigWithDefaultPath(kubeconfig string) (*rest.Config, error) {
@@ -115,6 +123,11 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 
 	kc.nodeActionInformer = naInformerFactory.Agent().V1().NodeActions()
 
+	jobInformerFactory := libInformer.NewSharedInformerFactory(kc.vcClient, 0)
+	vcjobInformer := jobInformerFactory.Batch().V1alpha1().Jobs()
+	kc.vcjobInformer = vcjobInformer
+	kc.vcjobLister = vcjobInformer.Lister()
+
 	kc.Run()
 	kc.WaitForCacheSync()
 	return kc, cancel
@@ -126,6 +139,8 @@ type kubernetesCluster struct {
 	log                *log.Helper
 	kubeclient         *kubernetes.Clientset
 	vcClient           *vcclient.Clientset
+	vcjobInformer      typejobInformer.JobInformer
+	vcjobLister        typejobLister.JobLister
 	naClient           *naclient.Clientset
 	seldonClient       *seldonclient.Clientset
 	seldonInformer     informers.GenericInformer
@@ -311,18 +326,22 @@ func (kc *kubernetesCluster) CreateQueue(ctx context.Context, queueName string, 
 
 	resReclaimable := false
 
-	_, err := kc.vcClient.SchedulingV1beta1().Queues().Create(ctx, &schedulingv1beta1.Queue{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        queueName,
-			Labels:      map[string]string{queueSelectLabelKey: queueSelectLabelValue},
-			Annotations: meta,
-		},
-		Spec: schedulingv1beta1.QueueSpec{
-			Weight:       100,
-			Reclaimable:  &resReclaimable,
-			NodeSelector: map[string]string{nodeSelectorLabelKey: nodeSelectorLabelValue},
-		},
-	}, metav1.CreateOptions{})
+	spec := typeQueue.QueueSpec{
+		NodeSelector: map[string]string{nodeSelectorLabelKey: nodeSelectorLabelValue},
+	}
+	spec.Weight = 100
+	spec.Reclaimable = &resReclaimable
+
+	queue := &typeQueue.Queue{
+		Spec: spec,
+	}
+	queue.ObjectMeta = metav1.ObjectMeta{
+		Name:        queueName,
+		Labels:      map[string]string{queueSelectLabelKey: queueSelectLabelValue},
+		Annotations: meta,
+	}
+
+	_, err := kc.vcClient.SchedulingV1beta1().Queues().Create(ctx, queue, metav1.CreateOptions{})
 
 	return err
 }
@@ -591,4 +610,49 @@ func (kc *kubernetesCluster) RegisterDeploymentInformerCallback(onAdd common.OnD
 		}
 		return informerSynced
 	}()...)
+}
+
+func (kc *kubernetesCluster) RegisterJobEventHandler(handlers cache.ResourceEventHandler) {
+	kc.vcjobInformer.Informer().AddEventHandler(handlers)
+	go kc.vcjobInformer.Informer().Run(kc.ctx.Done())
+	cache.WaitForCacheSync(kc.ctx.Done(),
+		func() []cache.InformerSynced {
+			informerSynced := []cache.InformerSynced{
+				kc.vcjobInformer.Informer().HasSynced,
+			}
+			return informerSynced
+		}()...,
+	)
+}
+
+func (kc *kubernetesCluster) GetJob(ctx context.Context, namespace, name string) (*typejob.Job, error) {
+
+	job, err := kc.vcjobLister.Jobs(namespace).Get(name)
+
+	if err == nil && job != nil {
+		return job, err
+	}
+	job, err = kc.vcClient.BatchV1alpha1().Jobs(namespace).Get(ctx, name, metav1.GetOptions{})
+
+	if kubeerrors.IsNotFound(err) {
+		return nil, nil
+	}
+
+	return job, err
+}
+
+func (kc *kubernetesCluster) CreateJob(ctx context.Context, job *typejob.Job) error {
+	kc.CreateNamespace(ctx, job.Namespace)
+	_, err := kc.vcClient.BatchV1alpha1().Jobs(job.Namespace).Create(ctx, job, metav1.CreateOptions{})
+	return err
+}
+
+func (kc *kubernetesCluster) DeleteJob(ctx context.Context, namespace, name string) error {
+	err := kc.vcClient.BatchV1alpha1().Jobs(namespace).
+		Delete(ctx, name, metav1.DeleteOptions{})
+
+	if nil != err && kubeerrors.IsNotFound(err) {
+		return nil
+	}
+	return err
 }

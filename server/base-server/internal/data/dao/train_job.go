@@ -27,7 +27,7 @@ type TrainJobDao interface {
 	GetTrainJobList(ctx context.Context, query *model.TrainJobListQuery) ([]*model.TrainJob, int64, error)
 	//网关层更新user对任务的操作记录
 	UpdateTrainJobOperation(jobId string, operation string) error
-	//网关层更新来自taskset的任务状态信息
+	//网关层更新来自k8s的任务状态信息
 	UpdateTrainJob(ctx context.Context, trainJob *model.TrainJob) error
 	//网关层删除任务（软删除）
 	DeleteTrainJob(ctx context.Context, id string) error

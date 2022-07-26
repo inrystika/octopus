@@ -2,13 +2,11 @@
 {{- $fullName := include "octopus.fullname" . -}}
 {{- $adminserverName := include "adminserver.fullname" . -}}
 {{- $openaiserverName := include "openaiserver.fullname" . -}}
-{{- $platformserverName := include "platformserver.fullname" . -}}
 {{- $adminportalName := include "adminportal.fullname" . -}}
 {{- $openaiportalName := include "openaiportal.fullname" . -}}
 {{- $apidocName := include "apidoc.fullname" . -}}
 {{- $adminserverPath := .Values.ingress.adminserverPath -}}
 {{- $openaiserverPath := .Values.ingress.openaiserverPath -}}
-{{- $platformserverPath := .Values.ingress.platformserverPath -}}
 {{- $adminportalPath := trimSuffix "/" .Values.ingress.adminportalPath -}}
 {{- $openaiportalPath := trimSuffix "/" .Values.ingress.openaiportalPath -}}
 {{- $ambassadorPath := trimSuffix "/" .Values.ingress.ambassadorPath -}}
@@ -41,10 +39,6 @@ spec:
           serviceName: {{ $openaiserverName }}
           servicePort: {{ template "openaiserver.port" . }}
         path: {{ $openaiserverPath }}(/|$)(.*)
-      - backend:
-          serviceName: {{ $platformserverName }}
-          servicePort: {{ template "platformserver.port" . }}
-        path: {{ $platformserverPath }}(/|$)(.*)
 
 ---
 

@@ -42,7 +42,7 @@ LD_FLAGS=" \
 # 编译
 all_build: server_build
 
-server_build: base-server_build admin-server_build openai-server_build platform-server_build taskset_build
+server_build: base-server_build admin-server_build openai-server_build volcano_build
 
 init:
 	mkdir -p ${SERVER_BINARY_DIR}
@@ -62,28 +62,20 @@ openai-server_build: init
 
 	cd ./server/openai-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
-platform-server_build: init
-	cd ./server && go generate
-
-	cd ./server/platform-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
-
-taskset_build: pipeline_build vc-controller_build scheduler_build
-
-pipeline_build: init
-	cd ./server/taskset && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./main/pipeline
+volcano_build: vc-controller_build scheduler_build
 
 vc-controller_build: init
-	cd ./server/taskset && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./main/vc-controller
+	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/vc-controller
 
 scheduler_build: init
-	cd ./server/taskset && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./main/scheduler
+	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/scheduler
 
 api-doc_build: init
 	cd ./server && go generate
 # 运行
 all_run: server_run
 
-server_run: base-server_run admin-server_run openai-server_run platform-server_run taskset_run
+server_run: base-server_run admin-server_run openai-server_run volcano_run
 
 base-server_run:
 	cd server && ./bin/base-server -conf base-server/configs &
@@ -94,13 +86,7 @@ admin-server_run:
 openai-server_run:
 	cd server && ./bin/openai-server -conf openai-server/configs &
 
-platform-server_run:
-	cd server && ./bin/platform-server -conf platform-server/configs &
-
-taskset_run: pipeline_run vc-controller_run scheduler_run
-
-pipeline_run:
-	cd server && ./bin/pipeline &
+volcano_run: vc-controller_run scheduler_run
 
 vc-controller_run:
 	cd server && ./bin/vc-controller &
@@ -111,10 +97,10 @@ scheduler_run:
 # 停止
 all_stop: server_stop
 
-server_stop: base-server_stop admin-server_stop openai-server_stop taskset_stop
+server_stop: base-server_stop admin-server_stop openai-server_stop volcano_stop
 
 base-server_stop:
-	kill -9 `ps -ef|grep "base-server" |grep -v grep |awk '{print $2}'`
+	kill -9 `ps -ef|grep "base-server" |grep -v grep  |awk '{print $2}'`
 
 admin-server_stop:
 	kill -9 `ps -ef|grep "admin-server" |grep -v grep |awk '{print $2}'`
@@ -122,13 +108,8 @@ admin-server_stop:
 openai-server_stop:
 	kill -9 `ps -ef|grep "openai-server" |grep -v grep |awk '{print $2}'`
 
-platform-server_stop:
-	kill -9 `ps -ef|grep "platform-server" |grep -v grep |awk '{print $2}'`
+volcano_stop: vc-controller_stop scheduler_stop
 
-taskset_stop: pipeline_stop vc-controller_stop scheduler_stop
-
-pipeline_stop:
-	kill -9 `ps -ef|grep "pipeline" |grep -v grep |awk '{print $2}'`
 
 vc-controller_stop:
 	kill -9 `ps -ef|grep "vc-controller" |grep -v grep |awk '{print $2}'`
@@ -139,7 +120,7 @@ scheduler_stop:
 # 重启
 all_stop: server_restart
 
-server_restart: base-server_restart admin-server_restart openai-server_restart platform-server_restart taskset_restart
+server_restart: base-server_restart admin-server_restart openai-server_restart volcano_restart
 
 base-server_restart: base-server_stop server_run
 
@@ -147,11 +128,7 @@ admin-server_restart: admin-server_stop admin-server_run
 
 openai-server_restart: openai-server_stop openai-server_run
 
-platform-server_restart: platform-server_stop platform-server_run
-
-taskset_restart: pipeline_restart vc-controller_restart scheduler_restart
-
-pipeline_restart: pipeline_stop pipeline_run
+volcano_restart: vc-controller_restart scheduler_restart
 
 vc-controller_restart: vc-controller_stop vc-controller_run
 
@@ -176,11 +153,11 @@ admin-server_lint: lint_init
 openai-server_lint: lint_init
 	cd ./server/openai-server && golangci-lint run ./...
 
-taskset_lint: lint_init
-	cd ./server/taskset && golangci-lint run ./...
+volcano_lint: lint_init
+	cd ./server/volcano && golangci-lint run ./...
 
 # 构建镜像
-images: base-server_image admin-server_image openai-server_image platform-server_image taskset_image admin-portal_image openai-portal_image api-doc_image node-agent_image
+images: base-server_image admin-server_image openai-server_image volcano_image admin-portal_image openai-portal_image api-doc_image node-agent_image
 
 base-server_image:
 	docker build --no-cache -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
@@ -191,19 +168,13 @@ admin-server_image:
 openai-server_image:
 	docker build --no-cache -t openai-server:${RELEASE_VER} -f ./build/application/openai-server/dockerfile .
 
-platform-server_image:
-	docker build --no-cache -t platform-server:${RELEASE_VER} -f ./build/application/platform-server/dockerfile .
-
-taskset_image: pipeline_image vc-controller_image scheduler_image
-
-pipeline_image:
-	docker build --no-cache -t pipeline:${RELEASE_VER} -f ./build/application/taskset/pipeline/dockerfile .
+volcano_image: vc-controller_image scheduler_image
 
 vc-controller_image:
-	docker build --no-cache -t vc-controller:${RELEASE_VER} -f ./build/application/taskset/vc-controller/dockerfile .
+	docker build --no-cache -t vc-controller:${RELEASE_VER} -f ./build/application/volcano/vc-controller/dockerfile .
 
 scheduler_image:
-	docker build --no-cache -t scheduler:${RELEASE_VER} -f ./build/application/taskset/scheduler/dockerfile .
+	docker build --no-cache -t scheduler:${RELEASE_VER} -f ./build/application/volcano/scheduler/dockerfile .
 
 admin-portal_image:
 	docker build --no-cache -t admin-portal:${RELEASE_VER} -f ./build/application/admin-portal/dockerfile .
@@ -218,7 +189,7 @@ node-agent_image:
 	docker build --no-cache -t node-agent:${RELEASE_VER} -f ./build/application/nodeagent/dockerfile ./controller/nodeagent
 
 # 镜像推送
-images_push: base-server_image_push admin-server_image_push openai-server_image_push platform-server_image_push taskset_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push node-agent_image_push
+images_push: base-server_image_push admin-server_image_push openai-server_image_push volcano_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push node-agent_image_push
 
 image_push_init:
 	(echo ${DOCKER_HUB_PASSWD} | docker login ${DOCKER_HUB_HOST} -u ${DOCKER_HUB_USERNAME} --password-stdin) 1>/dev/null 2>&1
@@ -256,30 +227,7 @@ ifeq (${NEED_LATEST}, TRUE)
 endif
 endif
 
-platform-server_image_push: image_push_init
-	docker tag platform-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:${RELEASE_VER}
-	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:${RELEASE_VER}
-
-ifneq (${RELEASE_VER}, latest)
-ifeq (${NEED_LATEST}, TRUE)
-	docker tag platform-server:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:latest
-	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/platform-server:latest
-endif
-endif
-
-taskset_image_push: pipeline_image_push vc-controller_image_push scheduler_image_push
-
-pipeline_image_push: image_push_init
-	docker tag pipeline:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
-	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:${RELEASE_VER}
-
-
-ifneq (${RELEASE_VER}, latest)
-ifeq (${NEED_LATEST}, TRUE)
-	docker tag pipeline:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:latest
-	docker push ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/pipeline:latest
-endif
-endif
+volcano_image_push: vc-controller_image_push scheduler_image_push
 
 vc-controller_image_push: image_push_init
 	docker tag vc-controller:${RELEASE_VER} ${DOCKER_HUB_HOST}/${DOCKER_HUB_PROJECT}/vc-controller:${RELEASE_VER}

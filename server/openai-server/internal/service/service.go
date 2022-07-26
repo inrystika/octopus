@@ -19,7 +19,6 @@ type Service struct {
 	DatasetService            api.DatasetServiceServer
 	ResourceSpecService       api.ResourceSpecServiceServer
 	BillingService            api.BillingServiceServer
-	JointCloudService         api.JointCloudServiceServer
 	SystemService             api.SystemServiceServer
 	ModelDeployService        api.ModelDeployServiceServer
 	PlatformStatisticsService api.PlatformStatisticsServer
@@ -38,7 +37,6 @@ func NewService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) *Servi
 	service.DatasetService = NewDatasetService(conf, logger, data)
 	service.ResourceSpecService = NewResourceSpecService(conf, logger, data)
 	service.BillingService = NewBillingService(conf, logger, data)
-	service.JointCloudService = NewJointCloudService(conf, data)
 	service.SystemService = NewSystemService(conf, data)
 	service.ModelDeployService = NewModelDeployService(conf, logger, data)
 	service.PlatformStatisticsService = NewPlatformStatisticsService(data)

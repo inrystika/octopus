@@ -7,4 +7,13 @@ const (
 	SYSTEM_TYPE_ADMIN        = "OCTOPUS_ADMIN"
 
 	SYSTEM_ROOT_NAME = "octopus"
+
+	PREPARING = "preparing"
+	PENDING   = "pending"
+	RUNNING   = "running"
+	FAILED    = "failed"
+	SUCCEEDED = "succeeded"
+	STOPPED   = "stopped"
+	SUSPENDED = "suspended"
+	UNKNOWN   = "unknown"
 )

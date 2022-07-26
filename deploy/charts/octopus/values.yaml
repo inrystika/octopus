@@ -38,7 +38,6 @@ ingress:
   enabled: true
   adminserverPath: /adminserver
   openaiserverPath: /openaiserver
-  platformserverPath: /platformserver
   adminportalPath: /admin
   openaiportalPath: /openai
   loggerHttpdPath: /log
@@ -101,16 +100,6 @@ pv:
       nfs:
         server: 192.168.203.72
         path: /data/datasets/data/sftpgo
-
-# taskset
-taskset:
-  replicaCount: 1
-  adminToken: "KLtmMug9BDvvRjlg"
-  image:
-    pullPolicy: ""
-    address: ""
-    pathname: ""
-    name: "pipeline"
 
 # base-server
 baseserver:
@@ -196,20 +185,6 @@ openaiserver:
       organization:
       manualInvisible:
       thirdPlatform:
-
-# platform-server
-platformserver:
-  image:
-    pullPolicy: ""
-    address: ""
-    pathname: ""
-    name: "platform-server"
-  app:
-    logLevel: info
-  data:
-    redis:
-      username: ""
-      password: "abcde"
 
 # admin-server
 adminserver:
