@@ -1027,3 +1027,30 @@ app.kubernetes.io/part-of: {{ include "ambassador.name" . }}
 {{- define "ambassador.serviceAddr" -}}
 {{- printf "%s:%s" (include "ambassador.serviceName" .)  (include "ambassador.port" .) -}}
 {{- end -}}
+
+{{/******************sftpgo******************/}}
+
+{{- define "sftpgo.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "sftpgo.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-sftpgo" .Release.Name  | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "sftpgo.serviceName" -}}
+{{- printf "%s" (include "sftpgo.fullname" .)  -}}
+{{- end -}}
+
+{{- define "sftpgo.serviceAddr" -}}
+{{- printf "%s:%s" (include "sftpgo.serviceName" .) .Values.sftpgo.service.ports.http.port  -}}
+{{- end -}}

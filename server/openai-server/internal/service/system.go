@@ -28,5 +28,6 @@ func (s *systemService) GetWebConfig(ctx context.Context, req *api.GetWebConfigR
 		SystemNameZh:    s.conf.Service.WebConfig.SystemNameZh,
 		Organization:    s.conf.Service.WebConfig.Organization,
 		ManualInvisible: s.conf.Service.WebConfig.ManualInvisible,
+		ThirdPlatform:   s.conf.Service.WebConfig.ThirdPlatform,
 	}, nil
 }

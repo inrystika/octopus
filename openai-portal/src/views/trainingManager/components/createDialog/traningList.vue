@@ -29,7 +29,7 @@
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button type="text" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button type="text" @click="handleEdit(scope.$index,scope.row)">编辑</el-button>
                         <el-button type="text" @click.native.prevent="handleDelete(scope.$index, tableData)">删除
                         </el-button>
                     </template>
@@ -62,9 +62,9 @@
                 type: Array,
                 default: () => []
             },
-            resource: {
-                type: Array,
-                default: () => []
+            disResourcePool: {
+                type: String,
+                default: () => ""
             }
         },
         data() {
@@ -73,8 +73,8 @@
                 FormVisible: false,
                 row: {},
                 flag: true,
-                resourceOptions: []
-
+                resourceOptions: [],
+                currentIndex: undefined
             }
         },
         watch: {
@@ -84,15 +84,22 @@
         },
         created() {
             this.tableData = this.trainingTable
-            this.getResourceList()
         },
         methods: {
             add() {
+                if(!this.disResourcePool) {
+                    this.$message({
+                        message: '请先选择资源池',
+                        type: 'warning'
+                    });
+                    return
+                }
                 this.FormVisible = true
                 this.flag = true
-                this.row = { parameters: [] }
+                this.row = { parameters: [], disResourcePool: this.disResourcePool }
             },
-            handleEdit(row) {
+            handleEdit(index,row) {
+                this.currentIndex = index
                 this.FormVisible = true
                 this.row = row
                 this.flag = false
@@ -111,15 +118,16 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
+                this.tableData[this.currentIndex] = val
                 // flag为true新增
                 // flag为false编辑
                 if (this.flag) { this.tableData.push(val); }
             },
             showResource(row) {
                 let name = ''
-                this.resourceOptions.forEach(item => {
-                    if (item.id === row.resourceSpecId) {
-                        name = item.name
+                row.resourceOptions.forEach(item => {
+                    if (item.value === row.resourceSpecId) {
+                        name = item.label
                     }
                 })
                 return name

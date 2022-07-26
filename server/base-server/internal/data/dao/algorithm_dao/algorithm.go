@@ -71,16 +71,16 @@ func (d *algorithmDao) ListAlgorithm(ctx context.Context, req *model.AlgorithmLi
 	}
 
 	// orderby语句拼接
+	if req.CreatedAtOrder {
+		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
+		db = db.Order(orderSql)
+	}
 	if req.SpaceIdOrder {
 		orderSql := fmt.Sprintf("space_id %s", req.SpaceIdSort)
 		db = db.Order(orderSql)
 	}
 	if req.UserIdOrder {
 		orderSql := fmt.Sprintf("user_id %s", req.UserIdSort)
-		db = db.Order(orderSql)
-	}
-	if req.CreatedAtOrder {
-		orderSql := fmt.Sprintf("created_at %s", req.CreatedAtSort)
 		db = db.Order(orderSql)
 	}
 

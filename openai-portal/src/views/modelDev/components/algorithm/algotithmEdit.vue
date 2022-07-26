@@ -113,7 +113,6 @@
         })
       },
       submit() {
-        console.log(this.form)
         editAlgorithm(this.form).then(response => {
           if (response.success) {
             this.$message({

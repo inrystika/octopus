@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	"server/common/session"
 	"server/common/utils"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
@@ -31,18 +31,15 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 
 //创建训练任务
 func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest) (*api.TrainJobReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.TrainJobRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.TrainJobClient.TrainJob(ctx, innerReq)
 	if err != nil {
@@ -54,16 +51,14 @@ func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 
 // 停止训练任务
 func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) (*api.StopJobReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
+
 	//查询任务是否存在及用户是否一直
 	trainJob, err := s.data.TrainJobClient.GetTrainJobInfo(ctx, &innerapi.TrainJobInfoRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
-	if trainJob.TrainJob.UserId != session.UserId {
+	if trainJob.TrainJob.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 	innerReq := &innerapi.StopJobRequest{
@@ -79,17 +74,14 @@ func (s *TrainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 
 //删除训练任务
 func (s *TrainJobService) DeleteJob(ctx context.Context, req *api.DeleteJobRequest) (*api.DeleteJobReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.JobIds, session.UserId)
+	err := s.checkPermission(ctx, req.JobIds, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	innerReq := &innerapi.DeleteJobRequest{UserId: session.UserId, JobIds: req.JobIds}
+	innerReq := &innerapi.DeleteJobRequest{UserId: userId, JobIds: req.JobIds}
 	reply, err := s.data.TrainJobClient.DeleteJob(ctx, innerReq)
 	if err != nil {
 		return nil, err
@@ -100,17 +92,14 @@ func (s *TrainJobService) DeleteJob(ctx context.Context, req *api.DeleteJobReque
 
 // 获取训练任务详情
 func (s *TrainJobService) GetJobInfo(ctx context.Context, req *api.TrainJobInfoRequest) (*api.TrainJobInfoReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerTrainJobInfo, err := s.data.TrainJobClient.GetTrainJobInfo(ctx, &innerapi.TrainJobInfoRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
 
-	if innerTrainJobInfo.TrainJob.UserId != session.UserId {
+	if innerTrainJobInfo.TrainJob.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 
@@ -130,18 +119,15 @@ func (s *TrainJobService) GetJobInfo(ctx context.Context, req *api.TrainJobInfoR
 
 // 训练任务列表
 func (s *TrainJobService) TrainJobList(ctx context.Context, req *api.TrainJobListRequest) (*api.TrainJobListReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.TrainJobListRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.TrainJobClient.TrainJobList(ctx, innerReq)
 	if err != nil {
@@ -171,18 +157,15 @@ func (s *TrainJobService) TrainJobList(ctx context.Context, req *api.TrainJobLis
 
 // 创建训练任务模板
 func (s *TrainJobService) CreateJobTemplate(ctx context.Context, req *api.TrainJobTemplateRequest) (*api.TrainJobTemplateReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.TrainJobTemplateRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, err
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.TrainJobClient.CreateJobTemplate(ctx, innerReq)
 	if err != nil {
@@ -202,21 +185,18 @@ func (s *TrainJobService) CopyJobTemplate(ctx context.Context, req *api.CopyJobT
 	}
 	return &api.CopyJobTemplateReply{
 		TemplateId: reply.TemplateId,
-	},nil
+	}, nil
 }
 
 //获取任务模板信息
 func (s *TrainJobService) GetJobTemplate(ctx context.Context, req *api.GetJobTemplateRequest) (*api.GetJobTemplateReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReply, err := s.data.TrainJobClient.GetJobTemplate(ctx, &innerapi.GetJobTemplateRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
-	if innerReply.JobTemplate.UserId != session.UserId {
+	if innerReply.JobTemplate.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 
@@ -236,16 +216,13 @@ func (s *TrainJobService) GetJobTemplate(ctx context.Context, req *api.GetJobTem
 
 //更新任务模板
 func (s *TrainJobService) UpdateJobTemplate(ctx context.Context, req *api.TrainJobTemplate) (*api.TrainJobTemplateReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerJobTemplate, err := s.data.TrainJobClient.GetJobTemplate(ctx, &innerapi.GetJobTemplateRequest{Id: req.Id})
 	if err != nil {
 		return nil, err
 	}
-	if innerJobTemplate.JobTemplate.UserId != session.UserId {
+	if innerJobTemplate.JobTemplate.UserId != userId {
 		return nil, errors.Errorf(nil, errors.ErrorNotAuthorized)
 	}
 
@@ -254,7 +231,7 @@ func (s *TrainJobService) UpdateJobTemplate(ctx context.Context, req *api.TrainJ
 	if err != nil {
 		return nil, err
 	}
-	innerReq.UserId = session.UserId
+	innerReq.UserId = userId
 	innerReq.WorkspaceId = innerJobTemplate.JobTemplate.WorkspaceId
 
 	innerReply, err := s.data.TrainJobClient.UpdateJobTemplate(ctx, innerReq)
@@ -269,13 +246,10 @@ func (s *TrainJobService) UpdateJobTemplate(ctx context.Context, req *api.TrainJ
 
 // 删除任务模板
 func (s *TrainJobService) DeleteTemplate(ctx context.Context, req *api.DeleteJobTemplateRequest) (*api.DeleteJobTemplateReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.DeleteJobTemplateRequest{
-		UserId:      session.UserId,
+		UserId:      userId,
 		TemplateIds: req.TemplateIds,
 	}
 
@@ -290,18 +264,15 @@ func (s *TrainJobService) DeleteTemplate(ctx context.Context, req *api.DeleteJob
 
 // 任务模板列表
 func (s *TrainJobService) TrainJobTemplateList(ctx context.Context, req *api.TrainJobTemplateListRequest) (*api.TrainJobTemplateListReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.TrainJobTemplateListRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.TrainJobClient.ListJobTemplate(ctx, innerReq)
 	if err != nil {
@@ -475,11 +446,6 @@ func (s *TrainJobService) assignValueToTemplate(ctx context.Context, templates [
 
 // 任务事件列表
 func (s *TrainJobService) GetJobEventList(ctx context.Context, req *api.JobEventListRequest) (*api.JobEventListReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	innerReq := &innerapi.JobEventListRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {

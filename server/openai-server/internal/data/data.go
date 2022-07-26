@@ -7,7 +7,6 @@ import (
 	"server/common/log"
 	"server/common/middleware/ctxcopy"
 	"server/openai-server/internal/conf"
-	"server/openai-server/internal/data/session"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -17,22 +16,22 @@ import (
 )
 
 type Data struct {
-	log                *log.Helper
-	AlgorithmClient    api.AlgorithmServiceClient
-	UserClient         api.UserServiceClient
-	TrainJobClient     api.TrainJobServiceClient
-	DevelopClient      api.DevelopClient
-	ModelClient        api.ModelServiceClient
-	WorkspaceClient    api.WorkspaceServiceClient
-	SessionClient      session.SessionClient
-	ImageClient        api.ImageServiceClient
-	DatasetClient      api.DatasetServiceClient
-	ResourceSpecClient api.ResourceSpecServiceClient
-	ResourcePoolClient api.ResourcePoolServiceClient
-	BillingClient      api.BillingServiceClient
-	LableClient        api.LableServiceClient
-	JointCloudClient   api.JointCloudServiceClient
-	ModelDeployClient  api.ModelDeployServiceClient
+	log                      *log.Helper
+	AlgorithmClient          api.AlgorithmServiceClient
+	UserClient               api.UserServiceClient
+	TrainJobClient           api.TrainJobServiceClient
+	DevelopClient            api.DevelopClient
+	ModelClient              api.ModelServiceClient
+	WorkspaceClient          api.WorkspaceServiceClient
+	ImageClient              api.ImageServiceClient
+	DatasetClient            api.DatasetServiceClient
+	ResourceSpecClient       api.ResourceSpecServiceClient
+	ResourcePoolClient       api.ResourcePoolServiceClient
+	BillingClient            api.BillingServiceClient
+	LableClient              api.LableServiceClient
+	JointCloudClient         api.JointCloudServiceClient
+	ModelDeployClient        api.ModelDeployServiceClient
+	PlatformStatisticsClient api.PlatformStatisticsClient
 }
 
 func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
@@ -59,21 +58,21 @@ func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
 	}
 
 	return &Data{
-		log:                log,
-		AlgorithmClient:    api.NewAlgorithmServiceClient(conn),
-		UserClient:         api.NewUserServiceClient(conn),
-		DevelopClient:      api.NewDevelopClient(conn),
-		TrainJobClient:     api.NewTrainJobServiceClient(conn),
-		ModelClient:        api.NewModelServiceClient(conn),
-		WorkspaceClient:    api.NewWorkspaceServiceClient(conn),
-		SessionClient:      session.NewSessionClient(confData, logger),
-		ImageClient:        api.NewImageServiceClient(conn),
-		DatasetClient:      api.NewDatasetServiceClient(conn),
-		ResourceSpecClient: api.NewResourceSpecServiceClient(conn),
-		ResourcePoolClient: api.NewResourcePoolServiceClient(conn),
-		BillingClient:      api.NewBillingServiceClient(conn),
-		LableClient:        api.NewLableServiceClient(conn),
-		JointCloudClient:   api.NewJointCloudServiceClient(conn),
-		ModelDeployClient:  api.NewModelDeployServiceClient(conn),
+		log:                      log,
+		AlgorithmClient:          api.NewAlgorithmServiceClient(conn),
+		UserClient:               api.NewUserServiceClient(conn),
+		DevelopClient:            api.NewDevelopClient(conn),
+		TrainJobClient:           api.NewTrainJobServiceClient(conn),
+		ModelClient:              api.NewModelServiceClient(conn),
+		WorkspaceClient:          api.NewWorkspaceServiceClient(conn),
+		ImageClient:              api.NewImageServiceClient(conn),
+		DatasetClient:            api.NewDatasetServiceClient(conn),
+		ResourceSpecClient:       api.NewResourceSpecServiceClient(conn),
+		ResourcePoolClient:       api.NewResourcePoolServiceClient(conn),
+		BillingClient:            api.NewBillingServiceClient(conn),
+		LableClient:              api.NewLableServiceClient(conn),
+		JointCloudClient:         api.NewJointCloudServiceClient(conn),
+		ModelDeployClient:        api.NewModelDeployServiceClient(conn),
+		PlatformStatisticsClient: api.NewPlatformStatisticsClient(conn),
 	}, nil
 }

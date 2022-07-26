@@ -28,6 +28,7 @@ type TrainJob struct {
 	ImageId          string                     `gorm:"type:varchar(100);not null;default:'';comment:'镜像Id'"`
 	ImageName        string                     `gorm:"type:varchar(100);not null;default:'';comment: '镜像名称''"`
 	ImageVersion     string                     `gorm:"type:varchar(100);not null;default:'';comment:'镜像版本'"`
+	ImageUrl         string                     `gorm:"type:varchar(300);not null;default:'';comment:'镜像版本'"`
 	DataSetId        string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集Id'"`
 	DataSetVersion   string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集版本'"`
 	DatasetName      string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集名称''"`
@@ -42,6 +43,7 @@ type TrainJob struct {
 	PayEndedAt       *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus        api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:扣费状态 1扣费中 2扣费完成"`
 	ResSpecPrice     ResourceSpecPrices         `gorm:"type:json;comment:资源规格价格,每个键值对代表第i个子任务的资源规格单价"`
+	ResourcePool     string                     `gorm:"type:varchar(300);default:'';comment:资源池"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
@@ -131,6 +133,7 @@ type TrainJobTemplate struct {
 	DataSetVersion   string  `gorm:"type:varchar(100);not null;default:'';comment:'数据集版本'"`
 	IsDistributed    bool    `gorm:"default:false;comment:'是否是分布式'"`
 	Config           Configs `gorm:"type:json;comment:'task信息'"`
+	ResourcePool     string  `gorm:"type:varchar(300);default:'';comment:资源池"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }

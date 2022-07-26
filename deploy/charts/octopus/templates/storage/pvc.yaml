@@ -83,3 +83,18 @@ spec:
   selector:
     matchLabels:
       pv: logger-pv
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-sftpgo-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .Values.pvc.sftpgo.requests }}
+  selector:
+    matchLabels:
+      pv: sftpgo-pv

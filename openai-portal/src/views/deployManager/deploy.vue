@@ -73,6 +73,7 @@
     import detailDialog from "./components/index.vue";
     import { getDeployList, deleteDeploy, stopDeploy, deployDetail } from '@/api/deployManager.js'
     import { formatDuring } from '@/utils/index'
+    import { clearProgress } from '@/utils/index.js'
     import store from '@/store'
     export default {
         name: "PreImage",
@@ -112,15 +113,14 @@
             this.getList(this.searchData)
         },
         mounted() {
-            window.addEventListener('beforeunload', e => {
-                sessionStorage.clear()
+            window.addEventListener("beforeunload", (e) => {
+                clearProgress()
             });
-
         },
         destroyed() {
-            window.removeEventListener('beforeunload', e => {
-                sessionStorage.clear()
-            })
+            window.removeEventListener("beforeunload", (e) => {
+                clearProgress()
+            });
         },
         methods: {
             getList(data) {
@@ -227,21 +227,21 @@
                 return formatDuring(val)
             },
             // 删除确认
-            // open(val) {
-            //     let message = '此操作将永久删除该部署服务'
-            //     this.$confirm(message, '提示', {
-            //         confirmButtonText: '确定',
-            //         cancelButtonText: '取消',
-            //         type: 'warning'
-            //     }).then(() => {
-            //         this.handleDelete(val)
-            //     }).catch(() => {
-            //         this.$message({
-            //             type: 'info',
-            //             message: '已取消删除'
-            //         });
-            //     });
-            // },
+            open(val) {
+                let message = '此操作将永久删除该部署服务'
+                this.$confirm(message, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.handleDelete(val)
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
             // 停止确认
             open2(val) {
                 this.$confirm('此操作将停止运行该部署服务, 是否继续?', '提示', {

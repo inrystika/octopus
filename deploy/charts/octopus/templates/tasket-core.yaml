@@ -43,7 +43,7 @@ data:
       maxIdleConns: 10
       maxOpenConns: 5
       dbType: mysql
-      authStr: "root:root@({{ include "mysql.serviceAddr" . }})/core?charset=utf8mb4&parseTime=True&loc=Local"
+      authStr: "root:{{ .Values.mysql.auth.rootPassword }}@({{ include "mysql.serviceAddr" . }})/core?charset=utf8mb4&parseTime=True&loc=Local"
       debugSql: false
     evict:
       waitMinutes: 120

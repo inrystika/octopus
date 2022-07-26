@@ -35,7 +35,10 @@ export const constantRoutes = [
     path: '/',
     component: () => import('@/views/Home/firstPage')
   },
-
+  {
+    path: '/register',
+    component: () => import('@/views/Home/register')
+  },
   {
     path: '/404',
     component: () => import('@/views/404'),
@@ -50,13 +53,13 @@ export const constantRoutes = [
       path: '/index',
       name: 'index',
       component: () => import('@/views/GeneralView/index'),
-      meta: { title: '概览', icon: 'overView' }
+      meta: { title: '概览', icon: 'all' }
     }]
   },
   {
     path: '/dataManager',
     component: Layout,
-    meta: { title: '数据管理', icon: 'data' },
+    meta: { title: '数据管理', icon: 'dataset' },
     alwaysShow: true,
     children: [
       {
@@ -82,7 +85,7 @@ export const constantRoutes = [
   {
     path: '/modelDev',
     component: Layout,
-    meta: { title: '模型开发', icon: 'model' },
+    meta: { title: '模型开发', icon: 'modelDevelop' },
     alwaysShow: true,
     children: [
       {
@@ -119,7 +122,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'modelManager',
         component: () => import('@/views/modelManager/index'),
-        meta: { title: '模型管理', icon: 'model2' }
+        meta: { title: '模型管理', icon: 'modelManage' }
       }
     ]
   },
@@ -131,7 +134,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'modelDeploy',
         component: () => import('@/views/deployManager/index'),
-        meta: { title: '部署服务', icon: 'model' }
+        meta: { title: '部署服务', icon: 'deploy' }
       }
     ]
   },
@@ -143,7 +146,21 @@ export const constantRoutes = [
         path: 'index',
         name: 'cloudInterconnection',
         component: () => import('@/views/cloudInterconnection/index'),
-        meta: { title: '云际互联', icon: 'example' }
+        meta: { title: '云际互联', icon: 'cloudConnection' }
+      }
+    ]
+  },
+  {
+    path: '/setting',
+    component: Layout,
+    meta: { title: '设置', icon: 'setting' },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'ftp',
+        name: 'ftp',
+        component: () => import('@/views/setting/ftp'),
+        meta: { title: 'ftp', icon: 'dot' }
       }
     ]
   },

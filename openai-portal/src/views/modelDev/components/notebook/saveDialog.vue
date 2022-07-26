@@ -25,7 +25,7 @@
           <el-input v-model="ruleForm.imageVersion" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="增量描述:" :label-width="formLabelWidth" prop="LayerDescription">
-          <el-input type="textarea" v-model="ruleForm.LayerDescription" maxlength="100" show-word-limit></el-input>
+          <el-input type="textarea" v-model="ruleForm.LayerDescription"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -53,11 +53,11 @@
     },
     data() {
        var checkName = (rule, value, callback) => {
-        const regName = /^[a-zA-Z][\w|-]*$/;
+        const regName = /^[a-z][a-z0-9\-]*[a-z0-9]$/;
         if (regName.test(value)) {
           return callback();
         }
-        callback(new Error("请输入合法的镜像名称:首字母为大小写字母，其他大小写字母数字或者-"));
+        callback(new Error("镜像名称由小写字母、数字或者-组成，小写字母开头，数字或小写字母结尾"));
       };
       var checkLabel = (rule, value, callback) => {
         const regLabel = /^[a-zA-Z][\w|\-|\.]+$/;
@@ -109,7 +109,6 @@
       confirm(val) {
         this.$refs['ruleForm'].validate((valid) => {
           if (valid) {
-            console.log(this.ruleForm.LayerDescription)
             saveNoteBook({ id: this.id, taskName: this.ruleForm.taskName, imageName: this.ruleForm.imageName, imageVersion: this.ruleForm.imageVersion, layerDescription: this.ruleForm.LayerDescription }).then(response => {
               if (response.success) {
                 this.$message({
@@ -130,7 +129,6 @@
             return false;
           }
         });
-
       },
     }
   };

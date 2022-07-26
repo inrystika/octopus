@@ -47,6 +47,7 @@ type developService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type DevelopService interface {
@@ -60,6 +61,7 @@ const (
 	shmResource               = "shm"
 	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId    = "image.octopus.dev/id"
+	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
 func buildTaskName(idx int) string {
@@ -82,7 +84,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
-	billingService api.BillingServiceServer) (DevelopService, error) {
+	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
 	log := log.NewHelper("DevelopService", logger)
 
 	err := upsertFeature(data, conf.Service.BaseServerAddr)
@@ -105,6 +107,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.startNotebookTask()
@@ -147,20 +150,25 @@ func upsertFeature(data *data.Data, baseServerAddr string) error {
 type closeFunc func(ctx context.Context) error
 
 func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) (*startJobInfo, error) {
-	queue := ""
+	queue := nb.ResourcePool
 	if nb.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: nb.UserId})
 		if err != nil {
 			return nil, err
 		}
-		queue = pool.ResourcePool.Name
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
+		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: nb.WorkspaceId})
 		if err != nil {
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
+		}
 	}
 
 	image, err := s.imageService.FindImage(ctx, &api.FindImageRequest{ImageId: nb.ImageId})
@@ -544,6 +552,12 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			ReadOnly:  false,
 		},
 		{
+			Name:      "data",
+			MountPath: s.conf.Service.DockerUserHomePath,
+			SubPath:   common.GetUserHomePath(nb.UserId),
+			ReadOnly:  false,
+		},
+		{
 			Name:      "localtime",
 			MountPath: "/etc/localtime",
 		},
@@ -621,6 +635,16 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 					Volumes:      volumes,
 				},
 			},
+		}
+
+		for k, _ := range startJobInfo.resources {
+			if strings.HasPrefix(string(k), common.RdmaPrefix) {
+				task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
+					Capabilities: &v1.Capabilities{
+						Add: []v1.Capability{"IPC_LOCK"},
+					},
+				}
+			}
 		}
 		tasks = append(tasks, task)
 	}
@@ -761,10 +785,17 @@ func (s *developService) deleteService(ctx context.Context, nb *model.Notebook, 
 
 func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
+		var upLoadFileSize string = ""
+		if s.conf.Service.Develop.IsSetUploadFileSize {
+			upLoadFileSize = "1000m"  // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
+		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
 				Namespace: nb.UserId,
+				Annotations: map[string]string{
+					kubeAnnotationsProxyBodySize: upLoadFileSize,
+				},
 			},
 			Spec: v1beta1.IngressSpec{
 				Rules: []v1beta1.IngressRule{

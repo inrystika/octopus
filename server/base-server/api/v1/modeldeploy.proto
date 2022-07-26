@@ -37,6 +37,7 @@ message DepRequest {
   string workspaceId = 10;
   // 域名，必须http或https开头，满足url的格式
   string domain = 11[(validate.rules).string = {min_len: 1,pattern:"(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"}];
+  string resourcePool = 12;
 }
 
 message ServiceRequest{

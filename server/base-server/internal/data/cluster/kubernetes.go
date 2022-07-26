@@ -270,6 +270,14 @@ func (kc *kubernetesCluster) DeleteNamespace(ctx context.Context, namespace stri
 	return nil
 }
 
+func (kc *kubernetesCluster) GetNamespace(ctx context.Context, namespace string) (*v1.Namespace, error) {
+	ns, err := kc.kubeclient.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return ns, nil
+}
+
 func (kc *kubernetesCluster) ListQueue(ctx context.Context, labelSelector string) ([]byte, error) {
 
 	queues, err := kc.vcClient.SchedulingV1beta1().Queues().List(ctx, metav1.ListOptions{
@@ -431,6 +439,15 @@ func (kc *kubernetesCluster) CreatePersistentVolume(ctx context.Context, pv *v1.
 	}
 	return p, nil
 }
+
+func (kc *kubernetesCluster) GetPersistentVolume(ctx context.Context, name string) (*v1.PersistentVolume, error) {
+	p, err := kc.kubeclient.CoreV1().PersistentVolumes().Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pvc *v1.PersistentVolumeClaim) (*v1.PersistentVolumeClaim, error) {
 	p, err := kc.kubeclient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Create(ctx, pvc, metav1.CreateOptions{})
 	if err != nil {
@@ -438,6 +455,15 @@ func (kc *kubernetesCluster) CreatePersistentVolumeClaim(ctx context.Context, pv
 	}
 	return p, nil
 }
+
+func (kc *kubernetesCluster) GetPersistentVolumeClaim(ctx context.Context, namespace string, name string) (*v1.PersistentVolumeClaim, error) {
+	p, err := kc.kubeclient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func (kc *kubernetesCluster) CreateSecret(ctx context.Context, secret *v1.Secret) (*v1.Secret, error) {
 	p, err := kc.kubeclient.CoreV1().Secrets(secret.Namespace).Create(ctx, secret, metav1.CreateOptions{})
 	if err != nil {

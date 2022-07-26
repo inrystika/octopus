@@ -21,7 +21,8 @@
             </el-row>
             <el-row>
                 <el-col :span="24">
-                    <div>swagger推理路径:<span>{{ data.swaggerURL }}</span></div>
+                    <div>推理路径使用说明:<a href="https://octopus.openi.org.cn/docs/manual/infer" class="text">参考详细文档</a>
+                    </div>
                 </el-col>
             </el-row>
             <el-row>
@@ -101,5 +102,13 @@
             font-weight: 400;
             margin-left: 20px
         }
+    }
+
+    .text {
+        font-weight: 400;
+        margin-left: 10px;
+        color:#3296fa;
+        text-decoration: underline;
+       
     }
 </style>

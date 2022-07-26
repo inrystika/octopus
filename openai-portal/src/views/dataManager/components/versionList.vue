@@ -99,7 +99,6 @@
         myDatasetVisible: false,
         createListVisible: true,
         preVisible: false,
-        formLabelWidth: "120px",
         shared: false,
         shareTitle: "是否分享至本群组，分享后群内所有人员可见",
         loading: false,

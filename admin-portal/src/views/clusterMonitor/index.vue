@@ -5,13 +5,7 @@
   </div>
 </template>
 <script>
-  // import clusterMonitor from "./clusterMonitor.vue";
-  // import groupMonitor from "./groupMonitor.vue";
   export default {
-    // components: {
-    //   clusterMonitor,
-    //   groupMonitor
-    // },
     data() {
       return {
         activeName: 'first',
@@ -32,15 +26,6 @@
       window.removeEventListener('beforeunload', e => {
         sessionStorage.clear()
       })
-    },
-    // mounted() {
-    //   var parent = window.parent.document.documentElement;
-    //   var scrollHeight = parent.scrollHeight;
-    //   this.iFrameHeight = scrollHeight + "px"
-    // },
-    methods: {
-      handleClick(tab, event) {
-      }
     }
   }
 </script>

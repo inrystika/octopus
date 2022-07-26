@@ -124,6 +124,9 @@ func (h *v1Registry) CreateProject(projectReq *ProjectReq) error {
 		Public:      public,
 	}
 	response, err1 := h.client.ProductsApi.ProjectsPost(h.GetAuth(nil), req)
+	if err1 != nil {
+		log.Error(context.TODO(), err1)
+	}
 	StatusCode := response.StatusCode
 	switch StatusCode {
 	case http.StatusCreated:

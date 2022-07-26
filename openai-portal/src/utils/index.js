@@ -127,3 +127,28 @@ export function formatDuring(mss) {
   seconds = seconds === 0 ? '' : seconds
   return days + hours + minutes + seconds
 }
+// 获取浏览器url中指定字段
+export function GetUrlParam(paraName) {
+  let query = location.href
+  query = query.replace('?token', '&token')
+  var vars = query.split("&");
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    if (pair[0] === paraName) {
+      pair[1] = decodeURIComponent(pair[1])
+      return pair[1];
+    }
+  }
+  return null;
+}
+// 刷新页面清空进度条
+export function clearProgress(paraName) {
+  var storage = window.sessionStorage;
+  for (var i = 0, len = storage.length; i < len; i++) {
+    var key = storage.key(i);
+    if (key !== 'space' && key !== 'platform') {
+      storage.removeItem(key)
+    }
+  }
+}
+

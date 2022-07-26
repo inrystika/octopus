@@ -58,7 +58,6 @@ export default {
   },
   data() {
     return {
-      showUpload: false,
       uploadData: { data: {}, type: undefined },
       ruleForm: {
         desc: ""
@@ -96,8 +95,8 @@ export default {
       this.$emit("confirm", val);
     },
     isCloseX(val) {
-                this.close = val
-            }
+      this.close = val
+    }
   }
 }
 </script>

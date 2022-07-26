@@ -1,6 +1,8 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"server/common/dao"
 	"server/common/sql"
@@ -8,16 +10,50 @@ import (
 	"gorm.io/gorm"
 )
 
+type Binds []*Bind
+
+type Bind struct {
+	Platform string `json:"platform"`
+	UserId   string `json:"userId"`
+	UserName string `json:"userName"`
+}
+
+func (r Binds) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *Binds) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
+}
+
+type ResourcePools []string
+
+func (r ResourcePools) Value() (driver.Value, error) {
+	return sql.Value(r)
+}
+
+func (r *ResourcePools) Scan(input interface{}) error {
+	return sql.Scan(r, input)
+}
+
 type User struct {
 	dao.Model
-	Id         string       `gorm:"type:varchar(100);not null;primaryKey;comment:'用户ID'"`
-	FullName   string       `gorm:"type:varchar(100);not null;default:'';index;comment:'姓名'"`
-	Gender     int32        `gorm:"type:int;not null;default:0;comment:'性别：1.男,2.女'"`
-	Email      string       `gorm:"type:varchar(100);not null;default:'';index;comment:'用户邮箱'"`
-	Phone      string       `gorm:"type:varchar(100);not null;default:'';index;comment:'电话号码'"`
-	Password   string       `gorm:"type:varchar(100);not null;default:'';comment:'密码'"`
-	Status     int32        `gorm:"type:int;not null;default:0;comment:'性别：1.冻结,2.正常'"`
-	Workspaces []*Workspace `gorm:"many2many:workspace_user;"`
+	Id            string        `gorm:"type:varchar(100);not null;primaryKey;comment:'用户ID'"`
+	FullName      string        `gorm:"type:varchar(100);not null;default:'';index;comment:'姓名'"`
+	Gender        int32         `gorm:"type:int;not null;default:0;comment:'性别：1.男,2.女'"`
+	Email         string        `gorm:"type:varchar(100);not null;default:'';index;comment:'用户邮箱'"`
+	Phone         string        `gorm:"type:varchar(100);not null;default:'';index;comment:'电话号码'"`
+	Password      string        `gorm:"type:varchar(100);not null;default:'';comment:'密码'"`
+	Status        int32         `gorm:"type:int;not null;default:0;comment:'性别：1.冻结,2.正常'"`
+	Workspaces    []*Workspace  `gorm:"many2many:workspace_user;"`
+	Bind          Binds         `gorm:"type:json;comment:'第三方账号绑定信息'"`
+	FtpUserName   string        `gorm:"type:varchar(100);uniqueIndex:ftpUserName;comment:'ftp用户名'"`
+	ResourcePools ResourcePools `gorm:"type:json;comment:'资源池'"`
 }
 
 func (User) TableName() string {
@@ -37,6 +73,7 @@ type UserList struct {
 	Phone     string
 	SearchKey string
 	Status    int32
+	Bind      Binds
 }
 
 func (u UserList) Where(db *gorm.DB) *gorm.DB {
@@ -113,28 +150,35 @@ func (u UserList) Pagination(db *gorm.DB) *gorm.DB {
 }
 
 type UserQuery struct {
-	Id    string
-	Email string
-	Phone string
+	Id          string
+	Email       string
+	Phone       string
+	Bind        *Bind
+	FtpUserName string
 }
 
 type UserAdd struct {
-	Id       string
-	FullName string
-	Gender   int32
-	Email    string
-	Phone    string
-	Password string
-	Status   int32
+	Id            string
+	FullName      string
+	Gender        int32
+	Email         string
+	Phone         string
+	Password      string
+	Status        int32
+	Bind          *Bind
+	ResourcePools []string
 }
 
 type UserUpdate struct {
-	FullName string
-	Gender   int32
-	Email    string
-	Phone    string
-	Password string
-	Status   int32
+	FullName      string
+	Gender        int32
+	Email         string
+	Phone         string
+	Password      string
+	Status        int32
+	Bind          Binds
+	FtpUserName   string
+	ResourcePools []string
 }
 
 type UserUpdateCond struct {

@@ -100,7 +100,6 @@
         data: undefined,
         newVersionCreationVisible: false,
         editDataSet: false,
-        formLabelWidth: "120px",
         versionListVisible: false,
         myDatasetVisible: false,
         datasetList: [],
@@ -241,7 +240,6 @@
   .create {
     float: right;
   }
-
   .block {
     float: right;
     margin: 20px;

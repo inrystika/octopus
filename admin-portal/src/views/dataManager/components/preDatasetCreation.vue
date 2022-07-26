@@ -36,13 +36,12 @@
 
 <script>
   import upload from '@/components/upload/index.vue'
-  import { createPreDataset, datasetType,datasetUse } from "@/api/dataManager"
+  import { createPreDataset, datasetType, datasetUse } from "@/api/dataManager"
   export default {
     name: "PreDatasetCreation",
     components: {
       upload
     },
-    props: {},
     props: {
       row: {
         type: Object,
@@ -59,6 +58,9 @@
         disabled: false,
         uploadData: { data: {}, type: undefined },
         ruleForm: {
+          name: "",
+          typeId: "",
+          path: ""
         },
         rules: {
           name: [

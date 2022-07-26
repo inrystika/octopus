@@ -73,7 +73,6 @@
       reuploadAlgorithm
     },
     props: {
-      payload: { type: Object, default: () => { } },
       algorithmType: { type: Number, default: undefined },
       row: {
         type: Object,

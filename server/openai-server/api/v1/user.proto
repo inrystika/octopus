@@ -20,16 +20,17 @@ service User {
             get: "/v1/usermanage/user/{userId}/workspace"
         };
     };
-    rpc PutUserWorkspace (PutUserWorkspaceRequest) returns (PutUserWorkspaceReply) {
-        option (google.api.http) = {
-            put: "/v1/usermanage/user/{userId}/workspace"
-            body: "*"
-        };
-    };
     // 查询用户配置
     rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply) {
       option (google.api.http) = {
         get: "/v1/usermanage/config"
+      };
+    };
+
+    rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/ftpaccount"
+        body: "*"
       };
     };
 }
@@ -43,6 +44,8 @@ message UserItem {
   string phone = 6;
   int32 gender = 8;
   int32 status = 9;
+  string ftpUserName = 10;
+  repeated string resourcePools = 12;
 }
 
 message GetUserInfoRequest {
@@ -50,7 +53,6 @@ message GetUserInfoRequest {
 
 message GetUserInfoReply {
   UserItem user = 1;
-  string   workspaceId = 2;
 }
 
 message WorkspaceItem {
@@ -58,6 +60,7 @@ message WorkspaceItem {
     int64 createdAt = 2;
     int64 updatedAt = 3;
     string name = 4;
+    repeated string resourcePools = 5;
 }
 
 message WorkspaceUser {
@@ -74,18 +77,19 @@ message ListUserWorkspacesReply {
     repeated WorkspaceItem workspaces = 1;
 }
 
-message PutUserWorkspaceRequest {
-    string userId = 1 [(validate.rules).string = {min_len: 1, max_len: 36}];
-    string workspaceId = 2 [(validate.rules).string = {max_len: 36}];
-}
-
-message PutUserWorkspaceReply {
-
-}
-
 message GetUserConfigRequest {
 }
 
 message GetUserConfigReply {
   map<string, string> config = 1;
+}
+
+message UpdateUserFtpAccountRequest {
+  string userId = 1;
+  string ftpUserName = 2 [(validate.rules).string = {pattern: "^[a-zA-Z0-9-_.~]+$"}];
+  string ftpPassword = 3;
+}
+
+message UpdateUserFtpAccountReply {
+    UserItem ftpUserName = 1;
 }

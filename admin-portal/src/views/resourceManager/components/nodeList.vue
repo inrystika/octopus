@@ -44,10 +44,17 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="使用百分比" align="center" width="100px">
+                <el-table-column label="使用百分比" align="center" width="120px">
                     <template slot-scope="scope">
-                        <el-progress type="circle" :percentage="scope.row.percentage" :width="40" :height="40"
-                            v-if="!scope.row.children" />
+                        <div class="circleBox" v-if="!scope.row.children">
+                            <el-progress color="#409EFF" type="circle" :show-text="false"
+                                :percentage="scope.row.percentage" :width="60" :height="60">
+                            </el-progress>
+                            <div class="circleCenter">
+                                <div style=" font-weight: bold; font-size: 12px;"> {{scope.row.percentage?scope.row.percentage:0}}%</div>
+                                <!-- <div style="  font-size: 10px;">使用率 </div> -->
+                            </div>
+                        </div>
                     </template>
                 </el-table-column>
             </el-table-column>
@@ -183,5 +190,21 @@
 
     .detail {
         color: #409eff;
+    }
+
+    .circleBox {
+        position: relative;
+        text-align: center;
+        top:20px
+    }
+
+    .circleCenter {
+        position: relative;
+        top: -45px;
+
+    }
+
+    .el-progress-circle__track {
+        stroke: #409EFF;
     }
 </style>

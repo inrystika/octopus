@@ -22,6 +22,8 @@ const (
 	PREAB_FOLDER string = "global" // 预置目录
 
 	BUCKET string = "octopus" // 桶目录
+
+	USERHOME string = "userhome"
 )
 
 // 桶
@@ -107,4 +109,16 @@ func GetMinioDataSetObject(spaceId string, userId string, dataSetId string, vers
 // 训练任务对象:trainJobs/spaceId/userId/trainJobId
 func GetMinioTrainJobObject(spaceId string, userId string, trainJobId string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", TRAIN_JOB_FOLDER, spaceId, userId, trainJobId)
+}
+
+func GetUserBucket(userId string) string {
+	return fmt.Sprintf("%s", userId)
+}
+
+func GetUserHomeObject() string {
+	return USERHOME
+}
+
+func GetUserHomePath(userId string) string {
+	return fmt.Sprintf("%s/%s", userId, USERHOME)
 }

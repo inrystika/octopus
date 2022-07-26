@@ -16,9 +16,10 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="计算框架" prop="modelFrame">
-                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork" :disabled="chooseFrame">
+                    <el-select v-model="ruleForm.modelFrame" placeholder="请选择服务类型" @change="changeFameWork"
+                        :disabled="chooseFrame">
                         <el-option label="pytorch" value="pytorch"></el-option>
-                        <el-option label="tensorflow" value="tensorflow"></el-option>
+                        <el-option label="tensorflow" value="tensorflow" disabled></el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 模型三级框 -->
@@ -53,12 +54,19 @@
                         <el-option label="gpu" value="gpu" disabled></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="资源规格" prop="resourceSpecId">
-                    <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" style="width:35%">
-                        <el-option v-for="item in resourceOptions" :key="item.id" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
+
+                <div>
+                    <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
+                        <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="getResourceList">
+                            <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="specificationVisible" label="资源规格" prop="resourceSpecId" style="display:inline-block;">
+                      <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格">
+                          <el-option v-for="item in resourceOptions" :key="item.id" :label="item.label" :value="item.value" />
+                      </el-select>
+                  </el-form-item>
+                </div>
                 <el-form-item>
                     <el-button type="primary" @click="submitForm('ruleForm')">提交服务</el-button>
                 </el-form-item>
@@ -71,13 +79,13 @@
     import { createDeploy } from '@/api/deployManager.js'
     import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from '@/api/modelManager.js'
     import { getResourceList } from '@/api/trainingManager.js'
-    import upload from '@/components/upload/index.vue'
+    import { mapGetters } from 'vuex'
     import { algorithmFrame } from "@/api/modelDev";
     export default {
         name: "DialogCreateForm",
-        components: {
-            upload
-        },
+        // components: {
+        //     upload
+        // },
         props: {
             row: {
                 type: Object,
@@ -86,6 +94,8 @@
         },
         data() {
             return {
+                specificationVisible:false,
+                poolList: [],
                 CreateFormVisible: true,
                 ruleForm: {
                     name: '',
@@ -96,7 +106,8 @@
                     modelVersion: '',
                     resourceType: '',
                     resourceSpecId: '',
-                    domain: this.GLOBAL.DOMAIN
+                    domain: this.GLOBAL.DOMAIN,
+                    resourcePool: "",
                 },
                 rules: {
                     name: [
@@ -124,6 +135,13 @@
                     resourceSpecId: [
                         { required: true, message: '请选择资源规格', trigger: 'change' }
                     ],
+                    resourcePool: [
+                        {
+                            required: true,
+                            message: "请选择资源池",
+                            trigger: "blur"
+                        }
+                    ]
 
                 },
                 resourceOptions: [],
@@ -151,11 +169,15 @@
 
                 },
                 frameWorkId: '',
-                chooseFrame:false
+                chooseFrame: false
 
             }
         },
-        watch: {},
+        computed: {
+            ...mapGetters([
+                'workspaces'
+            ])
+        },
         created() {
             if (JSON.stringify(this.row) !== '{}') {
                 this.uncheckable = true
@@ -166,11 +188,12 @@
                 this.ruleForm.modelVersion = this.row.version
                 this.tempId = this.row.modelId
                 this.flag = true
-                this.modelType=true
-                this.ruleForm.modelFrame=this.row.modelFrame.toLowerCase()
-                this.chooseFrame=true
+                this.modelType = true
+                this.ruleForm.modelFrame = this.row.modelFrame.toLowerCase()
+                this.chooseFrame = true
             }
-            this.getResourceList()
+            this.getSpacePools();
+            // this.getResourceList()
             this.algorithmFrame()
         },
         beforeDestroy() {
@@ -262,9 +285,11 @@
                 this.ruleForm.modelVersion = ''
             },
             getModelVersionItem() {
-                this.modelVersionCount = 1
-                this.modelVersionOption = []
-                this.getModelVersion()
+                if (!this.flag) {
+                    this.modelVersionCount = 1
+                    this.modelVersionOption = []
+                    this.getModelVersion()
+                }
             },
             loadModelVersion() {
                 this.modelVersionCount = this.modelVersionCount + 1
@@ -308,9 +333,23 @@
                     })
                 }
             },
+            getSpacePools() {
+                let workspaceName = JSON.parse(sessionStorage.getItem('space')).workspaceName
+                this.workspaces.forEach(
+                    item => {
+                        // 获取当前群组绑定资源池列表
+                        if(item.name == workspaceName) {
+                            this.poolList = item.resourcePools
+                        }
+                    }
+                )
+            },
             // 获取资源规格
             getResourceList() {
-                getResourceList().then(response => {
+                this.specificationVisible = true
+                this.ruleForm.resourceSpecId = ""
+                this.resourceOptions = []
+                getResourceList(this.ruleForm.resourcePool).then(response => {
                     if (response.success) {
                         response.data.mapResourceSpecIdList.deploy.resourceSpecs.forEach(
                             item => {
@@ -328,9 +367,9 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        let data=JSON.parse(JSON.stringify(this.ruleForm))
+                        let data = JSON.parse(JSON.stringify(this.ruleForm))
                         if (this.flag) {
-                            data.modelId = this.tempId           
+                            data.modelId = this.tempId
                         }
                         createDeploy(data).then(response => {
                             if (response.success) {
@@ -340,10 +379,19 @@
                                 });
                                 this.$emit('confirm', false)
                             } else {
-                                this.$message({
-                                    message: this.getErrorMsg(response.error.subcode),
-                                    type: 'warning'
-                                });
+                                if (response.error.subcode == 15011) {
+                                    this.$message({
+                                        message: '服务名称已存在',
+                                        type: 'warning'
+                                    });
+                                }
+                                else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+
                             }
                         })
 
@@ -367,13 +415,13 @@
             changeFameWork() {
                 this.modelType = true
                 this.frameWorkId = this.option[this.ruleForm.modelFrame]
-                this.ruleForm.modelSource=""
+                this.ruleForm.modelSource = ""
                 this.ruleForm.modelId = ""
-                this.ruleForm.modelVersion=""
-                
+                this.ruleForm.modelVersion = ""
+
             },
-             // 获取算法框架
-             algorithmFrame() {
+            // 获取算法框架
+            algorithmFrame() {
                 algorithmFrame({ pageIndex: 1, pageSize: 50 }).then(response => {
                     if (response.success) {
                         response.data.lables.forEach(

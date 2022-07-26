@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	innerapi "server/base-server/api/v1"
+	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/log"
-	"server/common/session"
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
@@ -29,18 +29,15 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 }
 
 func (s *DevelopService) CreateNotebook(ctx context.Context, req *api.CreateNotebookRequest) (*api.CreateNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.CreateNotebookRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, err
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.DevelopClient.CreateNotebook(ctx, innerReq)
 	if err != nil {
@@ -63,12 +60,9 @@ func (s *DevelopService) checkPermission(ctx context.Context, notebookId string,
 }
 
 func (s *DevelopService) StartNotebook(ctx context.Context, req *api.StartNotebookRequest) (*api.StartNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.Id, session.UserId)
+	err := s.checkPermission(ctx, req.Id, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -82,12 +76,9 @@ func (s *DevelopService) StartNotebook(ctx context.Context, req *api.StartNotebo
 }
 
 func (s *DevelopService) StopNotebook(ctx context.Context, req *api.StopNotebookRequest) (*api.StopNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.Id, session.UserId)
+	err := s.checkPermission(ctx, req.Id, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +92,9 @@ func (s *DevelopService) StopNotebook(ctx context.Context, req *api.StopNotebook
 }
 
 func (s *DevelopService) DeleteNotebook(ctx context.Context, req *api.DeleteNotebookRequest) (*api.DeleteNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.Id, session.UserId)
+	err := s.checkPermission(ctx, req.Id, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -120,18 +108,15 @@ func (s *DevelopService) DeleteNotebook(ctx context.Context, req *api.DeleteNote
 }
 
 func (s *DevelopService) ListNotebook(ctx context.Context, req *api.ListNotebookRequest) (*api.ListNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
 
 	innerReq := &innerapi.ListNotebookRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	innerReq.UserId = session.UserId
-	innerReq.WorkspaceId = session.GetWorkspace()
+	innerReq.UserId = userId
+	innerReq.WorkspaceId = spaceId
 
 	innerReply, err := s.data.DevelopClient.ListNotebook(ctx, innerReq)
 	if err != nil {
@@ -148,11 +133,6 @@ func (s *DevelopService) ListNotebook(ctx context.Context, req *api.ListNotebook
 }
 
 func (s *DevelopService) QueryNotebook(ctx context.Context, req *api.QueryNotebookRequest) (*api.QueryNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	innerReq := &innerapi.GetNotebookRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
@@ -175,11 +155,6 @@ func (s *DevelopService) QueryNotebook(ctx context.Context, req *api.QueryNotebo
 
 // Notebook事件列表
 func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.NotebookEventListRequest) (*api.NotebookEventListReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	innerReq := &innerapi.NotebookEventListRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
@@ -201,11 +176,6 @@ func (s *DevelopService) GetNotebookEventList(ctx context.Context, req *api.Note
 
 // 保存notebook
 func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebookRequest) (*api.SaveNotebookReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
-
 	sReq := &innerapi.SaveNotebookRequest{
 		NotebookId:       req.NotebookId,
 		TaskName:         req.TaskName,
@@ -220,12 +190,9 @@ func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 }
 
 func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {
-	session := session.SessionFromContext(ctx)
-	if session == nil {
-		return nil, errors.Errorf(nil, errors.ErrorUserNoAuthSession)
-	}
+	userId, _ := commctx.UserIdAndSpaceIdFromContext(ctx)
 
-	err := s.checkPermission(ctx, req.NotebookId, session.UserId)
+	err := s.checkPermission(ctx, req.NotebookId, userId)
 	if err != nil {
 		return nil, err
 	}

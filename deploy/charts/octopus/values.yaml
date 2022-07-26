@@ -17,18 +17,18 @@ global:
   affinity: &affinity
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: beta.kubernetes.io/arch
-            operator: In
-            values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values: ["amd64", "x64", "x86-64", "x86_64"]
 
 common:
   resourceTagKey: octopus.pcl.ac.cn/type
@@ -60,6 +60,8 @@ pvc:
   influxdb:
     requests: 100Gi
   logger:
+    requests: 100Gi
+  sftpgo:
     requests: 100Gi
 
 pv:
@@ -93,6 +95,12 @@ pv:
       nfs:
         server:  192.168.203.72
         path:  /data/datasets/data/logger
+  sftpgo:
+    requests: 100Gi
+    storageType:
+      nfs:
+        server: 192.168.203.72
+        path: /data/datasets/data/sftpgo
 
 # taskset
 taskset:
@@ -137,11 +145,18 @@ baseserver:
       sessionExpirySec: 540 #实际有效期为600
     ambassador: #需要修改为实际的值
       baseUrl: 192.168.202.73
+    pytorchServer:
+      imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+      version: 2.0.4
+    sftpgo:
+      username: admin
+      password: abcde
   service:
     billingPeriodSec: 1800
     develop:
       jpyCommand: "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='/code' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
       autoStopIntervalSec: 7200
+      isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制
   administrator:
     username: "admin"
     password: "123456"
@@ -158,11 +173,20 @@ openaiserver:
     name: "openai-server"
   app:
     logLevel: info
+  server:
+    oauth:
+      pcl:
+        authServerURL: "https://one.pcl.ac.cn/idp/oauth2"
+        clientID: "yn1"
+        clientSecret: "74d4543ca3d74f42af841479c5c6d045"
+        redirectURL: "http://192.168.202.73/openaiserver/v1/oauth2/pcl/callback"
+      registerURL: "http://192.168.202.73/openai/"
   data:
     redis:
       username: ""
       password: "abcde"
   service:
+    tokenExpirationSec: 86400
     webConfig:
       logoAddr:
       #格式如#94070a
@@ -171,6 +195,7 @@ openaiserver:
       systemNameZh:
       organization:
       manualInvisible:
+      thirdPlatform:
 
 # platform-server
 platformserver:
@@ -226,7 +251,7 @@ scheduler:
   replicaCount: 1
   image:
     name: "scheduler"
-    
+
 
 # controller
 controller:
@@ -358,13 +383,13 @@ influxdb:
     enabled: true
     existingClaim: "octopus-influxdb-pvc"
   volumes:
-  - name: influxdb-initdb
-    configMap:
-      name: influxdb-initdb-config
+    - name: influxdb-initdb
+      configMap:
+        name: influxdb-initdb-config
   mountPoints:
-  - name: influxdb-initdb
-    mountPath: /docker-entrypoint-initdb.d
-    readOnly: true
+    - name: influxdb-initdb
+      mountPath: /docker-entrypoint-initdb.d
+      readOnly: true
   nodeSelector:
     <<: *nodeSelector
   affinity:
@@ -435,3 +460,63 @@ nodeagent:
     name: "node-agent"
   resources: {}
   nodeSelector: {}
+
+# seldon-core-operator
+seldon-core-operator:
+  ambassador:
+    enabled: true
+  usageMetrics:
+    enabled: true
+  namespaceOverride: seldon-system
+  predictor_servers:
+    PYTORCH_SERVER:
+      protocols:
+        seldon:
+          defaultImageVersion: "2.0.4"
+          image: "swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver"
+
+sftpgo:
+  image:
+    repository: swr.cn-south-1.myhuaweicloud.com/openioctopus/sftpgo
+    tag: v2.2.2
+  service:
+    type: NodePort
+    ports:
+      sftp:
+        nodePort: "30022"
+      http:
+        port: "80"
+  volumes:
+    - name: "data"
+      persistentVolumeClaim:
+        claimName: "octopus-sftpgo-pvc"
+  volumeMounts:
+    - name: "data"
+      mountPath: "/var/lib/sftpgo"
+      subPath: "home"
+    - name: "data"
+      mountPath: "/srv/sftpgo"
+      subPath: "data"
+  envVars:
+    - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
+      value: "admin"
+    - name: "SFTPGO_DEFAULT_ADMIN_PASSWORD"
+      value: "abcde"
+  config:
+    data_provider:
+      create_default_admin: true
+  nodeSelector:
+    <<: *nodeSelector
+
+rdma:
+  enabled: false
+  config: |
+    {
+        "periodicUpdateInterval": 300,
+        "configList": [{
+             "resourceName": "hca",
+             "rdmaHcaMax": 1000,
+             "devices": ["ib0"]
+           }
+        ]
+    }

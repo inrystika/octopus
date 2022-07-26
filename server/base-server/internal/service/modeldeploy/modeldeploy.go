@@ -44,7 +44,6 @@ const (
 	ModelVersion             = "model_version"
 	TFSignatureName          = "signature_name"
 	TFModelName              = "model_name"
-	PytorchServerVersion     = "192.168.202.110:5000/train/pytorchserver:2.0.0"
 	STATE_PREPARING          = "Preparing"
 	STATE_AVAILABLE          = "Available"
 	STATE_CREATING           = "Creating"
@@ -63,6 +62,7 @@ type modelDeployService struct {
 	resourceService     api.ResourceServiceServer
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
+	userService         api.UserServiceServer
 }
 
 type ModelDeployService interface {
@@ -85,7 +85,7 @@ type startJobInfo struct {
 func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, modelService api.ModelServiceServer,
 	resourceSpecService api.ResourceSpecServiceServer, resourceService api.ResourceServiceServer,
-	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer) (ModelDeployService, error) {
+	resourcePoolService api.ResourcePoolServiceServer, billingService api.BillingServiceServer, userService api.UserServiceServer) (ModelDeployService, error) {
 	log := log.NewHelper("ModelDeployService", logger)
 
 	s := &modelDeployService{
@@ -98,6 +98,7 @@ func NewModelDeployService(conf *conf.Bootstrap, logger log.Logger, data *data.D
 		resourceService:     resourceService,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
+		userService:         userService,
 	}
 
 	s.modelServiceBilling(context.Background())
@@ -130,10 +131,10 @@ func (s *modelDeployService) updateDeployStatus(ctx context.Context, obj interfa
 	if err != nil {
 		return
 	}
-	newState := string(objSeldon.Status.State)
-	if newState == STATE_STOPPED {
+	if deployService.Status == STATE_STOPPED {
 		return
 	}
+	newState := string(objSeldon.Status.State)
 	if newState == deployService.Status {
 		return
 	}
@@ -264,6 +265,14 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 		}
 	}
 
+	//thread num in work process
+	env := []v1.EnvVar{
+		{
+			Name:  "SELDON_DEBUG",
+			Value: "1",
+		},
+	}
+
 	volumes := []v1.Volume{
 		{
 			Name: "modelfilepath",
@@ -320,6 +329,9 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	seldonPodSpecs := make([]*seldonv1.SeldonPodSpec, 0)
 	if startJobInfo.modelFrame == PytorchFrame {
+		serverImageAddr := s.conf.Data.PytorchServer.ImageAddr
+		serverImageVersion := s.conf.Data.PytorchServer.Version
+		imageInfo := fmt.Sprintf("%s:%s", serverImageAddr, serverImageVersion)
 		seldonPodSpec := &seldonv1.SeldonPodSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -330,7 +342,8 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 							Requests: startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 							Limits:   startJobInfo.specs[modelDeploy.ResourceSpecId].resources,
 						},
-						Image: PytorchServerVersion,
+						Image: imageInfo,
+						Env:   env,
 					},
 				},
 				Volumes: volumes,
@@ -426,7 +439,7 @@ func (s *modelDeployService) submitDeployJob(ctx context.Context, modelDeploy *m
 
 	deploymentNameSpace := fmt.Sprintf("%s/", modelDeploy.UserId)
 	//根据seldon-core官方格式，进行服务url路径拼接
-	serviceUrl := s.conf.Data.Ambassador.Addr + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
+	serviceUrl := s.conf.Data.Ambassador.BaseUrl + SeldonInUrl + deploymentNameSpace + metaDataName + ServiceUrlSuffix
 
 	return resFunc, serviceUrl, nil
 }
@@ -446,22 +459,29 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	deployUserId := deployJob.UserId
 	//资源队列
-	queue := ""
+	queue := deployJob.ResourcePool
 	if deployJob.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		pool, err := s.resourcePoolService.GetDefaultResourcePool(ctx, &emptypb.Empty{})
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: deployJob.UserId})
 		if err != nil {
 			return nil, err
 		}
-		queue = pool.ResourcePool.Name
+
+		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
+			return nil, errors.Errorf(nil, errors.ErrorModelDeployResourcePoolForbidden)
+		}
 	} else {
 		workspace, err := s.workspaceService.GetWorkspace(ctx, &api.GetWorkspaceRequest{WorkspaceId: deployJob.WorkspaceId})
 		if err != nil {
 			return nil, err
 		}
 
-		queue = workspace.Workspace.ResourcePoolId
+		if queue != workspace.Workspace.ResourcePoolId {
+			return nil, errors.Errorf(nil, errors.ErrorModelDeployResourcePoolForbidden)
+		}
 	}
+
 	// 校验模型框架
 	modelFrameType := deployJob.ModelFrame
 	if modelFrameType != TensorFlowFrame && modelFrameType != PytorchFrame {
@@ -469,20 +489,61 @@ func (s *modelDeployService) checkParam(ctx context.Context, deployJob *model.Mo
 	}
 
 	//模型权限查询
-	queryModelVersionReply, err := s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
-		deployJob.ModelVersion)
-	if queryModelVersionReply == nil || err != nil {
-		return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+	//首先判断是否是共享模型
+	commModelReq := &api.ListCommModelVersionRequest{}
+	commModelReq.ModelId = deployJob.ModelId
+	commModelReq.SpaceId = deployJob.WorkspaceId
+	commModelReply, err := s.modelService.ListCommModelVersion(ctx, commModelReq)
+	if err != nil {
+		return nil, err
 	}
+	var isCommModel bool
+	if commModelReply.TotalSize != 0 {
+		for _, modelVersionInfo := range commModelReply.ModelVersions {
+			if modelVersionInfo.ModelId == deployJob.ModelId && modelVersionInfo.Version == deployJob.ModelVersion {
+				isCommModel = true
+				break
+			}
+		}
+	}
+	queryModelVersionReply := &api.QueryModelVersionReply{}
 	//获取模型路径
 	var modelFilePath string
-	if queryModelVersionReply.Model.IsPrefab {
-		modelFilePath = s.getPreFebModelSubPath(deployJob)
+	if isCommModel {
+		queryModelVersion := &api.QueryModelVersionRequest{}
+		queryModelVersion.ModelId = deployJob.ModelId
+		queryModelVersion.Version = deployJob.ModelVersion
+		commModelInfo, _ := s.modelService.QueryModelVersion(ctx, queryModelVersion)
+		if commModelInfo != nil {
+			//公共模型路径
+			commModelUserId := commModelInfo.Model.UserId
+			//因为模型分享设计只是在同一群组中分享公共模型，所以这里只需要替换源模型的用户userid，即可复用方法来查询模型路径
+			deployJob.UserId = commModelUserId
+			//模型名称
+			deployJob.ModelName = commModelInfo.Model.ModelName
+			//源模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
 	} else {
-		modelFilePath = s.getUserModelSubPath(deployJob)
+		queryModelVersionReply, err = s.ModelAccessAuthCheck(ctx, deployJob.WorkspaceId, deployJob.UserId, deployJob.ModelId,
+			deployJob.ModelVersion)
+		if queryModelVersionReply == nil || err != nil {
+			return nil, errors.Errorf(err, errors.ErrorModelAuthFailed)
+		}
+		if queryModelVersionReply.Model.IsPrefab {
+			//预置模型路径
+			modelFilePath = s.getPreFebModelSubPath(deployJob)
+		} else {
+			//我的模型路径
+			modelFilePath = s.getUserModelSubPath(deployJob)
+		}
+		//模型名称
+		deployJob.ModelName = queryModelVersionReply.Model.ModelName
 	}
-	//模型名称
-	deployJob.ModelName = queryModelVersionReply.Model.ModelName
+	//如果是使用公共模型发布服务，用户的名称需要为发布者名称，重写回来。
+	if isCommModel {
+		deployJob.UserId = deployUserId
+	}
 	//资源规格信息
 	startJobSpecs := map[string]*startJobInfoSpec{}
 	specs, err := s.resourceSpecService.ListResourceSpec(ctx, &api.ListResourceSpecRequest{})
