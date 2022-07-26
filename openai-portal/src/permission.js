@@ -16,7 +16,6 @@ router.beforeEach(async (to, from, next) => {
   document.title = getPageTitle(to.meta.title)
   var url = window.location.href
   if (url.indexOf('token') !== -1) {
-    console.log("OPPO")
     setToken(GetUrlParam('token'))
   }
   // determine whether the user has logged in
