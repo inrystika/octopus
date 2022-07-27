@@ -8,22 +8,19 @@ import getPageTitle from '@/utils/get-page-title'
 import { GetUrlParam } from '@/utils/index.js'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/', '/register'] // no redirect whitelist
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
 
   // set page title
   document.title = getPageTitle(to.meta.title)
-
+  var url = window.location.href
+  if (url.indexOf('token') !== -1) {
+    setToken(GetUrlParam('token'))
+  }
   // determine whether the user has logged in
   const hasToken = getToken()
   // next()
-  if (!hasToken) {
-    var url = window.location.href
-    if (url.indexOf('token') !== -1) {
-      setToken(GetUrlParam('token'))
-    }
-  }
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
