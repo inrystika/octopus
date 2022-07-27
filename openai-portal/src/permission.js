@@ -17,6 +17,7 @@ router.beforeEach(async(to, from, next) => {
   const hasToken = getToken()
   // next()
   if (hasToken) {
+    console.log(hasToken)
     try {
       // eslint-disable-next-line eqeqeq
       if (store.getters.name === '') { await store.dispatch('user/getInfo') }
