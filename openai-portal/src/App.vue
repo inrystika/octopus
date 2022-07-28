@@ -19,16 +19,15 @@
         mainColor: curColor
       }
     },
-    beforeCreate() {
+    mounted() {
       var url = window.location.href
       if (url.indexOf('token') !== -1) {
         setToken(GetUrlParam('token'))
         this.$router.push({ path: '/index', })
       }
-     
-     
     },
-    created(){
+    created() {
+
       this.themeChange()
     },
     methods: {
