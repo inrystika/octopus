@@ -18,7 +18,7 @@ data:
     masterUrl: https://192.168.202.73:6443/
     configPath: ./73kubeconfig
   pipeline:
-    baseUrl: http://127.0.0.1:8080
+    baseUrl: http://127.0.0.1:8080:w:
     token: KLtmMug9BDvvRjlg
   minio:
     base:
