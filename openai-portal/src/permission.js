@@ -3,21 +3,22 @@ import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-import { getToken, setToken } from '@/utils/auth' // get token from cookie
+import { getToken, setToken, getCookie } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 import { GetUrlParam } from '@/utils/index.js'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/', '/register'] // no redirect whitelist
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
 
   // set page title
   document.title = getPageTitle(to.meta.title)
-
+  if (!getToken() && getCookie('token')) {
+    setToken(getCookie('token'))
+  }
   // determine whether the user has logged in
   const hasToken = getToken()
-  // next()
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
