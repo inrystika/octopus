@@ -120,9 +120,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							jobNs[id] = trainJobMap[id].UserId
 						}
 
-						details := make([]*typeJob.Job, 0)
+						details := make([]*typeJob.JobStatusDetail, 0)
 						for _, id := range trainJobIds {
-							info, err := s.data.Cluster.GetJob(ctx, jobNs[id], id)
+							info, err := s.getJobDetail(ctx, id)
 							if err != nil {
 								s.log.Errorf(ctx, "GetJob err: %s", err)
 							} else {
@@ -130,9 +130,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							}
 						}
 
-						detailMap := map[string]*typeJob.Job{}
+						detailMap := map[string]*typeJob.JobStatusDetail{}
 						for _, d := range details {
-							detailMap[d.Name] = d
+							detailMap[d.Job.ID] = d
 						}
 
 						for _, j := range trainJobs {
@@ -155,14 +155,13 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							ownerId, ownerType := s.getOwner(trainJob)
 
 							detail := detailMap[j.Id]
-							for ti, t := range detail.Status.TaskRoleStatus {
-								for _, r := range t.ReplicaStatuses { //计算副本消费
+							for ti, t := range detail.Tasks {
+								for _, r := range t.Replicas { //计算副本消费
 									var endAt int64
 									//查看副本任务是否终止，以便获取副本终止时间。
-									state := utils.ConvertTaskRoleReplicaState(&r)
-									if utils.IsCompletedState(state) {
+									if utils.IsCompletedState(r.State) {
 										// 副本状态终止，但无终止时间。
-										if r.FinishAt == nil {
+										if r.FinishedAt == nil {
 											//若job终止时间也缺失，系统级错误，结束时间 = 启动时间，不计入费用！
 											if j.CompletedAt == nil {
 												s.log.Errorf(ctx, j.Id+"'s replica finished-time is null && job finished time is also null!")
@@ -174,9 +173,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 												endAt = j.CompletedAt.Unix()
 											}
 										} else {
-											endAt = r.FinishAt.Unix()
+											endAt = r.FinishedAt.Unix()
 										}
-									} else if strings.EqualFold(state, constant.RUNNING) {
+									} else if strings.EqualFold(r.State, constant.RUNNING) {
 										//副本仍在running，则取当前系统时间，作为该周期计费终止点。
 										endAt = now
 									}
@@ -190,9 +189,8 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 
 							var payStatus api.BillingPayRecordStatus
 							var payEndAt int64
-							jobState := utils.MapPhaseToState(typeJob.JobPhase((detail.Status.State.Phase)))
-							if utils.IsCompletedState(jobState) {
-								payEndAt = detail.Status.FinishAt.Unix()
+							if utils.IsCompletedState(detail.Job.State) {
+								payEndAt = detail.Job.FinishedAt.Unix()
 								payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 							} else {
 								payEndAt = now

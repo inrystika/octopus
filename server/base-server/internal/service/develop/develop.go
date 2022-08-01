@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/cache"
 	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+	"encoding/json"
 )
 
 type developService struct {
@@ -372,6 +373,7 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			Id:         jobId,
 			NotebookId: nbId,
 			Status:     constant.PREPARING,
+			Detail:     "{}",
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
@@ -1035,4 +1037,58 @@ func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.L
 		TotalSize: totalSize,
 		Records:   records,
 	}, nil
+}
+
+func (s *developService) getJobDetail(ctx context.Context, userID, jobID string) (*typeJob.JobStatusDetail, error) {
+
+	nbJob, err := s.data.DevelopDao.GetNotebookJob(ctx, jobID)
+	
+	if err != nil {
+		return nil, err
+	}
+
+	status := nbJob.Status
+
+	if status == constant.FAILED || status == constant.STOPPED || status == constant.SUCCEEDED {
+		if "" == nbJob.Detail || "{}" == nbJob.Detail {
+			return defaultDetail(userID, nbJob), nil
+		}
+		detail := typeJob.JobStatusDetail{}
+		json.Unmarshal([]byte(nbJob.Detail), &detail)
+		return &detail, nil
+	}
+
+	job, err := s.data.Cluster.GetJob(ctx, userID, jobID)
+	if nil != err {
+		return nil, err
+	}
+
+	detail := utils.Format(jobID, "notebookJob", job.Namespace, "", "", job)
+	if nil == detail {
+		detail = defaultDetail(userID, nbJob)
+		return detail, nil
+	}
+	return detail, nil
+}
+
+func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDetail {
+	
+	status := constant.PREPARING
+
+	if nbJob.Status == constant.STOPPED ||
+	constant.SUSPENDED == nbJob.Status ||
+	constant.FAILED == nbJob.Status {
+		status = nbJob.Status
+	}
+
+	return &typeJob.JobStatusDetail{
+		Version: "v1",
+		Job: &typeJob.JobSummary{
+			ID:              nbJob.Id,
+			Name:            nbJob.Id,
+			Type:            "notebookJob",
+			UserID:          userID,
+			State:           status,
+		},
+	}
 }

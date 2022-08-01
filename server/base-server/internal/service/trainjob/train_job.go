@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
+	jsoniter "github.com/json-iterator/go"
+	"encoding/json"
 )
 
 const (
@@ -106,6 +108,7 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	}
 	trainJob.Id = trainJobId
 	trainJob.Status = constant.PREPARING
+	trainJob.Detail = "{}"
 	//各类参数校验
 	startJobInfo, err := s.checkPermForJob(ctx, trainJob)
 	if err != nil {
@@ -717,7 +720,7 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 		return nil, err
 	}
 
-	info, err := s.data.Cluster.GetJob(ctx, trainJob.UserId, req.Id)
+	info, err := s.getJobDetail(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -725,11 +728,11 @@ func (s *trainJobService) GetTrainJobInfo(ctx context.Context, req *api.TrainJob
 	subTaskStateMap := make(map[int]string)
 
 	replicaNum := 0
-	for index, taskInfo := range info.Status.TaskRoleStatus {
-		subTaskStateMap[index] = utils.ConvertTaskRoleState(&taskInfo)
-		for ri, replica := range taskInfo.ReplicaStatuses {
+	for index, taskInfo := range info.Tasks {
+		subTaskStateMap[index] = taskInfo.State
+		for ri, replica := range taskInfo.Replicas {
 			stateKey := "task" + strconv.Itoa(index) + "-replica-" + strconv.Itoa(ri)
-			taskReplicaStatesMap[stateKey] = utils.ConvertTaskRoleReplicaState(&replica)
+			taskReplicaStatesMap[stateKey] = replica.State
 			replicaNum++
 		}
 	}
@@ -1065,6 +1068,65 @@ func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEvent
 	}, nil
 }
 
+func (s *trainJobService) getJobDetail(ctx context.Context, jobID string) (*typeJob.JobStatusDetail, error) {
+
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, jobID)
+	
+	if err != nil {
+		return nil, err
+	}
+
+	status := trainJob.Status
+
+	if status == constant.FAILED || status == constant.STOPPED || status == constant.SUCCEEDED {
+		if "" == trainJob.Detail || "{}" == trainJob.Detail {
+			return defaultDetail(trainJob), nil
+		}
+		detail := typeJob.JobStatusDetail{}
+		json.Unmarshal([]byte(trainJob.Detail), &detail)
+		return &detail, nil
+	}
+
+	var namespace string = trainJob.UserId
+	if "" == namespace {
+		namespace = "default"
+	}
+
+	job, err := s.data.Cluster.GetJob(ctx, namespace, jobID)
+	if nil != err {
+		return nil, err
+	}
+
+	detail := utils.Format(jobID, "trainJob", job.Namespace, "", "", job)
+	if nil == detail {
+		detail = defaultDetail(trainJob)
+		return detail, nil
+	}
+	return detail, nil
+}
+
+func defaultDetail(trainJob *model.TrainJob) *typeJob.JobStatusDetail {
+	
+	status := constant.PREPARING
+
+	if trainJob.Status == constant.STOPPED ||
+	constant.SUSPENDED == trainJob.Status ||
+	constant.FAILED == trainJob.Status {
+		status = trainJob.Status
+	}
+
+	return &typeJob.JobStatusDetail{
+		Version: "v1",
+		Job: &typeJob.JobSummary{
+			ID:              trainJob.Id,
+			Name:            trainJob.Name,
+			Type:            "trainJob",
+			UserID:          trainJob.UserId,
+			State:           status,
+		},
+	}
+}
+
 func (s *trainJobService) onJobAdd(obj interface{}) {
 }
 
@@ -1091,7 +1153,7 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 	trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
 	if err != nil {
-		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:"+newjob.Name, err)
+		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:" + newjob.Name, err)
 		return
 	}
 
@@ -1109,6 +1171,15 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 		update.StartedAt = &now
 	} else if utils.IsCompletedState(newState) {
 		update.CompletedAt = &now
+	}
+
+	status := utils.Format(newjob.Name, "trainJob", newjob.Namespace, "", "", newjob)
+	if nil != status {
+		buf, err := jsoniter.Marshal(status)
+		if err != nil {
+			s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
+		}
+		update.Detail = string(buf)
 	}
 
 	err = s.data.TrainJobDao.UpdateTrainJob(context.TODO(), update)

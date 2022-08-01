@@ -131,9 +131,9 @@ func (s *developService) startNotebookTask() {
 							nbjNs[j.Id] = nb.UserId
 						}
 
-						details := make([]*typeJob.Job, 0)
+						details := make([]*typeJob.JobStatusDetail, 0)
 						for _, id := range jobIds {
-							info, err := s.data.Cluster.GetJob(ctx, nbjNs[id], id)
+							info, err := s.getJobDetail(ctx, nbjNs[id], id)
 							if err != nil {
 								s.log.Errorf(ctx, "GetJob err: %s", err)
 							} else {
@@ -141,9 +141,9 @@ func (s *developService) startNotebookTask() {
 							}
 						}
 
-						detailMap := map[string]*typeJob.Job{}
+						detailMap := map[string]*typeJob.JobStatusDetail{}
 						for _, d := range details {
-							detailMap[d.Name] = d
+							detailMap[d.Job.ID] = d
 						}
 
 						for _, j := range nbJobs {

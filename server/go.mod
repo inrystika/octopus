@@ -18,6 +18,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
+	github.com/json-iterator/go v1.1.12
 	github.com/minio/minio-go/v7 v7.0.11
 	github.com/seldonio/seldon-core/operator v1.11.2
 	github.com/sony/sonyflake v1.0.0
@@ -73,7 +74,6 @@ require (
 	github.com/influxdata/influxql v1.1.1-0.20210223160523-b6ab99450c93 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kedacore/keda v0.0.0-20200911122749-717aab81817f // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect

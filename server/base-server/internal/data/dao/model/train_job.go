@@ -44,6 +44,7 @@ type TrainJob struct {
 	PayStatus        api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:扣费状态 1扣费中 2扣费完成"`
 	ResSpecPrice     ResourceSpecPrices         `gorm:"type:json;comment:资源规格价格,每个键值对代表第i个子任务的资源规格单价"`
 	ResourcePool     string                     `gorm:"type:varchar(300);default:'';comment:资源池"`
+	Detail       	 string                     `gorm:"column:detail;type:json" json:"detail"`
 	dao.Model
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
