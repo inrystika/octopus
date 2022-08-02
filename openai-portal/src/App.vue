@@ -19,18 +19,12 @@
         mainColor: curColor
       }
     },
-    mounted() {
+    created() {
       var url = window.location.href
-      console.log("skip to octopus,url:",url)
       if (url.indexOf('token') !== -1) {
-        console.log("skip to octopus,token:",GetUrlParam('token'))
-        setToken(GetUrlParam('token'))
-        console.log("skip to octopus,router to index")
+        setToken(GetUrlParam('token'))     
         this.$router.push({ path: '/index', })
       }
-    },
-    created() {
-
       this.themeChange()
     },
     methods: {
