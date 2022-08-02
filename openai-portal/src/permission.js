@@ -19,6 +19,7 @@ router.beforeEach(async (to, from, next) => {
   }
   // determine whether the user has logged in
   const hasToken = getToken()
+  console.log("skip to octopus,hastoken:", hasToken)
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
@@ -41,6 +42,7 @@ router.beforeEach(async (to, from, next) => {
       next()
     }
   } else {
+    console.log("skip to octopus, to.path:", `${to.path}`)
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
         if (GetUrlParam('token') && GetUrlParam('token') !== '') {
@@ -51,6 +53,7 @@ router.beforeEach(async (to, from, next) => {
         }
       } else { next() }
     } else {
+      console.log("skip to octopus, redirect=", `${to.path}`)
       // other pages that do not have permission to access are redirected to the login page.
       next(`/?redirect=${to.path}`)
       NProgress.done()
