@@ -34,6 +34,7 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    public: '192.168.136.11:8081',
     port: port,
     open: true,
     overlay: {
@@ -42,14 +43,14 @@ module.exports = {
     },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
-        target: 'http://192.168.203.154/',
+        target: 'http://192.168.202.71/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: '/openaiserver'
         }
       },
       [process.env.VUE_APP_BASE_API2]: {
-        target: 'http://192.168.203.154/',
+        target: 'http://192.168.202.71/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
