@@ -43,24 +43,20 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
-
         if (GetUrlParam('token') && GetUrlParam('token') !== '') {
-
           setToken(GetUrlParam('token'))
           next('/index')
         } else {
-
           next()
         }
       } else {
-
         next()
       }
     } else {
-      const url = window.location.href
-      if (url.indexOf('register') !== -1) {
-        next('/register')
-      }
+
+      next(`/?redirect=${to.path}`)
+      // next('/register')
+
 
       NProgress.done()
     }

@@ -104,7 +104,7 @@
         computed: {
         },
         methods: {
-            getThirdInfo() {              
+            getThirdInfo() {           
                 removeToken()
                 sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
                 if (GetUrlParam("thirdUserName")) {
