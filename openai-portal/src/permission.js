@@ -43,19 +43,18 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
-        if (GetUrlParam('token') && GetUrlParam('token') !== '') {
+        if (GetUrlParam('token') !== null && GetUrlParam('token') !== '') {
           setToken(GetUrlParam('token'))
           next('/index')
         } else {
           next()
         }
       } else {
+        // 跳转到登录页
         next()
       }
     } else {
-
-      next(`/?redirect=${to.path}`)
-      // next('/register')
+      // next(`/?redirect=${to.path}`)
 
 
       NProgress.done()
