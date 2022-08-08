@@ -20,11 +20,12 @@
       }
     },
     created() {
-      var url = window.location.href
-      if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
-        setToken(GetUrlParam('token'))
-        this.$router.push({ path: '/index', })
-      }
+      // console.log("获取url")
+      // var url = window.location.href
+      // if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
+      //   setToken(GetUrlParam('token'))
+      //   this.$router.push({ path: '/index', })
+      // }
       this.themeChange()
     },
     methods: {
