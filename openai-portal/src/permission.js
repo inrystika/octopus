@@ -18,11 +18,13 @@ router.beforeEach(async(to, from, next) => {
   if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
     setToken(GetUrlParam('token'))
   }
-  if (!getToken() && getCookie('token')) {
-    setToken(getCookie('token'))
-  }
+
+  // if (!getToken() && getCookie('token')) {
+  //   setToken(getCookie('token'))
+  // }
   // determine whether the user has logged in
   const hasToken = getToken()
+  console.log(hasToken)
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
