@@ -134,7 +134,7 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    setToken(res.data.token)
+                                    setToken(response.data.token)
                                     this.$router.push({ path: '/index' })
                                 }
                                 else {
