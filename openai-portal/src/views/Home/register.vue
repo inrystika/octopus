@@ -34,7 +34,7 @@
                                     <el-button type="primary" @click="login()">绑定并登录</el-button>
                                 </el-col>
                                 <el-col :span="18" :offset="9" v-if="show">
-                                    <el-button type="primary" @click="register()">注册并绑定</el-button>
+                                    <el-button type="primary" @click="register()">注册并登录</el-button>
                                 </el-col>
                             </el-row>
                         </el-form-item>
