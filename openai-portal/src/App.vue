@@ -20,7 +20,6 @@
       }
     },
     created() {
-      console.log("获取url")
       // var url = window.location.href
       // if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
       //   setToken(GetUrlParam('token'))
