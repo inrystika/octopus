@@ -104,7 +104,7 @@
         computed: {
         },
         methods: {
-            getThirdInfo() {              
+            getThirdInfo() {
                 removeToken()
                 sessionStorage.setItem('thirdUserId', GetUrlParam('thirdUserId'))
                 if (GetUrlParam("thirdUserName")) {
@@ -134,7 +134,7 @@
                                         message: '注册成功',
                                         type: 'success'
                                     });
-                                    setToken(GetUrlParam('token'))
+                                    setToken(response.data.token)
                                     this.$router.push({ path: '/index' })
                                 }
                                 else {
