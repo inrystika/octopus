@@ -19,13 +19,13 @@
         mainColor: curColor
       }
     },
-    created() {
+    beforeCreate() {
       // var url = window.location.href
       // if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
       //   setToken(GetUrlParam('token'))
       //   this.$router.push({ path: '/index', })
       // }
-      this.themeChange()
+      // this.themeChange()
     },
     methods: {
       themeChange() {
