@@ -8,17 +8,15 @@ import getPageTitle from '@/utils/get-page-title'
 import { GetUrlParam } from '@/utils/index.js'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/', '/register'] // no redirect whitelist
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
-
   // set page title
   document.title = getPageTitle(to.meta.title)
   var url = window.location.href
   if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
     setToken(GetUrlParam('token'))
   }
-
   // if (!getToken() && getCookie('token')) {
   //   setToken(getCookie('token'))
   // }

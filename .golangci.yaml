@@ -61,8 +61,9 @@ run:
   # 要跳过检查的目录                    
   skip-dirs:                      
     - third_party
-    - taskset
+    - volcano
     - harbor
+    - apis/pkg
   # 跳过文件
   skip-files:                     
     - go.mod

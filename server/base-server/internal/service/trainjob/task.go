@@ -5,13 +5,14 @@ import (
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/common/constant"
 	"server/common/leaderleaselock"
 	"server/common/utils"
 	"server/common/utils/collections/set"
 	"strings"
 	"time"
+
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	"gonum.org/v1/gonum/floats"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -73,10 +74,9 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							break
 						}
 
-						//系统升级，或者taskset重装时，会导致任务后续状态丢失。
 						//这些任务可能没有启动时间，但状态却是终止的，这些任务不计费,设置计费状态为完成。
 						for _, j := range trainJobs {
-							if j.StartedAt == nil && pipeline.IsCompletedState(j.Status) {
+							if j.StartedAt == nil && utils.IsCompletedState(j.Status) {
 								j.PayStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 								err = s.data.TrainJobDao.UpdateTrainJob(ctx, j)
 								if err != nil {
@@ -115,13 +115,23 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							trainJobMap[job.Id] = job
 						}
 
-						details, err := s.data.Pipeline.BatchGetJobDetail(ctx, trainJobIds)
-						if err != nil {
-							s.log.Errorf(ctx, "Batch Get Job Detail err: %s", err)
-							continue
+						jobNs := map[string]string{}
+						for _, id := range trainJobIds {
+							jobNs[id] = trainJobMap[id].UserId
 						}
-						detailMap := map[string]*pipeline.JobStatusDetail{}
-						for _, d := range details.Details {
+
+						details := make([]*typeJob.JobStatusDetail, 0)
+						for _, id := range trainJobIds {
+							info, err := s.getJobDetail(ctx, id)
+							if err != nil {
+								s.log.Errorf(ctx, "GetJob err: %s", err)
+							} else {
+								details = append(details, info)
+							}
+						}
+
+						detailMap := map[string]*typeJob.JobStatusDetail{}
+						for _, d := range details {
 							detailMap[d.Job.ID] = d
 						}
 
@@ -149,7 +159,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 								for _, r := range t.Replicas { //计算副本消费
 									var endAt int64
 									//查看副本任务是否终止，以便获取副本终止时间。
-									if pipeline.IsCompletedState(r.State) {
+									if utils.IsCompletedState(r.State) {
 										// 副本状态终止，但无终止时间。
 										if r.FinishedAt == nil {
 											//若job终止时间也缺失，系统级错误，结束时间 = 启动时间，不计入费用！
@@ -165,7 +175,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 										} else {
 											endAt = r.FinishedAt.Unix()
 										}
-									} else if strings.EqualFold(r.State, pipeline.RUNNING) {
+									} else if strings.EqualFold(r.State, constant.RUNNING) {
 										//副本仍在running，则取当前系统时间，作为该周期计费终止点。
 										endAt = now
 									}
@@ -179,7 +189,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 
 							var payStatus api.BillingPayRecordStatus
 							var payEndAt int64
-							if pipeline.IsCompletedState(detail.Job.State) {
+							if utils.IsCompletedState(detail.Job.State) {
 								payEndAt = detail.Job.FinishedAt.Unix()
 								payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 							} else {

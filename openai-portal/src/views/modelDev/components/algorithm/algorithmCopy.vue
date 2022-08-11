@@ -20,9 +20,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="说明：" :label-width="formLabelWidth">
-          <!-- <ul> -->
           <li style="list-style: none">会复制基础版本代码到新版本中，后续可在新版本中做修改。</li>
-          <!-- </ul> -->
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">

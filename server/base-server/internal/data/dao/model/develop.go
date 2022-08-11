@@ -50,6 +50,7 @@ type NotebookJob struct {
 	PayEndedAt        *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus         api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
 	ResourceSpecPrice uint32                     `gorm:"type:int unsigned;not null;default:0;comment:资源规格价格"`
+	Detail       	  string                	 `gorm:"column:detail;type:json" json:"detail"`
 }
 
 func (NotebookJob) TableName() string {

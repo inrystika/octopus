@@ -1,7 +1,0 @@
-package operation
-
-const (
-	EFFECT_PIPELINE = "EFFECT_PIPELINE"
-	EFFECT_JOB      = "EFFECT_JOB"
-	EFFECT_PARAM    = "EFFECT_PARAM"
-)

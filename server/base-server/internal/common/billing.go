@@ -2,22 +2,25 @@ package common
 
 import (
 	"context"
-	"server/base-server/internal/data/pipeline"
+	"server/common/constant"
 	"server/common/log"
+	"server/common/utils"
 	"strings"
 	"time"
+
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
-func CalculateAmount(ctx context.Context, job *pipeline.JobStatusDetail, prices []uint32) (float64, time.Time) {
+func CalculateAmount(ctx context.Context, job *typeJob.JobStatusDetail, prices []uint32) (float64, time.Time) {
 	var rs float64
 	var startTime time.Time
 	for ti, t := range job.Tasks {
 		for _, r := range t.Replicas {
 			var startAt, finishedAt int64
-			if pipeline.IsCompletedState(r.State) && r.FinishedAt != nil && r.StartAt != nil {
+			if utils.IsCompletedState(r.State) && r.FinishedAt != nil && r.StartAt != nil {
 				startAt = r.StartAt.Unix()
 				finishedAt = r.FinishedAt.Unix()
-			} else if strings.EqualFold(r.State, pipeline.RUNNING) && r.StartAt != nil {
+			} else if strings.EqualFold(r.State, constant.RUNNING) && r.StartAt != nil {
 				startAt = r.StartAt.Unix()
 				finishedAt = time.Now().Unix()
 			} else {

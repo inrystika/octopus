@@ -8,7 +8,6 @@ import (
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
-	"server/base-server/internal/data/pipeline"
 	"server/base-server/internal/service/algorithm"
 	"server/common/constant"
 	"server/common/errors"
@@ -16,13 +15,15 @@ import (
 	"strings"
 	"time"
 
-	vcBus "volcano.sh/volcano/pkg/apis/bus/v1alpha1"
+	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 
 	"server/common/log"
 
 	commapi "server/common/api/v1"
 
 	nav1 "nodeagent/apis/agent/v1"
+
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -31,7 +32,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	vcBatch "volcano.sh/volcano/pkg/apis/batch/v1alpha1"
+	"k8s.io/client-go/tools/cache"
+	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
+	"encoding/json"
 )
 
 type developService struct {
@@ -52,15 +55,14 @@ type developService struct {
 
 type DevelopService interface {
 	api.DevelopServer
-	common.PipelineCallback
 }
 
 const (
-	k8sTaskNamePrefix         = "task"
-	servicePort               = 8888
-	shmResource               = "shm"
-	nodeActionLabelNotebookId = "nodebook.octopus.dev/id"
-	nodeActionLabelImageId    = "image.octopus.dev/id"
+	k8sTaskNamePrefix            = "task"
+	servicePort                  = 8888
+	shmResource                  = "shm"
+	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
+	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
 )
 
@@ -85,15 +87,8 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
 	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
-	log := log.NewHelper("DevelopService", logger)
 
-	err := upsertFeature(data, conf.Service.BaseServerAddr)
-	if err != nil {
-		if !conf.App.IsDev {
-			return nil, err
-		}
-		log.Error(context.TODO(), err)
-	}
+	log := log.NewHelper("DevelopService", logger)
 
 	s := &developService{
 		conf:                conf,
@@ -110,41 +105,14 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		userService:         userService,
 	}
 
-	s.startNotebookTask()
-	return s, nil
-}
-
-func upsertFeature(data *data.Data, baseServerAddr string) error {
-	err := data.Pipeline.UpsertFeature(context.Background(), &pipeline.UpsertFeatureParam{
-		FeatureName: "notebook",
-		Author:      "octopus",
-		Description: "notebook",
-		Enabled:     true,
-		JobSelector: &pipeline.JobSelector{
-			Conditions: []*pipeline.Condition{{
-				Name:   "type",
-				Key:    "jobKind",
-				Expect: "notebook",
-			}},
-			Expression: "type",
-		},
-		Plugins: []*pipeline.Plugin{
-			{
-				Key:         "bindlifehook",
-				PluginType:  "LifeHook",
-				CallAddress: baseServerAddr + "/v1/developmanage/pipelinecallback",
-				Description: "notebook lifehook",
-				JobSelector: &pipeline.JobSelector{
-					States: []string{"*"},
-				},
-			}},
+	s.data.Cluster.RegisterJobEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    s.onJobAdd,
+		UpdateFunc: s.onJobUpdate,
+		DeleteFunc: s.onJobDelete,
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	s.startNotebookTask()
+	return s, nil
 }
 
 type closeFunc func(ctx context.Context) error
@@ -343,7 +311,7 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 	}
 
 	closes = append(closes, func(ctx context.Context) error {
-		err1 := s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: nbJob.Id, Reason: "stop job because error"})
+		err1 := s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
 		return err1
 	})
 
@@ -397,14 +365,15 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			return err
 		}
 		nb.Id = nbId
-		nb.Status = pipeline.PREPARING
+		nb.Status = constant.PREPARING
 		nb.NotebookJobId = jobId
 		nb.TaskNumber = int(req.TaskNumber)
 
 		nbJob := &model.NotebookJob{
 			Id:         jobId,
 			NotebookId: nbId,
-			Status:     pipeline.PREPARING,
+			Status:     constant.PREPARING,
+			Detail:     "{}",
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
@@ -469,7 +438,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			return err
 		}
 
-		if !pipeline.IsCompletedState(nb.Status) {
+		if !utils.IsCompletedState(nb.Status) {
 			return errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 		}
 
@@ -477,7 +446,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 		nbJob := &model.NotebookJob{
 			Id:         jobId,
 			NotebookId: nb.Id,
-			Status:     pipeline.PREPARING,
+			Status:     constant.PREPARING,
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
@@ -493,7 +462,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 		err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
 			Id:            nb.Id,
 			NotebookJobId: jobId,
-			Status:        pipeline.PREPARING,
+			Status:        constant.PREPARING,
 		})
 		if err != nil {
 			return err
@@ -535,14 +504,6 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 }
 
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
-	param := &pipeline.SubmitJobParam{
-		UserID:       nb.UserId,
-		JobKind:      "notebook",
-		JobName:      nbJob.Id,
-		Header:       nil,
-		JobNamespace: nb.UserId,
-		Cluster:      "",
-	}
 
 	VolumeMounts := []v1.VolumeMount{
 		{
@@ -606,34 +567,33 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		})
 	}
 
-	tasks := make([]vcBatch.TaskSpec, 0)
+	tasks := make([]typeJob.TaskSpec, 0)
 	for i := 0; i < nb.TaskNumber; i++ {
 		taskName := buildTaskName(i)
-		task := vcBatch.TaskSpec{
-			Name:     taskName,
-			Replicas: 1,
-			Template: v1.PodTemplateSpec{
-				Spec: v1.PodSpec{
-					RestartPolicy: v1.RestartPolicyNever,
-					Containers: []v1.Container{
-						{
-							Name:    taskName,
-							Image:   startJobInfo.imageAddr,
-							Command: []string{"sh", "-c", startJobInfo.command},
-							Resources: v1.ResourceRequirements{
-								Requests: startJobInfo.resources,
-								Limits:   startJobInfo.resources,
-							},
-							VolumeMounts: VolumeMounts,
-							Env: []v1.EnvVar{{
-								Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-								Value: buildNotebookUrl(nbJob.Id, i),
-							}},
+		task := typeJob.TaskSpec{}
+		task.Name = taskName
+		task.Replicas = 1
+		task.Template = v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				RestartPolicy: v1.RestartPolicyNever,
+				Containers: []v1.Container{
+					{
+						Name:    taskName,
+						Image:   startJobInfo.imageAddr,
+						Command: []string{"sh", "-c", startJobInfo.command},
+						Resources: v1.ResourceRequirements{
+							Requests: startJobInfo.resources,
+							Limits:   startJobInfo.resources,
 						},
+						VolumeMounts: VolumeMounts,
+						Env: []v1.EnvVar{{
+							Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
+							Value: buildNotebookUrl(nbJob.Id, i),
+						}},
 					},
-					NodeSelector: startJobInfo.nodeSelectors,
-					Volumes:      volumes,
 				},
+				NodeSelector: startJobInfo.nodeSelectors,
+				Volumes:      volumes,
 			},
 		}
 
@@ -649,38 +609,33 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		tasks = append(tasks, task)
 	}
 
-	param.Job = &vcBatch.Job{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "batch.volcano.sh/v1alpha1",
-			Kind:       "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: nb.UserId,
-			Name:      nbJob.Id,
-		},
-		Spec: vcBatch.JobSpec{
-			MinAvailable:  int32(nb.TaskNumber),
-			Queue:         startJobInfo.queue,
-			SchedulerName: "volcano",
-			//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
-			Plugins: map[string][]string{
-				"env": {},
-				"svc": {"--disable-network-policy"},
-			},
-			Policies: []vcBatch.LifecyclePolicy{
-				{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
-				{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
-			},
-			Tasks: tasks,
-		},
+	Job := &typeJob.Job{}
+	Job.TypeMeta = metav1.TypeMeta{
+		APIVersion: "batch.volcano.sh/v1alpha1",
+		Kind:       "Job",
 	}
+	Job.ObjectMeta = metav1.ObjectMeta{
+		Namespace: nb.UserId,
+		Name:      nbJob.Id,
+	}
+	Job.Spec = typeJob.JobSpec{}
+	Job.Spec.MinAvailable = int32(nb.TaskNumber)
+	Job.Spec.Queue = startJobInfo.queue
+	Job.Spec.SchedulerName = "volcano"
+	//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
+	Job.Spec.Plugins = map[string][]string{
+		"env": {},
+		"svc": {"--disable-network-policy"},
+	}
+	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
+		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
+		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
+	}
+	Job.Spec.Tasks = tasks
 
-	submitJobReply, err := s.data.Pipeline.SubmitJob(ctx, param)
+	err := s.data.Cluster.CreateJob(ctx, Job)
 	if err != nil {
 		return err
-	}
-	if nbJob.Id != submitJobReply.JobId {
-		return errors.Errorf(err, errors.ErrorPipelineDoRequest)
 	}
 	return nil
 }
@@ -696,11 +651,11 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, err
 	}
 
-	if pipeline.IsCompletedState(nb.Status) {
+	if utils.IsCompletedState(nb.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
-	err = s.data.Pipeline.StopJob(ctx, &pipeline.UpdateJobParam{JobID: nbJob.Id, Reason: "stop job"})
+	err = s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -717,7 +672,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 
 	err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
 		Id:     nb.Id,
-		Status: pipeline.STOPPED,
+		Status: constant.STOPPED,
 	})
 	if err != nil {
 		return nil, err
@@ -726,7 +681,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 	now := time.Now()
 	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
 		Id:        nbJob.Id,
-		Status:    pipeline.STOPPED,
+		Status:    constant.STOPPED,
 		StoppedAt: &now,
 	})
 	if err != nil {
@@ -787,7 +742,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 	for i := 0; i < nb.TaskNumber; i++ {
 		var upLoadFileSize string = ""
 		if s.conf.Service.Develop.IsSetUploadFileSize {
-			upLoadFileSize = "1000m"  // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
+			upLoadFileSize = "1000m" // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
 		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
@@ -843,7 +798,7 @@ func (s *developService) DeleteNotebook(ctx context.Context, req *api.DeleteNote
 		return nil, err
 	}
 
-	if !pipeline.IsCompletedState(nb.Status) {
+	if !utils.IsCompletedState(nb.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
@@ -964,7 +919,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	if err != nil {
 		return nil, err
 	}
-	if !pipeline.JobRunningState(notebook.Status) {
+	if !utils.JobRunningState(notebook.Status) {
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
@@ -1082,4 +1037,58 @@ func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.L
 		TotalSize: totalSize,
 		Records:   records,
 	}, nil
+}
+
+func (s *developService) getJobDetail(ctx context.Context, userID, jobID string) (*typeJob.JobStatusDetail, error) {
+
+	nbJob, err := s.data.DevelopDao.GetNotebookJob(ctx, jobID)
+	
+	if err != nil {
+		return nil, err
+	}
+
+	status := nbJob.Status
+
+	if status == constant.FAILED || status == constant.STOPPED || status == constant.SUCCEEDED {
+		if "" == nbJob.Detail || "{}" == nbJob.Detail {
+			return defaultDetail(userID, nbJob), nil
+		}
+		detail := typeJob.JobStatusDetail{}
+		json.Unmarshal([]byte(nbJob.Detail), &detail)
+		return &detail, nil
+	}
+
+	job, err := s.data.Cluster.GetJob(ctx, userID, jobID)
+	if nil != err {
+		return nil, err
+	}
+
+	detail := utils.Format(jobID, "notebookJob", job.Namespace, "", "", job)
+	if nil == detail {
+		detail = defaultDetail(userID, nbJob)
+		return detail, nil
+	}
+	return detail, nil
+}
+
+func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDetail {
+	
+	status := constant.PREPARING
+
+	if nbJob.Status == constant.STOPPED ||
+	constant.SUSPENDED == nbJob.Status ||
+	constant.FAILED == nbJob.Status {
+		status = nbJob.Status
+	}
+
+	return &typeJob.JobStatusDetail{
+		Version: "v1",
+		Job: &typeJob.JobSummary{
+			ID:              nbJob.Id,
+			Name:            nbJob.Id,
+			Type:            "notebookJob",
+			UserID:          userID,
+			State:           status,
+		},
+	}
 }

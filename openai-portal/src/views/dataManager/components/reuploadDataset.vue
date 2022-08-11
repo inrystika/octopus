@@ -12,9 +12,6 @@
         <el-form-item label="版本描述" :label-width="formLabelWidth" prop="desc">
           <el-input v-model="ruleForm.desc" :disabled="true" />
         </el-form-item>
-        <!-- <el-form-item :label-width="formLabelWidth">
-          <el-button type="text" @click="nextStep('ruleForm')" v-show="!showUpload">下一步</el-button>
-        </el-form-item> -->
         <el-form-item label="数据集上传" :label-width="formLabelWidth" prop="path">
           <upload v-model="ruleForm.path" :upload-data="uploadData" @confirm="confirm" @cancel="cancel"
             @upload="isCloseX" />
@@ -43,7 +40,6 @@
     },
     data() {
       return {
-        // showUpload: false,
         uploadData: { data: {}, type: undefined },
         ruleForm: {},
         rules: {

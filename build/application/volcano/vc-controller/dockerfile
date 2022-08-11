@@ -1,0 +1,18 @@
+from golang:1.18.0 as builder
+WORKDIR /app
+COPY ./ ./
+
+ENV GOPATH /go
+ENV CGO_ENABLED 0
+ENV GO111MODULE on
+ENV GOPROXY=https://goproxy.cn,direct
+
+RUN make vc-controller_build binary_dir="/app/server/bin"
+
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/server/bin/vc-controller /app/vc-controller
+RUN chmod +x /app/vc-controller
+EXPOSE 7003
+
+ENTRYPOINT ["/app/vc-controller"]
