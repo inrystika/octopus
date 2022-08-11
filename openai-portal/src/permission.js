@@ -3,21 +3,25 @@ import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-import { getToken, setToken } from '@/utils/auth' // get token from cookie
+import { getToken, setToken, getCookie } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 import { GetUrlParam } from '@/utils/index.js'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/', '/register'] // no redirect whitelist
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // start progress bar
   NProgress.start()
-
   // set page title
   document.title = getPageTitle(to.meta.title)
-
+  var url = window.location.href
+  if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
+    setToken(GetUrlParam('token'))
+  }
+  // if (!getToken() && getCookie('token')) {
+  //   setToken(getCookie('token'))
+  // }
   // determine whether the user has logged in
   const hasToken = getToken()
-  // next()
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
@@ -42,16 +46,20 @@ router.beforeEach(async(to, from, next) => {
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
       if (to.path === '/register') {
-        if (GetUrlParam('token') && GetUrlParam('token') !== '') {
+        if (GetUrlParam('token') !== null && GetUrlParam('token') !== '') {
           setToken(GetUrlParam('token'))
           next('/index')
         } else {
           next()
         }
-      } else { next() }
+      } else {
+        // 跳转到登录页
+        next()
+      }
     } else {
-      // other pages that do not have permission to access are redirected to the login page.
-      next(`/?redirect=${to.path}`)
+      // next(`/?redirect=${to.path}`)
+
+
       NProgress.done()
     }
   }

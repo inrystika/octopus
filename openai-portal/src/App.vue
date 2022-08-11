@@ -9,6 +9,8 @@
   import { themeChange } from "@/api/themeChange.js"
   import { changeThemeColor, curColor } from '@/utils/themeColorClient'
   import store from '@/store'
+  import { GetUrlParam } from '@/utils/index.js'
+  import { setToken } from '@/utils/auth'
   export default {
     name: 'App',
     data() {
@@ -17,8 +19,13 @@
         mainColor: curColor
       }
     },
-    created() {
-      this.themeChange()
+    beforeCreate() {
+      // var url = window.location.href
+      // if (url.indexOf('token') !== -1 && GetUrlParam('token') !== '') {
+      //   setToken(GetUrlParam('token'))
+      //   this.$router.push({ path: '/index', })
+      // }
+      // this.themeChange()
     },
     methods: {
       themeChange() {
