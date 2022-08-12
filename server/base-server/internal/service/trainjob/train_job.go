@@ -20,7 +20,10 @@ import (
 
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
+	"encoding/json"
+
 	"github.com/jinzhu/copier"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -28,8 +31,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
-	jsoniter "github.com/json-iterator/go"
-	"encoding/json"
 )
 
 const (
@@ -1071,7 +1072,7 @@ func (s *trainJobService) GetJobEventList(ctx context.Context, req *api.JobEvent
 func (s *trainJobService) getJobDetail(ctx context.Context, jobID string) (*typeJob.JobStatusDetail, error) {
 
 	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, jobID)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -1093,11 +1094,10 @@ func (s *trainJobService) getJobDetail(ctx context.Context, jobID string) (*type
 	}
 
 	job, err := s.data.Cluster.GetJob(ctx, namespace, jobID)
-	if nil != err {
-		return nil, err
+	var detail *typeJob.JobStatusDetail = nil
+	if nil == err && job != nil {
+		detail = utils.Format(jobID, "trainJob", job.Namespace, "", "", job)
 	}
-
-	detail := utils.Format(jobID, "trainJob", job.Namespace, "", "", job)
 	if nil == detail {
 		detail = defaultDetail(trainJob)
 		return detail, nil
@@ -1106,23 +1106,23 @@ func (s *trainJobService) getJobDetail(ctx context.Context, jobID string) (*type
 }
 
 func defaultDetail(trainJob *model.TrainJob) *typeJob.JobStatusDetail {
-	
+
 	status := constant.PREPARING
 
 	if trainJob.Status == constant.STOPPED ||
-	constant.SUSPENDED == trainJob.Status ||
-	constant.FAILED == trainJob.Status {
+		constant.SUSPENDED == trainJob.Status ||
+		constant.FAILED == trainJob.Status {
 		status = trainJob.Status
 	}
 
 	return &typeJob.JobStatusDetail{
 		Version: "v1",
 		Job: &typeJob.JobSummary{
-			ID:              trainJob.Id,
-			Name:            trainJob.Name,
-			Type:            "trainJob",
-			UserID:          trainJob.UserId,
-			State:           status,
+			ID:     trainJob.Id,
+			Name:   trainJob.Name,
+			Type:   "trainJob",
+			UserID: trainJob.UserId,
+			State:  status,
 		},
 	}
 }
@@ -1153,7 +1153,7 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 	trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
 	if err != nil {
-		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:" + newjob.Name, err)
+		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:"+newjob.Name, err)
 		return
 	}
 

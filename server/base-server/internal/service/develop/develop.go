@@ -25,6 +25,8 @@ import (
 
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
+	"encoding/json"
+
 	"github.com/jinzhu/copier"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
@@ -34,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/cache"
 	vcBatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
-	"encoding/json"
 )
 
 type developService struct {
@@ -1042,7 +1043,7 @@ func (s *developService) ListNotebookEventRecord(ctx context.Context, req *api.L
 func (s *developService) getJobDetail(ctx context.Context, userID, jobID string) (*typeJob.JobStatusDetail, error) {
 
 	nbJob, err := s.data.DevelopDao.GetNotebookJob(ctx, jobID)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -1058,12 +1059,11 @@ func (s *developService) getJobDetail(ctx context.Context, userID, jobID string)
 		return &detail, nil
 	}
 
+	var detail *typeJob.JobStatusDetail = nil
 	job, err := s.data.Cluster.GetJob(ctx, userID, jobID)
-	if nil != err {
-		return nil, err
+	if nil == err && job != nil {
+		detail = utils.Format(jobID, "notebookJob", job.Namespace, "", "", job)
 	}
-
-	detail := utils.Format(jobID, "notebookJob", job.Namespace, "", "", job)
 	if nil == detail {
 		detail = defaultDetail(userID, nbJob)
 		return detail, nil
@@ -1072,23 +1072,23 @@ func (s *developService) getJobDetail(ctx context.Context, userID, jobID string)
 }
 
 func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDetail {
-	
+
 	status := constant.PREPARING
 
 	if nbJob.Status == constant.STOPPED ||
-	constant.SUSPENDED == nbJob.Status ||
-	constant.FAILED == nbJob.Status {
+		constant.SUSPENDED == nbJob.Status ||
+		constant.FAILED == nbJob.Status {
 		status = nbJob.Status
 	}
 
 	return &typeJob.JobStatusDetail{
 		Version: "v1",
 		Job: &typeJob.JobSummary{
-			ID:              nbJob.Id,
-			Name:            nbJob.Id,
-			Type:            "notebookJob",
-			UserID:          userID,
-			State:           status,
+			ID:     nbJob.Id,
+			Name:   nbJob.Id,
+			Type:   "notebookJob",
+			UserID: userID,
+			State:  status,
 		},
 	}
 }

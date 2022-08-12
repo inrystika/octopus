@@ -65,7 +65,7 @@ openai-server_build: init
 volcano_build: vc-controller_build scheduler_build
 
 vc-controller_build: init
-	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/vc-controller
+	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR}/vc-controller ./cmd/controller-manager
 
 scheduler_build: init
 	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/scheduler
