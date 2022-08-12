@@ -1157,7 +1157,7 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
-	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) {
+	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) || strings.EqualFold(constant.UNKNOWN, newState) {
 		return
 	}
 
