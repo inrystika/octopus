@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	jsoniter "github.com/json-iterator/go"
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
 func (s *developService) onJobAdd(obj interface{}) {
@@ -44,7 +44,7 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
-	if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, newState) {
+	if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, newState) || strings.EqualFold(constant.UNKNOWN, newState) {
 		return
 	}
 
@@ -68,7 +68,7 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 	if nil != status {
 		buf, err := jsoniter.Marshal(status)
 		if err != nil {
-			s.log.Error(context.TODO(), "UpdateNotebook err when onJobUpdate: " + newjob.Name, err)
+			s.log.Error(context.TODO(), "UpdateNotebook err when onJobUpdate: "+newjob.Name, err)
 		}
 		nbJobUp.Detail = string(buf)
 	}

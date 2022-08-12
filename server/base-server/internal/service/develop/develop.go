@@ -448,6 +448,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			Id:         jobId,
 			NotebookId: nb.Id,
 			Status:     constant.PREPARING,
+			Detail:     "{}",
 		}
 
 		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
