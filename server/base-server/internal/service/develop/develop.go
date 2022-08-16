@@ -254,11 +254,10 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 				return nil, errors.Errorf(err, errors.ErrorNotebookParseResourceSpecFailed)
 			}
 			if r.Name == k {
-				if r.Name == shmResource {
+				if r.ResourceRef == shmResource || r.Name == shmResource {
 					shm = &quantity
 					continue
 				}
-
 				if r.ResourceRef == "" {
 					k8sResources[v1.ResourceName(r.Name)] = quantity
 				} else {
@@ -619,6 +618,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	Job.ObjectMeta = metav1.ObjectMeta{
 		Namespace: nb.UserId,
 		Name:      nbJob.Id,
+		Annotations: map[string]string{
+			constant.JOB_TYPE: constant.NotebookJob,
+		},
 	}
 	Job.Spec = typeJob.JobSpec{}
 	Job.Spec.MinAvailable = int32(nb.TaskNumber)

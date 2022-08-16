@@ -412,7 +412,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 				return nil, err
 			}
 			if r.Name == k {
-				if r.Name == shmResource {
+				if r.ResourceRef == shmResource || r.Name == shmResource {
 					shm = &quantity
 					continue
 				}
@@ -632,6 +632,9 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	Job.ObjectMeta = metav1.ObjectMeta{
 		Namespace: job.UserId,
 		Name:      job.Id,
+		Annotations: map[string]string{
+			constant.JOB_TYPE: constant.TrainJob,
+		},
 	}
 	Job.Spec = typeJob.JobSpec{}
 	Job.Spec.MinAvailable = int32(minAvailable)
@@ -1142,8 +1145,20 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
+	if newjob.Annotations == nil {
+		return
+	}
+	jobType, found := newjob.Annotations[constant.JOB_TYPE]
+	if !found || jobType != constant.TrainJob {
+		return
+	}
+
 	oldState := utils.MapPhaseToState(typeJob.JobPhase(oldjob.Status.State.Phase))
 	newState := utils.MapPhaseToState(typeJob.JobPhase(newjob.Status.State.Phase))
+
+	if strings.EqualFold(constant.UNKNOWN, newState) {
+		return
+	}
 
 	if newState == string(typeJob.Pending) && nil != oldjob {
 		if oldState == string(typeJob.Running) {
@@ -1157,7 +1172,7 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
-	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) || strings.EqualFold(constant.UNKNOWN, newState) {
+	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) {
 		return
 	}
 

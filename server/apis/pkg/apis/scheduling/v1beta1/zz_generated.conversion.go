@@ -422,6 +422,7 @@ func autoConvert_v1beta1_QueueSpec_To_scheduling_QueueSpec(in *QueueSpec, out *s
 	out.Capability = *(*v1.ResourceList)(unsafe.Pointer(&in.Capability))
 	out.Reclaimable = (*bool)(unsafe.Pointer(in.Reclaimable))
 	out.ExtendClusters = *(*[]scheduling.Cluster)(unsafe.Pointer(&in.ExtendClusters))
+	out.NodeSelector = *(*map[string]string)(unsafe.Pointer(&in.NodeSelector))
 	if err := Convert_v1beta1_Guarantee_To_scheduling_Guarantee(&in.Guarantee, &out.Guarantee, s); err != nil {
 		return err
 	}

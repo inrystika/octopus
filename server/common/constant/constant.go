@@ -16,4 +16,8 @@ const (
 	STOPPED   = "stopped"
 	SUSPENDED = "suspended"
 	UNKNOWN   = "unknown"
+
+	JOB_TYPE    = "jobType"
+	NotebookJob = "notebookjob"
+	TrainJob    = "trainjob"
 )

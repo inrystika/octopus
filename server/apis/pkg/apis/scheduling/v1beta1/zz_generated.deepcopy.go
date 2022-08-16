@@ -290,6 +290,13 @@ func (in *QueueSpec) DeepCopyInto(out *QueueSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.NodeSelector != nil {
+		in, out := &in.NodeSelector, &out.NodeSelector
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.Guarantee.DeepCopyInto(&out.Guarantee)
 	return
 }
