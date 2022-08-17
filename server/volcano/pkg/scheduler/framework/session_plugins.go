@@ -17,10 +17,8 @@ limitations under the License.
 package framework
 
 import (
-	k8sframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerapi "k8s.io/kube-scheduler/extender/v1"
 
-	"volcano.sh/apis/pkg/apis/scheduling"
-	"volcano.sh/volcano/pkg/controllers/job/helpers"
 	"volcano.sh/volcano/pkg/scheduler/api"
 )
 
@@ -32,11 +30,6 @@ func (ssn *Session) AddJobOrderFn(name string, cf api.CompareFn) {
 // AddQueueOrderFn add queue order function
 func (ssn *Session) AddQueueOrderFn(name string, qf api.CompareFn) {
 	ssn.queueOrderFns[name] = qf
-}
-
-// AddClusterOrderFn add queue order function
-func (ssn *Session) AddClusterOrderFn(name string, qf api.CompareFn) {
-	ssn.clusterOrderFns[name] = qf
 }
 
 // AddTaskOrderFn add task order function
@@ -104,11 +97,6 @@ func (ssn *Session) AddOverusedFn(name string, fn api.ValidateFn) {
 	ssn.overusedFns[name] = fn
 }
 
-// AddAllocatableFn add allocatable function
-func (ssn *Session) AddAllocatableFn(name string, fn api.AllocatableFn) {
-	ssn.allocatableFns[name] = fn
-}
-
 // AddJobValidFn add jobvalid function
 func (ssn *Session) AddJobValidFn(name string, fn api.ValidateExFn) {
 	ssn.jobValidFns[name] = fn
@@ -117,11 +105,6 @@ func (ssn *Session) AddJobValidFn(name string, fn api.ValidateExFn) {
 // AddJobEnqueueableFn add jobenqueueable function
 func (ssn *Session) AddJobEnqueueableFn(name string, fn api.VoteFn) {
 	ssn.jobEnqueueableFns[name] = fn
-}
-
-// AddJobEnqueuedFn add jobEnqueued function
-func (ssn *Session) AddJobEnqueuedFn(name string, fn api.JobEnqueuedFn) {
-	ssn.jobEnqueuedFns[name] = fn
 }
 
 // AddTargetJobFn add targetjob function
@@ -135,8 +118,8 @@ func (ssn *Session) AddReservedNodesFn(name string, fn api.ReservedNodesFn) {
 }
 
 // AddVictimTasksFns add victimTasksFns function
-func (ssn *Session) AddVictimTasksFns(name string, fns []api.VictimTasksFn) {
-	ssn.victimTasksFns[name] = fns
+func (ssn *Session) AddVictimTasksFns(name string, fn api.VictimTasksFn) {
+	ssn.victimTasksFns[name] = fn
 }
 
 // AddJobStarvingFns add jobStarvingFns function
@@ -158,15 +141,7 @@ func (ssn *Session) Reclaimable(reclaimer *api.TaskInfo, reclaimees []*api.TaskI
 			if !found {
 				continue
 			}
-
-			candidates, abstain := rf(reclaimer, reclaimees)
-			if abstain == 0 {
-				continue
-			}
-			if len(candidates) == 0 {
-				victims = nil
-				break
-			}
+			candidates := rf(reclaimer, reclaimees)
 			if !init {
 				victims = candidates
 				init = true
@@ -209,16 +184,7 @@ func (ssn *Session) Preemptable(preemptor *api.TaskInfo, preemptees []*api.TaskI
 			if !found {
 				continue
 			}
-			candidates, abstain := pf(preemptor, preemptees)
-			if abstain == 0 {
-				continue
-			}
-			// intersection will be nil if length is 0, don't need to do any more check
-			if len(candidates) == 0 {
-				victims = nil
-				break
-			}
-
+			candidates := pf(preemptor, preemptees)
 			if !init {
 				victims = candidates
 				init = true
@@ -261,23 +227,6 @@ func (ssn *Session) Overused(queue *api.QueueInfo) bool {
 	}
 
 	return false
-}
-
-// Allocatable invoke allocatable function of the plugins
-func (ssn *Session) Allocatable(queue *api.QueueInfo, candidate *api.TaskInfo) bool {
-	for _, tier := range ssn.Tiers {
-		for _, plugin := range tier.Plugins {
-			af, found := ssn.allocatableFns[plugin.Name]
-			if !found {
-				continue
-			}
-			if !af(queue, candidate) {
-				return false
-			}
-		}
-	}
-
-	return true
 }
 
 // JobReady invoke jobready function of the plugins
@@ -373,6 +322,7 @@ func (ssn *Session) JobValid(obj interface{}) *api.ValidateResult {
 			if vr := jrf(obj); vr != nil && !vr.Pass {
 				return vr
 			}
+
 		}
 	}
 
@@ -410,23 +360,6 @@ func (ssn *Session) JobEnqueueable(obj interface{}) bool {
 	return true
 }
 
-// JobEnqueued invoke jobEnqueuedFns function of the plugins
-func (ssn *Session) JobEnqueued(obj interface{}) {
-	for _, tier := range ssn.Tiers {
-		for _, plugin := range tier.Plugins {
-			if !isEnabled(plugin.EnabledJobEnqueued) {
-				continue
-			}
-			fn, found := ssn.jobEnqueuedFns[plugin.Name]
-			if !found {
-				continue
-			}
-
-			fn(obj)
-		}
-	}
-}
-
 // TargetJob invoke targetJobFns function of the plugins
 func (ssn *Session) TargetJob(jobs []*api.JobInfo) *api.JobInfo {
 	for _, tier := range ssn.Tiers {
@@ -444,31 +377,47 @@ func (ssn *Session) TargetJob(jobs []*api.JobInfo) *api.JobInfo {
 	return nil
 }
 
-// VictimTasks returns the victims selected
-func (ssn *Session) VictimTasks(tasks []*api.TaskInfo) map[*api.TaskInfo]bool {
-	// different filters may add the same task to victims, so use a map to remove duplicate tasks.
-	victimSet := make(map[*api.TaskInfo]bool)
+// VictimTasks invoke ReservedNodes function of the plugins
+func (ssn *Session) VictimTasks() []*api.TaskInfo {
+	var victims []*api.TaskInfo
+	var init bool
+
 	for _, tier := range ssn.Tiers {
 		for _, plugin := range tier.Plugins {
 			if !isEnabled(plugin.EnabledVictim) {
 				continue
 			}
-			fns, found := ssn.victimTasksFns[plugin.Name]
+
+			pf, found := ssn.victimTasksFns[plugin.Name]
 			if !found {
 				continue
 			}
-			for _, fn := range fns {
-				victimTasks := fn(tasks)
-				for _, victim := range victimTasks {
-					victimSet[victim] = true
+			candidates := pf()
+			if !init {
+				victims = candidates
+				init = true
+			} else {
+				var intersection []*api.TaskInfo
+				// Get intersection of victims and candidates.
+				for _, v := range victims {
+					for _, c := range candidates {
+						if v.UID == c.UID {
+							intersection = append(intersection, v)
+						}
+					}
 				}
+
+				// Update victims to intersection
+				victims = intersection
 			}
 		}
-		if len(victimSet) > 0 {
-			return victimSet
+		// Plugins in this tier made decision if victims is not nil
+		if victims != nil {
+			return victims
 		}
 	}
-	return victimSet
+
+	return victims
 }
 
 // ReservedNodes invoke ReservedNodes function of the plugins
@@ -511,6 +460,7 @@ func (ssn *Session) JobOrderFn(l, r interface{}) bool {
 		return lv.UID < rv.UID
 	}
 	return lv.CreationTimestamp.Before(&rv.CreationTimestamp)
+
 }
 
 // NamespaceOrderFn invoke namespaceorder function of the plugins
@@ -538,29 +488,6 @@ func (ssn *Session) NamespaceOrderFn(l, r interface{}) bool {
 	return lv < rv
 }
 
-// ClusterOrderFn invoke ClusterOrderFn function of the plugins
-func (ssn *Session) ClusterOrderFn(l, r interface{}) bool {
-	for _, tier := range ssn.Tiers {
-		for _, plugin := range tier.Plugins {
-			if !isEnabled(plugin.EnabledClusterOrder) {
-				continue
-			}
-			cof, found := ssn.clusterOrderFns[plugin.Name]
-			if !found {
-				continue
-			}
-			if j := cof(l, r); j != 0 {
-				return j < 0
-			}
-		}
-	}
-
-	// If no cluster order funcs, order cluster by ClusterID
-	lv := l.(*scheduling.Cluster)
-	rv := r.(*scheduling.Cluster)
-	return lv.Name < rv.Name
-}
-
 // QueueOrderFn invoke queueorder function of the plugins
 func (ssn *Session) QueueOrderFn(l, r interface{}) bool {
 	for _, tier := range ssn.Tiers {
@@ -575,6 +502,7 @@ func (ssn *Session) QueueOrderFn(l, r interface{}) bool {
 			if j := qof(l, r); j != 0 {
 				return j < 0
 			}
+
 		}
 	}
 
@@ -585,6 +513,7 @@ func (ssn *Session) QueueOrderFn(l, r interface{}) bool {
 		return lv.UID < rv.UID
 	}
 	return lv.Queue.CreationTimestamp.Before(&rv.Queue.CreationTimestamp)
+
 }
 
 // TaskCompareFns invoke taskorder function of the plugins
@@ -613,10 +542,14 @@ func (ssn *Session) TaskOrderFn(l, r interface{}) bool {
 		return res < 0
 	}
 
-	// If no task order funcs, order task by default func.
+	// If no task order funcs, order task by CreationTimestamp first, then by UID.
 	lv := l.(*api.TaskInfo)
 	rv := r.(*api.TaskInfo)
-	return helpers.CompareTask(lv, rv)
+	if lv.Pod.CreationTimestamp.Equal(&rv.Pod.CreationTimestamp) {
+		return lv.UID < rv.UID
+	}
+	return lv.Pod.CreationTimestamp.Before(&rv.Pod.CreationTimestamp)
+
 }
 
 // PredicateFn invoke predicate function of the plugins
@@ -676,6 +609,7 @@ func (ssn *Session) NodeOrderFn(task *api.TaskInfo, node *api.NodeInfo) (float64
 				return 0, err
 			}
 			priorityScore += score
+
 		}
 	}
 	return priorityScore, nil
@@ -732,13 +666,14 @@ func (ssn *Session) NodeOrderMapFn(task *api.TaskInfo, node *api.NodeInfo) (map[
 				}
 				nodeScoreMap[plugin.Name] = score
 			}
+
 		}
 	}
 	return nodeScoreMap, priorityScore, nil
 }
 
 // NodeOrderReduceFn invoke node order function of the plugins
-func (ssn *Session) NodeOrderReduceFn(task *api.TaskInfo, pluginNodeScoreMap map[string]k8sframework.NodeScoreList) (map[string]float64, error) {
+func (ssn *Session) NodeOrderReduceFn(task *api.TaskInfo, pluginNodeScoreMap map[string]schedulerapi.HostPriorityList) (map[string]float64, error) {
 	nodeScoreMap := map[string]float64{}
 	for _, tier := range ssn.Tiers {
 		for _, plugin := range tier.Plugins {
@@ -753,7 +688,7 @@ func (ssn *Session) NodeOrderReduceFn(task *api.TaskInfo, pluginNodeScoreMap map
 				return nodeScoreMap, err
 			}
 			for _, hp := range pluginNodeScoreMap[plugin.Name] {
-				nodeScoreMap[hp.Name] += float64(hp.Score)
+				nodeScoreMap[hp.Host] += float64(hp.Score)
 			}
 		}
 	}

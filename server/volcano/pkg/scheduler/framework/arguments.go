@@ -17,13 +17,15 @@ limitations under the License.
 package framework
 
 import (
-	"k8s.io/klog"
+	"strconv"
 
 	"volcano.sh/volcano/pkg/scheduler/conf"
+
+	"k8s.io/klog"
 )
 
 // Arguments map
-type Arguments map[string]interface{}
+type Arguments map[string]string
 
 // GetInt get the integer value from string
 func (a Arguments) GetInt(ptr *int, key string) {
@@ -32,13 +34,13 @@ func (a Arguments) GetInt(ptr *int, key string) {
 	}
 
 	argv, ok := a[key]
-	if !ok {
+	if !ok || argv == "" {
 		return
 	}
 
-	value, ok := argv.(int)
-	if !ok {
-		klog.Warningf("Could not parse argument: %v for key %s to int", argv, key)
+	value, err := strconv.Atoi(argv)
+	if err != nil {
+		klog.Warningf("Could not parse argument: %s for key %s, with err %v", argv, key, err)
 		return
 	}
 
@@ -52,13 +54,13 @@ func (a Arguments) GetFloat64(ptr *float64, key string) {
 	}
 
 	argv, ok := a[key]
-	if !ok {
+	if !ok || len(argv) == 0 {
 		return
 	}
 
-	value, ok := argv.(float64)
-	if !ok {
-		klog.Warningf("Could not parse argument: %v for key %s to float64", argv, key)
+	value, err := strconv.ParseFloat(argv, 64)
+	if err != nil {
+		klog.Warningf("Could not parse argument: %s for key %s, with err %v", argv, key, err)
 		return
 	}
 
@@ -72,13 +74,13 @@ func (a Arguments) GetBool(ptr *bool, key string) {
 	}
 
 	argv, ok := a[key]
-	if !ok {
+	if !ok || argv == "" {
 		return
 	}
 
-	value, ok := argv.(bool)
-	if !ok {
-		klog.Warningf("Could not parse argument: %v for key %s to bool", argv, key)
+	value, err := strconv.ParseBool(argv)
+	if err != nil {
+		klog.Warningf("Could not parse argument: %s for key %s, with err %v", argv, key, err)
 		return
 	}
 

@@ -30,8 +30,7 @@ func (mp *magicPlugin) Name() string {
 	return PluginName
 }
 
-// New is a PluginBuilder, remove the comment when used.
-func New(arguments framework.Arguments) framework.Plugin {
+func New(arguments framework.Arguments) framework.Plugin { // `New` is PluginBuilder
 	return &magicPlugin{}
 }
 

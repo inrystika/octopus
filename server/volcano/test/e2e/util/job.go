@@ -52,7 +52,6 @@ type TaskSpec struct {
 	Tolerations           []v1.Toleration
 	DefaultGracefulPeriod *int64
 	Taskpriority          string
-	MaxRetry              int32
 }
 
 type JobSpec struct {
@@ -69,8 +68,6 @@ type JobSpec struct {
 	// ttl seconds after job finished
 	Ttl        *int32
 	MinSuccess *int32
-	// job max retry
-	MaxRetry int32
 }
 
 func Namespace(context *TestContext, job *JobSpec) string {
@@ -199,7 +196,6 @@ func CreateJobInner(ctx *TestContext, jobSpec *JobSpec) (*batchv1alpha1.Job, err
 			Plugins:                 jobSpec.Plugins,
 			TTLSecondsAfterFinished: jobSpec.Ttl,
 			MinSuccess:              jobSpec.MinSuccess,
-			MaxRetry:                jobSpec.MaxRetry,
 		},
 	}
 
@@ -215,16 +211,10 @@ func CreateJobInner(ctx *TestContext, jobSpec *JobSpec) (*batchv1alpha1.Job, err
 			restartPolicy = task.RestartPolicy
 		}
 
-		maxRetry := task.MaxRetry
-		if maxRetry == 0 {
-			maxRetry = -1
-		}
-
 		ts := batchv1alpha1.TaskSpec{
 			Name:     name,
 			Replicas: task.Rep,
 			Policies: task.Policies,
-			MaxRetry: maxRetry,
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:   name,
@@ -344,8 +334,7 @@ func jobUnschedulable(ctx *TestContext, job *batchv1alpha1.Job, now time.Time) e
 	var additionalError error
 	// TODO(k82cn): check Job's Condition instead of PodGroup's event.
 	err := wait.Poll(10*time.Second, FiveMinute, func() (bool, error) {
-		pgName := job.Name + "-" + string(job.UID)
-		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(job.Namespace).Get(context.TODO(), pgName, metav1.GetOptions{})
+		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(job.Namespace).Get(context.TODO(), job.Name, metav1.GetOptions{})
 		if err != nil {
 			additionalError = fmt.Errorf("expected to have job's podgroup %s created, actual got error %s",
 				job.Name, err.Error())
@@ -379,8 +368,7 @@ func jobUnschedulable(ctx *TestContext, job *batchv1alpha1.Job, now time.Time) e
 func JobEvicted(ctx *TestContext, job *batchv1alpha1.Job, time time.Time) wait.ConditionFunc {
 	// TODO(k82cn): check Job's conditions instead of PodGroup's event.
 	return func() (bool, error) {
-		pgName := job.Name + "-" + string(job.UID)
-		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(job.Namespace).Get(context.TODO(), pgName, metav1.GetOptions{})
+		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(job.Namespace).Get(context.TODO(), job.Name, metav1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred(), "failed to get pod group of job %s in namespace %s", job.Name, job.Namespace)
 
 		events, err := ctx.Kubeclient.CoreV1().Events(pg.Namespace).List(context.TODO(), metav1.ListOptions{})
@@ -650,8 +638,7 @@ func WaitJobCleanedUp(ctx *TestContext, cleanupjob *batchv1alpha1.Job) error {
 			return false, nil
 		}
 
-		pgName := cleanupjob.Name + "-" + string(cleanupjob.UID)
-		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(cleanupjob.Namespace).Get(context.TODO(), pgName, metav1.GetOptions{})
+		pg, err := ctx.Vcclient.SchedulingV1beta1().PodGroups(cleanupjob.Namespace).Get(context.TODO(), cleanupjob.Name, metav1.GetOptions{})
 		if err != nil && !errors.IsNotFound(err) {
 			return false, nil
 		}

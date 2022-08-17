@@ -20,7 +20,7 @@ import (
 	"context"
 	"strconv"
 
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	v1 "k8s.io/api/core/v1"
@@ -464,64 +464,8 @@ var _ = Describe("Job Error Handling", func() {
 
 		By("job scheduled, then task 'completed_task' finished and job finally complete")
 		// job phase: pending -> running -> completing -> completed
-		// TODO: skip running -> completing for the github CI pool performance
 		err := e2eutil.WaitJobPhases(ctx, job, []vcbatch.JobPhase{
-			vcbatch.Pending, vcbatch.Completed})
-		Expect(err).NotTo(HaveOccurred())
-
-	})
-
-	It("job level LifecyclePolicy, Event: TaskFailed; Action: TerminateJob", func() {
-		By("init test context")
-		ctx := e2eutil.InitTestContext(e2eutil.Options{})
-		defer e2eutil.CleanupTestContext(ctx)
-
-		By("create job")
-		job := e2eutil.CreateJob(ctx, &e2eutil.JobSpec{
-			Name:      "task-failed-terminate-job",
-			Namespace: ctx.Namespace,
-			Policies: []vcbatch.LifecyclePolicy{
-				{
-					Action: vcbus.TerminateJobAction,
-					Event:  vcbus.TaskFailedEvent,
-				},
-			},
-			Tasks: []e2eutil.TaskSpec{
-				{
-					Name: "success",
-					Img:  e2eutil.DefaultBusyBoxImage,
-					Min:  2,
-					Rep:  2,
-					//Sleep 5 seconds ensure job in running state
-					Command: "sleep 5",
-				},
-				{
-					Name:          "failed",
-					Img:           e2eutil.DefaultBusyBoxImage,
-					Min:           2,
-					Rep:           2,
-					Command:       "sleep 10s && xxx",
-					RestartPolicy: v1.RestartPolicyNever,
-					MaxRetry:      3,
-				},
-			},
-		})
-
-		// job phase: Pending -> Running
-		err := e2eutil.WaitJobPhases(ctx, job, []vcbatch.JobPhase{vcbatch.Pending, vcbatch.Running})
-		Expect(err).NotTo(HaveOccurred())
-
-		By("update one pod of job")
-		podName := jobctl.MakePodName(job.Name, "failed", 0)
-		pod, err := ctx.Kubeclient.CoreV1().Pods(job.Namespace).Get(context.TODO(), podName, metav1.GetOptions{})
-		Expect(err).NotTo(HaveOccurred())
-
-		pod.Status.ContainerStatuses = []v1.ContainerStatus{{RestartCount: 4}}
-		_, err = ctx.Kubeclient.CoreV1().Pods(job.Namespace).UpdateStatus(context.TODO(), pod, metav1.UpdateOptions{})
-		Expect(err).NotTo(HaveOccurred())
-
-		// job phase: Terminating -> Terminated
-		err = e2eutil.WaitJobPhases(ctx, job, []vcbatch.JobPhase{vcbatch.Terminating, vcbatch.Terminated})
+			vcbatch.Pending, vcbatch.Running, vcbatch.Completing, vcbatch.Completed})
 		Expect(err).NotTo(HaveOccurred())
 
 	})
@@ -765,7 +709,7 @@ var _ = Describe("Job Error Handling", func() {
 		By("job scheduled, then task 'completed_task' finished and job finally complete")
 		// job phase: pending -> running -> completing -> completed
 		err := e2eutil.WaitJobPhases(ctx, job, []vcbatch.JobPhase{
-			vcbatch.Pending, vcbatch.Completed})
+			vcbatch.Pending, vcbatch.Running, vcbatch.Completing, vcbatch.Completed})
 		Expect(err).NotTo(HaveOccurred())
 
 	})

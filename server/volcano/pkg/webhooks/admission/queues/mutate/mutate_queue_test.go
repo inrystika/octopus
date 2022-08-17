@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	admissionv1 "k8s.io/api/admission/v1"
+	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -65,7 +65,7 @@ func TestMutateQueues(t *testing.T) {
 		t.Errorf("Marshal queue with open state failed for %v.", err)
 	}
 
-	pt := admissionv1.PatchTypeJSONPatch
+	pt := v1beta1.PatchTypeJSONPatch
 
 	var refreshPatch []patchOperation
 	refreshPatch = append(refreshPatch, patchOperation{
@@ -118,17 +118,17 @@ func TestMutateQueues(t *testing.T) {
 
 	testCases := []struct {
 		Name           string
-		AR             admissionv1.AdmissionReview
-		reviewResponse *admissionv1.AdmissionResponse
+		AR             v1beta1.AdmissionReview
+		reviewResponse *v1beta1.AdmissionResponse
 	}{
 		{
 			Name: "Normal Case Refresh Default Open State and Reclaimable For Queue",
-			AR: admissionv1.AdmissionReview{
+			AR: v1beta1.AdmissionReview{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "AdmissionReview",
-					APIVersion: "admission.k8s.io/v1",
+					APIVersion: "admission.k8s.io/v1beta1",
 				},
-				Request: &admissionv1.AdmissionRequest{
+				Request: &v1beta1.AdmissionRequest{
 					Kind: metav1.GroupVersionKind{
 						Group:   "scheduling.volcano.sh",
 						Version: "v1beta1",
@@ -146,7 +146,7 @@ func TestMutateQueues(t *testing.T) {
 					},
 				},
 			},
-			reviewResponse: &admissionv1.AdmissionResponse{
+			reviewResponse: &v1beta1.AdmissionResponse{
 				Allowed:   true,
 				PatchType: &pt,
 				Patch:     refreshPatchJSON,
@@ -154,12 +154,12 @@ func TestMutateQueues(t *testing.T) {
 		},
 		{
 			Name: "Invalid Action",
-			AR: admissionv1.AdmissionReview{
+			AR: v1beta1.AdmissionReview{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "AdmissionReview",
-					APIVersion: "admission.k8s.io/v1",
+					APIVersion: "admission.k8s.io/v1beta1",
 				},
-				Request: &admissionv1.AdmissionRequest{
+				Request: &v1beta1.AdmissionRequest{
 					Kind: metav1.GroupVersionKind{
 						Group:   "scheduling.volcano.sh",
 						Version: "v1beta1",
@@ -182,12 +182,12 @@ func TestMutateQueues(t *testing.T) {
 		},
 		{
 			Name: "Normal Case Append Default Root to The HDRF Attributes",
-			AR: admissionv1.AdmissionReview{
+			AR: v1beta1.AdmissionReview{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "AdmissionReview",
-					APIVersion: "admission.k8s.io/v1",
+					APIVersion: "admission.k8s.io/v1beta1",
 				},
-				Request: &admissionv1.AdmissionRequest{
+				Request: &v1beta1.AdmissionRequest{
 					Kind: metav1.GroupVersionKind{
 						Group:   "scheduling.volcano.sh",
 						Version: "v1beta1",
@@ -205,7 +205,7 @@ func TestMutateQueues(t *testing.T) {
 					},
 				},
 			},
-			reviewResponse: &admissionv1.AdmissionResponse{
+			reviewResponse: &v1beta1.AdmissionResponse{
 				Allowed:   true,
 				PatchType: &pt,
 				Patch:     appendRootPatchJSON,

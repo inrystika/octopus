@@ -22,10 +22,10 @@ package k8s
 import (
 	"fmt"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
-
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"volcano.sh/volcano/pkg/scheduler/plugins/util"
 )
 
@@ -33,37 +33,32 @@ import (
 // snapshot at the beginning of each scheduling cycle and uses it for its operations in that cycle.
 type Snapshot struct {
 	// nodeInfoMap a map of node name to a snapshot of its NodeInfo.
-	nodeInfoMap map[string]*framework.NodeInfo
+	nodeInfoMap map[string]*v1alpha1.NodeInfo
 	// nodeInfoList is the list of nodes as ordered in the cache's nodeTree.
-	nodeInfoList []*framework.NodeInfo
+	nodeInfoList []*v1alpha1.NodeInfo
 	// havePodsWithAffinityNodeInfoList is the list of nodes with at least one pod declaring affinity terms.
-	havePodsWithAffinityNodeInfoList []*framework.NodeInfo
-	// havePodsWithRequiredAntiAffinityNodeInfoList is the list of nodes with at least one pod declaring
-	// required anti-affinity terms.
-	havePodsWithRequiredAntiAffinityNodeInfoList []*framework.NodeInfo
+	havePodsWithAffinityNodeInfoList []*v1alpha1.NodeInfo
+	generation                       int64
 }
 
-var _ framework.SharedLister = &Snapshot{}
+var _ v1alpha1.SharedLister = &Snapshot{}
 
 // NewEmptySnapshot initializes a Snapshot struct and returns it.
 func NewEmptySnapshot() *Snapshot {
 	return &Snapshot{
-		nodeInfoMap: make(map[string]*framework.NodeInfo),
+		nodeInfoMap: make(map[string]*v1alpha1.NodeInfo),
 	}
 }
 
 // NewSnapshot initializes a Snapshot struct and returns it.
-func NewSnapshot(nodeInfoMap map[string]*framework.NodeInfo) *Snapshot {
-	nodeInfoList := make([]*framework.NodeInfo, 0, len(nodeInfoMap))
-	havePodsWithAffinityNodeInfoList := make([]*framework.NodeInfo, 0, len(nodeInfoMap))
-	havePodsWithRequiredAntiAffinityNodeInfoList := make([]*framework.NodeInfo, 0, len(nodeInfoMap))
+func NewSnapshot(pods []*v1.Pod, nodes []*v1.Node) *Snapshot {
+	nodeInfoMap := createNodeInfoMap(pods, nodes)
+	nodeInfoList := make([]*v1alpha1.NodeInfo, 0, len(nodeInfoMap))
+	havePodsWithAffinityNodeInfoList := make([]*v1alpha1.NodeInfo, 0, len(nodeInfoMap))
 	for _, v := range nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 		if len(v.PodsWithAffinity) > 0 {
 			havePodsWithAffinityNodeInfoList = append(havePodsWithAffinityNodeInfoList, v)
-		}
-		if len(v.PodsWithRequiredAntiAffinity) > 0 {
-			havePodsWithRequiredAntiAffinityNodeInfoList = append(havePodsWithRequiredAntiAffinityNodeInfoList, v)
 		}
 	}
 
@@ -71,7 +66,6 @@ func NewSnapshot(nodeInfoMap map[string]*framework.NodeInfo) *Snapshot {
 	s.nodeInfoMap = nodeInfoMap
 	s.nodeInfoList = nodeInfoList
 	s.havePodsWithAffinityNodeInfoList = havePodsWithAffinityNodeInfoList
-	s.havePodsWithRequiredAntiAffinityNodeInfoList = havePodsWithRequiredAntiAffinityNodeInfoList
 
 	return s
 }
@@ -82,11 +76,11 @@ func (s *Snapshot) Pods() util.PodsLister {
 }
 
 // NodeInfos returns a NodeInfoLister.
-func (s *Snapshot) NodeInfos() framework.NodeInfoLister {
+func (s *Snapshot) NodeInfos() v1alpha1.NodeInfoLister {
 	return s
 }
 
-type podLister []*framework.NodeInfo
+type podLister []*v1alpha1.NodeInfo
 
 // List returns the list of pods in the snapshot.
 func (p podLister) List(selector labels.Selector) ([]*v1.Pod, error) {
@@ -115,24 +109,81 @@ func (p podLister) FilteredList(filter util.PodFilter, selector labels.Selector)
 }
 
 // List returns the list of nodes in the snapshot.
-func (s *Snapshot) List() ([]*framework.NodeInfo, error) {
+func (s *Snapshot) List() ([]*v1alpha1.NodeInfo, error) {
 	return s.nodeInfoList, nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity
-func (s *Snapshot) HavePodsWithAffinityList() ([]*framework.NodeInfo, error) {
+func (s *Snapshot) HavePodsWithAffinityList() ([]*v1alpha1.NodeInfo, error) {
 	return s.havePodsWithAffinityNodeInfoList, nil
 }
 
 // HavePodsWithRequiredAntiAffinityList returns the list of NodeInfos of nodes with pods with required anti-affinity terms.
-func (s *Snapshot) HavePodsWithRequiredAntiAffinityList() ([]*framework.NodeInfo, error) {
-	return s.havePodsWithRequiredAntiAffinityNodeInfoList, nil
+func (s *Snapshot) HavePodsWithRequiredAntiAffinityList() ([]*v1alpha1.NodeInfo, error) {
+	return nil, nil
 }
 
 // Get returns the NodeInfo of the given node name.
-func (s *Snapshot) Get(nodeName string) (*framework.NodeInfo, error) {
+func (s *Snapshot) Get(nodeName string) (*v1alpha1.NodeInfo, error) {
 	if v, ok := s.nodeInfoMap[nodeName]; ok && v.Node() != nil {
 		return v, nil
 	}
 	return nil, fmt.Errorf("nodeinfo not found for node name %q", nodeName)
+}
+
+// createNodeInfoMap obtains a list of pods and pivots that list into a map
+// where the keys are node names and the values are the aggregated information
+// for that node.
+func createNodeInfoMap(pods []*v1.Pod, nodes []*v1.Node) map[string]*v1alpha1.NodeInfo {
+	nodeNameToInfo := make(map[string]*v1alpha1.NodeInfo)
+	for _, pod := range pods {
+		nodeName := pod.Spec.NodeName
+		if _, ok := nodeNameToInfo[nodeName]; !ok {
+			nodeNameToInfo[nodeName] = v1alpha1.NewNodeInfo()
+		}
+		nodeNameToInfo[nodeName].AddPod(pod)
+	}
+	imageExistenceMap := createImageExistenceMap(nodes)
+
+	for _, node := range nodes {
+		if _, ok := nodeNameToInfo[node.Name]; !ok {
+			nodeNameToInfo[node.Name] = v1alpha1.NewNodeInfo()
+		}
+		nodeInfo := nodeNameToInfo[node.Name]
+		nodeInfo.SetNode(node)
+		nodeInfo.ImageStates = getNodeImageStates(node, imageExistenceMap)
+	}
+	return nodeNameToInfo
+}
+
+// createImageExistenceMap returns a map recording on which nodes the images exist, keyed by the images' names.
+func createImageExistenceMap(nodes []*v1.Node) map[string]sets.String {
+	imageExistenceMap := make(map[string]sets.String)
+	for _, node := range nodes {
+		for _, image := range node.Status.Images {
+			for _, name := range image.Names {
+				if _, ok := imageExistenceMap[name]; !ok {
+					imageExistenceMap[name] = sets.NewString(node.Name)
+				} else {
+					imageExistenceMap[name].Insert(node.Name)
+				}
+			}
+		}
+	}
+	return imageExistenceMap
+}
+
+// getNodeImageStates returns the given node's image states based on the given imageExistence map.
+func getNodeImageStates(node *v1.Node, imageExistenceMap map[string]sets.String) map[string]*v1alpha1.ImageStateSummary {
+	imageStates := make(map[string]*v1alpha1.ImageStateSummary)
+
+	for _, image := range node.Status.Images {
+		for _, name := range image.Names {
+			imageStates[name] = &v1alpha1.ImageStateSummary{
+				Size:     image.SizeBytes,
+				NumNodes: len(imageExistenceMap[name]),
+			}
+		}
+	}
+	return imageStates
 }

@@ -18,7 +18,6 @@ package apis
 
 import (
 	"fmt"
-
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 )
 

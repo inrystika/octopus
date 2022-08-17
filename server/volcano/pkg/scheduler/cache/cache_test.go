@@ -146,7 +146,6 @@ func TestSchedulerCache_Bind_NodeWithSufficientResources(t *testing.T) {
 			Binds:   map[string]string{},
 			Channel: make(chan string),
 		},
-		BindFlowChannel: make(chan *api.TaskInfo, 5000),
 	}
 
 	pod := buildPod("c1", "p1", "", v1.PodPending, buildResourceList("1000m", "1G"),
@@ -161,8 +160,8 @@ func TestSchedulerCache_Bind_NodeWithSufficientResources(t *testing.T) {
 	if err := cache.addTask(task); err != nil {
 		t.Errorf("failed to add task %v", err)
 	}
-	task.NodeName = "n1"
-	err := cache.AddBindTask(task)
+
+	err := cache.Bind(task, "n1")
 	if err != nil {
 		t.Errorf("failed to bind pod to node: %v", err)
 	}
@@ -178,7 +177,6 @@ func TestSchedulerCache_Bind_NodeWithInsufficientResources(t *testing.T) {
 			Binds:   map[string]string{},
 			Channel: make(chan string),
 		},
-		BindFlowChannel: make(chan *api.TaskInfo, 5000),
 	}
 
 	pod := buildPod("c1", "p1", "", v1.PodPending, buildResourceList("5000m", "50G"),
@@ -195,11 +193,10 @@ func TestSchedulerCache_Bind_NodeWithInsufficientResources(t *testing.T) {
 		t.Errorf("failed to add task %v", err)
 	}
 
-	task.NodeName = "n1"
 	taskBeforeBind := task.Clone()
 	nodeBeforeBind := cache.Nodes["n1"].Clone()
 
-	err := cache.AddBindTask(task)
+	err := cache.Bind(task, "n1")
 	if err == nil {
 		t.Errorf("expected bind to fail for node with insufficient resources")
 	}
@@ -212,105 +209,8 @@ func TestSchedulerCache_Bind_NodeWithInsufficientResources(t *testing.T) {
 		t.Errorf("expected task to remain the same after failed bind: \n %#v\n %#v", taskBeforeBind, taskAfterBind)
 	}
 
-	nodeAfterBind := cache.Nodes["n1"].Clone()
+	nodeAfterBind := cache.Nodes["n1"]
 	if !reflect.DeepEqual(nodeBeforeBind, nodeAfterBind) {
 		t.Errorf("expected node to remain the same after failed bind")
-	}
-}
-
-func TestNodeOperation(t *testing.T) {
-	// case 1
-	node1 := buildNode("n1", buildResourceList("2000m", "10G"))
-	node2 := buildNode("n2", buildResourceList("4000m", "16G"))
-	node3 := buildNode("n3", buildResourceList("3000m", "12G"))
-	nodeInfo1 := api.NewNodeInfo(node1)
-	nodeInfo2 := api.NewNodeInfo(node2)
-	nodeInfo3 := api.NewNodeInfo(node3)
-	tests := []struct {
-		deletedNode *v1.Node
-		nodes       []*v1.Node
-		expected    *SchedulerCache
-		delExpect   *SchedulerCache
-	}{
-		{
-			deletedNode: node2,
-			nodes:       []*v1.Node{node1, node2, node3},
-			expected: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n1": nodeInfo1,
-					"n2": nodeInfo2,
-					"n3": nodeInfo3,
-				},
-				NodeList: []string{"n1", "n2", "n3"},
-			},
-			delExpect: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n1": nodeInfo1,
-					"n3": nodeInfo3,
-				},
-				NodeList: []string{"n1", "n3"},
-			},
-		},
-		{
-			deletedNode: node1,
-			nodes:       []*v1.Node{node1, node2, node3},
-			expected: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n1": nodeInfo1,
-					"n2": nodeInfo2,
-					"n3": nodeInfo3,
-				},
-				NodeList: []string{"n1", "n2", "n3"},
-			},
-			delExpect: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n2": nodeInfo2,
-					"n3": nodeInfo3,
-				},
-				NodeList: []string{"n2", "n3"},
-			},
-		},
-		{
-			deletedNode: node3,
-			nodes:       []*v1.Node{node1, node2, node3},
-			expected: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n1": nodeInfo1,
-					"n2": nodeInfo2,
-					"n3": nodeInfo3,
-				},
-				NodeList: []string{"n1", "n2", "n3"},
-			},
-			delExpect: &SchedulerCache{
-				Nodes: map[string]*api.NodeInfo{
-					"n1": nodeInfo1,
-					"n2": nodeInfo2,
-				},
-				NodeList: []string{"n1", "n2"},
-			},
-		},
-	}
-
-	for i, test := range tests {
-		cache := &SchedulerCache{
-			Nodes:    make(map[string]*api.NodeInfo),
-			NodeList: []string{},
-		}
-
-		for _, n := range test.nodes {
-			cache.AddNode(n)
-		}
-
-		if !reflect.DeepEqual(cache, test.expected) {
-			t.Errorf("case %d: \n expected %v, \n got %v \n",
-				i, test.expected, cache)
-		}
-
-		// delete node
-		cache.DeleteNode(test.deletedNode)
-		if !reflect.DeepEqual(cache, test.delExpect) {
-			t.Errorf("case %d: \n expected %v, \n got %v \n",
-				i, test.delExpect, cache)
-		}
 	}
 }

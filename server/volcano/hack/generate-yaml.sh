@@ -24,7 +24,7 @@ VK_ROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
 export HELM_BIN_DIR=${VK_ROOT}/${BIN_DIR}
 export RELEASE_FOLDER=${VK_ROOT}/${RELEASE_DIR}
 
-export HELM_VER=${HELM_VER:-v3.6.3}
+export HELM_VER=${HELM_VER:-v3.5.3}
 export VOLCANO_IMAGE_TAG=${TAG:-"latest"}
 export YAML_FILENAME=volcano-${VOLCANO_IMAGE_TAG}.yaml
 export MONITOR_YAML_FILENAME=volcano-monitoring-${VOLCANO_IMAGE_TAG}.yaml
@@ -82,13 +82,11 @@ tail -n +3 ${VK_ROOT}/config/crd/bases/batch.volcano.sh_jobs.yaml > ${HELM_CRD_D
 tail -n +3 ${VK_ROOT}/config/crd/bases/bus.volcano.sh_commands.yaml > ${HELM_CRD_DIR}/bases/bus.volcano.sh_commands.yaml
 tail -n +3 ${VK_ROOT}/config/crd/bases/scheduling.volcano.sh_podgroups.yaml > ${HELM_CRD_DIR}/bases/scheduling.volcano.sh_podgroups.yaml
 tail -n +3 ${VK_ROOT}/config/crd/bases/scheduling.volcano.sh_queues.yaml > ${HELM_CRD_DIR}/bases/scheduling.volcano.sh_queues.yaml
-tail -n +3 ${VK_ROOT}/config/crd/bases/nodeinfo.volcano.sh_numatopologies.yaml > ${HELM_CRD_DIR}/bases/nodeinfo.volcano.sh_numatopologies.yaml
 # sync v1beta1
 tail -n +3 ${VK_ROOT}/config/crd/v1beta1/batch.volcano.sh_jobs.yaml > ${HELM_CRD_DIR}/v1beta1/batch.volcano.sh_jobs.yaml
 tail -n +3 ${VK_ROOT}/config/crd/v1beta1/bus.volcano.sh_commands.yaml > ${HELM_CRD_DIR}/v1beta1/bus.volcano.sh_commands.yaml
 tail -n +3 ${VK_ROOT}/config/crd/v1beta1/scheduling.volcano.sh_podgroups.yaml > ${HELM_CRD_DIR}/v1beta1/scheduling.volcano.sh_podgroups.yaml
 tail -n +3 ${VK_ROOT}/config/crd/v1beta1/scheduling.volcano.sh_queues.yaml > ${HELM_CRD_DIR}/v1beta1/scheduling.volcano.sh_queues.yaml
-tail -n +3 ${VK_ROOT}/config/crd/v1beta1/nodeinfo.volcano.sh_numatopologies.yaml > ${HELM_CRD_DIR}/v1beta1/nodeinfo.volcano.sh_numatopologies.yaml
 
 # Step3. generate yaml in folder
 if [[ ! -d ${RELEASE_FOLDER} ]];then
@@ -117,11 +115,10 @@ ${HELM_BIN_DIR}/helm template ${VK_ROOT}/installer/helm/chart/volcano --namespac
       -s templates/scheduler.yaml \
       -s templates/scheduling_v1beta1_podgroup.yaml \
       -s templates/scheduling_v1beta1_queue.yaml \
-      -s templates/nodeinfo_v1alpha1_numatopologies.yaml \
       >> ${DEPLOYMENT_FILE}
 
 ${HELM_BIN_DIR}/helm template ${VK_ROOT}/installer/helm/chart/volcano --namespace volcano-monitoring \
-      --name-template volcano --set basic.image_tag_version=${VOLCANO_IMAGE_TAG} --set custom.metrics_enable=true \
+      --name-template volcano --set basic.image_tag_version=${VOLCANO_IMAGE_TAG} \
       -s templates/prometheus.yaml \
       -s templates/kubestatemetrics.yaml \
       -s templates/grafana.yaml \

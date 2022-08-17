@@ -19,17 +19,14 @@ package helpers
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	v1 "k8s.io/api/core/v1"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/volcano/pkg/controllers/apis"
-	"volcano.sh/volcano/pkg/scheduler/api"
 )
 
 const (
@@ -59,62 +56,6 @@ func GetTaskName(pod *v1.Pod) string {
 	return ""
 }
 
-// GetPodIndexUnderTask returns task Index.
-func GetPodIndexUnderTask(pod *v1.Pod) string {
-	num := strings.Split(pod.Name, "-")
-	if len(num) >= 3 {
-		return num[len(num)-1]
-	}
-
-	return ""
-}
-
-// CompareTask by pod index
-func CompareTask(lv, rv *api.TaskInfo) bool {
-	lStr := GetPodIndexUnderTask(lv.Pod)
-	rStr := GetPodIndexUnderTask(rv.Pod)
-	lIndex, lErr := strconv.Atoi(lStr)
-	rIndex, rErr := strconv.Atoi(rStr)
-	if lErr != nil || rErr != nil || lIndex == rIndex {
-		return lv.Pod.CreationTimestamp.Before(&rv.Pod.CreationTimestamp)
-	}
-	if lIndex > rIndex {
-		return false
-	}
-	return true
-}
-
-// GetTaskKey returns task key/name
-func GetTaskKey(pod *v1.Pod) string {
-	if pod.Annotations == nil || pod.Annotations[batch.TaskSpecKey] == "" {
-		return batch.DefaultTaskSpec
-	}
-	return pod.Annotations[batch.TaskSpecKey]
-}
-
-// GetTaskSpec returns task spec
-func GetTaskSpec(job *batch.Job, taskName string) (batch.TaskSpec, bool) {
-	for _, ts := range job.Spec.Tasks {
-		if ts.Name == taskName {
-			return ts, true
-		}
-	}
-	return batch.TaskSpec{}, false
-}
-
-// MakeDomainName creates task domain name
-func MakeDomainName(ts batch.TaskSpec, job *batch.Job, index int) string {
-	hostName := ts.Template.Spec.Hostname
-	subdomain := ts.Template.Spec.Subdomain
-	if len(hostName) == 0 {
-		hostName = MakePodName(job.Name, ts.Name, index)
-	}
-	if len(subdomain) == 0 {
-		subdomain = job.Name
-	}
-	return hostName + "." + subdomain
-}
-
 // MakePodName creates pod name.
 func MakePodName(jobName string, taskName string, index int) string {
 	return fmt.Sprintf(PodNameFmt, jobName, taskName, index)
@@ -140,30 +81,6 @@ func GenPVCName(jobName string) string {
 // GetJobKeyByReq gets the key for the job request.
 func GetJobKeyByReq(req *apis.Request) string {
 	return fmt.Sprintf("%s/%s", req.Namespace, req.JobName)
-}
-
-// GetTasklndexUnderJob return index of the task in the job.
-func GetTasklndexUnderJob(taskName string, job *batch.Job) int {
-	for index, task := range job.Spec.Tasks {
-		if task.Name == taskName {
-			return index
-		}
-	}
-	return -1
-}
-
-// GetPodsNameUnderTask return names of all pods in the task.
-func GetPodsNameUnderTask(taskName string, job *batch.Job) []string {
-	var res []string
-	for _, task := range job.Spec.Tasks {
-		if task.Name == taskName {
-			for index := 0; index < int(task.Replicas); index++ {
-				res = append(res, MakePodName(job.Name, taskName, index))
-			}
-			break
-		}
-	}
-	return res
 }
 
 func UpdateReplicaStatus(record *batch.ReplicaStatus, pod *v1.Pod) {

@@ -47,7 +47,6 @@ type Scheduler struct {
 	actions        []framework.Action
 	plugins        []conf.Tier
 	configurations []conf.Configuration
-	metricsConf    map[string]string
 }
 
 // NewScheduler returns a scheduler
@@ -57,7 +56,6 @@ func NewScheduler(
 	schedulerConf string,
 	period time.Duration,
 	defaultQueue string,
-	nodeSelectors []string,
 ) (*Scheduler, error) {
 	var watcher filewatcher.FileWatcher
 	if schedulerConf != "" {
@@ -72,7 +70,7 @@ func NewScheduler(
 	scheduler := &Scheduler{
 		schedulerConf:  schedulerConf,
 		fileWatcher:    watcher,
-		cache:          schedcache.New(config, schedulerName, defaultQueue, nodeSelectors),
+		cache:          schedcache.New(config, schedulerName, defaultQueue),
 		schedulePeriod: period,
 	}
 
@@ -84,10 +82,8 @@ func (pc *Scheduler) Run(stopCh <-chan struct{}) {
 	pc.loadSchedulerConf()
 	go pc.watchSchedulerConf(stopCh)
 	// Start cache for policy.
-	pc.cache.SetMetricsConf(pc.metricsConf)
 	go pc.cache.Run(stopCh)
 	pc.cache.WaitForCacheSync(stopCh)
-	klog.V(2).Infof("scheduler completes Initialization and start to run")
 	go wait.Until(pc.runOnce, pc.schedulePeriod, stopCh)
 }
 
@@ -114,10 +110,9 @@ func (pc *Scheduler) runOnce() {
 }
 
 func (pc *Scheduler) loadSchedulerConf() {
-	klog.V(4).Infof("Start loadSchedulerConf ...")
 	var err error
 	pc.once.Do(func() {
-		pc.actions, pc.plugins, pc.configurations, pc.metricsConf, err = unmarshalSchedulerConf(defaultSchedulerConf)
+		pc.actions, pc.plugins, pc.configurations, err = unmarshalSchedulerConf(defaultSchedulerConf)
 		if err != nil {
 			klog.Errorf("unmarshal scheduler config %s failed: %v", defaultSchedulerConf, err)
 			panic("invalid default configuration")
@@ -133,7 +128,7 @@ func (pc *Scheduler) loadSchedulerConf() {
 		}
 	}
 
-	actions, plugins, configurations, metricsConf, err := unmarshalSchedulerConf(config)
+	actions, plugins, configurations, err := unmarshalSchedulerConf(config)
 	if err != nil {
 		klog.Errorf("scheduler config %s is invalid: %v", config, err)
 		return
@@ -144,7 +139,6 @@ func (pc *Scheduler) loadSchedulerConf() {
 	pc.actions = actions
 	pc.plugins = plugins
 	pc.configurations = configurations
-	pc.metricsConf = metricsConf
 	pc.mutex.Unlock()
 }
 

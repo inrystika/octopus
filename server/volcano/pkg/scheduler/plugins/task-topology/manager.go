@@ -52,6 +52,7 @@ type JobManager struct {
 	buckets     []*Bucket
 	podInBucket map[types.UID]int
 	podInTask   map[types.UID]string
+	taskOverPod map[string]map[types.UID]struct{}
 
 	taskAffinityPriority map[string]int // [taskName] -> priority
 	taskExistOrder       map[string]int
@@ -72,6 +73,7 @@ func NewJobManager(jobID api.JobID) *JobManager {
 		buckets:     make([]*Bucket, 0),
 		podInBucket: make(map[types.UID]int),
 		podInTask:   make(map[types.UID]string),
+		taskOverPod: make(map[string]map[types.UID]struct{}),
 
 		taskAffinityPriority: make(map[string]int),
 		taskExistOrder:       make(map[string]int),
@@ -214,6 +216,12 @@ func (jm *JobManager) buildTaskInfo(tasks map[api.TaskID]*api.TaskInfo) []*api.T
 		}
 
 		jm.podInTask[pod.UID] = taskName
+		taskSet, ok := jm.taskOverPod[taskName]
+		if !ok {
+			taskSet = make(map[types.UID]struct{})
+			jm.taskOverPod[taskName] = taskSet
+		}
+		taskSet[pod.UID] = struct{}{}
 		taskWithoutBucket = append(taskWithoutBucket, task)
 	}
 	return taskWithoutBucket

@@ -23,8 +23,7 @@ type SchedulerConfiguration struct {
 	// Tiers defines plugins in different tiers
 	Tiers []Tier `yaml:"tiers"`
 	// Configurations is configuration for actions
-	Configurations       []Configuration   `yaml:"configurations"`
-	MetricsConfiguration map[string]string `yaml:"metrics"`
+	Configurations []Configuration `yaml:"configurations"`
 }
 
 // Tier defines plugin tier
@@ -37,7 +36,7 @@ type Configuration struct {
 	// Name is name of action
 	Name string `yaml:"name"`
 	// Arguments defines the different arguments that can be given to specified action
-	Arguments map[string]interface{} `yaml:"arguments"`
+	Arguments map[string]string `yaml:"arguments"`
 }
 
 // PluginOption defines the options of plugin
@@ -63,8 +62,6 @@ type PluginOption struct {
 	// EnabledQueueOrder defines whether queueOrderFn is enabled
 	EnabledQueueOrder *bool `yaml:"enableQueueOrder"`
 	// EnabledPredicate defines whether predicateFn is enabled
-	EnabledClusterOrder *bool `yaml:"EnabledClusterOrder"`
-	// EnableClusterOrder defines whether clusterOrderFn is enabled
 	EnabledPredicate *bool `yaml:"enablePredicate"`
 	// EnabledBestNode defines whether bestNodeFn is enabled
 	EnabledBestNode *bool `yaml:"enableBestNode"`
@@ -81,5 +78,5 @@ type PluginOption struct {
 	// EnabledJobStarving defines whether jobStarvingFn is enabled
 	EnabledJobStarving *bool `yaml:"enableJobStarving"`
 	// Arguments defines the different arguments that can be given to different plugins
-	Arguments map[string]interface{} `yaml:"arguments"`
+	Arguments map[string]string `yaml:"arguments"`
 }

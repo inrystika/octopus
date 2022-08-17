@@ -1,29 +1,31 @@
 /*
- Copyright 2021 The Volcano Authors.
+Copyright 2017 The Kubernetes Authors.
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 package allocate
 
 import (
 	"k8s.io/klog"
-
+	"volcano.sh/apis/pkg/apis/scheduling"
 	"volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/framework"
 	"volcano.sh/volcano/pkg/scheduler/metrics"
 	"volcano.sh/volcano/pkg/scheduler/util"
 )
+
+var targetJob = util.Reservation.TargetJob
 
 type Action struct{}
 
@@ -56,9 +58,7 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 	jobsMap := map[api.NamespaceName]map[api.QueueID]*util.PriorityQueue{}
 
 	for _, job := range ssn.Jobs {
-		if job.IsPending() {
-			klog.V(4).Infof("Job <%s/%s> Queue <%s> skip allocate, reason: job status is pending.",
-				job.Namespace, job.Name, job.Queue)
+		if job.PodGroup.Status.Phase == scheduling.PodGroupPending {
 			continue
 		}
 		if vr := ssn.JobValid(job); vr != nil && !vr.Pass {
@@ -95,10 +95,22 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 
 	pendingTasks := map[api.JobID]*util.PriorityQueue{}
 
-	allNodes := ssn.NodeList
+	allNodes := util.GetNodeList(ssn.Nodes)
+	unlockedNodes := allNodes
+	if targetJob != nil && len(util.Reservation.LockedNodes) != 0 {
+		unlockedNodes = unlockedNodes[0:0]
+		for _, node := range allNodes {
+			if _, exist := util.Reservation.LockedNodes[node.Name]; !exist {
+				unlockedNodes = append(unlockedNodes, node)
+			}
+		}
+	}
+	for _, unlockedNode := range unlockedNodes {
+		klog.V(4).Infof("unlockedNode ID: %s, Name: %s", unlockedNode.Node.UID, unlockedNode.Node.Name)
+	}
 	predicateFn := func(task *api.TaskInfo, node *api.NodeInfo) error {
 		// Check for Resource Predicate
-		if !task.InitResreq.LessEqual(node.FutureIdle(), api.Zero) {
+		if !task.InitResreq.LessEqual(node.FutureIdle()) {
 			return api.NewFitError(task, node, api.NodeResourceFitFailed)
 		}
 
@@ -120,7 +132,7 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 
 		// pick queue for given namespace
 		//
-		// This block use an algorithm with time complex O(n).
+		// This block use a algorithm with time complex O(n).
 		// But at least PriorityQueue could not be used here,
 		// because the allocation of job would change the priority of queue among all namespaces,
 		// and the PriorityQueue have no ability to update priority for a special queue.
@@ -130,9 +142,6 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 			if ssn.Overused(currentQueue) {
 				klog.V(3).Infof("Namespace <%s> Queue <%s> is overused, ignore it.", namespace, currentQueue.Name)
 				delete(queueInNamespace, queueID)
-				continue
-			}
-			if jobs, found := queueInNamespace[currentQueue.UID]; found && jobs.Empty() {
 				continue
 			}
 
@@ -157,6 +166,13 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 		}
 
 		job := jobs.Pop().(*api.JobInfo)
+		var nodes []*api.NodeInfo
+		if targetJob != nil && job.UID == targetJob.UID {
+			klog.V(4).Infof("Try to allocate resource to target job: %s", job.Name)
+			nodes = allNodes
+		} else {
+			nodes = unlockedNodes
+		}
 		if _, found = pendingTasks[job.UID]; !found {
 			tasks := util.NewPriorityQueue(ssn.TaskOrderFn)
 			for _, task := range job.TaskStatusIndex[api.Pending] {
@@ -177,18 +193,13 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 			tasks.Len(), job.Namespace, job.Name)
 
 		stmt := framework.NewStatement(ssn)
-		ph := util.NewPredicateHelper()
+
 		for !tasks.Empty() {
 			task := tasks.Pop().(*api.TaskInfo)
 
-			if !ssn.Allocatable(queue, task) {
-				klog.V(3).Infof("Queue <%s> is overused when considering task <%s>, ignore it.", queue.Name, task.Name)
-				continue
-			}
+			klog.V(3).Infof("There are <%d> nodes for Job <%v/%v>", len(nodes), job.Namespace, job.Name)
 
-			klog.V(3).Infof("There are <%d> nodes for Job <%v/%v>", len(ssn.Nodes), job.Namespace, job.Name)
-
-			predicateNodes, fitErrors := ph.PredicateNodes(task, allNodes, predicateFn)
+			predicateNodes, fitErrors := util.PredicateNodes(task, nodes, predicateFn)
 			if len(predicateNodes) == 0 {
 				job.NodesFitErrors[task.UID] = fitErrors
 				break
@@ -196,49 +207,46 @@ func (alloc *Action) Execute(ssn *framework.Session) {
 
 			var candidateNodes []*api.NodeInfo
 			for _, n := range predicateNodes {
-				if task.InitResreq.LessEqual(n.Idle, api.Zero) || task.InitResreq.LessEqual(n.FutureIdle(), api.Zero) {
+				if task.InitResreq.LessEqual(n.Idle) || task.InitResreq.LessEqual(n.FutureIdle()) {
 					candidateNodes = append(candidateNodes, n)
 				}
 			}
 
-			var node *api.NodeInfo
-			switch {
-			case len(candidateNodes) == 0: // If not candidate nodes for this task, skip it.
+			// If not candidate nodes for this task, skip it.
+			if len(candidateNodes) == 0 {
 				continue
-			case len(candidateNodes) == 1: // If only one node after predicate, just use it.
-				node = candidateNodes[0]
-			case len(candidateNodes) > 1: // If more than one node after predicate, using "the best" one
-				nodeScores := util.PrioritizeNodes(task, candidateNodes, ssn.BatchNodeOrderFn, ssn.NodeOrderMapFn, ssn.NodeOrderReduceFn)
+			}
 
-				node = ssn.BestNodeFn(task, nodeScores)
-				if node == nil {
-					node = util.SelectBestNode(nodeScores)
-				}
+			nodeScores := util.PrioritizeNodes(task, candidateNodes, ssn.BatchNodeOrderFn, ssn.NodeOrderMapFn, ssn.NodeOrderReduceFn)
+
+			node := ssn.BestNodeFn(task, nodeScores)
+			if node == nil {
+				node = util.SelectBestNode(nodeScores)
 			}
 
 			// Allocate idle resource to the task.
-			if task.InitResreq.LessEqual(node.Idle, api.Zero) {
+			if task.InitResreq.LessEqual(node.Idle) {
 				klog.V(3).Infof("Binding Task <%v/%v> to node <%v>",
 					task.Namespace, task.Name, node.Name)
 				if err := stmt.Allocate(task, node); err != nil {
 					klog.Errorf("Failed to bind Task %v on %v in Session %v, err: %v",
 						task.UID, node.Name, ssn.UID, err)
 				} else {
-					metrics.UpdateE2eSchedulingDurationByJob(job.Name, string(job.Queue), job.Namespace, metrics.Duration(job.CreationTimestamp.Time))
+					metrics.UpdateE2eSchedulingDurationByJob(job.Name, job.PodGroup.Spec.Queue, job.Namespace, metrics.Duration(job.CreationTimestamp.Time))
 				}
 			} else {
 				klog.V(3).Infof("Predicates failed for task <%s/%s> on node <%s> with limited resources",
 					task.Namespace, task.Name, node.Name)
 
 				// Allocate releasing resource to the task if any.
-				if task.InitResreq.LessEqual(node.FutureIdle(), api.Zero) {
+				if task.InitResreq.LessEqual(node.FutureIdle()) {
 					klog.V(3).Infof("Pipelining Task <%v/%v> to node <%v> for <%v> on <%v>",
 						task.Namespace, task.Name, node.Name, task.InitResreq, node.Releasing)
 					if err := stmt.Pipeline(task, node.Name); err != nil {
 						klog.Errorf("Failed to pipeline Task %v on %v in Session %v for %v.",
 							task.UID, node.Name, ssn.UID, err)
 					} else {
-						metrics.UpdateE2eSchedulingDurationByJob(job.Name, string(job.Queue), job.Namespace, metrics.Duration(job.CreationTimestamp.Time))
+						metrics.UpdateE2eSchedulingDurationByJob(job.Name, job.PodGroup.Spec.Queue, job.Namespace, metrics.Duration(job.CreationTimestamp.Time))
 					}
 				}
 			}

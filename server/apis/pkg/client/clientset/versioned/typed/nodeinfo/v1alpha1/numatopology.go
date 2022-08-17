@@ -32,7 +32,7 @@ import (
 // NumatopologiesGetter has a method to return a NumatopologyInterface.
 // A group's client should implement this interface.
 type NumatopologiesGetter interface {
-	Numatopologies() NumatopologyInterface
+	Numatopologies(namespace string) NumatopologyInterface
 }
 
 // NumatopologyInterface has methods to work with Numatopology resources.
@@ -51,12 +51,14 @@ type NumatopologyInterface interface {
 // numatopologies implements NumatopologyInterface
 type numatopologies struct {
 	client rest.Interface
+	ns     string
 }
 
 // newNumatopologies returns a Numatopologies
-func newNumatopologies(c *NodeinfoV1alpha1Client) *numatopologies {
+func newNumatopologies(c *NodeinfoV1alpha1Client, namespace string) *numatopologies {
 	return &numatopologies{
 		client: c.RESTClient(),
+		ns:     namespace,
 	}
 }
 
@@ -64,6 +66,7 @@ func newNumatopologies(c *NodeinfoV1alpha1Client) *numatopologies {
 func (c *numatopologies) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Numatopology, err error) {
 	result = &v1alpha1.Numatopology{}
 	err = c.client.Get().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
@@ -80,6 +83,7 @@ func (c *numatopologies) List(ctx context.Context, opts v1.ListOptions) (result 
 	}
 	result = &v1alpha1.NumatopologyList{}
 	err = c.client.Get().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -96,6 +100,7 @@ func (c *numatopologies) Watch(ctx context.Context, opts v1.ListOptions) (watch.
 	}
 	opts.Watch = true
 	return c.client.Get().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -106,6 +111,7 @@ func (c *numatopologies) Watch(ctx context.Context, opts v1.ListOptions) (watch.
 func (c *numatopologies) Create(ctx context.Context, numatopology *v1alpha1.Numatopology, opts v1.CreateOptions) (result *v1alpha1.Numatopology, err error) {
 	result = &v1alpha1.Numatopology{}
 	err = c.client.Post().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(numatopology).
@@ -118,6 +124,7 @@ func (c *numatopologies) Create(ctx context.Context, numatopology *v1alpha1.Numa
 func (c *numatopologies) Update(ctx context.Context, numatopology *v1alpha1.Numatopology, opts v1.UpdateOptions) (result *v1alpha1.Numatopology, err error) {
 	result = &v1alpha1.Numatopology{}
 	err = c.client.Put().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		Name(numatopology.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -130,6 +137,7 @@ func (c *numatopologies) Update(ctx context.Context, numatopology *v1alpha1.Numa
 // Delete takes name of the numatopology and deletes it. Returns an error if one occurs.
 func (c *numatopologies) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		Name(name).
 		Body(&opts).
@@ -144,6 +152,7 @@ func (c *numatopologies) DeleteCollection(ctx context.Context, opts v1.DeleteOpt
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
+		Namespace(c.ns).
 		Resource("numatopologies").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -156,6 +165,7 @@ func (c *numatopologies) DeleteCollection(ctx context.Context, opts v1.DeleteOpt
 func (c *numatopologies) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Numatopology, err error) {
 	result = &v1alpha1.Numatopology{}
 	err = c.client.Patch(pt).
+		Namespace(c.ns).
 		Resource("numatopologies").
 		Name(name).
 		SubResource(subresources...).

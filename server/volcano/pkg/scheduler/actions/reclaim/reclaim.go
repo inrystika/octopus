@@ -19,6 +19,7 @@ package reclaim
 import (
 	"k8s.io/klog"
 
+	"volcano.sh/apis/pkg/apis/scheduling"
 	"volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/framework"
 	"volcano.sh/volcano/pkg/scheduler/util"
@@ -50,10 +51,9 @@ func (ra *Action) Execute(ssn *framework.Session) {
 		len(ssn.Jobs), len(ssn.Queues))
 
 	for _, job := range ssn.Jobs {
-		if job.IsPending() {
+		if job.PodGroup.Status.Phase == scheduling.PodGroupPending {
 			continue
 		}
-
 		if vr := ssn.JobValid(job); vr != nil && !vr.Pass {
 			klog.V(4).Infof("Job <%s/%s> Queue <%s> skip reclaim, reason: %v, message %v", job.Namespace, job.Name, job.Queue, vr.Reason, vr.Message)
 			continue
@@ -111,17 +111,15 @@ func (ra *Action) Execute(ssn *framework.Session) {
 			task = tasks.Pop().(*api.TaskInfo)
 		}
 
-		if !ssn.Allocatable(queue, task) {
-			klog.V(3).Infof("Queue <%s> is overused when considering task <%s>, ignore it.", queue.Name, task.Name)
-			continue
-		}
-
 		assigned := false
 		for _, n := range ssn.Nodes {
 			// If predicates failed, next node.
 			if err := ssn.PredicateFn(task, n); err != nil {
 				continue
 			}
+
+			resreq := task.InitResreq.Clone()
+			reclaimed := api.EmptyResource()
 
 			klog.V(3).Infof("Considering Task <%s/%s> on Node <%s>.",
 				task.Namespace, task.Name, n.Name)
@@ -130,9 +128,6 @@ func (ra *Action) Execute(ssn *framework.Session) {
 			for _, task := range n.Tasks {
 				// Ignore non running task.
 				if task.Status != api.Running {
-					continue
-				}
-				if !task.Preemptable {
 					continue
 				}
 
@@ -154,9 +149,6 @@ func (ra *Action) Execute(ssn *framework.Session) {
 				continue
 			}
 
-			resreq := task.InitResreq.Clone()
-			reclaimed := api.EmptyResource()
-
 			// Reclaim victims for tasks.
 			for _, reclaimee := range victims {
 				klog.Errorf("Try to reclaim Task <%s/%s> for Tasks <%s/%s>",
@@ -168,7 +160,7 @@ func (ra *Action) Execute(ssn *framework.Session) {
 				}
 				reclaimed.Add(reclaimee.Resreq)
 				// If reclaimed enough resources, break loop to avoid Sub panic.
-				if resreq.LessEqual(reclaimed, api.Zero) {
+				if resreq.LessEqual(reclaimed) {
 					break
 				}
 			}
@@ -176,7 +168,7 @@ func (ra *Action) Execute(ssn *framework.Session) {
 			klog.V(3).Infof("Reclaimed <%v> for task <%s/%s> requested <%v>.",
 				reclaimed, task.Namespace, task.Name, task.InitResreq)
 
-			if task.InitResreq.LessEqual(reclaimed, api.Zero) {
+			if task.InitResreq.LessEqual(reclaimed) {
 				if err := ssn.Pipeline(task, n.Name); err != nil {
 					klog.Errorf("Failed to pipeline Task <%s/%s> on Node <%s>",
 						task.Namespace, task.Name, n.Name)

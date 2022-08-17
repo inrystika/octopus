@@ -36,7 +36,7 @@ func ClusterSize(ctx *TestContext, req v1.ResourceList) int32 {
 	Expect(err).NotTo(HaveOccurred(), "failed to list nodes")
 
 	pods, err := ctx.Kubeclient.CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
-	Expect(err).NotTo(HaveOccurred(), "failed to list pods")
+	Expect(err).NotTo(HaveOccurred(), "failed to list nodes")
 
 	used := map[string]*schedulerapi.Resource{}
 
@@ -76,7 +76,7 @@ func ClusterSize(ctx *TestContext, req v1.ResourceList) int32 {
 			alloc.Sub(res)
 		}
 
-		for slot.LessEqual(alloc, schedulerapi.Zero) {
+		for slot.LessEqual(alloc) {
 			alloc.Sub(slot)
 			res++
 		}
@@ -146,7 +146,7 @@ func ComputeNode(ctx *TestContext, req v1.ResourceList) (string, int32) {
 			alloc.Sub(res)
 		}
 
-		for slot.LessEqual(alloc, schedulerapi.Zero) {
+		for slot.LessEqual(alloc) {
 			alloc.Sub(slot)
 			res++
 		}

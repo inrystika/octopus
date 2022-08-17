@@ -17,7 +17,7 @@ limitations under the License.
 package api
 
 import (
-	k8sframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerapi "k8s.io/kube-scheduler/extender/v1"
 )
 
 // TaskStatus defines the status of a task/pod.
@@ -130,9 +130,6 @@ type ValidateExFn func(interface{}) *ValidateResult
 // VoteFn is the func declaration used to check object's complicated status.
 type VoteFn func(interface{}) int
 
-// JobEnqueuedFn is the func declaration used to call after job enqueued.
-type JobEnqueuedFn func(interface{})
-
 // PredicateFn is the func declaration used to predicate node for task.
 type PredicateFn func(*TaskInfo, *NodeInfo) error
 
@@ -140,7 +137,7 @@ type PredicateFn func(*TaskInfo, *NodeInfo) error
 type BestNodeFn func(*TaskInfo, map[float64][]*NodeInfo) *NodeInfo
 
 // EvictableFn is the func declaration used to evict tasks.
-type EvictableFn func(*TaskInfo, []*TaskInfo) ([]*TaskInfo, int)
+type EvictableFn func(*TaskInfo, []*TaskInfo) []*TaskInfo
 
 // NodeOrderFn is the func declaration used to get priority score for a node for a particular task.
 type NodeOrderFn func(*TaskInfo, *NodeInfo) (float64, error)
@@ -152,13 +149,13 @@ type BatchNodeOrderFn func(*TaskInfo, []*NodeInfo) (map[string]float64, error)
 type NodeMapFn func(*TaskInfo, *NodeInfo) (float64, error)
 
 // NodeReduceFn is the func declaration used to reduce priority score for a node for a particular task.
-type NodeReduceFn func(*TaskInfo, k8sframework.NodeScoreList) error
+type NodeReduceFn func(*TaskInfo, schedulerapi.HostPriorityList) error
 
 // NodeOrderMapFn is the func declaration used to get priority score of all plugins for a node for a particular task.
 type NodeOrderMapFn func(*TaskInfo, *NodeInfo) (map[string]float64, float64, error)
 
 // NodeOrderReduceFn is the func declaration used to reduce priority score of all nodes for a plugin for a particular task.
-type NodeOrderReduceFn func(*TaskInfo, map[string]k8sframework.NodeScoreList) (map[string]float64, error)
+type NodeOrderReduceFn func(*TaskInfo, map[string]schedulerapi.HostPriorityList) (map[string]float64, error)
 
 // TargetJobFn is the func declaration used to select the target job satisfies some conditions
 type TargetJobFn func([]*JobInfo) *JobInfo
@@ -167,7 +164,4 @@ type TargetJobFn func([]*JobInfo) *JobInfo
 type ReservedNodesFn func()
 
 // VictimTasksFn is the func declaration used to select victim tasks
-type VictimTasksFn func([]*TaskInfo) []*TaskInfo
-
-// AllocatableFn is the func declaration used to check whether the task can be allocated
-type AllocatableFn func(*QueueInfo, *TaskInfo) bool
+type VictimTasksFn func() []*TaskInfo

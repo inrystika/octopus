@@ -36,10 +36,3 @@ type PodGroup struct {
 	// Version represents the version of PodGroup
 	Version string
 }
-
-func (pg *PodGroup) Clone() *PodGroup {
-	return &PodGroup{
-		PodGroup: *pg.PodGroup.DeepCopy(),
-		Version:  pg.Version,
-	}
-}

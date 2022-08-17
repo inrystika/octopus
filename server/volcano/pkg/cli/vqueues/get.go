@@ -67,6 +67,7 @@ func InitGetFlags(cmd *cobra.Command) {
 	util.InitFlags(cmd, &getQueueFlags.CommonFlags)
 
 	cmd.Flags().StringVarP(&getQueueFlags.Name, "name", "n", "", "the name of queue")
+
 }
 
 // ListQueue lists all the queue.
@@ -106,6 +107,7 @@ func PrintQueues(queues *v1beta1.QueueList, writer io.Writer) {
 			fmt.Printf("Failed to print queue command result: %s.\n", err)
 		}
 	}
+
 }
 
 // GetQueue gets a queue.

@@ -5,7 +5,7 @@ set -e
 usage() {
     cat <<EOF
 Generate certificate suitable for use with an admission controller service.
-This script uses k8s' CertificateSigningRequest API to generate a
+This script uses k8s' CertificateSigningRequest API to a generate a
 certificate signed by k8s CA suitable for use with webhook
 services. This requires permissions to create and approve CSR. See
 https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster for
@@ -83,11 +83,11 @@ EOF
   openssl req -x509 -new -nodes -key ${CERTDIR}/ca.key -subj "/CN=${SERVICE}.${NAMESPACE}.svc" -days 3650 -out ${CERTDIR}/ca.crt
 
   openssl genrsa -out ${CERTDIR}/server.key 2048
-  openssl req -new -key ${CERTDIR}/server.key -subj "/CN=${SERVICE}.${NAMESPACE}.svc"  -out ${CERTDIR}/server.csr -config ${CERTDIR}/csr.conf
+  openssl req -new -key ${CERTDIR}/server.key -subj "/CN=${SERVICE}.${NAMESPACE}.svc" -days 3650 -out ${CERTDIR}/server.csr -config ${CERTDIR}/csr.conf
 
   openssl x509 -req -in  ${CERTDIR}/server.csr -CA  ${CERTDIR}/ca.crt -CAkey  ${CERTDIR}/ca.key \
   -CAcreateserial -out  ${CERTDIR}/server.crt \
-  -extensions v3_req -extfile  ${CERTDIR}/csr.conf -days 3650
+  -extensions v3_req -extfile  ${CERTDIR}/csr.conf
 }
 
 function createSecret() {

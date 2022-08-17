@@ -21,13 +21,12 @@ import (
 	"fmt"
 	"strconv"
 
-	admissionv1 "k8s.io/api/admission/v1"
-	whv1 "k8s.io/api/admissionregistration/v1"
+	"k8s.io/api/admission/v1beta1"
+	whv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
 	"volcano.sh/apis/pkg/apis/batch/v1alpha1"
-	controllerMpi "volcano.sh/volcano/pkg/controllers/job/plugins/distributed-framework/mpi"
 	"volcano.sh/volcano/pkg/webhooks/router"
 	"volcano.sh/volcano/pkg/webhooks/schema"
 	"volcano.sh/volcano/pkg/webhooks/util"
@@ -40,8 +39,6 @@ const (
 	DefaultMaxRetry = 3
 
 	defaultSchedulerName = "volcano"
-
-	defaultMaxRetry int32 = 3
 )
 
 func init() {
@@ -52,13 +49,13 @@ var service = &router.AdmissionService{
 	Path: "/jobs/mutate",
 	Func: Jobs,
 
-	MutatingConfig: &whv1.MutatingWebhookConfiguration{
-		Webhooks: []whv1.MutatingWebhook{{
+	MutatingConfig: &whv1beta1.MutatingWebhookConfiguration{
+		Webhooks: []whv1beta1.MutatingWebhook{{
 			Name: "mutatejob.volcano.sh",
-			Rules: []whv1.RuleWithOperations{
+			Rules: []whv1beta1.RuleWithOperations{
 				{
-					Operations: []whv1.OperationType{whv1.Create},
-					Rule: whv1.Rule{
+					Operations: []whv1beta1.OperationType{whv1beta1.Create},
+					Rule: whv1beta1.Rule{
 						APIGroups:   []string{"batch.volcano.sh"},
 						APIVersions: []string{"v1alpha1"},
 						Resources:   []string{"jobs"},
@@ -75,8 +72,8 @@ type patchOperation struct {
 	Value interface{} `json:"value,omitempty"`
 }
 
-// Jobs mutate jobs.
-func Jobs(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
+// MutateJobs mutate jobs.
+func Jobs(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	klog.V(3).Infof("mutating jobs")
 
 	job, err := schema.DecodeJob(ar.Request.Object, ar.Request.Resource)
@@ -86,22 +83,21 @@ func Jobs(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 
 	var patchBytes []byte
 	switch ar.Request.Operation {
-	case admissionv1.Create:
+	case v1beta1.Create:
 		patchBytes, _ = createPatch(job)
+		break
 	default:
 		err = fmt.Errorf("expect operation to be 'CREATE' ")
 		return util.ToAdmissionResponse(err)
 	}
 
 	klog.V(3).Infof("AdmissionResponse: patch=%v", string(patchBytes))
-	reviewResponse := admissionv1.AdmissionResponse{
+	reviewResponse := v1beta1.AdmissionResponse{
 		Allowed: true,
 		Patch:   patchBytes,
 	}
-	if len(patchBytes) > 0 {
-		pt := admissionv1.PatchTypeJSONPatch
-		reviewResponse.PatchType = &pt
-	}
+	pt := v1beta1.PatchTypeJSONPatch
+	reviewResponse.PatchType = &pt
 
 	return &reviewResponse
 }
@@ -120,18 +116,13 @@ func createPatch(job *v1alpha1.Job) ([]byte, error) {
 	if pathMaxRetry != nil {
 		patch = append(patch, *pathMaxRetry)
 	}
-	pathSpec := mutateSpec(job.Spec.Tasks, "/spec/tasks", job)
+	pathSpec := mutateSpec(job.Spec.Tasks, "/spec/tasks")
 	if pathSpec != nil {
 		patch = append(patch, *pathSpec)
 	}
 	pathMinAvailable := patchDefaultMinAvailable(job)
 	if pathMinAvailable != nil {
 		patch = append(patch, *pathMinAvailable)
-	}
-	// Add default plugins for some distributed-framework plugin cases
-	patchPlugins := patchDefaultPlugins(job)
-	if patchPlugins != nil {
-		patch = append(patch, *patchPlugins)
 	}
 	return json.Marshal(patch)
 }
@@ -177,11 +168,7 @@ func patchDefaultMinAvailable(job *v1alpha1.Job) *patchOperation {
 	return nil
 }
 
-func mutateSpec(tasks []v1alpha1.TaskSpec, basePath string, job *v1alpha1.Job) *patchOperation {
-	// TODO: Enable this configuration when dependOn supports coexistence with the gang plugin
-	// if _, ok := job.Spec.Plugins[controllerMpi.MpiPluginName]; ok {
-	// 	mpi.AddDependsOn(job)
-	// }
+func mutateSpec(tasks []v1alpha1.TaskSpec, basePath string) *patchOperation {
 	patched := false
 	for index := range tasks {
 		// add default task name
@@ -201,11 +188,6 @@ func mutateSpec(tasks []v1alpha1.TaskSpec, basePath string, job *v1alpha1.Job) *
 			minAvailable := tasks[index].Replicas
 			tasks[index].MinAvailable = &minAvailable
 		}
-
-		if tasks[index].MaxRetry == 0 {
-			patched = true
-			tasks[index].MaxRetry = defaultMaxRetry
-		}
 	}
 	if !patched {
 		return nil
@@ -214,37 +196,5 @@ func mutateSpec(tasks []v1alpha1.TaskSpec, basePath string, job *v1alpha1.Job) *
 		Op:    "replace",
 		Path:  basePath,
 		Value: tasks,
-	}
-}
-
-func patchDefaultPlugins(job *v1alpha1.Job) *patchOperation {
-	if job.Spec.Plugins == nil {
-		return nil
-	}
-	plugins := map[string][]string{}
-	for k, v := range job.Spec.Plugins {
-		plugins[k] = v
-	}
-
-	// Because the tensorflow-plugin and mpi-plugin depends on svc-plugin.
-	// If the svc-plugin is not defined, we should add it.
-	_, hasTf := job.Spec.Plugins["tensorflow"]
-	_, hasMPI := job.Spec.Plugins[controllerMpi.PluginName]
-	if hasTf || hasMPI {
-		if _, ok := plugins["svc"]; !ok {
-			plugins["svc"] = []string{}
-		}
-	}
-
-	if _, ok := job.Spec.Plugins["mpi"]; ok {
-		if _, ok := plugins["ssh"]; !ok {
-			plugins["ssh"] = []string{}
-		}
-	}
-
-	return &patchOperation{
-		Op:    "replace",
-		Path:  "/spec/plugins",
-		Value: plugins,
 	}
 }

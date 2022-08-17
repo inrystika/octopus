@@ -23,31 +23,23 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/record"
 	"k8s.io/klog"
+	volumescheduling "k8s.io/kubernetes/pkg/controller/volume/scheduling"
+
 	"volcano.sh/apis/pkg/apis/scheduling"
-	schedulingscheme "volcano.sh/apis/pkg/apis/scheduling/scheme"
-	vcv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 	"volcano.sh/volcano/pkg/scheduler/api"
-	schedulingapi "volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/cache"
 	"volcano.sh/volcano/pkg/scheduler/conf"
 	"volcano.sh/volcano/pkg/scheduler/metrics"
-	"volcano.sh/volcano/pkg/scheduler/util"
 )
 
 // Session information for the current session
 type Session struct {
 	UID types.UID
 
-	kubeClient      kubernetes.Interface
-	recorder        record.EventRecorder
-	cache           cache.Cache
-	informerFactory informers.SharedInformerFactory
-
-	TotalResource *api.Resource
+	kubeClient kubernetes.Interface
+	cache      cache.Cache
 	// podGroupStatus cache podgroup status during schedule
 	// This should not be mutated after initiated
 	podGroupStatus map[api.JobID]scheduling.PodGroupStatus
@@ -60,7 +52,6 @@ type Session struct {
 
 	Tiers          []conf.Tier
 	Configurations []conf.Configuration
-	NodeList       []*api.NodeInfo
 
 	plugins           map[string]Plugin
 	eventHandlers     []*EventHandler
@@ -68,7 +59,6 @@ type Session struct {
 	queueOrderFns     map[string]api.CompareFn
 	taskOrderFns      map[string]api.CompareFn
 	namespaceOrderFns map[string]api.CompareFn
-	clusterOrderFns   map[string]api.CompareFn
 	predicateFns      map[string]api.PredicateFn
 	bestNodeFns       map[string]api.BestNodeFn
 	nodeOrderFns      map[string]api.NodeOrderFn
@@ -78,27 +68,22 @@ type Session struct {
 	preemptableFns    map[string]api.EvictableFn
 	reclaimableFns    map[string]api.EvictableFn
 	overusedFns       map[string]api.ValidateFn
-	allocatableFns    map[string]api.AllocatableFn
 	jobReadyFns       map[string]api.ValidateFn
 	jobPipelinedFns   map[string]api.VoteFn
 	jobValidFns       map[string]api.ValidateExFn
 	jobEnqueueableFns map[string]api.VoteFn
-	jobEnqueuedFns    map[string]api.JobEnqueuedFn
 	targetJobFns      map[string]api.TargetJobFn
 	reservedNodesFns  map[string]api.ReservedNodesFn
-	victimTasksFns    map[string][]api.VictimTasksFn
+	victimTasksFns    map[string]api.VictimTasksFn
 	jobStarvingFns    map[string]api.ValidateFn
 }
 
 func openSession(cache cache.Cache) *Session {
 	ssn := &Session{
-		UID:             uuid.NewUUID(),
-		kubeClient:      cache.Client(),
-		recorder:        cache.EventRecorder(),
-		cache:           cache,
-		informerFactory: cache.SharedInformerFactory(),
+		UID:        uuid.NewUUID(),
+		kubeClient: cache.Client(),
+		cache:      cache,
 
-		TotalResource:  api.EmptyResource(),
 		podGroupStatus: map[api.JobID]scheduling.PodGroupStatus{},
 
 		Jobs:           map[api.JobID]*api.JobInfo{},
@@ -111,7 +96,6 @@ func openSession(cache cache.Cache) *Session {
 		queueOrderFns:     map[string]api.CompareFn{},
 		taskOrderFns:      map[string]api.CompareFn{},
 		namespaceOrderFns: map[string]api.CompareFn{},
-		clusterOrderFns:   map[string]api.CompareFn{},
 		predicateFns:      map[string]api.PredicateFn{},
 		bestNodeFns:       map[string]api.BestNodeFn{},
 		nodeOrderFns:      map[string]api.NodeOrderFn{},
@@ -121,15 +105,13 @@ func openSession(cache cache.Cache) *Session {
 		preemptableFns:    map[string]api.EvictableFn{},
 		reclaimableFns:    map[string]api.EvictableFn{},
 		overusedFns:       map[string]api.ValidateFn{},
-		allocatableFns:    map[string]api.AllocatableFn{},
 		jobReadyFns:       map[string]api.ValidateFn{},
 		jobPipelinedFns:   map[string]api.VoteFn{},
 		jobValidFns:       map[string]api.ValidateExFn{},
 		jobEnqueueableFns: map[string]api.VoteFn{},
-		jobEnqueuedFns:    map[string]api.JobEnqueuedFn{},
 		targetJobFns:      map[string]api.TargetJobFn{},
 		reservedNodesFns:  map[string]api.ReservedNodesFn{},
-		victimTasksFns:    map[string][]api.VictimTasksFn{},
+		victimTasksFns:    map[string]api.VictimTasksFn{},
 		jobStarvingFns:    map[string]api.ValidateFn{},
 	}
 
@@ -139,7 +121,7 @@ func openSession(cache cache.Cache) *Session {
 	for _, job := range ssn.Jobs {
 		// only conditions will be updated periodically
 		if job.PodGroup != nil && job.PodGroup.Status.Conditions != nil {
-			ssn.podGroupStatus[job.UID] = *job.PodGroup.Status.DeepCopy()
+			ssn.podGroupStatus[job.UID] = job.PodGroup.Status
 		}
 
 		if vjr := ssn.JobValid(job); vjr != nil {
@@ -161,16 +143,11 @@ func openSession(cache cache.Cache) *Session {
 			delete(ssn.Jobs, job.UID)
 		}
 	}
-	ssn.NodeList = util.GetNodeList(snapshot.Nodes, snapshot.NodeList)
+
 	ssn.Nodes = snapshot.Nodes
 	ssn.RevocableNodes = snapshot.RevocableNodes
 	ssn.Queues = snapshot.Queues
 	ssn.NamespaceInfo = snapshot.NamespaceInfo
-	// calculate all nodes' resource only once in each schedule cycle, other plugins can clone it when need
-	for _, n := range ssn.Nodes {
-		ssn.TotalResource.Add(n.Allocatable)
-	}
-
 	klog.V(3).Infof("Open Session %v with <%d> Job and <%d> Queues",
 		ssn.UID, len(ssn.Jobs), len(ssn.Queues))
 
@@ -189,9 +166,6 @@ func closeSession(ssn *Session) {
 	ssn.jobOrderFns = nil
 	ssn.namespaceOrderFns = nil
 	ssn.queueOrderFns = nil
-	ssn.clusterOrderFns = nil
-	ssn.NodeList = nil
-	ssn.TotalResource = nil
 
 	klog.V(3).Infof("Close Session %v", ssn.UID)
 }
@@ -204,6 +178,7 @@ func jobStatus(ssn *Session, jobInfo *api.JobInfo) scheduling.PodGroupStatus {
 		if c.Type == scheduling.PodGroupUnschedulableType &&
 			c.Status == v1.ConditionTrue &&
 			c.TransitionID == string(ssn.UID) {
+
 			unschedulable = true
 			break
 		}
@@ -253,7 +228,7 @@ func (ssn *Session) Pipeline(task *api.TaskInfo, hostname string) error {
 			return err
 		}
 	} else {
-		klog.Errorf("Failed to find Job <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Job <%s> in Session <%s> index when binding.",
 			task.Job, ssn.UID)
 		return fmt.Errorf("failed to find job %s when binding", task.Job)
 	}
@@ -269,7 +244,7 @@ func (ssn *Session) Pipeline(task *api.TaskInfo, hostname string) error {
 		klog.V(3).Infof("After added Task <%v/%v> to Node <%v>: idle <%v>, used <%v>, releasing <%v>",
 			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing)
 	} else {
-		klog.Errorf("Failed to find Node <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Node <%s> in Session <%s> index when binding.",
 			hostname, ssn.UID)
 		return fmt.Errorf("failed to find node %s", hostname)
 	}
@@ -286,7 +261,7 @@ func (ssn *Session) Pipeline(task *api.TaskInfo, hostname string) error {
 }
 
 //Allocate the task to the node in the session
-func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) (err error) {
+func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) error {
 	podVolumes, err := ssn.cache.GetPodVolumes(task, nodeInfo.Node)
 	if err != nil {
 		return err
@@ -296,11 +271,6 @@ func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) (err er
 	if err := ssn.cache.AllocateVolumes(task, hostname, podVolumes); err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			ssn.cache.RevertVolumes(task, podVolumes)
-		}
-	}()
 
 	task.Pod.Spec.NodeName = hostname
 	task.PodVolumes = podVolumes
@@ -314,7 +284,7 @@ func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) (err er
 			return err
 		}
 	} else {
-		klog.Errorf("Failed to find Job <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Job <%s> in Session <%s> index when binding.",
 			task.Job, ssn.UID)
 		return fmt.Errorf("failed to find job %s", task.Job)
 	}
@@ -330,7 +300,7 @@ func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) (err er
 		klog.V(3).Infof("After allocated Task <%v/%v> to Node <%v>: idle <%v>, used <%v>, releasing <%v>",
 			task.Namespace, task.Name, node.Name, node.Idle, node.Used, node.Releasing)
 	} else {
-		klog.Errorf("Failed to find Node <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Node <%s> in Session <%s> index when binding.",
 			hostname, ssn.UID)
 		return fmt.Errorf("failed to find node %s", hostname)
 	}
@@ -346,21 +316,23 @@ func (ssn *Session) Allocate(task *api.TaskInfo, nodeInfo *api.NodeInfo) (err er
 
 	if ssn.JobReady(job) {
 		for _, task := range job.TaskStatusIndex[api.Allocated] {
-			if err := ssn.dispatch(task); err != nil {
+			if err := ssn.dispatch(task, podVolumes); err != nil {
 				klog.Errorf("Failed to dispatch task <%v/%v>: %v",
 					task.Namespace, task.Name, err)
 				return err
 			}
 		}
-	} else {
-		ssn.cache.RevertVolumes(task, podVolumes)
 	}
 
 	return nil
 }
 
-func (ssn *Session) dispatch(task *api.TaskInfo) error {
-	if err := ssn.cache.AddBindTask(task); err != nil {
+func (ssn *Session) dispatch(task *api.TaskInfo, volumes *volumescheduling.PodVolumes) error {
+	if err := ssn.cache.BindVolumes(task, volumes); err != nil {
+		return err
+	}
+
+	if err := ssn.cache.Bind(task, task.NodeName); err != nil {
 		return err
 	}
 
@@ -372,7 +344,7 @@ func (ssn *Session) dispatch(task *api.TaskInfo) error {
 			return err
 		}
 	} else {
-		klog.Errorf("Failed to find Job <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Job <%s> in Session <%s> index when binding.",
 			task.Job, ssn.UID)
 		return fmt.Errorf("failed to find job %s", task.Job)
 	}
@@ -396,7 +368,7 @@ func (ssn *Session) Evict(reclaimee *api.TaskInfo, reason string) error {
 			return err
 		}
 	} else {
-		klog.Errorf("Failed to find Job <%s> in Session <%s> index when binding.",
+		klog.Errorf("Failed to found Job <%s> in Session <%s> index when binding.",
 			reclaimee.Job, ssn.UID)
 		return fmt.Errorf("failed to find job %s", reclaimee.Job)
 	}
@@ -419,11 +391,6 @@ func (ssn *Session) Evict(reclaimee *api.TaskInfo, reason string) error {
 	}
 
 	return nil
-}
-
-// BindPodGroup bind PodGroup to specified cluster
-func (ssn *Session) BindPodGroup(job *api.JobInfo, cluster string) error {
-	return ssn.cache.BindPodGroup(job, cluster)
 }
 
 // UpdatePodGroupCondition update job condition accordingly.
@@ -456,33 +423,9 @@ func (ssn *Session) AddEventHandler(eh *EventHandler) {
 	ssn.eventHandlers = append(ssn.eventHandlers, eh)
 }
 
-// UpdateSchedulerNumaInfo update SchedulerNumaInfo
-func (ssn *Session) UpdateSchedulerNumaInfo(AllocatedSets map[string]api.ResNumaSets) {
-	ssn.cache.UpdateSchedulerNumaInfo(AllocatedSets)
-}
-
 // KubeClient returns the kubernetes client
 func (ssn Session) KubeClient() kubernetes.Interface {
 	return ssn.kubeClient
-}
-
-// InformerFactory returns the scheduler ShareInformerFactory
-func (ssn Session) InformerFactory() informers.SharedInformerFactory {
-	return ssn.informerFactory
-}
-
-// RecordPodGroupEvent records podGroup events
-func (ssn Session) RecordPodGroupEvent(podGroup *schedulingapi.PodGroup, eventType, reason, msg string) {
-	if podGroup == nil {
-		return
-	}
-
-	pg := &vcv1beta1.PodGroup{}
-	if err := schedulingscheme.Scheme.Convert(&podGroup.PodGroup, pg, nil); err != nil {
-		klog.Errorf("Error while converting PodGroup to v1alpha1.PodGroup with error: %v", err)
-		return
-	}
-	ssn.recorder.Eventf(pg, eventType, reason, msg)
 }
 
 //String return nodes and jobs information in the session
@@ -498,4 +441,5 @@ func (ssn Session) String() string {
 	}
 
 	return msg
+
 }

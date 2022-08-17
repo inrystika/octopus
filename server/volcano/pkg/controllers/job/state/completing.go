@@ -38,5 +38,6 @@ func (ps *completingState) Execute(action v1alpha1.Action) error {
 		status.State.Phase = vcbatch.Completed
 		status.FinishAt = &metav1.Time{Time: time.Now()}
 		return true
+
 	})
 }

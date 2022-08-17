@@ -17,7 +17,7 @@ limitations under the License.
 package schedulingaction
 
 import (
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	v1 "k8s.io/api/core/v1"
@@ -109,8 +109,8 @@ var _ = Describe("Predicates E2E Test", func() {
 		context := e2eutil.InitTestContext(e2eutil.Options{})
 		defer e2eutil.CleanupTestContext(context)
 
-		slot := e2eutil.HalfCPU
-		_, rep := e2eutil.ComputeNode(context, e2eutil.HalfCPU)
+		slot := e2eutil.OneCPU
+		_, rep := e2eutil.ComputeNode(context, e2eutil.OneCPU)
 		Expect(rep).NotTo(Equal(0))
 
 		labels := map[string]string{"foo": "bar"}
@@ -134,8 +134,8 @@ var _ = Describe("Predicates E2E Test", func() {
 				{
 					Img:      e2eutil.DefaultNginxImage,
 					Req:      slot,
-					Min:      rep / 2,
-					Rep:      rep / 2,
+					Min:      rep,
+					Rep:      rep,
 					Affinity: affinity,
 					Labels:   labels,
 				},
@@ -143,7 +143,7 @@ var _ = Describe("Predicates E2E Test", func() {
 		}
 
 		job := e2eutil.CreateJob(context, spec)
-		err := e2eutil.WaitTasksReady(context, job, int(rep/2))
+		err := e2eutil.WaitTasksReady(context, job, int(rep))
 		Expect(err).NotTo(HaveOccurred())
 
 		pods := e2eutil.GetTasksOfJob(context, job)

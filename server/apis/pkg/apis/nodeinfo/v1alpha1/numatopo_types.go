@@ -69,9 +69,8 @@ type NumatopoSpec struct {
 }
 
 // +genclient
-// +genclient:nonNamespaced
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:shortName=numatopo,scope=Cluster
+// +kubebuilder:resource:shortName=numatopo
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Numatopology is the Schema for the Numatopologies API

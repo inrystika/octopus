@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog"
-	k8sFramework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/framework"
@@ -38,6 +38,7 @@ const (
 	revocableZoneLayout      = "15:04"
 	revocableZoneLabelPrefix = "tdm.revocable-zone."
 	evictPeriodLabel         = "tdm.evict.period"
+	evictMaxStepLabel        = "tdm.evict.max-step"
 	defaultPodEvictNum       = 1
 )
 
@@ -68,12 +69,12 @@ func New(args framework.Arguments) framework.Plugin {
 
 	for k, v := range args {
 		if strings.Contains(k, revocableZoneLabelPrefix) {
-			revocableZone[strings.Replace(k, revocableZoneLabelPrefix, "", 1)] = v.(string)
+			revocableZone[strings.Replace(k, revocableZoneLabelPrefix, "", 1)] = v
 		}
 	}
 
 	if period, ok := args[evictPeriodLabel]; ok {
-		if d, err := time.ParseDuration(period.(string)); err == nil {
+		if d, err := time.ParseDuration(period); err == nil {
 			evictPeriod = d
 		}
 	}
@@ -183,17 +184,17 @@ func (tp *tdmPlugin) OnSessionOpen(ssn *framework.Session) {
 			return score, nil
 		}
 
-		score = float64(k8sFramework.MaxNodeScore)
+		score = float64(v1alpha1.MaxNodeScore)
 
 		klog.V(4).Infof("TDM score for Task %s/%s on node %s is: %v", task.Namespace, task.Name, node.Name, score)
 		return score, nil
 	}
 
-	preemptableFn := func(preemptor *api.TaskInfo, preemptees []*api.TaskInfo) ([]*api.TaskInfo, int) {
+	preemptableFn := func(preemptor *api.TaskInfo, preemptees []*api.TaskInfo) []*api.TaskInfo {
 		// for the preemptable or can use revocablezone workload, they can not preempt other tasks.
 		if preemptor.Preemptable || len(preemptor.RevocableZone) > 0 {
 			klog.V(4).Infof("TDM task %s/%s is preemptable, do nothing skip", preemptor.Namespace, preemptor.Name)
-			return nil, tutil.Reject
+			return nil
 		}
 
 		var victims []*api.TaskInfo
@@ -225,10 +226,10 @@ func (tp *tdmPlugin) OnSessionOpen(ssn *framework.Session) {
 
 		klog.V(4).Infof("TDM victims are %+v", victims)
 
-		return victims, tutil.Permit
+		return victims
 	}
 
-	victimsFn := func([]*api.TaskInfo) []*api.TaskInfo {
+	victimsFn := func() []*api.TaskInfo {
 		if lastEvictAt.Add(tp.evictPeriod).After(time.Now()) {
 			klog.V(4).Infof("TDM next evict time at %v", lastEvictAt)
 			return nil
@@ -291,12 +292,10 @@ func (tp *tdmPlugin) OnSessionOpen(ssn *framework.Session) {
 		return len(jobInfo.TaskStatusIndex[api.Pending]) > 0
 	}
 
-	victimsFns := make([]api.VictimTasksFn, 0)
-	victimsFns = append(victimsFns, victimsFn)
 	ssn.AddPredicateFn(tp.Name(), predicateFn)
 	ssn.AddNodeOrderFn(tp.Name(), nodeOrderFn)
 	ssn.AddPreemptableFn(tp.Name(), preemptableFn)
-	ssn.AddVictimTasksFns(tp.Name(), victimsFns)
+	ssn.AddVictimTasksFns(tp.Name(), victimsFn)
 	ssn.AddJobOrderFn(tp.Name(), jobOrderFn)
 	ssn.AddJobPipelinedFn(tp.Name(), jobPipelinedFn)
 	ssn.AddJobStarvingFns(tp.Name(), jobStarvingFn)

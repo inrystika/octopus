@@ -18,11 +18,10 @@ package tasktopology
 
 import (
 	"fmt"
+	"k8s.io/klog"
+	"k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"strings"
 	"time"
-
-	"k8s.io/klog"
-	k8sFramework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"volcano.sh/volcano/pkg/scheduler/api"
 	"volcano.sh/volcano/pkg/scheduler/framework"
@@ -135,7 +134,7 @@ func (p *taskTopologyPlugin) TaskOrderFn(l interface{}, r interface{}) int {
 func (p *taskTopologyPlugin) calcBucketScore(task *api.TaskInfo, node *api.NodeInfo) (int, *JobManager, error) {
 	// task could never fits the node
 	maxResource := node.Idle.Clone().Add(node.Releasing)
-	if req := task.Resreq; req != nil && maxResource.LessPartly(req, api.Zero) {
+	if req := task.Resreq; req != nil && maxResource.Less(req) {
 		return 0, nil, nil
 	}
 
@@ -166,7 +165,7 @@ func (p *taskTopologyPlugin) calcBucketScore(task *api.TaskInfo, node *api.NodeI
 
 	// 3. the other tasks in bucket take into considering
 	score += len(bucket.tasks)
-	if bucket.request == nil || bucket.request.LessEqual(maxResource, api.Zero) {
+	if bucket.request == nil || bucket.request.LessEqual(maxResource) {
 		return score, jobManager, nil
 	}
 
@@ -179,7 +178,7 @@ func (p *taskTopologyPlugin) calcBucketScore(task *api.TaskInfo, node *api.NodeI
 		}
 		remains.Sub(bucketTask.Resreq)
 		score--
-		if remains.LessEqual(maxResource, api.Zero) {
+		if remains.LessEqual(maxResource) {
 			break
 		}
 	}
@@ -194,7 +193,7 @@ func (p *taskTopologyPlugin) NodeOrderFn(task *api.TaskInfo, node *api.NodeInfo)
 	}
 	fScore := float64(score * p.weight)
 	if jobManager != nil && jobManager.bucketMaxSize != 0 {
-		fScore = fScore * float64(k8sFramework.MaxNodeScore) / float64(jobManager.bucketMaxSize)
+		fScore = fScore * float64(v1alpha1.MaxNodeScore) / float64(jobManager.bucketMaxSize)
 	}
 	klog.V(4).Infof("task %s/%s at node %s has bucket score %d, score %f",
 		task.Namespace, task.Name, node.Name, score, fScore)

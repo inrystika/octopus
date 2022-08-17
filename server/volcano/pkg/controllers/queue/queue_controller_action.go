@@ -21,14 +21,15 @@ import (
 	"fmt"
 	"reflect"
 
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog"
-
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 	"volcano.sh/volcano/pkg/controllers/queue/state"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
+
+	"k8s.io/klog"
 )
 
 func (c *queuecontroller) syncQueue(queue *schedulingv1beta1.Queue, updateStateFn state.UpdateQueueStatusFn) error {
@@ -94,7 +95,8 @@ func (c *queuecontroller) openQueue(queue *schedulingv1beta1.Queue, updateStateF
 			return err
 		}
 
-		c.recorder.Event(newQueue, v1.EventTypeNormal, string(v1alpha1.OpenQueueAction), "Open queue succeed")
+		c.recorder.Event(newQueue, v1.EventTypeNormal, string(v1alpha1.OpenQueueAction),
+			fmt.Sprintf("Open queue succeed"))
 	} else {
 		return nil
 	}
@@ -136,7 +138,8 @@ func (c *queuecontroller) closeQueue(queue *schedulingv1beta1.Queue, updateState
 			return err
 		}
 
-		c.recorder.Event(newQueue, v1.EventTypeNormal, string(v1alpha1.CloseQueueAction), "Close queue succeed")
+		c.recorder.Event(newQueue, v1.EventTypeNormal, string(v1alpha1.CloseQueueAction),
+			fmt.Sprintf("Close queue succeed"))
 	} else {
 		return nil
 	}

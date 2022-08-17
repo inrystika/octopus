@@ -1,6 +1,6 @@
 # Volcano Roadmap
 
-## v1.0(Released on July 8, 2020)
+## v1.0 (Planned on June 30)
 
 The major target of this release to make Volcano more stable for product.
 
@@ -28,8 +28,8 @@ Investigate to cooperate with argo to support job dependencies.
 
 [MindSpore](https://www.mindspore.cn/) is a deep learning training and inference framework, support running MindSpore training with volcano job.
 
-## v1.2(Released on Feb 27, 2021)
-### Queue Resource Reservation(Delay)
+## v1.2(Planned on Oct 23,2020)
+### Queue Resource Reservation
 * Description: Support reserve specified resource for queue without restart Volcano.
 * Priority: High
 * Issue: https://github.com/volcano-sh/volcano/issues/1101
@@ -47,7 +47,7 @@ Investigate to cooperate with argo to support job dependencies.
 * Issue: https://github.com/volcano-sh/volcano/issues/1035
 * Owner: @sresthas
 
-### Support Hierarchy Queue(Delay)
+### Support Hierarchy Queue
 * Description: Support Hierarchy Queue algorithm.
 * Priority: High
 * Issue: https://github.com/volcano-sh/volcano/issues/1033
@@ -59,7 +59,7 @@ Investigate to cooperate with argo to support job dependencies.
 * Issue: https://github.com/volcano-sh/volcano/issues/1097
 * Owner: @merryzhou
 
-### Status Message Enhanced For CRD(Delay)
+### Status Message Enhanced For CRD
 * Description: Provide more status detail for CRD status when use CLI such job fail reason.
 * Priority: Middle
 * Issue: https://github.com/volcano-sh/volcano/issues/1094
@@ -71,7 +71,7 @@ Investigate to cooperate with argo to support job dependencies.
 * Issue: https://github.com/volcano-sh/volcano/issues/988
 * Owner: @shinytang6
 
-## v1.3(Released on May 27, 2021)
+## v1.3(Planned on March 12, 2021)
 ### Task-Topology
 * Description: Support task topology scheduling
 * Priority: High
@@ -95,91 +95,20 @@ Investigate to cooperate with argo to support job dependencies.
 * Issue: https://github.com/volcano-sh/devices/issues/12
 * Owner: @peiniliu
 
-## v1.4(Released on Sep 18, 2021)
-### Support NUMA-Awareness scheduling in Volcano
-* Description: Support NUMA-Awareness scheduling in Volcano.
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1707
-* Owner: @huone1 @william-wang
+### Queue Resource Reservation
+* Description: Support reserve specified resource for queue without restart Volcano.
+* Priority: Medium
+* Issue: https://github.com/volcano-sh/volcano/issues/1101
+* Owner: @Thor-wl @hudson741
 
-### Support multi-scheduler by admission controller
-* Description: Use default scheduler for system daemon and Volcano scheduler for biz workload.
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1322
-* Owner: @huone1 @william-wang
-
-### Support scheduling with proportion of resources
-* Description: Add scheduling policy with proportion of resources.
-* Priority: Middle
-* Issue: https://github.com/volcano-sh/volcano/issues/1368
-* Owner: @king-jingxiang
-
-### Enhance the resource comparison functions for various of scenarios
-* Description: Improve the Fundamental comparison functions
-* Priority: Middle
-* Issue: https://github.com/volcano-sh/volcano/issues/1525
-* Owner: @Thor-wl
-
-### System Stability Enhancement
-* Description: Add UT/E2E to cover more scenarios and add basic stress test.
-* Priority: Middle
-* Issue: https://github.com/volcano-sh/volcano/issues/1284
-* Owner: @rudeigerc
-
-## v1.5(Released on Feb 20, 2022)
-### Support Hierarchy Queue(Delay)
+## v1.4 and later (To be updated)
+### Support Hierarchy Queue
 * Description: Support Hierarchy Queue algorithm.
-* Priority: High
 * Issue: https://github.com/volcano-sh/volcano/issues/1033
-* Owner: @Thor-wl
 
-### Support Volcano scheduler in Spark community(Delay)
-* Description: Support Volcano scheduler in Spark community.
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1704
-* Owner: @william-wang @Yikun
-
-### Monitoring: Cluster Resource(Delay)
-* Description: Support monitoring metrics at cluster level
-* Priority: Middle
-* Issue: https://github.com/volcano-sh/volcano/issues/1586
-* Owner: @yanglilangqun @Tammy-kunyu
-
-### Task Dag scheduling
-* Description: Support Dag for task level
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1627
-* Owner: @hwdef @shinytang6 @Thor-wl
-
-### Support configuration hot update(Delay)
+### Support configuration hot update
 * Description: Add hot update for Volcano components arguments.
 * Issue: https://github.com/volcano-sh/volcano/issues/1326
-
-## v1.6(To Be Released around May 15, 2022)
-### Support Dynamic Scheduling Based on Realtime Load
-* Description: Support dynamic scheduling based on realtime load.
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1777
-* Owner: @william-wang
-
-### Support Rescheduling Based on Realtime Load
-* Description: Support rescheduling based on realtime load.
-* Priority: High
-* Issue: https://github.com/volcano-sh/volcano/issues/1777
-* Owner: @Thor-wl
-
-### Support Elastic Scheduling
-* Description: Support elastic scheduling for workloads.
-* Priority: High
-* Issue: TO BE ADDED
-* Owner: @qiankunli @Thor-wl
-
-## Later (To be updated)
-### Monitoring: 
-* Description: Support monitoring metrics at queue and job level
-* Priority: Middle
-* Issue: https://github.com/volcano-sh/volcano/issues/1586
-* Owner: @yanglilangqun @Tammy-kunyu
 
 ### Improve resource calculation accuracy
 * Description: Support high accurate resource calculation.
@@ -190,3 +119,9 @@ Investigate to cooperate with argo to support job dependencies.
 
 ### Improve the Autoscaling enficiency
 * Description: Combine the Autoscaler and scheduler to improve the scaling efficiency.
+
+### Add fine-grained monitor metrics
+* Description: Enhance monitor to add more metrics for jobs, queues, etc.
+
+### Add stress test
+* Description: Add the stress test.

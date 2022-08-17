@@ -263,7 +263,7 @@ func Test_TDM(t *testing.T) {
 							Name:             PluginName,
 							EnabledNodeOrder: &trueValue,
 							EnabledPredicate: &trueValue,
-							Arguments: map[string]interface{}{
+							Arguments: map[string]string{
 								"tdm.revocable-zone.rz1": "0:00-0:00",
 								"tdm.revocable-zone.rz2": "0:00-0:01",
 							},
@@ -714,10 +714,9 @@ func Test_TDM_victimsFn(t *testing.T) {
 
 			defer framework.CloseSession(ssn)
 
-			d, _ := time.ParseDuration(test.args[evictPeriodLabel].(string))
+			d, _ := time.ParseDuration(test.args[evictPeriodLabel])
 			time.Sleep(d)
-			tasks := make([]*api.TaskInfo, 0)
-			res := ssn.VictimTasks(tasks)
+			res := ssn.VictimTasks()
 			if len(res) != test.want {
 				t.Errorf("want %v, got %v", test.want, len(res))
 				return

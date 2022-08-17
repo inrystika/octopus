@@ -29,7 +29,6 @@ import (
 	"volcano.sh/volcano/pkg/scheduler/api/helpers"
 	"volcano.sh/volcano/pkg/scheduler/framework"
 	"volcano.sh/volcano/pkg/scheduler/metrics"
-	"volcano.sh/volcano/pkg/scheduler/plugins/util"
 )
 
 // PluginName indicates name of volcano scheduler plugin.
@@ -70,6 +69,7 @@ func (node *hierarchicalNode) Clone(parent *hierarchicalNode) *hierarchicalNode 
 		for _, child := range node.children {
 			newNode.children[child.hierarchy] = child.Clone(newNode)
 		}
+
 	}
 	return newNode
 }
@@ -87,6 +87,7 @@ func resourceSaturated(allocated *api.Resource,
 		}
 	}
 	return false
+
 }
 
 type drfAttr struct {
@@ -199,7 +200,9 @@ func (drf *drfPlugin) compareQueues(root *hierarchicalNode, lqueue *api.QueueInf
 
 func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 	// Prepare scheduling data for this session.
-	drf.totalResource.Add(ssn.TotalResource)
+	for _, n := range ssn.Nodes {
+		drf.totalResource.Add(n.Allocatable)
+	}
 
 	klog.V(4).Infof("Total Allocatable %s", drf.totalResource)
 
@@ -243,7 +246,7 @@ func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 		}
 	}
 
-	preemptableFn := func(preemptor *api.TaskInfo, preemptees []*api.TaskInfo) ([]*api.TaskInfo, int) {
+	preemptableFn := func(preemptor *api.TaskInfo, preemptees []*api.TaskInfo) []*api.TaskInfo {
 		var victims []*api.TaskInfo
 
 		addVictim := func(candidate *api.TaskInfo) {
@@ -322,7 +325,7 @@ func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 
 		klog.V(4).Infof("Victims from DRF plugins are %+v", victims)
 
-		return victims, util.Permit
+		return victims
 	}
 
 	ssn.AddPreemptableFn(drf.Name(), preemptableFn)
@@ -342,7 +345,7 @@ func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 		}
 		ssn.AddQueueOrderFn(drf.Name(), queueOrderFn)
 
-		reclaimFn := func(reclaimer *api.TaskInfo, reclaimees []*api.TaskInfo) ([]*api.TaskInfo, int) {
+		reclaimFn := func(reclaimer *api.TaskInfo, reclaimees []*api.TaskInfo) []*api.TaskInfo {
 			var victims []*api.TaskInfo
 			// clone hdrf tree
 			totalAllocated := drf.totalAllocated.Clone()
@@ -392,13 +395,16 @@ func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 				if ret > shareDelta {
 					continue
 				}
+
 			}
 
 			klog.V(4).Infof("Victims from HDRF plugins are %+v", victims)
 
-			return victims, util.Permit
+			return victims
+
 		}
 		ssn.AddReclaimableFn(drf.Name(), reclaimFn)
+
 	}
 
 	jobOrderFn := func(l interface{}, r interface{}) int {
@@ -415,8 +421,8 @@ func (drf *drfPlugin) OnSessionOpen(ssn *framework.Session) {
 		if drf.jobAttrs[lv.UID].share < drf.jobAttrs[rv.UID].share {
 			return -1
 		}
-
 		return 1
+
 	}
 
 	ssn.AddJobOrderFn(drf.Name(), jobOrderFn)
@@ -560,6 +566,7 @@ func (drf *drfPlugin) buildHierarchy(root *hierarchicalNode, job *api.JobInfo, a
 	// update drf attribute bottom up
 	klog.V(4).Infof("Job <%s/%s> added to %s, weights %s, attr %v, total request: %s",
 		job.Namespace, job.Name, inode.hierarchy, hierarchicalWeights, child.attr, job.TotalRequest)
+
 }
 
 // updateNamespaceShare updates the node attribute recursively
@@ -597,9 +604,10 @@ func (drf *drfPlugin) updateHierarchicalShare(node *hierarchicalNode,
 					t := child.attr.allocated
 					node.attr.allocated.Add(t)
 				} else {
-					t := child.attr.allocated.Clone().Multi(mdr / child.attr.share)
+					t := child.attr.allocated.Clone().Scale(mdr / child.attr.share)
 					node.attr.allocated.Add(t)
 				}
+
 			}
 		}
 		node.attr.dominantResource, node.attr.share = drf.calculateShare(
@@ -608,6 +616,7 @@ func (drf *drfPlugin) updateHierarchicalShare(node *hierarchicalNode,
 		klog.V(4).Infof("Update hierarchical node %s, share %f, dominant resource %s, resource %v, saturated: %t",
 			node.hierarchy, node.attr.share, node.attr.dominantResource, node.attr.allocated, node.saturated)
 	}
+
 }
 
 func (drf *drfPlugin) UpdateHierarchicalShare(root *hierarchicalNode, totalAllocated *api.Resource, job *api.JobInfo, attr *drfAttr, hierarchy, hierarchicalWeights string) {
@@ -616,6 +625,7 @@ func (drf *drfPlugin) UpdateHierarchicalShare(root *hierarchicalNode, totalAlloc
 	for _, rn := range drf.totalResource.ResourceNames() {
 		if totalAllocated.Get(rn) < drf.totalResource.Get(rn) {
 			demandingResources[rn] = true
+
 		}
 	}
 	drf.buildHierarchy(root, job, attr, hierarchy, hierarchicalWeights)
