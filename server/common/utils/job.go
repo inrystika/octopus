@@ -6,9 +6,10 @@ import (
 
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
-	"k8s.io/client-go/tools/cache"
-	jsoniter "github.com/json-iterator/go"
 	"math"
+
+	jsoniter "github.com/json-iterator/go"
+	"k8s.io/client-go/tools/cache"
 )
 
 func MapPhaseToState(phase typeJob.JobPhase) string {
@@ -62,7 +63,7 @@ func ConvertJobState(job *typeJob.Job) string {
 		return constant.UNKNOWN
 	}
 
-	state := typeJob.JobPhase(job.Status.State.Phase)
+	state := job.Status.State.Phase
 
 	switch state {
 	case typeJob.Pending, typeJob.Restarting:
@@ -199,9 +200,9 @@ func CurrentLegalStates(state string) []string {
 	}
 
 	if constant.SUSPENDED == state ||
-	constant.FAILED == state ||
-	constant.STOPPED == state ||
-	constant.SUCCEEDED == state {
+		constant.FAILED == state ||
+		constant.STOPPED == state ||
+		constant.SUCCEEDED == state {
 		return []string{
 			constant.SUSPENDED,
 			constant.PREPARING,
