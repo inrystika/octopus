@@ -154,10 +154,10 @@ data:
           target_label: kubernetes_name
 ---
 # Source: volcano/templates/prometheus.yaml
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: prometheus-volcano
+  name: prometheus
 rules:
 - apiGroups: [""]
   resources:
@@ -176,14 +176,14 @@ rules:
   verbs: ["get"]
 ---
 # Source: volcano/templates/prometheus.yaml
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-volcano
+  name: prometheus
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-volcano
+  name: prometheus
 subjects:
 - kind: ServiceAccount
   name: default
@@ -446,9 +446,6 @@ spec:
             timeoutSeconds: 5
       dnsPolicy: ClusterFirst
       
-      nodeSelector:
-        node.kubernetes.io/instance-type: controlpanel
-      
       serviceAccountName: kube-state-metrics
 ---
 # Source: volcano/templates/grafana.yaml
@@ -544,16 +541,6 @@ spec:
       containers:
       - name: grafana
         image: grafana/grafana:latest
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 10
         ports:
         - name: grafana
           containerPort: 3000

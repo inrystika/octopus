@@ -23,11 +23,13 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/klog"
+
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	batch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/helpers"
@@ -95,9 +97,8 @@ func (sp *servicePlugin) OnPodCreate(pod *v1.Pod, job *batch.Job) error {
 
 	for _, ts := range job.Spec.Tasks {
 		// TODO(k82cn): The splitter and the prefix of env should be configurable.
-		formateENVKey := strings.Replace(ts.Name, "-", "_", -1)
-		envNames = append(envNames, fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(formateENVKey)))
-		envNames = append(envNames, fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(formateENVKey)))
+		envNames = append(envNames, fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(ts.Name)))
+		envNames = append(envNames, fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(ts.Name)))
 	}
 
 	for _, name := range envNames {
@@ -182,7 +183,11 @@ func (sp *servicePlugin) OnJobUpdate(job *batch.Job) error {
 	hostFile := GenerateHosts(job)
 
 	// updates ConfigMap of hosts for Pods to mount.
-	return helpers.CreateOrUpdateConfigMap(job, sp.Clientset.KubeClients, hostFile, sp.cmName(job))
+	if err := helpers.CreateOrUpdateConfigMap(job, sp.Clientset.KubeClients, hostFile, sp.cmName(job)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (sp *servicePlugin) mountConfigmap(pod *v1.Pod, job *batch.Job) {
@@ -234,6 +239,14 @@ func (sp *servicePlugin) createServiceIfNotExist(job *batch.Job) error {
 					batch.JobNamespaceKey: job.Namespace,
 				},
 				PublishNotReadyAddresses: sp.publishNotReadyAddresses,
+				Ports: []v1.ServicePort{
+					{
+						Name:       "placeholder-volcano",
+						Port:       1,
+						Protocol:   v1.ProtocolTCP,
+						TargetPort: intstr.FromInt(1),
+					},
+				},
 			},
 		}
 
@@ -242,6 +255,7 @@ func (sp *servicePlugin) createServiceIfNotExist(job *batch.Job) error {
 			return e
 		}
 		job.Status.ControlledResources["plugin-"+sp.Name()] = sp.Name()
+
 	}
 
 	return nil
@@ -291,6 +305,7 @@ func (sp *servicePlugin) createNetworkPolicyIfNotExist(job *batch.Job) error {
 			return e
 		}
 		job.Status.ControlledResources["plugin-"+sp.Name()] = sp.Name()
+
 	}
 
 	return nil
@@ -322,16 +337,15 @@ func GenerateHosts(job *batch.Job) map[string]string {
 			}
 		}
 
-		formateENVKey := strings.Replace(ts.Name, "-", "_", -1)
-		key := fmt.Sprintf(ConfigMapTaskHostFmt, formateENVKey)
+		key := fmt.Sprintf(ConfigMapTaskHostFmt, ts.Name)
 		hostFile[key] = strings.Join(hosts, "\n")
 
 		// TODO(k82cn): The splitter and the prefix of env should be configurable.
 		// export hosts as environment
-		key = fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(formateENVKey))
+		key = fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(ts.Name))
 		hostFile[key] = strings.Join(hosts, ",")
 		// export host number as environment.
-		key = fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(formateENVKey))
+		key = fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(ts.Name))
 		hostFile[key] = strconv.Itoa(len(hosts))
 	}
 

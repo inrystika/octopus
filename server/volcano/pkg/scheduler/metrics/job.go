@@ -48,11 +48,3 @@ func UpdateJobShare(jobNs, jobID string, share float64) {
 func RegisterJobRetries(jobID string) {
 	jobRetryCount.WithLabelValues(jobID).Inc()
 }
-
-// DeleteJobMetrics delete all metrics related to the job
-func DeleteJobMetrics(jobName, queue, namespace string) {
-	e2eJobSchedulingDuration.DeleteLabelValues(jobName, queue, namespace)
-	unscheduleTaskCount.DeleteLabelValues(jobName)
-	jobShare.DeleteLabelValues(namespace, jobName)
-	jobRetryCount.DeleteLabelValues(jobName)
-}

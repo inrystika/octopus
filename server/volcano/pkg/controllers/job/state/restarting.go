@@ -17,9 +17,6 @@ limitations under the License.
 package state
 
 import (
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 	"volcano.sh/volcano/pkg/controllers/apis"
@@ -37,7 +34,6 @@ func (ps *restartingState) Execute(action v1alpha1.Action) error {
 		if status.RetryCount >= maxRetry {
 			// Failed is the phase that the job is restarted failed reached the maximum number of retries.
 			status.State.Phase = vcbatch.Failed
-			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		}
 		total := int32(0)
@@ -52,4 +48,5 @@ func (ps *restartingState) Execute(action v1alpha1.Action) error {
 
 		return false
 	})
+
 }

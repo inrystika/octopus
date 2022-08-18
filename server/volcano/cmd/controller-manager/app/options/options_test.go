@@ -33,8 +33,6 @@ func TestAddFlags(t *testing.T) {
 	args := []string{
 		"--master=127.0.0.1",
 		"--kube-api-burst=200",
-		"--scheduler-name=volcano",
-		"--scheduler-name=volcano2",
 	}
 	fs.Parse(args)
 
@@ -48,7 +46,7 @@ func TestAddFlags(t *testing.T) {
 		},
 		PrintVersion:       false,
 		WorkerThreads:      defaultWorkers,
-		SchedulerNames:     []string{"volcano", "volcano2"},
+		SchedulerName:      defaultSchedulerName,
 		MaxRequeueNum:      defaultMaxRequeueNum,
 		HealthzBindAddress: ":11252",
 	}

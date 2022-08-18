@@ -42,12 +42,6 @@ type sshPlugin struct {
 
 	// flag parse args
 	sshKeyFilePath string
-
-	// private key string
-	sshPrivateKey string
-
-	// public key string
-	sshPublicKey string
 }
 
 // New creates ssh plugin
@@ -78,13 +72,7 @@ func (sp *sshPlugin) OnJobAdd(job *batch.Job) error {
 		return nil
 	}
 
-	var data map[string][]byte
-	var err error
-	if len(sp.sshPrivateKey) > 0 {
-		data, err = withUserProvidedRsaKey(job, sp.sshPrivateKey, sp.sshPublicKey)
-	} else {
-		data, err = generateRsaKey(job)
-	}
+	data, err := generateRsaKey(job)
 	if err != nil {
 		return err
 	}
@@ -160,7 +148,7 @@ func (sp *sshPlugin) mountRsaKey(pod *v1.Pod, job *batch.Job) {
 	}
 
 	if sp.sshKeyFilePath != SSHAbsolutePath {
-		var noRootMode int32 = 0644
+		var noRootMode int32 = 0755
 		sshVolume.Secret.DefaultMode = &noRootMode
 	}
 
@@ -175,19 +163,10 @@ func (sp *sshPlugin) mountRsaKey(pod *v1.Pod, job *batch.Job) {
 
 		pod.Spec.Containers[i].VolumeMounts = append(c.VolumeMounts, vm)
 	}
-	for i, c := range pod.Spec.InitContainers {
-		vm := v1.VolumeMount{
-			MountPath: sp.sshKeyFilePath,
-			SubPath:   SSHRelativePath,
-			Name:      secretName,
-		}
-
-		pod.Spec.InitContainers[i].VolumeMounts = append(c.VolumeMounts, vm)
-	}
 }
 
 func generateRsaKey(job *batch.Job) (map[string][]byte, error) {
-	bitSize := 2048
+	bitSize := 1024
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, bitSize)
 	if err != nil {
@@ -219,16 +198,6 @@ func generateRsaKey(job *batch.Job) (map[string][]byte, error) {
 	return data, nil
 }
 
-func withUserProvidedRsaKey(job *batch.Job, sshPrivateKey string, sshPublicKey string) (map[string][]byte, error) {
-	data := make(map[string][]byte)
-	data[SSHPrivateKey] = []byte(sshPrivateKey)
-	data[SSHPublicKey] = []byte(sshPublicKey)
-	data[SSHAuthorizedKeys] = []byte(sshPublicKey)
-	data[SSHConfig] = []byte(generateSSHConfig(job))
-
-	return data, nil
-}
-
 func (sp *sshPlugin) secretName(job *batch.Job) string {
 	return fmt.Sprintf("%s-%s", job.Name, sp.Name())
 }
@@ -237,8 +206,6 @@ func (sp *sshPlugin) addFlags() {
 	flagSet := flag.NewFlagSet(sp.Name(), flag.ContinueOnError)
 	flagSet.StringVar(&sp.sshKeyFilePath, "ssh-key-file-path", sp.sshKeyFilePath, "The path used to store "+
 		"ssh private and public keys, it is `/root/.ssh` by default.")
-	flagSet.StringVar(&sp.sshPrivateKey, "ssh-private-key", sp.sshPrivateKey, "The input string of the private key")
-	flagSet.StringVar(&sp.sshPublicKey, "ssh-public-key", sp.sshPublicKey, "The input string of the public key")
 
 	if err := flagSet.Parse(sp.pluginArguments); err != nil {
 		klog.Errorf("plugin %s flagset parse failed, err: %v", sp.Name(), err)

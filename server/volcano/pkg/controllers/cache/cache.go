@@ -18,19 +18,18 @@ package cache
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
-	v1 "k8s.io/api/core/v1"
+
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
 	"volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/volcano/pkg/controllers/apis"
-	"volcano.sh/volcano/pkg/controllers/job/state"
 )
 
 type jobCache struct {
@@ -154,20 +153,8 @@ func (jc *jobCache) Update(obj *v1alpha1.Job) error {
 	if !found {
 		return fmt.Errorf("failed to find job <%v>", key)
 	}
-
-	var oldResourceversion, newResourceversion uint64
-	var err error
-	if oldResourceversion, err = strconv.ParseUint(job.Job.ResourceVersion, 10, 64); err != nil {
-		return fmt.Errorf("failed to parase job <%v> resource version <%s>", key, job.Job.ResourceVersion)
-	}
-
-	if newResourceversion, err = strconv.ParseUint(obj.ResourceVersion, 10, 64); err != nil {
-		return fmt.Errorf("failed to parase job <%v> resource version <%s>", key, obj.ResourceVersion)
-	}
-	if newResourceversion < oldResourceversion {
-		return fmt.Errorf("job <%v> has too old resource version: %d (%d)", key, newResourceversion, oldResourceversion)
-	}
 	job.Job = obj
+
 	return nil
 }
 
@@ -262,7 +249,7 @@ func (jc *jobCache) TaskCompleted(jobKey, taskName string) bool {
 	jc.Lock()
 	defer jc.Unlock()
 
-	var isCompleted, isSuccess bool
+	var taskReplicas, completed int32
 
 	jobInfo, found := jc.jobs[jobKey]
 	if !found {
@@ -279,93 +266,22 @@ func (jc *jobCache) TaskCompleted(jobKey, taskName string) bool {
 		return false
 	}
 
-	completionPolicy := state.GetTaskCompletionPolicy(jobInfo.Job, taskName)
-
-	taskStatus := state.GetTaskStatus(jobInfo.Job, taskName)
-
-	var (
-		failed    int32 = 0
-		succeeded int32 = 0
-	)
-
-	for _, pod := range taskPods {
-		if pod.Status.Phase == v1.PodSucceeded {
-			succeeded++
-		}
-		if pod.Status.Phase == v1.PodFailed {
-			failed++
-		}
-	}
-
-	if completionPolicy.MinSucceeded <= succeeded {
-		isCompleted, isSuccess = true, true
-	}
-
-	if completionPolicy.MaxFailed <= failed {
-		isCompleted, isSuccess = true, false
-	}
-
-	if isCompleted {
-		if isSuccess {
-			taskStatus.Phase = string(v1alpha1.Completed)
-		} else {
-			taskStatus.Phase = string(v1alpha1.Failed)
-		}
-		state.StopReplicas(taskStatus)
-		return true
-	}
-
-	return false
-}
-
-func (jc *jobCache) TaskFailed(jobKey, taskName string) bool {
-	jc.Lock()
-	defer jc.Unlock()
-
-	var taskReplicas, retried, maxRetry int32
-
-	jobInfo, found := jc.jobs[jobKey]
-	if !found {
-		return false
-	}
-
-	taskPods, found := jobInfo.Pods[taskName]
-
-	if !found || jobInfo.Job == nil {
-		return false
-	}
-
 	for _, task := range jobInfo.Job.Spec.Tasks {
 		if task.Name == taskName {
-			maxRetry = task.MaxRetry
 			taskReplicas = task.Replicas
 			break
 		}
 	}
-
-	// maxRetry == -1 means no limit
-	if taskReplicas == 0 || maxRetry == -1 {
+	if taskReplicas <= 0 {
 		return false
 	}
 
-	// Compatible with existing job
-	if maxRetry == 0 {
-		maxRetry = 3
-	}
-
 	for _, pod := range taskPods {
-		if pod.Status.Phase == v1.PodRunning || pod.Status.Phase == v1.PodPending {
-			for j := range pod.Status.InitContainerStatuses {
-				stat := pod.Status.InitContainerStatuses[j]
-				retried += stat.RestartCount
-			}
-			for j := range pod.Status.ContainerStatuses {
-				stat := pod.Status.ContainerStatuses[j]
-				retried += stat.RestartCount
-			}
+		if pod.Status.Phase == v1.PodSucceeded {
+			completed++
 		}
 	}
-	return retried >= maxRetry
+	return completed >= taskReplicas
 }
 
 func (jc *jobCache) worker() {

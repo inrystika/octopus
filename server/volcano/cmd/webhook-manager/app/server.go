@@ -18,22 +18,22 @@ package app
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 
+	"k8s.io/klog"
+
 	v1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/klog"
-
 	"volcano.sh/apis/pkg/apis/scheduling/scheme"
 	"volcano.sh/volcano/cmd/webhook-manager/app/options"
 	"volcano.sh/volcano/pkg/kube"
 	"volcano.sh/volcano/pkg/version"
-	wkconfig "volcano.sh/volcano/pkg/webhooks/config"
 	"volcano.sh/volcano/pkg/webhooks/router"
 )
 
@@ -53,11 +53,9 @@ func Run(config *options.Config) error {
 		return fmt.Errorf("unable to build k8s config: %v", err)
 	}
 
-	admissionConf := wkconfig.LoadAdmissionConf(config.ConfigPath)
-	if admissionConf == nil {
-		klog.Errorf("loadAdmissionConf failed.")
-	} else {
-		klog.V(2).Infof("loadAdmissionConf:%v", admissionConf.ResGroupsConfig)
+	caBundle, err := ioutil.ReadFile(config.CaCertFile)
+	if err != nil {
+		return fmt.Errorf("unable to read cacert file (%s): %v", config.CaCertFile, err)
 	}
 
 	vClient := getVolcanoClient(restConfig)
@@ -66,28 +64,26 @@ func Run(config *options.Config) error {
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(&corev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events("")})
 	recorder := broadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: config.SchedulerName})
-	router.ForEachAdmission(config, func(service *router.AdmissionService) {
+	router.ForEachAdmission(func(service *router.AdmissionService) {
 		if service.Config != nil {
 			service.Config.VolcanoClient = vClient
-			service.Config.KubeClient = kubeClient
 			service.Config.SchedulerName = config.SchedulerName
 			service.Config.Recorder = recorder
-			service.Config.ConfigData = admissionConf
 		}
 
 		klog.V(3).Infof("Registered '%s' as webhook.", service.Path)
 		http.HandleFunc(service.Path, service.Handler)
 
 		klog.V(3).Infof("Registered configuration for webhook <%s>", service.Path)
-		registerWebhookConfig(kubeClient, config, service, config.CaCertData)
+		registerWebhookConfig(kubeClient, config, service, caBundle)
 	})
 
 	webhookServeError := make(chan struct{})
-	stopChannel := make(chan os.Signal, 1)
+	stopChannel := make(chan os.Signal)
 	signal.Notify(stopChannel, syscall.SIGTERM, syscall.SIGINT)
 
 	server := &http.Server{
-		Addr:      config.ListenAddress + ":" + strconv.Itoa(config.Port),
+		Addr:      ":" + strconv.Itoa(config.Port),
 		TLSConfig: configTLS(config, restConfig),
 	}
 	go func() {
@@ -99,10 +95,6 @@ func Run(config *options.Config) error {
 
 		klog.Info("Volcano Webhook manager started.")
 	}()
-
-	if config.ConfigPath != "" {
-		go wkconfig.WatchAdmissionConf(config.ConfigPath, stopChannel)
-	}
 
 	select {
 	case <-stopChannel:

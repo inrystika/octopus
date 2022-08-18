@@ -18,8 +18,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"net/http"
-
 	rest "k8s.io/client-go/rest"
 	v1alpha1 "volcano.sh/apis/pkg/apis/nodeinfo/v1alpha1"
 	"volcano.sh/apis/pkg/client/clientset/versioned/scheme"
@@ -35,33 +33,17 @@ type NodeinfoV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *NodeinfoV1alpha1Client) Numatopologies() NumatopologyInterface {
-	return newNumatopologies(c)
+func (c *NodeinfoV1alpha1Client) Numatopologies(namespace string) NumatopologyInterface {
+	return newNumatopologies(c, namespace)
 }
 
 // NewForConfig creates a new NodeinfoV1alpha1Client for the given config.
-// NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
-// where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*NodeinfoV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	httpClient, err := rest.HTTPClientFor(&config)
-	if err != nil {
-		return nil, err
-	}
-	return NewForConfigAndClient(&config, httpClient)
-}
-
-// NewForConfigAndClient creates a new NodeinfoV1alpha1Client for the given config and http client.
-// Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*NodeinfoV1alpha1Client, error) {
-	config := *c
-	if err := setConfigDefaults(&config); err != nil {
-		return nil, err
-	}
-	client, err := rest.RESTClientForConfigAndClient(&config, h)
+	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
 	}

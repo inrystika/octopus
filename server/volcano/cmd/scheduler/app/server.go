@@ -30,7 +30,6 @@ import (
 	"volcano.sh/volcano/pkg/kube"
 	"volcano.sh/volcano/pkg/scheduler"
 	"volcano.sh/volcano/pkg/scheduler/framework"
-	"volcano.sh/volcano/pkg/signals"
 	"volcano.sh/volcano/pkg/version"
 
 	v1 "k8s.io/api/core/v1"
@@ -77,33 +76,27 @@ func Run(opt *options.ServerOption) error {
 		opt.SchedulerName,
 		opt.SchedulerConf,
 		opt.SchedulePeriod,
-		opt.DefaultQueue,
-		opt.NodeSelector)
+		opt.DefaultQueue)
 	if err != nil {
 		panic(err)
 	}
 
-	if opt.EnableMetrics {
-		go func() {
-			http.Handle("/metrics", promhttp.Handler())
-			klog.Fatalf("Prometheus Http Server failed %s", http.ListenAndServe(opt.ListenAddress, nil))
-		}()
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		klog.Fatalf("Prometheus Http Server failed %s", http.ListenAndServe(opt.ListenAddress, nil))
+	}()
+
+	if err := helpers.StartHealthz(opt.HealthzBindAddress, "volcano-scheduler"); err != nil {
+		return err
 	}
 
-	if opt.EnableHealthz {
-		if err := helpers.StartHealthz(opt.HealthzBindAddress, "volcano-scheduler"); err != nil {
-			return err
-		}
-	}
-
-	ctx := signals.SetupSignalContext()
 	run := func(ctx context.Context) {
 		sched.Run(ctx.Done())
 		<-ctx.Done()
 	}
 
 	if !opt.EnableLeaderElection {
-		run(ctx)
+		run(context.TODO())
 		return fmt.Errorf("finished without leader elect")
 	}
 
@@ -137,7 +130,7 @@ func Run(opt *options.ServerOption) error {
 		return fmt.Errorf("couldn't create resource lock: %v", err)
 	}
 
-	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
+	leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
 		Lock:          rl,
 		LeaseDuration: leaseDuration,
 		RenewDeadline: renewDeadline,

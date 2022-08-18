@@ -59,18 +59,18 @@ func (enqueue *Action) Execute(ssn *framework.Session) {
 				job.Queue, job.Namespace, job.Name)
 			continue
 		} else if _, existed := queueMap[queue.UID]; !existed {
-			klog.V(5).Infof("Added Queue <%s> for Job <%s/%s>",
+			klog.V(3).Infof("Added Queue <%s> for Job <%s/%s>",
 				queue.Name, job.Namespace, job.Name)
 
 			queueMap[queue.UID] = queue
 			queues.Push(queue)
 		}
 
-		if job.IsPending() {
+		if job.PodGroup.Status.Phase == scheduling.PodGroupPending {
 			if _, found := jobsMap[job.Queue]; !found {
 				jobsMap[job.Queue] = util.NewPriorityQueue(ssn.JobOrderFn)
 			}
-			klog.V(5).Infof("Added Job <%s/%s> into Queue <%s>", job.Namespace, job.Name, job.Queue)
+			klog.V(3).Infof("Added Job <%s/%s> into Queue <%s>", job.Namespace, job.Name, job.Queue)
 			jobsMap[job.Queue].Push(job)
 		}
 	}
@@ -92,7 +92,6 @@ func (enqueue *Action) Execute(ssn *framework.Session) {
 		job := jobs.Pop().(*api.JobInfo)
 
 		if job.PodGroup.Spec.MinResources == nil || ssn.JobEnqueueable(job) {
-			ssn.JobEnqueued(job)
 			job.PodGroup.Status.Phase = scheduling.PodGroupInqueue
 			ssn.Jobs[job.UID] = job
 		}

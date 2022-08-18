@@ -28,15 +28,26 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
+	if newjob.Annotations == nil {
+		return
+	}
+	jobType, found := newjob.Annotations[constant.JOB_TYPE]
+	if !found || jobType != constant.NotebookJob {
+		return
+	}
+
 	oldState := utils.MapPhaseToState(typeJob.JobPhase(oldjob.Status.State.Phase))
 	newState := utils.MapPhaseToState(typeJob.JobPhase(newjob.Status.State.Phase))
+
+	if strings.EqualFold(constant.UNKNOWN, newState) {
+		return
+	}
 
 	if newState == string(typeJob.Pending) && nil != oldjob {
 		if oldState == string(typeJob.Running) {
 			return
 		}
 	}
-
 	ctx := context.TODO()
 	nbJob, err := s.data.DevelopDao.GetNotebookJob(ctx, newjob.Name)
 	if err != nil {
@@ -44,7 +55,7 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 		return
 	}
 
-	if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, newState) || strings.EqualFold(constant.UNKNOWN, newState) {
+	if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, newState) {
 		return
 	}
 

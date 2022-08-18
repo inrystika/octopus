@@ -21,7 +21,7 @@ import (
 	"context"
 	"fmt"
 
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	v1 "k8s.io/api/core/v1"
@@ -49,7 +49,7 @@ var _ = Describe("Job E2E Test: Test Job Command", func() {
 				{
 					Img: e2eutil.DefaultNginxImage,
 					Req: e2eutil.OneCPU,
-					Min: rep,
+					Min: 1,
 					Rep: rep,
 				},
 			},

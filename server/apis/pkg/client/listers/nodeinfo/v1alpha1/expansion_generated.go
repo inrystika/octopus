@@ -20,3 +20,7 @@ package v1alpha1
 // NumatopologyListerExpansion allows custom methods to be added to
 // NumatopologyLister.
 type NumatopologyListerExpansion interface{}
+
+// NumatopologyNamespaceListerExpansion allows custom methods to be added to
+// NumatopologyNamespaceLister.
+type NumatopologyNamespaceListerExpansion interface{}

@@ -18,15 +18,12 @@ package podgroup
 
 import (
 	"context"
-	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog"
-	quotacore "k8s.io/kubernetes/pkg/quota/v1/evaluator/core"
-	"k8s.io/utils/clock"
 
 	"volcano.sh/apis/pkg/apis/helpers"
 	scheduling "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
@@ -74,41 +71,6 @@ func (pg *pgcontroller) updatePodAnnotations(pod *v1.Pod, pgName string) error {
 	return nil
 }
 
-func (pg *pgcontroller) getAnnotationsFromUpperRes(kind string, name string, namespace string) map[string]string {
-	switch kind {
-	case "ReplicaSet":
-		rs, err := pg.kubeClient.AppsV1().ReplicaSets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Failed to get upper %s for Pod <%s/%s>: %v", kind, namespace, name, err)
-			return map[string]string{}
-		}
-		return rs.Annotations
-	case "DaemonSet":
-		ds, err := pg.kubeClient.AppsV1().DaemonSets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Failed to get upper %s for Pod <%s/%s>: %v", kind, namespace, name, err)
-			return map[string]string{}
-		}
-		return ds.Annotations
-	case "StatefulSet":
-		ss, err := pg.kubeClient.AppsV1().StatefulSets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Failed to get upper %s for Pod <%s/%s>: %v", kind, namespace, name, err)
-			return map[string]string{}
-		}
-		return ss.Annotations
-	case "Job":
-		job, err := pg.kubeClient.BatchV1().Jobs(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Failed to get upper %s for Pod <%s/%s>: %v", kind, namespace, name, err)
-			return map[string]string{}
-		}
-		return job.Annotations
-	default:
-		return map[string]string{}
-	}
-}
-
 func (pg *pgcontroller) createNormalPodPGIfNotExist(pod *v1.Pod) error {
 	pgName := helpers.GeneratePodgroupName(pod)
 
@@ -130,26 +92,8 @@ func (pg *pgcontroller) createNormalPodPGIfNotExist(pod *v1.Pod) error {
 			Spec: scheduling.PodGroupSpec{
 				MinMember:         1,
 				PriorityClassName: pod.Spec.PriorityClassName,
-				MinResources:      calcPGMinResources(pod),
-			},
-			Status: scheduling.PodGroupStatus{
-				Phase: scheduling.PodGroupPending,
 			},
 		}
-
-		// Inherit annotations from upper resources.
-		for _, reference := range pod.OwnerReferences {
-			if reference.Kind != "" && reference.Name != "" {
-				var upperAnnotations = pg.getAnnotationsFromUpperRes(reference.Kind, reference.Name, pod.Namespace)
-				for k, v := range upperAnnotations {
-					if strings.HasPrefix(k, scheduling.AnnotationPrefix) {
-						obj.Annotations[k] = v
-					}
-				}
-			}
-		}
-
-		// Individual annotations on pods would overwrite annotations inherited from upper resources.
 		if queueName, ok := pod.Annotations[scheduling.QueueNameAnnotationKey]; ok {
 			obj.Spec.Queue = queueName
 		}
@@ -196,11 +140,4 @@ func newPGOwnerReferences(pod *v1.Pod) []metav1.OwnerReference {
 	}
 	ref := metav1.NewControllerRef(pod, gvk)
 	return []metav1.OwnerReference{*ref}
-}
-
-// calcPGMinResources calculate podgroup minimum resource
-func calcPGMinResources(pod *v1.Pod) *v1.ResourceList {
-	pgMinRes, _ := quotacore.PodUsageFunc(pod, clock.RealClock{})
-
-	return &pgMinRes
 }

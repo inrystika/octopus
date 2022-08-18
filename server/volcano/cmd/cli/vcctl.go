@@ -22,8 +22,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
 	"k8s.io/apimachinery/pkg/util/wait"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/klog"
 
 	"volcano.sh/volcano/pkg/version"
@@ -43,9 +43,6 @@ func main() {
 	rootCmd := cobra.Command{
 		Use: "vcctl",
 	}
-
-	// tell Cobra not to provide the default completion command
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.AddCommand(buildJobCmd())
 	rootCmd.AddCommand(buildQueueCmd())
@@ -74,6 +71,7 @@ func checkError(cmd *cobra.Command, err error) {
 var versionExample = `vcctl version`
 
 func versionCommand() *cobra.Command {
+
 	var command = &cobra.Command{
 		Use:     "version",
 		Short:   "Print the version information",

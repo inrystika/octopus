@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	_ "go.uber.org/automaxprocs"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	cliflag "k8s.io/component-base/cli/flag"
@@ -34,8 +33,7 @@ import (
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/mutate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/validate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/podgroups/mutate"
-	_ "volcano.sh/volcano/pkg/webhooks/admission/pods/mutate"
-	_ "volcano.sh/volcano/pkg/webhooks/admission/pods/validate"
+	_ "volcano.sh/volcano/pkg/webhooks/admission/pods"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/queues/mutate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/queues/validate"
 )
@@ -56,10 +54,6 @@ func main() {
 
 	if err := config.CheckPortOrDie(); err != nil {
 		klog.Fatalf("Configured port is invalid: %v", err)
-	}
-
-	if err := config.ParseCAFiles(nil); err != nil {
-		klog.Fatalf("Failed to parse CA file: %v", err)
 	}
 
 	if err := app.Run(config); err != nil {

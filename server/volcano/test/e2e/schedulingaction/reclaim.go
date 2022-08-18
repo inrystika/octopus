@@ -19,9 +19,8 @@ package schedulingaction
 import (
 	"context"
 	"fmt"
-	"time"
 
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,11 +38,10 @@ var _ = Describe("Reclaim E2E Test", func() {
 		job := &e2eutil.JobSpec{
 			Tasks: []e2eutil.TaskSpec{
 				{
-					Img:    e2eutil.DefaultNginxImage,
-					Req:    req,
-					Min:    1,
-					Rep:    1,
-					Labels: map[string]string{schedulingv1beta1.PodPreemptable: "true"},
+					Img: e2eutil.DefaultNginxImage,
+					Req: req,
+					Min: 1,
+					Rep: 1,
 				},
 			},
 			Name:     name,
@@ -301,7 +299,6 @@ var _ = Describe("Reclaim E2E Test", func() {
 		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j4", q3, "", "", false)
 		Expect(err).NotTo(HaveOccurred(), "Wait for job4 failed")
 
-		time.Sleep(10 * time.Second)
 		By("Make sure all job running")
 
 		err = WaitQueueStatus(ctx, "Running", 1, q1)
@@ -313,8 +310,8 @@ var _ = Describe("Reclaim E2E Test", func() {
 		err = WaitQueueStatus(ctx, "Running", 1, q3)
 		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 
-		err = WaitQueueStatus(ctx, "Inqueue", 1, q3)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue Inqueue")
+		err = WaitQueueStatus(ctx, "Pending", 1, q3)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue pending")
 	})
 
 	It("Reclaim Case 7:  New queue with job created no reclaim when job not satisfied with predicates", func() {
@@ -347,7 +344,6 @@ var _ = Describe("Reclaim E2E Test", func() {
 		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j3", q3, "", "fake-node", false)
 		Expect(err).NotTo(HaveOccurred(), "Wait for job3 failed")
 
-		time.Sleep(10 * time.Second)
 		By("Make sure all job running")
 
 		err = WaitQueueStatus(ctx, "Running", 1, q1)
@@ -356,9 +352,8 @@ var _ = Describe("Reclaim E2E Test", func() {
 		err = WaitQueueStatus(ctx, "Running", 1, q2)
 		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 
-		// TODO: it is a bug : the job status is pending but podgroup status is running
-		err = WaitQueueStatus(ctx, "Running", 1, q3)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue Running")
+		err = WaitQueueStatus(ctx, "Pending", 1, q3)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue pending")
 
 	})
 
@@ -407,7 +402,6 @@ var _ = Describe("Reclaim E2E Test", func() {
 		}
 		e2eutil.CreateJob(ctx, job)
 
-		time.Sleep(10 * time.Second)
 		By("Make sure all job running")
 
 		err = WaitQueueStatus(ctx, "Running", 1, q1)
@@ -416,8 +410,8 @@ var _ = Describe("Reclaim E2E Test", func() {
 		err = WaitQueueStatus(ctx, "Running", 1, q2)
 		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 
-		err = WaitQueueStatus(ctx, "Inqueue", 1, q3)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue Inqueue")
+		err = WaitQueueStatus(ctx, "Pending", 1, q3)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 	})
 
 	It("Reclaim Case 9:  New queue with job created, all queues.spec.reclaimable is false, no reclaim", func() {
@@ -486,58 +480,49 @@ var _ = Describe("Reclaim E2E Test", func() {
 
 		By("Setup initial jobs")
 
-		spec := &e2eutil.JobSpec{
-			Tasks: []e2eutil.TaskSpec{
-				{
-					Img:    e2eutil.DefaultNginxImage,
-					Req:    e2eutil.CPU1Mem1,
-					Min:    1,
-					Rep:    2,
-					Labels: map[string]string{schedulingv1beta1.PodPreemptable: "true"},
-				},
-			},
-		}
+		_, err := CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j1", q1, "low-priority", "", true)
+		Expect(err).NotTo(HaveOccurred(), "Wait for job1 failed")
 
-		spec.Name = "reclaim-j1"
-		spec.Queue = q1
-		spec.Pri = "low-priority"
-		job1 := e2eutil.CreateJob(ctx, spec)
-		err := e2eutil.WaitJobReady(ctx, job1)
-		Expect(err).NotTo(HaveOccurred())
+		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j2", q1, "low-priority", "", true)
+		Expect(err).NotTo(HaveOccurred(), "Wait for job2 failed")
 
-		spec.Name = "reclaim-j2"
-		spec.Queue = q2
-		spec.Pri = "low-priority"
-		job2 := e2eutil.CreateJob(ctx, spec)
-		err = e2eutil.WaitJobReady(ctx, job2)
-		Expect(err).NotTo(HaveOccurred())
+		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j3", q2, "low-priority", "", true)
+		Expect(err).NotTo(HaveOccurred(), "Wait for job3 failed")
 
-		err = WaitQueueStatus(ctx, "Running", 1, q1)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue1 running")
-
-		err = WaitQueueStatus(ctx, "Running", 1, q2)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue2 running")
+		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j4", q2, "low-priority", "", true)
+		Expect(err).NotTo(HaveOccurred(), "Wait for job4 failed")
 
 		By("Create coming jobs")
 
-		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j3", q3, "high-priority", "", true)
+		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j5", q3, "high-priority", "", true)
 		Expect(err).NotTo(HaveOccurred(), "Wait for job4 failed")
 
-		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j4", q4, "high-priority", "", true)
+		_, err = CreateReclaimJob(ctx, e2eutil.CPU1Mem1, "reclaim-j6", q4, "high-priority", "", true)
 		Expect(err).NotTo(HaveOccurred(), "Wait for job4 failed")
 
 		By("Make sure all job running")
 
+		err = WaitQueueStatus(ctx, "Running", 1, q1)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
+
+		err = WaitQueueStatus(ctx, "Inqueue", 1, q1)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
+
+		err = WaitQueueStatus(ctx, "Running", 1, q2)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
+
+		err = WaitQueueStatus(ctx, "Inqueue", 1, q2)
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
+
 		err = WaitQueueStatus(ctx, "Running", 1, q3)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue3 running")
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 
 		err = WaitQueueStatus(ctx, "Running", 1, q4)
-		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue4 running")
+		Expect(err).NotTo(HaveOccurred(), "Error waiting for queue running")
 
 	})
 
 	It("Reclaim", func() {
-		Skip("skip: the case has some problem")
 		q1, q2 := "reclaim-q1", "reclaim-q2"
 		ctx := e2eutil.InitTestContext(e2eutil.Options{
 			Queues: []string{q1, q2},
@@ -554,11 +539,10 @@ var _ = Describe("Reclaim E2E Test", func() {
 		spec := &e2eutil.JobSpec{
 			Tasks: []e2eutil.TaskSpec{
 				{
-					Img:    e2eutil.DefaultNginxImage,
-					Req:    slot,
-					Min:    1,
-					Rep:    rep,
-					Labels: map[string]string{schedulingv1beta1.PodPreemptable: "true"},
+					Img: e2eutil.DefaultNginxImage,
+					Req: slot,
+					Min: 1,
+					Rep: rep,
 				},
 			},
 		}

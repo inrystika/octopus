@@ -250,25 +250,20 @@ func (cc *jobcontroller) updatePod(oldObj, newObj interface{}) {
 
 	event := bus.OutOfSyncEvent
 	var exitCode int32
+	if oldPod.Status.Phase != v1.PodFailed &&
+		newPod.Status.Phase == v1.PodFailed {
+		event = bus.PodFailedEvent
+		// TODO: currently only one container pod is supported by volcano
+		// Once multi containers pod is supported, update accordingly.
+		if len(newPod.Status.ContainerStatuses) > 0 && newPod.Status.ContainerStatuses[0].State.Terminated != nil {
+			exitCode = newPod.Status.ContainerStatuses[0].State.Terminated.ExitCode
+		}
+	}
 
-	switch newPod.Status.Phase {
-	case v1.PodFailed:
-		if oldPod.Status.Phase != v1.PodFailed {
-			event = bus.PodFailedEvent
-			// TODO: currently only one container pod is supported by volcano
-			// Once multi containers pod is supported, update accordingly.
-			if len(newPod.Status.ContainerStatuses) > 0 && newPod.Status.ContainerStatuses[0].State.Terminated != nil {
-				exitCode = newPod.Status.ContainerStatuses[0].State.Terminated.ExitCode
-			}
-		}
-	case v1.PodSucceeded:
-		if oldPod.Status.Phase != v1.PodSucceeded &&
-			cc.cache.TaskCompleted(jobcache.JobKeyByName(newPod.Namespace, jobName), taskName) {
+	if oldPod.Status.Phase != v1.PodSucceeded &&
+		newPod.Status.Phase == v1.PodSucceeded {
+		if cc.cache.TaskCompleted(jobcache.JobKeyByName(newPod.Namespace, jobName), taskName) {
 			event = bus.TaskCompletedEvent
-		}
-	case v1.PodPending, v1.PodRunning:
-		if cc.cache.TaskFailed(jobcache.JobKeyByName(newPod.Namespace, jobName), taskName) {
-			event = bus.TaskFailedEvent
 		}
 	}
 
@@ -363,6 +358,7 @@ func (cc *jobcontroller) recordJobEvent(namespace, name string, event batch.JobE
 		return
 	}
 	cc.recorder.Event(job.Job, v1.EventTypeNormal, string(event), message)
+
 }
 
 func (cc *jobcontroller) handleCommands() {
@@ -416,15 +412,7 @@ func (cc *jobcontroller) updatePodGroup(oldObj, newObj interface{}) {
 		return
 	}
 
-	jobNameKey := newPG.Name
-	ors := newPG.OwnerReferences
-	for _, or := range ors {
-		if or.Kind == "Job" {
-			jobNameKey = or.Name
-		}
-	}
-
-	_, err := cc.cache.Get(jobcache.JobKeyByName(newPG.Namespace, jobNameKey))
+	_, err := cc.cache.Get(jobcache.JobKeyByName(newPG.Namespace, newPG.Name))
 	if err != nil && newPG.Annotations != nil {
 		klog.Warningf(
 			"Failed to find job in cache by PodGroup, this may not be a PodGroup for volcano job.")
@@ -433,7 +421,7 @@ func (cc *jobcontroller) updatePodGroup(oldObj, newObj interface{}) {
 	if newPG.Status.Phase != oldPG.Status.Phase {
 		req := apis.Request{
 			Namespace: newPG.Namespace,
-			JobName:   jobNameKey,
+			JobName:   newPG.Name,
 		}
 		switch newPG.Status.Phase {
 		case scheduling.PodGroupUnknown:

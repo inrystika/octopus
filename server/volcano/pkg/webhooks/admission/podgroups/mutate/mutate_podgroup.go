@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	admissionv1 "k8s.io/api/admission/v1"
-	whv1 "k8s.io/api/admissionregistration/v1"
+	"k8s.io/api/admission/v1beta1"
+	whv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 
@@ -39,13 +39,13 @@ var service = &router.AdmissionService{
 	Path: "/podgroups/mutate",
 	Func: PodGroups,
 
-	MutatingConfig: &whv1.MutatingWebhookConfiguration{
-		Webhooks: []whv1.MutatingWebhook{{
+	MutatingConfig: &whv1beta1.MutatingWebhookConfiguration{
+		Webhooks: []whv1beta1.MutatingWebhook{{
 			Name: "mutatepodgroup.volcano.sh",
-			Rules: []whv1.RuleWithOperations{
+			Rules: []whv1beta1.RuleWithOperations{
 				{
-					Operations: []whv1.OperationType{whv1.Create},
-					Rule: whv1.Rule{
+					Operations: []whv1beta1.OperationType{whv1beta1.Create},
+					Rule: whv1beta1.Rule{
 						APIGroups:   []string{schedulingv1beta1.SchemeGroupVersion.Group},
 						APIVersions: []string{schedulingv1beta1.SchemeGroupVersion.Version},
 						Resources:   []string{"podgroups"},
@@ -63,7 +63,7 @@ type patchOperation struct {
 }
 
 // PodGroups mutate podgroups.
-func PodGroups(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
+func PodGroups(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	klog.V(3).Infof("Mutating %s podgroup %s.", ar.Request.Operation, ar.Request.Name)
 
 	podgroup, err := schema.DecodePodGroup(ar.Request.Object, ar.Request.Resource)
@@ -73,7 +73,7 @@ func PodGroups(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 
 	var patchBytes []byte
 	switch ar.Request.Operation {
-	case admissionv1.Create:
+	case v1beta1.Create:
 		patchBytes, err = createPodGroupPatch(podgroup)
 	default:
 		return util.ToAdmissionResponse(fmt.Errorf("invalid operation `%s`, "+
@@ -81,21 +81,18 @@ func PodGroups(ar admissionv1.AdmissionReview) *admissionv1.AdmissionResponse {
 	}
 
 	if err != nil {
-		return &admissionv1.AdmissionResponse{
+		return &v1beta1.AdmissionResponse{
 			Allowed: false,
 			Result:  &metav1.Status{Message: err.Error()},
 		}
 	}
 
-	reviewResponse := admissionv1.AdmissionResponse{
-		Allowed: true,
-		Patch:   patchBytes,
+	pt := v1beta1.PatchTypeJSONPatch
+	return &v1beta1.AdmissionResponse{
+		Allowed:   true,
+		Patch:     patchBytes,
+		PatchType: &pt,
 	}
-	if len(patchBytes) > 0 {
-		pt := admissionv1.PatchTypeJSONPatch
-		reviewResponse.PatchType = &pt
-	}
-	return &reviewResponse
 }
 
 func createPodGroupPatch(podgroup *schedulingv1beta1.PodGroup) ([]byte, error) {

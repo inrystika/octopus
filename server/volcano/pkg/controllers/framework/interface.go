@@ -19,7 +19,6 @@ package framework
 import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-
 	vcclientset "volcano.sh/apis/pkg/client/clientset/versioned"
 )
 
@@ -28,7 +27,7 @@ type ControllerOption struct {
 	KubeClient            kubernetes.Interface
 	VolcanoClient         vcclientset.Interface
 	SharedInformerFactory informers.SharedInformerFactory
-	SchedulerNames        []string
+	SchedulerName         string
 	WorkerNum             uint32
 	MaxRequeueNum         int
 }

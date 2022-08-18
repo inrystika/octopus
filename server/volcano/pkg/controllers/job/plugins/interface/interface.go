@@ -30,21 +30,21 @@ type PluginClientset struct {
 
 // PluginInterface interface.
 type PluginInterface interface {
-	// Name returns the unique name of Plugin.
+	// The unique name of Plugin.
 	Name() string
 
-	// OnPodCreate is called for all pod when createJobPod
+	// for all pod when createJobPod
 	OnPodCreate(pod *v1.Pod, job *vcbatch.Job) error
 
-	// OnJobAdd is called when do job initiation
+	// called when do job initiation
 	// Note: it can be called multi times, must be idempotent
 	OnJobAdd(job *vcbatch.Job) error
 
-	// OnJobDelete is called when killJob
+	// called when killJob
 	// Note: it can be called multi times, must be idempotent
 	OnJobDelete(job *vcbatch.Job) error
 
-	// OnJobUpdate is called when job updated
+	// called when job updated
 	// Note: it can be called multi times, must be idempotent
 	OnJobUpdate(job *vcbatch.Job) error
 }

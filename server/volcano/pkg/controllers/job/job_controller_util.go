@@ -18,7 +18,6 @@ package job
 
 import (
 	"fmt"
-	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,14 +32,12 @@ import (
 	jobhelpers "volcano.sh/volcano/pkg/controllers/job/helpers"
 )
 
-var detectionPeriodOfDependsOntask time.Duration
-
 // MakePodName append podname,jobname,taskName and index and returns the string.
 func MakePodName(jobName string, taskName string, index int) string {
 	return fmt.Sprintf(jobhelpers.PodNameFmt, jobName, taskName, index)
 }
 
-func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy batch.NumaPolicy, ix int, jobForwarding bool) *v1.Pod {
+func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, ix int) *v1.Pod {
 	templateCopy := template.DeepCopy()
 
 	pod := &v1.Pod{
@@ -100,16 +97,11 @@ func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy b
 	}
 
 	pod.Annotations[batch.TaskSpecKey] = tsKey
-	pgName := job.Name + "-" + string(job.UID)
-	pod.Annotations[schedulingv2.KubeGroupNameAnnotationKey] = pgName
+	pod.Annotations[schedulingv2.KubeGroupNameAnnotationKey] = job.Name
 	pod.Annotations[batch.JobNameKey] = job.Name
 	pod.Annotations[batch.QueueNameKey] = job.Spec.Queue
 	pod.Annotations[batch.JobVersion] = fmt.Sprintf("%d", job.Status.Version)
 	pod.Annotations[batch.PodTemplateKey] = fmt.Sprintf("%s-%s", job.Name, template.Name)
-
-	if topologyPolicy != "" {
-		pod.Annotations[schedulingv2.NumaPolicyKey] = string(topologyPolicy)
-	}
 
 	if len(job.Annotations) > 0 {
 		if value, found := job.Annotations[schedulingv2.PodPreemptable]; found {
@@ -132,7 +124,6 @@ func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy b
 
 	// Set pod labels for Service.
 	pod.Labels[batch.JobNameKey] = job.Name
-	pod.Labels[batch.TaskSpecKey] = tsKey
 	pod.Labels[batch.JobNamespaceKey] = job.Namespace
 	pod.Labels[batch.QueueNameKey] = job.Spec.Queue
 	if len(job.Labels) > 0 {
@@ -160,11 +151,6 @@ func createJobPod(job *batch.Job, template *v1.PodTemplateSpec, topologyPolicy b
 		if len(pod.Spec.InitContainers[i].TerminationMessagePolicy) == 0 {
 			pod.Spec.InitContainers[i].TerminationMessagePolicy = v1.TerminationMessageFallbackToLogsOnError
 		}
-	}
-
-	if jobForwarding {
-		pod.Annotations[batch.JobForwardingKey] = "true"
-		pod.Labels[batch.JobForwardingKey] = "true"
 	}
 
 	return pod
@@ -243,6 +229,34 @@ func checkEventExist(policyEvents []v1alpha1.Event, reqEvent v1alpha1.Event) boo
 		}
 	}
 	return false
+
+}
+
+func addResourceList(list, req, limit v1.ResourceList) {
+	for name, quantity := range req {
+
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+		} else {
+			value.Add(quantity)
+			list[name] = value
+		}
+	}
+
+	if req != nil {
+		return
+	}
+
+	// If Requests is omitted for a container,
+	// it defaults to Limits if that is explicitly specified.
+	for name, quantity := range limit {
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+		} else {
+			value.Add(quantity)
+			list[name] = value
+		}
+	}
 }
 
 // TaskPriority structure.
@@ -264,16 +278,12 @@ func (p TasksPriority) Less(i, j int) bool {
 func (p TasksPriority) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 func isControlledBy(obj metav1.Object, gvk schema.GroupVersionKind) bool {
-	controllerRef := metav1.GetControllerOf(obj)
-	if controllerRef == nil {
+	controlerRef := metav1.GetControllerOf(obj)
+	if controlerRef == nil {
 		return false
 	}
-	if controllerRef.APIVersion == gvk.GroupVersion().String() && controllerRef.Kind == gvk.Kind {
+	if controlerRef.APIVersion == gvk.GroupVersion().String() && controlerRef.Kind == gvk.Kind {
 		return true
 	}
 	return false
-}
-
-func SetDetectionPeriodOfDependsOntask(period time.Duration) {
-	detectionPeriodOfDependsOntask = period
 }

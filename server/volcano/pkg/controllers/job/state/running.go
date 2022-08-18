@@ -20,7 +20,6 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 	"volcano.sh/apis/pkg/apis/bus/v1alpha1"
 	"volcano.sh/volcano/pkg/controllers/apis"
@@ -41,19 +40,16 @@ func (ps *runningState) Execute(action v1alpha1.Action) error {
 	case v1alpha1.AbortJobAction:
 		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
 			status.State.Phase = vcbatch.Aborting
-			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		})
 	case v1alpha1.TerminateJobAction:
 		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
 			status.State.Phase = vcbatch.Terminating
-			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		})
 	case v1alpha1.CompleteJobAction:
 		return KillJob(ps.job, PodRetainPhaseSoft, func(status *vcbatch.JobStatus) bool {
 			status.State.Phase = vcbatch.Completing
-			status.FinishAt = &metav1.Time{Time: time.Now()}
 			return true
 		})
 	default:

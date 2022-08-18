@@ -64,4 +64,5 @@ func DeleteJob() error {
 	}
 	fmt.Printf("delete job %v successfully\n", deleteJobFlags.JobName)
 	return nil
+
 }

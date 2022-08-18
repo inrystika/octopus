@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -317,7 +317,7 @@ var _ = Describe("Job E2E Test", func() {
 
 		need := schedulingapi.NewResource(v1.ResourceList{"cpu": resource.MustParse("500m")})
 		var count int32
-		for need.LessEqual(alloc, schedulingapi.Zero) {
+		for need.LessEqual(alloc) {
 			count++
 			alloc.Sub(need)
 		}
