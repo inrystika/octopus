@@ -2,6 +2,7 @@ package develop
 
 import (
 	"context"
+	"encoding/json"
 	"server/base-server/internal/data/dao/model"
 	commapi "server/common/api/v1"
 	"server/common/constant"
@@ -9,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
@@ -77,7 +77,7 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 
 	status := utils.Format(newjob.Name, "notebook", newjob.Namespace, "", "", newjob)
 	if nil != status {
-		buf, err := jsoniter.Marshal(status)
+		buf, err := json.Marshal(status)
 		if err != nil {
 			s.log.Error(context.TODO(), "UpdateNotebook err when onJobUpdate: "+newjob.Name, err)
 		}
