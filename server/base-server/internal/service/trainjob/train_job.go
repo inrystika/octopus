@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 
 	"github.com/jinzhu/copier"
-	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -1190,7 +1189,7 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 	status := utils.Format(newjob.Name, "trainJob", newjob.Namespace, "", "", newjob)
 	if nil != status {
-		buf, err := jsoniter.Marshal(status)
+		buf, err := json.Marshal(status)
 		if err != nil {
 			s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
 		}

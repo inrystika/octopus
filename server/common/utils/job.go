@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"server/common/constant"
 	"strings"
 
@@ -8,7 +9,6 @@ import (
 
 	"math"
 
-	jsoniter "github.com/json-iterator/go"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -264,10 +264,9 @@ func Format(jobName, jobKind, userID, cluster string, ExitDiagnostics string, jo
 		}
 
 		container := role.Template.Spec.Containers[0]
-
 		task.Image = container.Image
 		task.Command = append([]string{}, container.Command...)
-		buf, _ := jsoniter.Marshal(container.Resources.Limits)
+		buf, _ := json.Marshal(container.Resources.Limits)
 		if nil != buf {
 			task.Resource = string(buf)
 		}
