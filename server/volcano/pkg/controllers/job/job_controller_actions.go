@@ -190,26 +190,6 @@ func (cc *jobcontroller) initiateJob(job *batch.Job) (*batch.Job, error) {
 		return nil, err
 	}
 
-	newJob.Status.CreatedAt = metav1.Now()
-	if len(newJob.Status.TaskRoleStatus) == 0 {
-		for _, ts := range newJob.Spec.Tasks {
-			trst := batch.TaskRoleStatus{
-				Name:  ts.Name,
-				Phase: string(batch.Pending),
-			}
-			for i := 0; i < int(ts.Replicas); i++ {
-				podName := fmt.Sprintf(jobhelpers.PodNameFmt, newJob.Name, ts.Name, i)
-				replicaStatus := batch.ReplicaStatus{
-					Index:   uint(i),
-					PodName: podName,
-					Phase:   string(v1.PodPending),
-				}
-				trst.ReplicaStatuses = append(trst.ReplicaStatuses, replicaStatus)
-			}
-			newJob.Status.TaskRoleStatus = append(newJob.Status.TaskRoleStatus, trst)
-		}
-	}
-
 	return newJob, nil
 }
 
@@ -450,21 +430,14 @@ func (cc *jobcontroller) syncJob(jobInfo *apis.JobInfo, updateStatus state.Updat
 		}
 	}
 
-	job.Status = batch.JobStatus{
-		State: job.Status.State,
-
-		Pending:             pending,
-		Running:             running,
-		Succeeded:           succeeded,
-		Failed:              failed,
-		Terminating:         terminating,
-		Unknown:             unknown,
-		Version:             job.Status.Version,
-		MinAvailable:        job.Spec.MinAvailable,
-		TaskStatusCount:     taskStatusCount,
-		ControlledResources: job.Status.ControlledResources,
-		RetryCount:          job.Status.RetryCount,
-	}
+	job.Status.Pending = pending
+	job.Status.Running = running
+	job.Status.Succeeded = succeeded
+	job.Status.Failed = failed
+	job.Status.Terminating = terminating
+	job.Status.Unknown = unknown
+	job.Status.MinAvailable = job.Spec.MinAvailable
+	job.Status.TaskStatusCount = taskStatusCount
 
 	if updateStatus != nil {
 		if updateStatus(&job.Status) {
@@ -727,6 +700,27 @@ func (cc *jobcontroller) initJobStatus(job *batch.Job) (*batch.Job, error) {
 	job.Status.State.Phase = batch.Pending
 	job.Status.State.LastTransitionTime = metav1.Now()
 	job.Status.MinAvailable = job.Spec.MinAvailable
+
+	job.Status.CreatedAt = metav1.Now()
+	if len(job.Status.TaskRoleStatus) == 0 {
+		for _, ts := range job.Spec.Tasks {
+			trst := batch.TaskRoleStatus{
+				Name:  ts.Name,
+				Phase: string(batch.Pending),
+			}
+			for i := 0; i < int(ts.Replicas); i++ {
+				podName := fmt.Sprintf(jobhelpers.PodNameFmt, job.Name, ts.Name, i)
+				replicaStatus := batch.ReplicaStatus{
+					Index:   uint(i),
+					PodName: podName,
+					Phase:   string(v1.PodPending),
+				}
+				trst.ReplicaStatuses = append(trst.ReplicaStatuses, replicaStatus)
+			}
+			job.Status.TaskRoleStatus = append(job.Status.TaskRoleStatus, trst)
+		}
+	}
+
 	newJob, err := cc.vcClient.BatchV1alpha1().Jobs(job.Namespace).UpdateStatus(context.TODO(), job, metav1.UpdateOptions{})
 	if err != nil {
 		klog.Errorf("Failed to update status of Job %v/%v: %v",
