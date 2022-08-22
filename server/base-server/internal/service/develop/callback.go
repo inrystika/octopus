@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	jobUtil "server/base-server/internal/common"
+
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
@@ -17,7 +19,45 @@ func (s *developService) onJobAdd(obj interface{}) {
 }
 
 func (s *developService) onJobDelete(obj interface{}) {
-
+	job := utils.ConvertObjToOtjob(obj)
+	if job == nil {
+		return
+	}
+	if job.Annotations == nil {
+		return
+	}
+	jobType, found := job.Annotations[constant.JOB_TYPE]
+	if !found || jobType != constant.NotebookJob {
+		return
+	}
+	nbJob, err := s.data.DevelopDao.GetNotebookJob(context.TODO(), job.Name)
+	if err != nil {
+		s.log.Error(context.TODO(), "GetNotebookJob err when onJobDelete: "+job.Name, err)
+		return
+	}
+	detail := jobUtil.GetStopDetail(nbJob.Detail)
+	detailBuf, err := json.Marshal(detail)
+	if err != nil {
+		s.log.Error(context.TODO(), "Marshal err when onJobDelete:"+job.Name, err)
+	}
+	newJob := &model.NotebookJob{
+		Id:     job.Name,
+		Detail: string(detailBuf),
+	}
+	if !utils.IsCompletedState(nbJob.Status) {
+		newJob.Status = constant.STOPPED
+		err = s.data.DevelopDao.UpdateNotebookSelective(context.TODO(), &model.Notebook{
+			Id:     nbJob.NotebookId,
+			Status: constant.STOPPED,
+		})
+		if err != nil {
+			s.log.Error(context.TODO(), "UpdateNotebookSelective err when onJobDelete:"+job.Name, err)
+		}
+	}
+	err = s.data.DevelopDao.UpdateNotebookJobSelective(context.TODO(), newJob)
+	if err != nil {
+		s.log.Error(context.TODO(), "UpdateNotebookJobSelective err when onJobDelete:"+job.Name, err)
+	}
 }
 
 func (s *developService) onJobUpdate(old, obj interface{}) {
@@ -124,6 +164,13 @@ func (s *developService) onJobUpdate(old, obj interface{}) {
 		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
 		if err != nil { // 插入事件记录出错只打印
 			s.log.Error(ctx, "create notebook event record error:", err)
+		}
+	}
+
+	if utils.IsCompletedState(newState) {
+		err = s.data.Cluster.DeleteJob(context.TODO(), newjob.Namespace, newjob.Name)
+		if err != nil {
+			s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate: "+newjob.Name, err)
 		}
 	}
 }
