@@ -659,17 +659,17 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
 	}
 
-	err = s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
-	if err != nil {
-		return nil, err
-	}
-
 	err = s.deleteIngress(ctx, nb, nbJob)
 	if err != nil {
 		s.log.Errorw(ctx, "err", err)
 	}
 
 	err = s.deleteService(ctx, nb, nbJob)
+	if err != nil {
+		s.log.Errorw(ctx, "err", err)
+	}
+
+	err = s.data.Cluster.DeleteJob(ctx, nb.UserId, nbJob.Id)
 	if err != nil {
 		s.log.Errorw(ctx, "err", err)
 	}
