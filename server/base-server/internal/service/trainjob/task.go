@@ -2,6 +2,7 @@ package trainjob
 
 import (
 	"context"
+	"encoding/json"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
@@ -241,4 +242,68 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 			}, time.Duration(BillingPeriodSec)*time.Second, ctx.Done())
 		}()
 	})
+}
+
+func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
+	// 任务状态更新处理逻辑
+	go func() {
+		utils.HandlePanic(ctx, func(i ...interface{}) {
+			for {
+				select {
+				case job := <-s.updatedJob:
+					trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), job.Name)
+					if err != nil {
+						s.log.Warn(context.TODO(), "GetTrainJob err when onJobUpdate:"+job.Name, err)
+						continue
+					}
+
+					state := utils.MapPhaseToState(typeJob.JobPhase(job.Status.State.Phase))
+
+					if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, state) {
+						continue
+					}
+
+					update := &model.TrainJob{
+						Id:     job.Name,
+						Status: state,
+					}
+
+					now := time.Now()
+					if strings.EqualFold(state, constant.RUNNING) {
+						update.StartedAt = &now
+					} else if utils.IsCompletedState(state) {
+						update.CompletedAt = &now
+					}
+
+					status := utils.Format(job.Name, "trainJob", job.Namespace, "", "", job)
+					if nil != status {
+						buf, err := json.Marshal(status)
+						if err != nil {
+							s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+job.Name, err)
+						}
+						update.Detail = string(buf)
+					}
+
+					err = s.data.TrainJobDao.UpdateTrainJob(context.TODO(), update)
+					if err != nil {
+						s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+job.Name, err)
+						continue
+					}
+
+					if utils.IsCompletedState(state) {
+						err = s.addModel(context.TODO(), trainJob)
+						if err != nil {
+							s.log.Error(context.TODO(), err)
+						}
+						err = s.data.Cluster.DeleteJob(context.TODO(), job.Namespace, job.Name)
+						if err != nil {
+							s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate:"+job.Name, err)
+						}
+					}
+				case <-ctx.Done():
+					return
+				}
+			}
+		})()
+	}()
 }

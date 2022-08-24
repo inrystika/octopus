@@ -2,6 +2,7 @@ package develop
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -11,6 +12,7 @@ import (
 	"server/common/leaderleaselock"
 	"server/common/utils"
 	"server/common/utils/collections/set"
+	"strings"
 	"time"
 
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
@@ -206,6 +208,105 @@ func (s *developService) startNotebookTask() {
 					}
 				})()
 			}, time.Duration(BillingPeriodSec)*time.Second, ctx.Done())
+		}()
+
+		// 任务状态更新处理逻辑
+		go func() {
+			utils.HandlePanic(ctx, func(i ...interface{}) {
+				for {
+					select {
+					case job := <-s.updatedJob:
+						nbJob, err := s.data.DevelopDao.GetNotebookJob(ctx, job.Name)
+						if err != nil {
+							s.log.Warn(ctx, "GetTrainJob err when onJobUpdate:"+job.Name, err)
+							continue
+						}
+
+						state := utils.MapPhaseToState(typeJob.JobPhase(job.Status.State.Phase))
+
+						if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, state) {
+							continue
+						}
+
+						nb, err := s.data.DevelopDao.GetNotebook(ctx, nbJob.NotebookId)
+						if err != nil {
+							s.log.Error(ctx, "GetNotebook err when onJobUpdate:"+job.Name, err)
+							continue
+						}
+
+						nbUp := &model.Notebook{
+							NotebookJobId: job.Name,
+							Status:        state,
+						}
+
+						nbJobUp := &model.NotebookJob{
+							Id:     job.Name,
+							Status: state,
+						}
+
+						status := utils.Format(job.Name, "notebook", job.Namespace, "", "", job)
+						if nil != status {
+							buf, err := json.Marshal(status)
+							if err != nil {
+								s.log.Error(context.TODO(), "UpdateNotebook err when onJobUpdate: "+job.Name, err)
+							}
+							nbJobUp.Detail = string(buf)
+						}
+
+						now := time.Now()
+						record := &model.NotebookEventRecord{
+							Time:       now,
+							NotebookId: nb.Id,
+						}
+
+						if strings.EqualFold(state, constant.RUNNING) {
+							nbJobUp.StartedAt = &now
+							record.Type = commapi.NotebookEventRecordType_RUN
+						} else if utils.IsCompletedState(state) {
+							nbJobUp.StoppedAt = &now
+							nbJobUp.Status = constant.STOPPED //转为stopped
+							nbUp.Status = constant.STOPPED    //转为stopped
+
+							err = s.deleteIngress(ctx, nb, nbJob)
+							if err != nil {
+								s.log.Error(ctx, "deleteIngress err when onJobUpdate:"+job.Name, err)
+							}
+
+							err = s.deleteService(ctx, nb, nbJob)
+							if err != nil {
+								s.log.Error(ctx, "deleteService err when onJobUpdate:"+job.Name, err)
+							}
+							record.Type = commapi.NotebookEventRecordType_STOP
+						}
+
+						err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, nbUp)
+						if err != nil {
+							s.log.Error(ctx, "UpdateNotebookSelectiveByJobId err when onJobUpdate:"+job.Name, err)
+						}
+
+						err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, nbJobUp)
+						if err != nil {
+							s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+job.Name, err)
+						}
+
+						if utils.IsRunningOrCompletedState(state) {
+							err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
+							if err != nil { // 插入事件记录出错只打印
+								s.log.Error(ctx, "create notebook event record error:", err)
+							}
+						}
+
+						if utils.IsCompletedState(state) {
+							err = s.data.Cluster.DeleteJob(context.TODO(), job.Namespace, job.Name)
+							if err != nil {
+								s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate: "+job.Name, err)
+							}
+						}
+					case <-ctx.Done():
+						return
+					}
+				}
+			})()
 		}()
 
 		go func() {
