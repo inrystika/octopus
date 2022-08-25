@@ -256,10 +256,8 @@ func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
 						s.log.Warn(context.TODO(), "GetTrainJob err when onJobUpdate:"+job.Name, err)
 						continue
 					}
-
 					state := utils.MapPhaseToState(typeJob.JobPhase(job.Status.State.Phase))
-
-					if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, state) {
+					if utils.IsCompletedState(trainJob.Status) {
 						continue
 					}
 
@@ -269,7 +267,7 @@ func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
 					}
 
 					now := time.Now()
-					if strings.EqualFold(state, constant.RUNNING) {
+					if strings.EqualFold(state, constant.RUNNING) && strings.EqualFold(trainJob.Status, constant.PENDING) {
 						update.StartedAt = &now
 					} else if utils.IsCompletedState(state) {
 						update.CompletedAt = &now

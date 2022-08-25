@@ -156,7 +156,11 @@ func (s *developService) startNotebookTask() {
 								var payEndAt int64
 								var payStatus api.BillingPayRecordStatus
 								if utils.IsCompletedState(j.Status) {
-									payEndAt = j.StoppedAt.Unix()
+									if j.StoppedAt == nil {
+										payEndAt = time.Now().Unix()
+									} else {
+										payEndAt = j.StoppedAt.Unix()
+									}
 									payStatus = api.BillingPayRecordStatus_BPRS_PAY_COMPLETED
 								} else {
 									payEndAt = time.Now().Unix()
@@ -224,7 +228,7 @@ func (s *developService) startNotebookTask() {
 
 						state := utils.MapPhaseToState(typeJob.JobPhase(job.Status.State.Phase))
 
-						if utils.IsCompletedState(nbJob.Status) || strings.EqualFold(nbJob.Status, state) {
+						if utils.IsCompletedState(nbJob.Status) {
 							continue
 						}
 
@@ -259,7 +263,7 @@ func (s *developService) startNotebookTask() {
 							NotebookId: nb.Id,
 						}
 
-						if strings.EqualFold(state, constant.RUNNING) {
+						if strings.EqualFold(state, constant.RUNNING) && strings.EqualFold(nbJob.Status, constant.PENDING) {
 							nbJobUp.StartedAt = &now
 							record.Type = commapi.NotebookEventRecordType_RUN
 						} else if utils.IsCompletedState(state) {
