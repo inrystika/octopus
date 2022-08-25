@@ -52,6 +52,7 @@ type developService struct {
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
 	userService         api.UserServiceServer
+	updatedJob          chan *vcBatch.Job
 }
 
 type DevelopService interface {
@@ -104,6 +105,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
 		userService:         userService,
+		updatedJob:          make(chan *vcBatch.Job, 1000),
 	}
 
 	s.data.Cluster.RegisterJobEventHandler(cache.ResourceEventHandlerFuncs{
@@ -500,7 +502,6 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 	if err != nil {
 		return nil, err
 	}
-
 	return &api.StartNotebookReply{Id: req.Id}, nil
 }
 
@@ -629,7 +630,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
 	Job.Spec.Plugins = map[string][]string{
 		"env": {},
-		"svc": {"--disable-network-policy"},
+		"svc": {"--disable-network-policy=true"},
 	}
 	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
 		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},

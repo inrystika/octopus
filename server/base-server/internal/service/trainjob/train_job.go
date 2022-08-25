@@ -54,6 +54,7 @@ type trainJobService struct {
 	resourcePoolService api.ResourcePoolServiceServer
 	billingService      api.BillingServiceServer
 	userService         api.UserServiceServer
+	updatedJob          chan *vcBatch.Job
 }
 
 type TrainJobService interface {
@@ -81,9 +82,11 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
 		userService:         userService,
+		updatedJob:          make(chan *vcBatch.Job, 1000),
 	}
 
 	s.trainJobBilling(context.Background())
+	s.trainJobUpdateStaus(context.Background())
 
 	s.data.Cluster.RegisterJobEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    s.onJobAdd,
@@ -1198,6 +1201,9 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 			return
 		}
 	}
+
+	jobCopy := newjob.DeepCopy()
+	s.updatedJob <- jobCopy
 
 	trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
 	if err != nil {
