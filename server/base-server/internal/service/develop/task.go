@@ -262,8 +262,9 @@ func (s *developService) startNotebookTask() {
 							Time:       now,
 							NotebookId: nb.Id,
 						}
-
+						pendingToRunning := false
 						if strings.EqualFold(state, constant.RUNNING) && strings.EqualFold(nbJob.Status, constant.PENDING) {
+							pendingToRunning = true
 							nbJobUp.StartedAt = &now
 							record.Type = commapi.NotebookEventRecordType_RUN
 						} else if utils.IsCompletedState(state) {
@@ -293,7 +294,7 @@ func (s *developService) startNotebookTask() {
 							s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+job.Name, err)
 						}
 
-						if utils.IsRunningOrCompletedState(state) {
+						if utils.IsCompletedState(state) || pendingToRunning {
 							err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
 							if err != nil { // 插入事件记录出错只打印
 								s.log.Error(ctx, "create notebook event record error:", err)
