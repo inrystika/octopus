@@ -576,6 +576,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		task.Name = taskName
 		task.Replicas = 1
 		task.Template = v1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{"volcano.sh/task-spec": buildTaskName(i)},
+			},
 			Spec: v1.PodSpec{
 				RestartPolicy: v1.RestartPolicyNever,
 				Containers: []v1.Container{
