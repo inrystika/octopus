@@ -32,6 +32,7 @@ const (
 	k8sTaskNamePrefix   = "task"
 	NoDistributedJobNum = 1
 	shmResource         = "shm"
+	readonlyCodeDir     = "/readonlycode"
 )
 
 type trainJobService struct {
@@ -164,8 +165,11 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	return &api.TrainJobReply{JobId: trainJobId}, nil
 }
 
-func (s *trainJobService) buildCmd(config *model.Config) []string {
-	cmd := fmt.Sprintf("cd %s;%s ", s.conf.Service.DockerCodePath, config.Command)
+func (s *trainJobService) buildCmd(job *model.TrainJob, config *model.Config) []string {
+	cmd := config.Command
+	if job.AlgorithmId != "" {
+		cmd = fmt.Sprintf("cp -r %s/* %s;cd %s;%s ", readonlyCodeDir, s.conf.Service.DockerCodePath, s.conf.Service.DockerCodePath, config.Command)
+	}
 	if len(config.Parameters) == 0 {
 		return []string{"sh", "-c", cmd}
 	} else {
@@ -513,7 +517,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		volumeMounts := []v1.VolumeMount{
 			{
 				Name:      "data",
-				MountPath: s.conf.Service.DockerCodePath,
+				MountPath: readonlyCodeDir,
 				SubPath:   startJobInfo.algorithmPath,
 				ReadOnly:  true,
 			},
@@ -539,6 +543,11 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Name:      "localtime",
 				MountPath: "/etc/localtime",
 			},
+			{
+				Name:      "code",
+				MountPath: s.conf.Service.DockerCodePath,
+				ReadOnly:  false,
+			},
 		}
 
 		volumes := []v1.Volume{
@@ -556,6 +565,11 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 					HostPath: &v1.HostPathVolumeSource{
 						Path: "/etc/localtime",
 					}},
+			},
+			{
+				Name: "code",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{}},
 			},
 		}
 
@@ -594,7 +608,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 								Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
 							},
 							VolumeMounts: volumeMounts,
-							Command:      s.buildCmd(i),
+							Command:      s.buildCmd(job, i),
 						},
 					},
 					NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
@@ -627,8 +641,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				//1. privileged
 				//处理空情况
 				if task.Template.Spec.Containers[0].SecurityContext == nil {
-					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{
-					}
+					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{}
 				}
 				privileged := true
 				task.Template.Spec.Containers[0].SecurityContext.Privileged = &privileged
@@ -640,7 +653,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 							Path: "/usr/local/Ascend/driver",
 						},
 					},
-				},v1.Volume{
+				}, v1.Volume{
 					Name: "ascend-driver-info",
 					VolumeSource: v1.VolumeSource{
 						HostPath: &v1.HostPathVolumeSource{
@@ -655,9 +668,9 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						MountPath: "/usr/local/Ascend/driver",
 					},
 					v1.VolumeMount{
-						Name:  "ascend-driver-info",
+						Name:      "ascend-driver-info",
 						MountPath: "/etc/ascend_install.info",
-				})
+					})
 
 			}
 		}
@@ -879,7 +892,7 @@ func (s *trainJobService) checkParamForTemplate(ctx context.Context, template *m
 		return err
 	}
 	//数据集
-	if template.DataSetId != "" {  //判空，允许通过API调用不传此参数
+	if template.DataSetId != "" { //判空，允许通过API调用不传此参数
 		_, err = s.getDatasetAndCheckPerm(ctx, template.UserId, template.WorkspaceId, template.DataSetId, template.DataSetVersion)
 		if err != nil {
 			return err
