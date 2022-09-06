@@ -38,8 +38,8 @@
                     <el-input v-model="ruleForm.name" />
                 </el-form-item>
                 <el-form-item label="机时价格" prop="price">
-                    <el-input-number v-model="ruleForm.price" :min="0" :max="10" label="描述文字" />
-                    <span>价格1~10,仅支持正整数</span>
+                    <el-input-number v-model="ruleForm.price" :min="0" label="描述文字" />
+                    <span>  仅支持正整数</span>
                 </el-form-item>
                 <el-form-item label="资源信息" prop="resourceQuantity">
                     <div v-for="(item, index) in ruleForm.resourceQuantity" :key="index">

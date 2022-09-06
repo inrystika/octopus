@@ -18,6 +18,11 @@
                     <span>{{ scope.row.email }}</span>
                 </template>
             </el-table-column>
+            <el-table-column v-if="user" label="电话" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.phone }}</span>
+                </template>
+            </el-table-column>
             <el-table-column v-if="group" label="群组名称" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
@@ -33,6 +38,11 @@
                     <span>{{ scope.row.status===1?'已冻结':'已激活' }}</span>
                 </template>
             </el-table-column>
+            <el-table-column v-if="user" label="备注" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.desc }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="创建时间" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.createdAt | parseTime }}</span>
@@ -43,17 +53,17 @@
                     <span>{{ scope.row.updatedAt | parseTime }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" align="center">
+            <el-table-column label="操作" align="center" width="300">
                 <template slot-scope="scope">
-                    <el-button v-if="user" type="text" @click="handleUserEdit(scope.row)">编辑</el-button>
+                    <el-button v-if="user" type="text" @click="handleUserEdit(scope.row)">资源池</el-button>
                     <el-button v-if="scope.row.status===2 && user" type="text" @click="handleFreeze(scope.row)">冻结
                     </el-button>
                     <el-button v-if="scope.row.status===1 && user" type="text" @click="handleThaw( scope.row)">激活
                     </el-button>
-                    <el-button v-if="user" type="text" @click="handleReset(scope.row)">重置密码</el-button>
+                    <el-button v-if="user" type="text" @click="handleReset(scope.row)">编辑</el-button>
                     <el-button v-if="group" type="text" @click="handleEdit(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
-                    <el-button type="text" @click="handleDetail(scope.row)">{{ user?'用户详情':'群组详情' }}</el-button>
+                    <el-button type="text" @click="handleDetail(scope.row)">{{ user?'所属群组':'用户列表' }}</el-button>
                     <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
                 </template>
             </el-table-column>
@@ -73,7 +83,8 @@
             @confirm="confirm" @close="close">
         </userConfig>
         <!-- 资源池绑定对话框 -->
-        <userEdit v-if="userEdit" :userResourcePoolList="userResourcePoolList" :row="row" @cancel="cancel" @confirm="confirm" @close="close">
+        <userEdit v-if="userEdit" :userResourcePoolList="userResourcePoolList" :row="row" @cancel="cancel"
+            @confirm="confirm" @close="close">
         </userEdit>
         <!-- 详情对话框 -->
         <el-dialog :title="user?'用户名' + userName:'群组名' + groupName" :visible.sync="detailVisible" width="30%" center
@@ -177,7 +188,7 @@
                     if (response.success) {
                         if (response.data !== null && response.data.resourcePools !== null) {
                             this.userEdit = true
-                            this.userResourcePoolList =response.data.resourcePools
+                            this.userResourcePoolList = response.data.resourcePools
                         } else {
                             this.userResourcePoolList = []
                         }
