@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	pb "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
@@ -10,8 +11,6 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"time"
-
-	"github.com/jinzhu/copier"
 )
 
 type UserService struct {
@@ -58,6 +57,7 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 			Gender:        int32(user.Gender),
 			Status:        int32(user.Status),
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
 		}
 	}
 
@@ -102,6 +102,7 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 			Gender:        int32(user.Gender),
 			Status:        int32(user.Status),
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
 		},
 		Workspaces: workspaces,
 	}, nil
@@ -114,12 +115,12 @@ func (s *UserService) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.
 		Email:    req.Email,
 		Phone:    req.Phone,
 		Gender:   innterapi.GenderType(req.Gender),
+		Desc:     req.Desc,
 	})
 
 	if err != nil {
 		return nil, err
 	}
-
 	user := addUserReply.User
 
 	_, err = s.data.BillingClient.CreateBillingOwner(ctx, &innterapi.CreateBillingOwnerRequest{
@@ -151,6 +152,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		Phone:         req.User.Phone,
 		Gender:        innterapi.GenderType(req.User.Gender),
 		ResourcePools: req.User.ResourcePools,
+		Desc:          req.User.Desc,
 	})
 
 	if err != nil {
@@ -167,6 +169,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 			Phone:     result.User.Phone,
 			Gender:    int32(result.User.Gender),
 			Status:    int32(result.User.Status),
+			Desc:      result.User.Desc,
 		},
 	}, nil
 }
