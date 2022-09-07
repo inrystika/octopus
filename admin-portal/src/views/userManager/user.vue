@@ -152,7 +152,8 @@
                     pageSize: 10
                 },
                 conKey: [],
-                conValue: {}
+                conValue: {},
+                time: null
             }
         },
         created() {
@@ -175,12 +176,12 @@
                 this.searchForm = []
             }
             this.getList(this.searchData)
-            // this.timer = setInterval(this.getList, 1000);
+
         },
-        // beforeDestroy() {
-        //     clearInterval(this.timer);
-        //     this.timer = null;
-        // },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+            this.timer = null;
+        },
         methods: {
             handleUserEdit(row) {
                 this.row = row
@@ -309,7 +310,8 @@
                 this.operateVisible = val
                 this.userConfigVisible = val
                 this.userEdit = val
-                this.getList(this.searchData)
+                this.timer = setTimeout(this.getList, 500)
+
             },
             close(val) {
                 this.CreateVisible = val
@@ -322,6 +324,9 @@
                 this.CreateVisible = true
             },
             getList(data) {
+                if (!data) {
+                    data = this.searchData
+                }
                 if (this.userTabType === 1) {
                     getUserList(data).then(response => {
                         if (response.success) {
