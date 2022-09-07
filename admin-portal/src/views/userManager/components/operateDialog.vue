@@ -7,10 +7,10 @@
                     <el-input v-model="ruleForm.fullName" disabled />
                 </el-form-item>
                 <el-form-item v-if="user" label="用户新密码" :label-width="formLabelWidth" prop="password">
-                    <el-input v-model="ruleForm.password" />
+                    <el-input v-model="ruleForm.password" type="password" />
                 </el-form-item>
                 <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
-                    <el-input v-model="ruleForm.confirm" />
+                    <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
                 <el-form-item v-if="user" label="电话" :label-width="formLabelWidth" prop="phone">
                     <el-input v-model="ruleForm.phone" />
@@ -74,6 +74,25 @@
                     }
                 }
             };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.ruleForm.confirm !== '') {
+                        this.$refs.ruleForm.validateField('confirm');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
@@ -95,12 +114,13 @@
                 userOptions: [],
                 rules: {
                     password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' }
+                        { required: true, message: '请输入密码', trigger: 'blur' },
+                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' },
+                        { validator: validatePass, trigger: 'blur' }
 
                     ],
                     confirm: [
-                        { required: true, message: '请再次输入密码', trigger: 'blur' }
-
+                        { validator: validatePass2, trigger: 'blur' }
                     ],
                     name: [
                         { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -221,27 +241,21 @@
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
                         if (this.userType === 'user') {
-                            if (this.ruleForm.confirm === this.ruleForm.password) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id, phone: this.ruleForm.phone.toString(),desc:this.ruleForm.desc }
-                                editUser(data).then(response => {
-                                    if (response.success) {
-                                        this.$message({
-                                            message: '修改成功',
-                                            type: 'success'
-                                        });
-                                    } else {
-                                        this.$message({
-                                            message: response.error.message,
-                                            type: 'error'
-                                        });
-                                    }
-                                })
-                            } else {
-                                this.$message({
-                                    message: '输入密码不一致!',
-                                    type: 'warning'
-                                });
-                            }
+                            const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                            editUser(data).then(response => {
+                                if (response.success) {
+                                    this.$message({
+                                        message: '修改成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: response.error.message,
+                                        type: 'error'
+                                    });
+                                }
+                            })
                         } else {
                             const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, id: this.id, userIds: this.ruleForm.userIds }
                             editGroup(data).then(response => {
@@ -250,6 +264,7 @@
                                         message: '修改成功',
                                         type: 'success'
                                     });
+                                    this.$emit('confirm', false)
                                 } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
@@ -258,7 +273,7 @@
                                 }
                             })
                         }
-                        this.$emit('confirm', false)
+
                     } else {
                         console.log('error submit!!');
                         return false;

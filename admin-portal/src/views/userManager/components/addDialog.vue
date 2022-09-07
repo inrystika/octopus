@@ -90,6 +90,25 @@
                     }
                 }
             };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.ruleForm.confirm !== '') {
+                        this.$refs.ruleForm.validateField('confirm');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
@@ -118,16 +137,16 @@
                     ],
                     password: [
                         { required: true, message: '请输入密码', trigger: 'blur' },
-                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' }
+                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' },
+                        { validator: validatePass, trigger: 'blur' }
 
+                    ],
+                    confirm: [
+                        { validator: validatePass2, trigger: 'blur' }
                     ],
                     phone: [
                         { required: false, message: '请输入电话' },
                         { validator: checkPhone, trigger: "blur" }
-                    ],
-                    confirm: [
-                        { required: true, message: '请再次输入密码', trigger: 'blur' }
-
                     ],
                     name: [
                         { required: true, message: '请输入群组名', trigger: 'blur' }
@@ -233,46 +252,40 @@
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        if (this.ruleForm.confirm === this.ruleForm.password) {
-                            if (this.user) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1, phone: this.ruleForm.phone.toString(),desc:this.ruleForm.desc }
-                                createUser(data).then(response => {
-                                    if (response.success === true) {
-                                        this.$message({
-                                            message: '新增用户成功',
-                                            type: 'success'
-                                        });
-                                        this.$emit('confirm', false)
-                                    } else {
-                                        this.$message({
-                                            message: this.getErrorMsg(response.error.subcode),
-                                            type: 'warning'
-                                        });
-                                    }
-                                })
-                            } else if (this.group) {
-                                const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
-                                createGroup(data).then(response => {
-                                    if (response.success === true) {
-                                        this.$message({
-                                            message: '新增群组成功',
-                                            type: 'success'
-                                        });
-                                        this.$emit('confirm', false)
-                                    } else {
-                                        this.$message({
-                                            message: this.getErrorMsg(response.error.subcode),
-                                            type: 'warning'
-                                        });
-                                    }
-                                })
-                            }
-                        } else {
-                            this.$message({
-                                message: '输入密码不一致!',
-                                type: 'warning'
-                            });
+                        if (this.user) {
+                            const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                            createUser(data).then(response => {
+                                if (response.success === true) {
+                                    this.$message({
+                                        message: '新增用户成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
+                        } else if (this.group) {
+                            const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
+                            createGroup(data).then(response => {
+                                if (response.success === true) {
+                                    this.$message({
+                                        message: '新增群组成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
                         }
+
                     } else {
                         console.log('error submit!!');
                         return false;
