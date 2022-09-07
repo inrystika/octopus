@@ -20,7 +20,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/minio/minio-go/v7 v7.0.11
 	github.com/seldonio/seldon-core/operator v1.11.2
 	github.com/sony/sonyflake v1.0.0

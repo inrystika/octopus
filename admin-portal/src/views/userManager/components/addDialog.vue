@@ -12,10 +12,9 @@
                 <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
                     <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
-                <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
-                    <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
-                    <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
-                </el-form-item> -->
+                <el-form-item v-if="user" label="电话" :label-width="formLabelWidth" prop="phone">
+                    <el-input v-model="ruleForm.phone" />
+                </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model.trim="ruleForm.name" />
                 </el-form-item>
@@ -32,6 +31,9 @@
                 </el-form-item>
                 <el-form-item v-if="user" label="姓名" :label-width="formLabelWidth" prop="fullname">
                     <el-input v-model.trim="ruleForm.fullname" />
+                </el-form-item>
+                <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="ruleForm.desc"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -75,18 +77,31 @@
                 }
                 callback(new Error("请输入合法的邮箱地址"));
             }
-
+            var checkPhone = (rule, value, callback) => {
+                if (value === '') {
+                    callback();
+                } else {
+                    let reg = /^(13|14|15|17|18|19)[0-9]{9}$/
+                    if (reg.test(value)) {
+                        callback();
+                    }
+                    else {
+                        callback("请输入正确手机号码");
+                    }
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
                     fullname: '',
                     password: '',
                     confirm: '',
-
+                    phone: '',
                     resourcePoolId: '',
                     name: '',
                     userIds: [],
-                    email: undefined
+                    email: undefined,
+                    desc: ''
                 },
                 CreateFormVisible: true,
                 user: false,
@@ -105,6 +120,10 @@
                         { required: true, message: '请输入密码', trigger: 'blur' },
                         { min: 8, message: '密码长度不得少于8位', trigger: 'blur' }
 
+                    ],
+                    phone: [
+                        { required: false, message: '请输入电话' },
+                        { validator: checkPhone, trigger: "blur" }
                     ],
                     confirm: [
                         { required: true, message: '请再次输入密码', trigger: 'blur' }
@@ -216,7 +235,7 @@
                     if (valid) {
                         if (this.ruleForm.confirm === this.ruleForm.password) {
                             if (this.user) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1 }
+                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1, phone: this.ruleForm.phone.toString(),desc:this.ruleForm.desc }
                                 createUser(data).then(response => {
                                     if (response.success === true) {
                                         this.$message({

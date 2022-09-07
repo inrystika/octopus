@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-dialog :title="userType==='user'?'重置密码':'编辑群组信息'" width="35%" :visible.sync="CreateFormVisible"
+        <el-dialog :title="userType==='user'?'编辑用户信息':'编辑群组信息'" width="35%" :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item v-if="user" label="用户名称" :label-width="formLabelWidth">
@@ -12,10 +12,12 @@
                 <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
                     <el-input v-model="ruleForm.confirm" />
                 </el-form-item>
-                <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
-                    <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
-                    <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
-                </el-form-item> -->
+                <el-form-item v-if="user" label="电话" :label-width="formLabelWidth" prop="phone">
+                    <el-input v-model="ruleForm.phone" />
+                </el-form-item>
+                <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model="ruleForm.name" disabled />
                 </el-form-item>
@@ -59,6 +61,19 @@
             }
         },
         data() {
+            var checkPhone = (rule, value, callback) => {
+                if (value === '') {
+                    callback();
+                } else {
+                    let reg = /^(13|14|15|17|18|19)[0-9]{9}$/
+                    if (reg.test(value)) {
+                        callback();
+                    }
+                    else {
+                        callback("请输入正确手机号码");
+                    }
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
@@ -67,7 +82,10 @@
                     fullname: '',
                     resourcePoolId: '',
                     name: '',
-                    userIds: []
+                    userIds: [],
+                    email: undefined,
+                    desc: '',
+                    phone: ''
                 },
                 verifyCode: "",
                 CreateFormVisible: true,
@@ -93,7 +111,11 @@
                     ],
                     resourcePoolId: [
                         { required: true, message: '请选择资源池', trigger: 'change' }
-                    ]
+                    ],
+                    phone: [
+                        { required: false, message: '请输入电话' },
+                        { validator: checkPhone, trigger: "blur" }
+                    ],
                 },
                 formLabelWidth: '120px',
                 pageSize: 100,
@@ -106,6 +128,8 @@
                 this.user = true
                 this.group = false
                 this.ruleForm.fullName = this.row.fullName
+                this.ruleForm.phone = this.row.phone
+                this.ruleForm.desc = this.row.desc
                 this.id = this.row.id
             } else {
                 this.group = true
@@ -198,7 +222,7 @@
                     if (valid) {
                         if (this.userType === 'user') {
                             if (this.ruleForm.confirm === this.ruleForm.password) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id }
+                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id, phone: this.ruleForm.phone.toString(),desc:this.ruleForm.desc }
                                 editUser(data).then(response => {
                                     if (response.success) {
                                         this.$message({
