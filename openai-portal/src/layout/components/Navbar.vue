@@ -7,7 +7,7 @@
           <breadcrumb class="breadcrumb-container" />
         </el-row>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="24">
         <div class="right-menu">
           <el-row class="demo-avatar demo-basic">
             <el-dropdown>
@@ -171,6 +171,7 @@
       height: 100%;
       color: #409EFF;
       font-size: 20px;
+      min-width: 400px;
 
       .avatar-container {
         margin-right: 30px;

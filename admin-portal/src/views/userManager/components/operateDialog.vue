@@ -89,7 +89,7 @@
                 }
             };
             var validatePass2 = (rule, value, callback) => {
-                if (value === '') {
+                if (value === ''||value==undefined) {
                     callback(new Error('请再次输入密码'));
                 } else if (value !== this.ruleForm.password) {
                     callback(new Error('两次输入密码不一致!'));
