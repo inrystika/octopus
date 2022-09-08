@@ -49,6 +49,7 @@ message UserItem {
   repeated Bind bind = 10;
   string ftpUserName = 11;
   repeated string resourcePools = 12;
+  string desc=13;
 }
 
 message Bind {
@@ -64,6 +65,7 @@ message AddUserRequest {
   string password = 4 [(validate.rules).string = {min_len: 8, max_len: 30}];
   GenderType gender = 5 [(validate.rules).enum = {in: [1,2]}];
   Bind bind = 6;
+  string desc=7;
 }
 
 message AddUserReply {
@@ -99,6 +101,7 @@ message ListUserRequest {
   string phone = 7 [(validate.rules).string = {pattern: "^(13|14|15|17|18|19)[0-9]{9}$", ignore_empty:true}];
   string searchKey = 8 [(validate.rules).string = {max_len: 50}];
   UserStatus status = 9 [(validate.rules).enum = {defined_only: true}];
+  string desc = 10;
 }
 
 message ListUserReply {
@@ -116,6 +119,7 @@ message UpdateUserRequest {
   UserStatus status = 7 [(validate.rules).enum = {defined_only: true}];
   repeated Bind bind = 8;
   repeated string resourcePools = 9;
+  string desc=10;
 }
 
 message UpdateUserReply {
