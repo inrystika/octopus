@@ -24,9 +24,11 @@
                             <el-input v-model="loginForm.username" type="text" auto-complete="off"
                                 placeholder="请输入邮箱号" />
                         </el-form-item>
-                        <el-form-item prop="password" label="密码" key="password">
-                            <el-input v-model="loginForm.password" type="password" auto-complete="off"
-                                placeholder="密码" />
+                        <el-form-item label="密码" prop="password">
+                            <el-input type="password" v-model="loginForm.password" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="确认密码" prop="checkPass" v-if="show">
+                            <el-input type="password" v-model="loginForm.checkPass" autocomplete="off"></el-input>
                         </el-form-item>
                         <el-form-item>
                             <el-row type="flex" :gutter="20">
@@ -72,6 +74,25 @@
                 }
                 callback(new Error("请输入合法的邮箱"));
             };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.loginForm.checkPass !== '') {
+                        this.$refs.loginForm.validateField('checkPass');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.loginForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 show: false,
                 hidden: true,
@@ -86,8 +107,15 @@
                     username: [{ required: true, message: "请输入邮箱号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' },
-                    { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }],
+                    password: [
+                        { validator: validatePass, trigger: 'blur' },
+                        { required: true, message: '请输入用户密码', trigger: 'blur' },
+
+                        { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }
+                    ],
+                    checkPass: [
+                        { validator: validatePass2, trigger: 'blur' }
+                    ],
                     fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
                     gender: [
                         { required: true, message: '请选择性别', trigger: 'change' }

@@ -19,7 +19,8 @@
             </el-row>
             <el-row>
                 <el-col :span="12">
-                    <div>选用数据集:<span>{{ data.dataSetName + ":" + data.dataSetVersion }}</span></div>
+                    <div>选用数据集:<span>{{ (data.dataSetName&&data.dataSetVersion)?data.dataSetName + ":" +
+                            data.dataSetVersion:'' }}</span></div>
                 </el-col>
                 <el-col :span="12">
                     <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
@@ -27,7 +28,8 @@
             </el-row>
             <el-row>
                 <el-col v-if="!show" :span="12">
-                    <div>资源规格:<span>{{ data.config[0].resourceSpecName + '' + data.config[0].resourceSpecPrice + '机时/h' }}</span>
+                    <div>资源规格:<span>{{ data.config[0].resourceSpecName + '' + data.config[0].resourceSpecPrice + '机时/h'
+                            }}</span>
                     </div>
                 </el-col>
                 <el-col v-if="!show" :span="12">
@@ -47,14 +49,9 @@
             <el-divider />
             <div class="taskList">分布式任务列表</div>
             <div>
-                <el-table
-                    :data="tableData"
-                    style="width: 100%"
-                    row-key="name"
-                    :tree-props="{children: 'replicaStates', hasChildren: 'hasChildren'}"
-                    default-expand-all
-                    height="700"
-                >
+                <el-table :data="tableData" style="width: 100%" row-key="name"
+                    :tree-props="{children: 'replicaStates', hasChildren: 'hasChildren'}" default-expand-all
+                    height="700">
                     <el-table-column prop="name" label="任务名称" width="200px" :show-overflow-tooltip="true" />
                     <el-table-column label="是否主任务">
                         <template slot-scope="scope">
@@ -67,7 +64,7 @@
                     <el-table-column label="资源规格">
                         <template slot-scope="scope">
                             <span v-if="!scope.row.isChildren">
-                              {{ scope.row.resourceSpecName + '' + scope.row.resourceSpecPrice + '机时/h' }}
+                                {{ scope.row.resourceSpecName + '' + scope.row.resourceSpecPrice + '机时/h' }}
                             </span>
                         </template>
                     </el-table-column>
@@ -105,7 +102,7 @@
             }
         },
         computed: {
-            show: function() {
+            show: function () {
                 if (this.data.isDistributed === true) {
                     return true
                 } else { return false }
@@ -131,7 +128,7 @@
             }
         },
         methods: {
-            command: function(data) {
+            command: function (data) {
                 let command = data.command
                 if (data.parameters != null && data.parameters.length != 0) {
                     data.parameters.forEach(

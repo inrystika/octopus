@@ -517,18 +517,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		volumeMounts := []v1.VolumeMount{
 			{
 				Name:      "data",
-				MountPath: readonlyCodeDir,
-				SubPath:   startJobInfo.algorithmPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      "data",
-				MountPath: s.conf.Service.DockerDatasetPath,
-				SubPath:   startJobInfo.datasetPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      "data",
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
@@ -543,11 +531,32 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Name:      "localtime",
 				MountPath: "/etc/localtime",
 			},
-			{
-				Name:      "code",
-				MountPath: s.conf.Service.DockerCodePath,
-				ReadOnly:  false,
-			},
+		}
+
+		if startJobInfo.algorithmPath != "" {
+			volumeMounts = append(volumeMounts,
+				v1.VolumeMount{
+					Name:      "data",
+					MountPath: readonlyCodeDir,
+					SubPath:   startJobInfo.algorithmPath,
+					ReadOnly:  true,
+				},
+				v1.VolumeMount{
+					Name:      "code",
+					MountPath: s.conf.Service.DockerCodePath,
+					ReadOnly:  false,
+				})
+
+		}
+
+		if startJobInfo.datasetPath != "" {
+			volumeMounts = append(volumeMounts,
+				v1.VolumeMount{
+					Name:      "data",
+					MountPath: s.conf.Service.DockerDatasetPath,
+					SubPath:   startJobInfo.datasetPath,
+					ReadOnly:  true,
+				})
 		}
 
 		volumes := []v1.Volume{
