@@ -6,16 +6,16 @@
                 <el-form-item v-if="user" label="用户名称" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.fullName" disabled />
                 </el-form-item>
-                <el-form-item v-if="user" label="用户新密码" :label-width="formLabelWidth" prop="password">
+                <el-form-item v-if="user&&password" label="用户新密码" :label-width="formLabelWidth" prop="password">
                     <el-input v-model="ruleForm.password" type="password" />
                 </el-form-item>
-                <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
+                <el-form-item v-if="user&&password" label="密码确认" :label-width="formLabelWidth" prop="confirm">
                     <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
-                <el-form-item v-if="user" label="电话" :label-width="formLabelWidth" prop="phone">
+                <el-form-item v-if="user&&edite" label="电话" :label-width="formLabelWidth" prop="phone">
                     <el-input v-model="ruleForm.phone" />
                 </el-form-item>
-                <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
+                <el-form-item label="备注" prop="desc" v-if="user&&edite" :label-width="formLabelWidth">
                     <el-input type="textarea" v-model="ruleForm.desc"></el-input>
                 </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
@@ -58,6 +58,10 @@
             flag: {
                 type: String,
                 default: ""
+            },
+            type: {
+                type: String,
+                default: 'edite'
             }
         },
         data() {
@@ -139,7 +143,9 @@
                 },
                 formLabelWidth: '120px',
                 pageSize: 100,
-                userCount: 1
+                userCount: 1,
+                edite: false,
+                password: false
 
             }
         },
@@ -151,6 +157,13 @@
                 this.ruleForm.phone = this.row.phone
                 this.ruleForm.desc = this.row.desc
                 this.id = this.row.id
+                if (this.type == 'password') {
+                    this.password = true
+                    this.edite = false
+                } else {
+                    this.password = false
+                    this.edite = true
+                }
             } else {
                 this.group = true
                 this.user = false
@@ -241,7 +254,11 @@
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
                         if (this.userType === 'user') {
-                            const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                            let data = {}
+                            if (this.password) { data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id } }
+                            else {
+                                data = { id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                            }
                             editUser(data).then(response => {
                                 if (response.success) {
                                     this.$message({

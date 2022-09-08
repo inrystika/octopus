@@ -60,11 +60,12 @@
                     </el-button>
                     <el-button v-if="scope.row.status===1 && user" type="text" @click="handleThaw( scope.row)">激活
                     </el-button>
-                    <el-button v-if="user" type="text" @click="handleReset(scope.row)">编辑</el-button>
+                    <el-button v-if="user" type="text" @click="handleReset(scope.row,'password')">修改密码</el-button>
+                    <el-button v-if="user" type="text" @click="handleReset(scope.row,'edite')">编辑</el-button>
                     <el-button v-if="group" type="text" @click="handleEdit(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'所属群组':'用户列表' }}</el-button>
-                    <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button>
+                    <!-- <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button> -->
                 </template>
             </el-table-column>
         </el-table>
@@ -77,7 +78,7 @@
         <addDialog v-if="CreateVisible" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 创修改信息对话框 -->
         <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
-            @close="close" />
+            @close="close" :type='type'/>
         <!-- 用户配置对话框 -->
         <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
             @confirm="confirm" @close="close">
@@ -153,7 +154,8 @@
                 },
                 conKey: [],
                 conValue: {},
-                time: null
+                time: null,
+                type:''
             }
         },
         created() {
@@ -253,9 +255,10 @@
                     }
                 })
             },
-            handleReset(row) {
+            handleReset(row,type) {
                 this.row = row
                 this.operateVisible = true
+                this.type=type
             },
             handleUserConfig(row) {
                 this.row = row
