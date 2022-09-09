@@ -16,7 +16,7 @@
                     <el-input v-model="ruleForm.phone" />
                 </el-form-item>
                 <el-form-item label="备注" prop="desc" v-if="user&&edite" :label-width="formLabelWidth">
-                    <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
                 </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model="ruleForm.name" disabled />
