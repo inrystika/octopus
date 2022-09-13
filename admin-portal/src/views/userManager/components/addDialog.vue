@@ -33,7 +33,7 @@
                     <el-input v-model.trim="ruleForm.fullname" />
                 </el-form-item>
                 <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
-                    <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
