@@ -7,45 +7,64 @@
             </el-col>
         </el-row>
         <el-row type="flex" justify="center">
-            <el-col :span="6">
+            <el-col :span="6" v-show="!show">
                 <div>
-                    <el-form ref="loginForm" :model="loginForm" :rules="rules" label-width="80px">
-                        <el-form-item prop="fullName" label="姓名" v-if="show" key="fullName">
-                            <el-input v-model="loginForm.fullName" type="text" auto-complete="off"
-                                placeholder="请输入姓名" />
-                        </el-form-item>
-                        <el-form-item prop="gender" label="性别" v-if="show" key="gender">
-                            <el-radio-group v-model="loginForm.gender">
-                                <el-radio :label="1">男</el-radio>
-                                <el-radio :label="2">女</el-radio>
-                            </el-radio-group>
-                        </el-form-item>
+                    <el-form ref="loginForm1" :model="loginForm1" :rules="rules1" label-width="80px">
                         <el-form-item prop="username" label="邮箱" key="username">
-                            <el-input v-model="loginForm.username" type="text" auto-complete="off"
+                            <el-input v-model="loginForm1.username" type="text" auto-complete="off"
                                 placeholder="请输入邮箱号" />
                         </el-form-item>
-                        <el-form-item prop="password" label="密码" key="password">
-                            <el-input v-model="loginForm.password" type="password" auto-complete="off"
-                                placeholder="密码" />
+                        <el-form-item label="密码" prop="password">
+                            <el-input type="password" v-model="loginForm1.password" autocomplete="off"></el-input>
                         </el-form-item>
                         <el-form-item>
                             <el-row type="flex" :gutter="20">
-                                <el-col :span="18" :offset="9" v-if="!show">
+                                <el-col :span="18" :offset="9">
                                     <el-button type="primary" @click="login()">绑定并登录</el-button>
-                                </el-col>
-                                <el-col :span="18" :offset="9" v-if="show">
-                                    <el-button type="primary" @click="register()">注册并登录</el-button>
                                 </el-col>
                             </el-row>
                         </el-form-item>
                         <el-form-item>
-                            <el-row type="flex" :gutter="20" v-if="hidden">
+                            <el-row type="flex" :gutter="20">
                                 <el-col :span="18" :offset="9">
                                     <el-link type="primary" @click="goRegister">未注册?点击注册</el-link>
                                 </el-col>
                             </el-row>
                         </el-form-item>
-                        <el-form-item v-if="show">
+                    </el-form>
+                </div>
+            </el-col>
+            <el-col :span="6" v-show="show">
+                <div>
+                    <el-form ref="loginForm2" :model="loginForm2" :rules="rules2" label-width="80px">
+                        <el-form-item prop="fullName" label="姓名" key="fullName">
+                            <el-input v-model="loginForm2.fullName" type="text" auto-complete="off"
+                                placeholder="请输入姓名" />
+                        </el-form-item>
+                        <el-form-item prop="gender" label="性别" key="gender">
+                            <el-radio-group v-model="loginForm2.gender">
+                                <el-radio :label="1">男</el-radio>
+                                <el-radio :label="2">女</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item prop="username" label="邮箱" key="username">
+                            <el-input v-model="loginForm2.username" type="text" auto-complete="off"
+                                placeholder="请输入邮箱号" />
+                        </el-form-item>
+                        <el-form-item label="密码" prop="password">
+                            <el-input type="password" v-model="loginForm2.password" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="确认密码" prop="checkPass">
+                            <el-input type="password" v-model="loginForm2.checkPass" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-row type="flex" :gutter="20">
+                                <el-col :span="18" :offset="9">
+                                    <el-button type="primary" @click="register()">注册并登录</el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item>
                             <el-row type="flex" justify="end">
                                 <el-col :span="4">
                                     <el-link type="primary" @click="goLogin()">返回登录</el-link>
@@ -55,6 +74,7 @@
                     </el-form>
                 </div>
             </el-col>
+
         </el-row>
     </div>
 </template>
@@ -72,22 +92,62 @@
                 }
                 callback(new Error("请输入合法的邮箱"));
             };
+            var validatePass = (rule, value, callback) => {          
+                if (value === '') {  
+                    console.log('value='+value)         
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.loginForm2.checkPass !== '') {
+                        this.$refs.loginForm2.validateField('checkPass');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.loginForm2.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 show: false,
                 hidden: true,
-                loginForm: {
-                    fullName: '',
-                    username: undefined,
-                    password: undefined,
-                    gender: undefined,
+                loginForm1: {
+                    username: '',
+                    password: '',
                     bind: { platform: '', userId: '', userName: '' }
                 },
-                rules: {
+                loginForm2: {
+                    fullName: '',
+                    username: '',
+                    password: '',
+                    gender: '',
+                    checkPass: '',
+                    bind: { platform: '', userId: '', userName: '' }
+                },
+                rules1: {
                     username: [{ required: true, message: "请输入邮箱号", trigger: "blur" },
                     { validator: checkEmail, trigger: "blur" }
                     ],
-                    password: [{ required: true, message: '请输入用户密码', trigger: 'blur' },
-                    { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }],
+                    password: [
+                    { validator: validatePass, trigger: 'blur' },
+                        { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }
+                    ],
+                },
+                rules2: {
+                    username: [{ required: true, message: "请输入邮箱号", trigger: "blur" },
+                    { validator: checkEmail, trigger: "blur" }
+                    ],
+                    password: [
+                        { validator: validatePass, trigger: 'blur' },
+                        { min: 8, message: '密码长度不能小于8位', trigger: 'blur' }
+                    ],
+                    checkPass: [
+                        { validator: validatePass2, trigger: 'blur' }
+                    ],
                     fullName: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
                     gender: [
                         { required: true, message: '请选择性别', trigger: 'change' }
@@ -97,9 +157,12 @@
         },
         created() {
             this.getThirdInfo()
-            this.loginForm.bind.platform = sessionStorage.getItem("platform")
-            this.loginForm.bind.userName = sessionStorage.getItem("thirdUserName")
-            this.loginForm.bind.userId = sessionStorage.getItem("thirdUserId")
+            this.loginForm1.bind.platform = sessionStorage.getItem("platform")
+            this.loginForm1.bind.userName = sessionStorage.getItem("thirdUserName")
+            this.loginForm1.bind.userId = sessionStorage.getItem("thirdUserId")
+            this.loginForm2.bind.platform = sessionStorage.getItem("platform")
+            this.loginForm2.bind.userName = sessionStorage.getItem("thirdUserName")
+            this.loginForm2.bind.userId = sessionStorage.getItem("thirdUserId")
         },
         computed: {
         },
@@ -123,11 +186,41 @@
                 this.show = false
                 this.hidden = true
             },
+            // 登录并绑定
+            login() {
+                // 在点击提交之前校验表单
+                let loginForm = JSON.parse(JSON.stringify(this.loginForm1));
+                delete loginForm.fullName
+                delete loginForm.gender
+                this.$refs['loginForm1'].validate((valid) => {
+                    if (valid) {
+                        login(loginForm).then((res) => {
+                            if (res.success) {
+                                this.$message({
+                                    message: '登录成功',
+                                    type: 'success'
+                                });
+                                setToken(res.data.token)
+                                this.$router.push({ path: '/index' })
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(res.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        }).catch(() => {
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+
+            },
             // 注册并绑定
             register() {
-                this.$refs['loginForm'].validate((valid) => {
+                this.$refs['loginForm2'].validate((valid) => {
                     if (valid) {
-                        register(this.loginForm).then(
+                        register(this.loginForm2).then(
                             response => {
                                 if (response.success) {
                                     this.$message({
@@ -159,35 +252,7 @@
                     }
                 });
             },
-            // 登录并绑定
-            login() {
-                let loginForm = JSON.parse(JSON.stringify(this.loginForm));
-                delete loginForm.fullName
-                delete loginForm.gender
-                this.$refs['loginForm'].validate((valid) => {
-                    if (valid) {
-                        login(loginForm).then((res) => {
-                            if (res.success) {
-                                this.$message({
-                                    message: '登录成功',
-                                    type: 'success'
-                                });
-                                setToken(res.data.token)
-                                this.$router.push({ path: '/index' })
-                            } else {
-                                this.$message({
-                                    message: this.getErrorMsg(res.error.subcode),
-                                    type: 'warning'
-                                });
-                            }
-                        }).catch(() => {
-                        })
-                    } else {
-                        return false;
-                    }
-                });
 
-            },
         }
     }
 </script>

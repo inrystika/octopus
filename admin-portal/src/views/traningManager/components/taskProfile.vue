@@ -19,7 +19,7 @@
             </el-row>
             <el-row>
                 <el-col :span="12">
-                    <div>选用数据集:<span>{{ data.dataSetName + ":" + data.dataSetVersion }}</span></div>
+                    <div>选用数据集:<span>{{ (data.dataSetName&&data.dataSetVersion)?data.dataSetName + ":" + data.dataSetVersion:'' }}</span></div>
                 </el-col>
                 <el-col :span="12">
                     <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
