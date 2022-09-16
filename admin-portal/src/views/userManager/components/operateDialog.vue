@@ -1,21 +1,23 @@
 <template>
     <div>
-        <el-dialog :title="userType==='user'?'重置密码':'编辑群组信息'" width="35%" :visible.sync="CreateFormVisible"
+        <el-dialog :title="userType==='user'?'编辑用户信息':'编辑群组信息'" width="35%" :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose" :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item v-if="user" label="用户名称" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.fullName" disabled />
                 </el-form-item>
-                <el-form-item v-if="user" label="用户新密码" :label-width="formLabelWidth" prop="password">
-                    <el-input v-model="ruleForm.password" />
+                <el-form-item v-if="user&&password" label="用户新密码" :label-width="formLabelWidth" prop="password">
+                    <el-input v-model="ruleForm.password" type="password" />
                 </el-form-item>
-                <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
-                    <el-input v-model="ruleForm.confirm" />
+                <el-form-item v-if="user&&password" label="密码确认" :label-width="formLabelWidth" prop="confirm">
+                    <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
-                <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
-                    <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
-                    <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
-                </el-form-item> -->
+                <el-form-item v-if="user&&edite" label="电话" :label-width="formLabelWidth" prop="phone">
+                    <el-input v-model="ruleForm.phone" />
+                </el-form-item>
+                <el-form-item label="备注" prop="desc" v-if="user&&edite" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
+                </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model="ruleForm.name" disabled />
                 </el-form-item>
@@ -56,9 +58,45 @@
             flag: {
                 type: String,
                 default: ""
+            },
+            type: {
+                type: String,
+                default: 'edite'
             }
         },
         data() {
+            var checkPhone = (rule, value, callback) => {
+                if (value === '') {
+                    callback();
+                } else {
+                    let reg = /^(13|14|15|17|18|19)[0-9]{9}$/
+                    if (reg.test(value)) {
+                        callback();
+                    }
+                    else {
+                        callback("请输入正确手机号码");
+                    }
+                }
+            };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.ruleForm.confirm !== '') {
+                        this.$refs.ruleForm.validateField('confirm');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === ''||value==undefined) {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
@@ -67,7 +105,10 @@
                     fullname: '',
                     resourcePoolId: '',
                     name: '',
-                    userIds: []
+                    userIds: [],
+                    email: undefined,
+                    desc: '',
+                    phone: ''
                 },
                 verifyCode: "",
                 CreateFormVisible: true,
@@ -77,12 +118,13 @@
                 userOptions: [],
                 rules: {
                     password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' }
+                        { required: true, message: '请输入密码', trigger: 'blur' },
+                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' },
+                        { validator: validatePass, trigger: 'blur' }
 
                     ],
                     confirm: [
-                        { required: true, message: '请再次输入密码', trigger: 'blur' }
-
+                        { validator: validatePass2, trigger: 'blur' }
                     ],
                     name: [
                         { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -93,11 +135,17 @@
                     ],
                     resourcePoolId: [
                         { required: true, message: '请选择资源池', trigger: 'change' }
-                    ]
+                    ],
+                    phone: [
+                        { required: false, message: '请输入电话' },
+                        { validator: checkPhone, trigger: "blur" }
+                    ],
                 },
                 formLabelWidth: '120px',
                 pageSize: 100,
-                userCount: 1
+                userCount: 1,
+                edite: false,
+                password: false
 
             }
         },
@@ -106,7 +154,16 @@
                 this.user = true
                 this.group = false
                 this.ruleForm.fullName = this.row.fullName
+                this.ruleForm.phone = this.row.phone
+                this.ruleForm.desc = this.row.desc
                 this.id = this.row.id
+                if (this.type == 'password') {
+                    this.password = true
+                    this.edite = false
+                } else {
+                    this.password = false
+                    this.edite = true
+                }
             } else {
                 this.group = true
                 this.user = false
@@ -197,27 +254,25 @@
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
                         if (this.userType === 'user') {
-                            if (this.ruleForm.confirm === this.ruleForm.password) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id }
-                                editUser(data).then(response => {
-                                    if (response.success) {
-                                        this.$message({
-                                            message: '修改成功',
-                                            type: 'success'
-                                        });
-                                    } else {
-                                        this.$message({
-                                            message: response.error.message,
-                                            type: 'error'
-                                        });
-                                    }
-                                })
-                            } else {
-                                this.$message({
-                                    message: '输入密码不一致!',
-                                    type: 'warning'
-                                });
+                            let data = {}
+                            if (this.password) { data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id } }
+                            else {
+                                data = { id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
                             }
+                            editUser(data).then(response => {
+                                if (response.success) {
+                                    this.$message({
+                                        message: '修改成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: response.error.message,
+                                        type: 'error'
+                                    });
+                                }
+                            })
                         } else {
                             const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, id: this.id, userIds: this.ruleForm.userIds }
                             editGroup(data).then(response => {
@@ -226,6 +281,7 @@
                                         message: '修改成功',
                                         type: 'success'
                                     });
+                                    this.$emit('confirm', false)
                                 } else {
                                     this.$message({
                                         message: this.getErrorMsg(response.error.subcode),
@@ -234,7 +290,7 @@
                                 }
                             })
                         }
-                        this.$emit('confirm', false)
+
                     } else {
                         console.log('error submit!!');
                         return false;

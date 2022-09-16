@@ -2,17 +2,15 @@ package user
 
 import (
 	"context"
+	"golang.org/x/crypto/bcrypt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
-	"server/common/utils"
-
 	"server/common/log"
-
-	"golang.org/x/crypto/bcrypt"
+	"server/common/utils"
 )
 
 type UserService struct {
@@ -52,6 +50,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 		SearchKey: req.SearchKey,
 		Phone:     req.Phone,
 		Status:    int32(req.Status),
+		Desc:      req.Desc,
 	})
 	if err != nil {
 		return nil, err
@@ -91,6 +90,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			UpdatedAt:     user.UpdatedAt.Unix(),
 			Bind:          bindInfo,
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
 		}
 		users[idx] = item
 	}
@@ -156,6 +156,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			UpdatedAt:     user.UpdatedAt.Unix(),
 			Bind:          bindInfo,
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
 		},
 	}
 
@@ -238,6 +239,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.Status = int32(api.UserStatus_ACTIVITY)
 	user.Bind = cond.Bind
 	user.ResourcePools = []string{s.conf.Service.Resource.DefaultPoolName}
+	user.Desc=req.Desc
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err
@@ -295,6 +297,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		Gender:        int32(req.Gender),
 		Status:        int32(req.Status),
 		ResourcePools: req.ResourcePools,
+		Desc:          req.Desc,
 	}
 	if len(bindInfo) > 0 {
 		user.Bind = bindInfo
@@ -307,7 +310,6 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		}
 		user.Password = string(password)
 	}
-
 	result, err := s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: userId}, &user)
 	if err != nil {
 		return nil, err
@@ -333,6 +335,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 			Status:   api.UserStatus(result.Status),
 			Password: result.Password,
 			Bind:     bindInfo2,
+			Desc:     result.Desc,
 		},
 	}, nil
 }

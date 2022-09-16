@@ -12,10 +12,9 @@
                 <el-form-item v-if="user" label="密码确认" :label-width="formLabelWidth" prop="confirm">
                     <el-input v-model="ruleForm.confirm" type="password" />
                 </el-form-item>
-                <!-- <el-form-item label="验证码" :label-width="formLabelWidth" placeholder="请输入验证码" prop="code" v-if="user">
-                    <el-input v-model="ruleForm.verifyCode" class="verifyCode"></el-input>
-                    <VerificationCode :changeCode.sync='verifyCode'></VerificationCode>
-                </el-form-item> -->
+                <el-form-item v-if="user" label="电话" :label-width="formLabelWidth" prop="phone">
+                    <el-input v-model="ruleForm.phone" />
+                </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model.trim="ruleForm.name" />
                 </el-form-item>
@@ -32,6 +31,9 @@
                 </el-form-item>
                 <el-form-item v-if="user" label="姓名" :label-width="formLabelWidth" prop="fullname">
                     <el-input v-model.trim="ruleForm.fullname" />
+                </el-form-item>
+                <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -75,18 +77,50 @@
                 }
                 callback(new Error("请输入合法的邮箱地址"));
             }
-
+            var checkPhone = (rule, value, callback) => {
+                if (value === '') {
+                    callback();
+                } else {
+                    let reg = /^(13|14|15|17|18|19)[0-9]{9}$/
+                    if (reg.test(value)) {
+                        callback();
+                    }
+                    else {
+                        callback("请输入正确手机号码");
+                    }
+                }
+            };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.ruleForm.confirm !== '') {
+                        this.$refs.ruleForm.validateField('confirm');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 fileList: [],
                 ruleForm: {
                     fullname: '',
                     password: '',
                     confirm: '',
-
+                    phone: '',
                     resourcePoolId: '',
                     name: '',
                     userIds: [],
-                    email: undefined
+                    email: undefined,
+                    desc: ''
                 },
                 CreateFormVisible: true,
                 user: false,
@@ -103,12 +137,16 @@
                     ],
                     password: [
                         { required: true, message: '请输入密码', trigger: 'blur' },
-                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' }
+                        { min: 8, message: '密码长度不得少于8位', trigger: 'blur' },
+                        { validator: validatePass, trigger: 'blur' }
 
                     ],
                     confirm: [
-                        { required: true, message: '请再次输入密码', trigger: 'blur' }
-
+                        { validator: validatePass2, trigger: 'blur' }
+                    ],
+                    phone: [
+                        { required: false, message: '请输入电话' },
+                        { validator: checkPhone, trigger: "blur" }
                     ],
                     name: [
                         { required: true, message: '请输入群组名', trigger: 'blur' }
@@ -214,46 +252,40 @@
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        if (this.ruleForm.confirm === this.ruleForm.password) {
-                            if (this.user) {
-                                const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1 }
-                                createUser(data).then(response => {
-                                    if (response.success === true) {
-                                        this.$message({
-                                            message: '新增用户成功',
-                                            type: 'success'
-                                        });
-                                        this.$emit('confirm', false)
-                                    } else {
-                                        this.$message({
-                                            message: this.getErrorMsg(response.error.subcode),
-                                            type: 'warning'
-                                        });
-                                    }
-                                })
-                            } else if (this.group) {
-                                const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
-                                createGroup(data).then(response => {
-                                    if (response.success === true) {
-                                        this.$message({
-                                            message: '新增群组成功',
-                                            type: 'success'
-                                        });
-                                        this.$emit('confirm', false)
-                                    } else {
-                                        this.$message({
-                                            message: this.getErrorMsg(response.error.subcode),
-                                            type: 'warning'
-                                        });
-                                    }
-                                })
-                            }
-                        } else {
-                            this.$message({
-                                message: '输入密码不一致!',
-                                type: 'warning'
-                            });
+                        if (this.user) {
+                            const data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, email: this.ruleForm.email, gender: 1, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                            createUser(data).then(response => {
+                                if (response.success === true) {
+                                    this.$message({
+                                        message: '新增用户成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
+                        } else if (this.group) {
+                            const data = { name: this.ruleForm.name, resourcePoolId: this.ruleForm.resourcePoolId, userIds: this.ruleForm.userIds }
+                            createGroup(data).then(response => {
+                                if (response.success === true) {
+                                    this.$message({
+                                        message: '新增群组成功',
+                                        type: 'success'
+                                    });
+                                    this.$emit('confirm', false)
+                                } else {
+                                    this.$message({
+                                        message: this.getErrorMsg(response.error.subcode),
+                                        type: 'warning'
+                                    });
+                                }
+                            })
                         }
+
                     } else {
                         console.log('error submit!!');
                         return false;

@@ -10,9 +10,8 @@ import (
 
 	"gorm.io/gorm/clause"
 
-	commerrors "server/common/errors"
-
 	"gorm.io/gorm"
+	commerrors "server/common/errors"
 )
 
 type UserDao interface {
@@ -71,7 +70,7 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 		result = db.Where(&model.User{
 			Id:          condition.Id,
 			Email:       condition.Email,
-			Phone:       condition.Phone,
+			Phone:        condition.Phone,
 			FtpUserName: condition.FtpUserName,
 		}).First(&user)
 	} else {
@@ -97,7 +96,6 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 		}
 		result = db.Where(querySql, params...).First(&user)
 	}
-
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -123,6 +121,7 @@ func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, er
 		Status:        user.Status,
 		Bind:          bindInfo,
 		ResourcePools: user.ResourcePools,
+		Desc:          user.Desc,
 	}
 
 	result := db.Omit("ftp_user_name").Create(&u)
@@ -142,6 +141,7 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		Id:    cond.Id,
 		Email: cond.Email,
 		Phone: cond.Phone,
+		Desc:  cond.Desc,
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
@@ -154,6 +154,7 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		Bind:          user.Bind,
 		FtpUserName:   user.FtpUserName,
 		ResourcePools: user.ResourcePools,
+		Desc:          user.Desc,
 	})
 	if result.Error != nil {
 		return nil, result.Error
