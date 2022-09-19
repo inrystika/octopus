@@ -361,7 +361,7 @@ spec:
               readOnly: true
               mountPath: /run/prometheus
       volumes:
-        - name: pod-gpu-resources
+        - name: pod-gcu-resources
           hostPath:
             path: /var/lib/kubelet/pod-resources
         - name: device-metrics

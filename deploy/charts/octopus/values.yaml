@@ -496,15 +496,5 @@ rdma:
         ]
     }
 
-gcu:
+enflame:
   enabled: false
-  config: |
-    {
-        "periodicUpdateInterval": 300,
-        "configList": [{
-             "resourceName": "enflame.com/dtu",
-             "rdmaHcaMax": 1000,
-             "devices": [""]
-           }
-        ]
-    }
