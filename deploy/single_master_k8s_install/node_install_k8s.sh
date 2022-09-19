@@ -79,6 +79,8 @@ main() {
         nvidia_gpu_label
     elif [[ $node_type == "huawei_a910" ]];then
         huawei_a910_label
+    elif [[ $node_type == "enflame_gcu" ]];then
+        enflame_gcu_label
     fi
 }
 

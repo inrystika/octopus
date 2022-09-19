@@ -186,6 +186,11 @@ nvidia_gpu_label() {
     kubectl label nodes `hostname` hardware-type=NVIDIAGPU
 }
 
+# enflame gcu节点打标签
+enflame_gcu_label() {
+    kubectl label nodes `hostname` hardware-type=ENFLAMEGCU
+}
+
 # huawei a910节点打标签
 huawei_a910_label() {
     kubectl label nodes `hostname` a910-device-plugin=active

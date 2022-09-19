@@ -318,6 +318,59 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  name: {{ template "prometheus.fullname" . }}-gcu-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter
+      app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
+      app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+  template:
+    metadata:
+      name: {{ template "prometheus.fullname" . }}-gcu-exporter
+      labels:
+{{ include "prometheus.common-labels" . | indent 8 }}
+        app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter
+        app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
+        app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+    spec:
+      nodeSelector:
+        hardware-type: ENFLAMEGCU
+      containers:
+        - image: 192.168.202.110:5000/octopus/enflame-gcu-exporter:v1.0.1-dev
+          imagePullPolicy: IfNotPresent #Always
+          name: pod-enflame-gcu-metrics-exporter
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 2000Mi
+              cpu: 2000m
+          ports:
+            - name: gcu-metrics
+              containerPort: 9401
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          volumeMounts:
+            - name: pod-gcu-resources
+              readOnly: true
+              mountPath: /var/lib/kubelet/pod-resources
+            - name: device-metrics
+              readOnly: true
+              mountPath: /run/prometheus
+      volumes:
+        - name: pod-gpu-resources
+          hostPath:
+            path: /var/lib/kubelet/pod-resources
+        - name: device-metrics
+          emptyDir:
+            medium: Memory
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
   name: {{ template "prometheus.fullname" . }}-npu-exporter
 spec:
   selector:
@@ -446,6 +499,30 @@ spec:
   selector:
     app.kubernetes.io/name: {{ template "prometheus.name" . }}-gpu-exporter
     app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gpu-exporter
+    app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+{{ include "prometheus.common-labels" . | indent 4 }}
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
+    app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+  annotations:
+    prometheus.io/port: "9401"
+    prometheus.io/path: "/gcu/metrics"
+    prometheus.io/scrape: "true"
+  name: {{ template "prometheus.fullname" . }}-gcu-exporter
+spec:
+  type: NodePort
+  ports:
+    - port: 9401
+      targetPort: 9401
+      nodePort: 30402
+  selector:
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
 ---
 kind: Service
