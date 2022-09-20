@@ -65,6 +65,11 @@ main() {
         install_nvidia_docker
     fi
 
+    # 安装enflame docker
+    if [[ $node_type == "enflame_gcu" ]];then
+        install_enflame_docker
+    fi
+
     # 安装k8s工具
     set_repo
     # pull镜像

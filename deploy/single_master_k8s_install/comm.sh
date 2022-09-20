@@ -138,6 +138,52 @@ EOF
     echo -e "---------------------\033[31m nvidia docker install success \033[0m---------------------"
 }
 
+# 安装enflame docker
+install_enflame_docker() {
+    set -e
+    echo -e "---------------------\033[31m install enflame docker \033[0m---------------------"
+    OS_TYPE=$(grep -e '^ID=' /etc/os-release | tr -d 'ID="')
+
+    if [ "${OS_TYPE}" == "ubuntu" ]; then
+        dpkg -i ${enflame_docker_device_plugin_path}docker-device-plugin_*.deb
+    elif [ "${OS_TYPE}" == "tlinux" ] || [ "${OS_TYPE}" == "centos" ] || [ "${OS_TYPE}" == "rhel" ] ||  [ "${OS_TYPE}" == "tencentos" ] ; then
+        rpm -ivh ${enflame_docker_device_plugin_path}docker-device-plugin_*.rpm
+    else
+        echo "${OS_TYPE} not supported" ; exit 0
+    fi
+    tee /etc/docker/daemon.json <<EOF
+{
+    "default-runtime": "enflame",
+    "runtimes": {
+        "enflame": {
+            "path": "/usr/bin/enflame-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "registry-mirrors": ["https://mirror.ccs.tencentyun.com", "https://docker.mirrors.ustc.edu.cn", "https://6kx4zyno.mirror.aliyuncs.com"],
+    "insecure-registries": ["127.0.0.1/8", "artifact.enflame.cn", "192.168.202.110:5000", "192.168.202.74:5000"],
+    "max-concurrent-downloads": 10,
+    "log-driver": "json-file",
+    "log-level": "warn",
+    "log-opts": {
+        "max-size": "30m",
+        "max-file": "3"
+    },
+    "default-shm-size": "1G",
+    "default-ulimits": {
+         "memlock": { "name":"memlock", "soft":  -1, "hard": -1 },
+         "stack"  : { "name":"stack", "soft": 67108864, "hard": 67108864 },
+         "nofile": {"name": "nofile","soft": 65536, "hard": 65536}
+    },
+    "data-root": "/var/lib/docker",
+    "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+    sudo systemctl daemon-reload
+    sudo systemctl restart docker
+    echo -e "---------------------\033[31m enflame docker install success \033[0m---------------------"
+}
+
 # 安装k8s工具
 set_repo() {
     set -e
