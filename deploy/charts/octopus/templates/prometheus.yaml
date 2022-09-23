@@ -349,10 +349,9 @@ spec:
               cpu: 2000m
           ports:
             - name: gcu-metrics
-              containerPort: 9401
+              containerPort: 9400
           securityContext:
-            runAsNonRoot: false
-            runAsUser: 0
+            privileged: true
           volumeMounts:
             - name: pod-gcu-resources
               readOnly: true
@@ -360,6 +359,8 @@ spec:
             - name: device-metrics
               readOnly: true
               mountPath: /run/prometheus
+            - name: syspath
+              mountPath: /sys
       volumes:
         - name: pod-gcu-resources
           hostPath:
@@ -367,6 +368,9 @@ spec:
         - name: device-metrics
           emptyDir:
             medium: Memory
+        - name: syspath
+          hostPath:
+            path: /sys
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -510,15 +514,15 @@ metadata:
     app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
   annotations:
-    prometheus.io/port: "9401"
-    prometheus.io/path: "/gcu/metrics"
+    prometheus.io/port: "9400"
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
   name: {{ template "prometheus.fullname" . }}-gcu-exporter
 spec:
   type: NodePort
   ports:
-    - port: 9401
-      targetPort: 9401
+    - port: 9400
+      targetPort: 9400
       nodePort: 30402
   selector:
     app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter

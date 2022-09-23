@@ -234,7 +234,10 @@ nvidia_gpu_label() {
 
 # enflame gcu节点打标签
 enflame_gcu_label() {
+    set -e
+    echo -e "---------------------\033[31m enflame gcu label \033[0m---------------------"
     kubectl label nodes `hostname` hardware-type=ENFLAMEGCU
+    echo -e "---------------------\033[31m enflame gcu label success \033[0m---------------------"
 }
 
 # huawei a910节点打标签
