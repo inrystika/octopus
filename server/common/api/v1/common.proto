@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package common.api.v1;
+
+option go_package = "server/common/api/v1;v1";
+
+message UserPermission {
+  bool mountExternalStorage = 1;
+}

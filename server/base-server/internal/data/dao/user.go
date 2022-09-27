@@ -10,8 +10,9 @@ import (
 
 	"gorm.io/gorm/clause"
 
-	"gorm.io/gorm"
 	commerrors "server/common/errors"
+
+	"gorm.io/gorm"
 )
 
 type UserDao interface {
@@ -70,7 +71,7 @@ func (d *userDao) Find(ctx context.Context, condition *model.UserQuery) (*model.
 		result = db.Where(&model.User{
 			Id:          condition.Id,
 			Email:       condition.Email,
-			Phone:        condition.Phone,
+			Phone:       condition.Phone,
 			FtpUserName: condition.FtpUserName,
 		}).First(&user)
 	} else {
@@ -141,7 +142,6 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		Id:    cond.Id,
 		Email: cond.Email,
 		Phone: cond.Phone,
-		Desc:  cond.Desc,
 	}
 
 	result := d.db.Model(&condition).Updates(model.User{
@@ -155,6 +155,7 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		FtpUserName:   user.FtpUserName,
 		ResourcePools: user.ResourcePools,
 		Desc:          user.Desc,
+		Permission:    user.Permission,
 	})
 	if result.Error != nil {
 		return nil, result.Error
