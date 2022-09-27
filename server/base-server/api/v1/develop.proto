@@ -114,6 +114,7 @@ message Notebook {
   string notebookJobId = 21;
   string imageVersion = 22;
   repeated Task tasks = 23;
+  string resourcePool=24;
 }
 
 message ListNotebookReply {

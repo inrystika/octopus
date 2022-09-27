@@ -90,6 +90,7 @@ message Notebook {
   string imageVersion = 24;
   repeated Task tasks = 25;
   string userEmail = 26;
+  string  resourcePool=27;
 }
 
 message ListNotebookReply {

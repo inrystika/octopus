@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"github.com/jinzhu/copier"
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
@@ -9,8 +11,6 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
-
-	"github.com/jinzhu/copier"
 )
 
 type DevelopService struct {
@@ -45,10 +45,10 @@ func (s *DevelopService) ListNotebook(ctx context.Context, req *api.ListNotebook
 	}
 
 	innerReply, err := s.data.DevelopClient.ListNotebook(ctx, innerReq)
+	fmt.Print(innerReply)
 	if err != nil {
 		return nil, err
 	}
-
 	reply := &api.ListNotebookReply{}
 	err = copier.Copy(reply, innerReply)
 	if err != nil {
