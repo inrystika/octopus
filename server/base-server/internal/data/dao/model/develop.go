@@ -20,6 +20,7 @@ type Notebook struct {
 	ImageId          string                `gorm:"type:varchar(100);not null;default:'';comment:镜像Id"`
 	ImageName        string                `gorm:"type:varchar(100);not null;default:'';comment:镜像名称"`
 	ImageVersion     string                `gorm:"type:varchar(100);not null;default:'';comment:镜像版本"`
+	ImageUrl         string                `gorm:"type:varchar(300);not null;default:'';comment:'镜像Url'"`
 	AlgorithmId      string                `gorm:"type:varchar(100);not null;default:'';comment:算法Id"`
 	AlgorithmVersion string                `gorm:"type:varchar(100);not null;default:'';comment:算法版本"`
 	AlgorithmName    string                `gorm:"type:varchar(100);not null;default:'';comment:算法名称"`

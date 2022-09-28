@@ -66,6 +66,7 @@ const (
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
+	jpyCommand                   = "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
 )
 
 func buildTaskName(idx int) string {
@@ -141,50 +142,62 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	image, err := s.imageService.FindImage(ctx, &api.FindImageRequest{ImageId: nb.ImageId})
-	if err != nil {
-		return nil, err
-	}
+	imageAddr := ""
+	if nb.ImageId != "" { //判空，允许通过API调用不传此参数
+		image, err := s.imageService.FindImage(ctx, &api.FindImageRequest{ImageId: nb.ImageId})
+		if err != nil {
+			return nil, err
+		}
 
-	if image.Image == nil {
-		return nil, errors.Errorf(nil, errors.ErrorImageNotExist)
-	}
+		if image.Image == nil {
+			return nil, errors.Errorf(nil, errors.ErrorImageNotExist)
+		}
 
-	if nb.UserId != image.Image.UserId && image.Image.IsPrefab == api.ImageIsPrefab_IMAGE_IS_PREFAB_NO {
-		hasPerm := false
-		for _, i := range image.Accesses {
-			if nb.WorkspaceId == i.SpaceId {
-				hasPerm = true
+		if nb.UserId != image.Image.UserId && image.Image.IsPrefab == api.ImageIsPrefab_IMAGE_IS_PREFAB_NO {
+			hasPerm := false
+			for _, i := range image.Accesses {
+				if nb.WorkspaceId == i.SpaceId {
+					hasPerm = true
+				}
+			}
+
+			if !hasPerm {
+				return nil, errors.Errorf(err, errors.ErrorNotebookImageNoPermission)
 			}
 		}
 
-		if !hasPerm {
-			return nil, errors.Errorf(err, errors.ErrorNotebookImageNoPermission)
+		if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookImageStatusForbidden)
 		}
+		nb.ImageName = image.Image.ImageName
+		nb.ImageVersion = image.Image.ImageVersion
+		imageAddr = image.ImageFullAddr
+	} else if nb.ImageUrl != "" {
+		imageAddr = nb.ImageUrl
+	} else {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	if image.Image.ImageStatus != api.ImageStatus_IMAGE_STATUS_MADE {
-		return nil, errors.Errorf(nil, errors.ErrorNotebookImageStatusForbidden)
-	}
-	nb.ImageName = image.Image.ImageName
-	nb.ImageVersion = image.Image.ImageVersion
+	algorithmPath := ""
+	if nb.AlgorithmId != "" { //判空，允许通过API调用不传此参数
+		algorithmVersion, err := s.algorithmService.QueryAlgorithmVersion(ctx, &api.QueryAlgorithmVersionRequest{
+			AlgorithmId: nb.AlgorithmId,
+			Version:     nb.AlgorithmVersion,
+		})
+		if err != nil {
+			return nil, err
+		}
 
-	algorithmVersion, err := s.algorithmService.QueryAlgorithmVersion(ctx, &api.QueryAlgorithmVersionRequest{
-		AlgorithmId: nb.AlgorithmId,
-		Version:     nb.AlgorithmVersion,
-	})
-	if err != nil {
-		return nil, err
-	}
+		if nb.UserId != algorithmVersion.Algorithm.UserId {
+			return nil, errors.Errorf(err, errors.ErrorNotebookAlgorithmNoPermission)
+		}
 
-	if nb.UserId != algorithmVersion.Algorithm.UserId {
-		return nil, errors.Errorf(err, errors.ErrorNotebookAlgorithmNoPermission)
+		if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
+			return nil, errors.Errorf(err, errors.ErrorNotebookAlgorithmStatusForbidden)
+		}
+		nb.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
+		algorithmPath = algorithmVersion.Algorithm.Path
 	}
-
-	if algorithmVersion.Algorithm.FileStatus != int64(algorithm.FILESTATUS_FINISH) {
-		return nil, errors.Errorf(err, errors.ErrorNotebookAlgorithmStatusForbidden)
-	}
-	nb.AlgorithmName = algorithmVersion.Algorithm.AlgorithmName
 
 	datasetPath := ""
 	if nb.DatasetId != "" && nb.DatasetVersion != "" {
@@ -273,15 +286,22 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
 	}
 
+	command := ""
+	if nb.AlgorithmId != "" {
+		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerCodePath)
+	} else {
+		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerUserHomePath)
+	}
+
 	return &startJobInfo{
 		queue:         queue,
-		imageAddr:     image.ImageFullAddr,
-		algorithmPath: algorithmVersion.Algorithm.Path,
+		imageAddr:     imageAddr,
+		algorithmPath: algorithmPath,
 		datasetPath:   datasetPath,
 		resources:     k8sResources,
 		nodeSelectors: nodeSelectors,
 		shm:           shm,
-		command:       s.conf.Service.Develop.JpyCommand,
+		command:       command,
 	}, nil
 }
 
@@ -513,12 +533,6 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	volumeMounts := []v1.VolumeMount{
 		{
 			Name:      "data",
-			MountPath: s.conf.Service.DockerCodePath,
-			SubPath:   startJobInfo.algorithmPath,
-			ReadOnly:  false,
-		},
-		{
-			Name:      "data",
 			MountPath: s.conf.Service.DockerUserHomePath,
 			SubPath:   common.GetUserHomePath(nb.UserId),
 			ReadOnly:  false,
@@ -527,6 +541,15 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      "localtime",
 			MountPath: "/etc/localtime",
 		},
+	}
+
+	if startJobInfo.algorithmPath != "" {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      "data",
+			MountPath: s.conf.Service.DockerCodePath,
+			SubPath:   startJobInfo.algorithmPath,
+			ReadOnly:  false,
+		})
 	}
 
 	if startJobInfo.datasetPath != "" {

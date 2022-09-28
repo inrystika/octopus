@@ -30,7 +30,7 @@ type TrainJob struct {
 	ImageId          string                     `gorm:"type:varchar(100);not null;default:'';comment:'镜像Id'"`
 	ImageName        string                     `gorm:"type:varchar(100);not null;default:'';comment: '镜像名称''"`
 	ImageVersion     string                     `gorm:"type:varchar(100);not null;default:'';comment:'镜像版本'"`
-	ImageUrl         string                     `gorm:"type:varchar(300);not null;default:'';comment:'镜像版本'"`
+	ImageUrl         string                     `gorm:"type:varchar(300);not null;default:'';comment:'镜像Url'"`
 	DataSetId        string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集Id'"`
 	DataSetVersion   string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集版本'"`
 	DatasetName      string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集名称''"`
