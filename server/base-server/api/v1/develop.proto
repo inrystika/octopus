@@ -118,7 +118,8 @@ message Notebook {
   string notebookJobId = 21;
   string imageVersion = 22;
   repeated Task tasks = 23;
-  string imageUrl = 24;
+  string resourcePool=24;
+  string imageUrl = 25;
 }
 
 message ListNotebookReply {

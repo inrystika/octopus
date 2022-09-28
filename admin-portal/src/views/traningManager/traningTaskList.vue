@@ -27,6 +27,11 @@
                     <span>{{ scope.row.workspaceName==""?'默认群组':scope.row.workspaceName }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="资源池">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.resourcePool}}</span>
+                </template>
+              </el-table-column>
             <el-table-column label="用户名">
                 <template slot-scope="scope">
                     <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">

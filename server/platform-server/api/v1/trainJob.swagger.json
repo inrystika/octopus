@@ -1,0 +1,638 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server/platform-server/api/v1/trainJob.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "TrainJobService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/overall/trainjobStastics": {
+      "get": {
+        "summary": "获取训练任务统计信息",
+        "operationId": "TrainJobService_TrainJobStastics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TrainJobStasticsReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "createdAtGte",
+            "description": "大于某个时间创建，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "createdAtLt",
+            "description": "小于某个时间创建，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TrainJobService"
+        ]
+      }
+    },
+    "/v1/platform/resource": {
+      "get": {
+        "summary": "获取集群资源信息",
+        "operationId": "TrainJobService_PlatformResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PlatformResourcesReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "TrainJobService"
+        ]
+      }
+    },
+    "/v1/platform/trainjob": {
+      "get": {
+        "summary": "获取训练任务列表",
+        "operationId": "TrainJobService_TrainJobList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TrainJobListReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageIndex",
+            "description": "页码，从1开始，必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "pageSize",
+            "description": "页大小，最小1条，最大100条，必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "sortBy",
+            "description": "分组依据，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderBy",
+            "description": "升序、降序，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "createdAtGte",
+            "description": "大于某个时间创建，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "createdAtLt",
+            "description": "小于某个时间创建，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "status",
+            "description": "状态查询，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchKey",
+            "description": "模糊查找字段，可用于name等模糊查找，非必填.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TrainJobService"
+        ]
+      },
+      "post": {
+        "summary": "创建训练任务",
+        "operationId": "TrainJobService_TrainJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TrainJobReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TrainJobRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TrainJobService"
+        ]
+      }
+    },
+    "/v1/platform/trainjob/{id}": {
+      "get": {
+        "summary": "获取训练任务详情",
+        "operationId": "TrainJobService_GetJobInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TrainJobInfoReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "任务ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TrainJobService"
+        ]
+      }
+    },
+    "/v1/platform/trainjob/{id}/stop": {
+      "post": {
+        "summary": "停止训练任务",
+        "operationId": "TrainJobService_StopJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1StopJobReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "任务ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "tags": [
+          "TrainJobService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Dataset": {
+      "type": "object",
+      "properties": {
+        "storageConfigName": {
+          "type": "string",
+          "title": "存储配置名称，必填"
+        },
+        "addr": {
+          "type": "string",
+          "title": "数据集子目录"
+        },
+        "name": {
+          "type": "string",
+          "title": "数据集名称，必填"
+        },
+        "path": {
+          "type": "string",
+          "title": "数据集容器内路径"
+        }
+      }
+    },
+    "v1Image": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Node": {
+      "type": "object",
+      "properties": {
+        "nodeName": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "allocated": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Output": {
+      "type": "object",
+      "properties": {
+        "storageConfigName": {
+          "type": "string",
+          "title": "存储配置名称，必填"
+        },
+        "addr": {
+          "type": "string",
+          "title": "存储子目录"
+        },
+        "path": {
+          "type": "string",
+          "title": "容器内输出路径"
+        }
+      }
+    },
+    "v1Parameter": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "title": "命令参数key，非必填"
+        },
+        "value": {
+          "type": "string",
+          "title": "命令参数value，非必填"
+        }
+      }
+    },
+    "v1PlatformResourcesReply": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Node"
+          }
+        }
+      }
+    },
+    "v1Resource": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "命令参数key，必填"
+        },
+        "size": {
+          "type": "string",
+          "title": "命令参数value，必填"
+        }
+      }
+    },
+    "v1StopJobReply": {
+      "type": "object",
+      "properties": {
+        "stoppedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "停止时间"
+        }
+      }
+    },
+    "v1Task": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "子任务名称，非必填，校验规则\"^[0-9a-zA-Z_]*$\"，最大长度30个字符"
+        },
+        "command": {
+          "type": "string",
+          "title": "子任务执行命令"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Parameter"
+          },
+          "title": "command执行命令参数,key-value，数组"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Resource"
+          },
+          "title": "资源"
+        },
+        "taskNumber": {
+          "type": "string",
+          "format": "int64",
+          "title": "副本个数，非必填"
+        },
+        "minFailedTaskCount": {
+          "type": "string",
+          "format": "int64",
+          "title": "子任务最小失败数，非必填"
+        },
+        "minSucceededTaskCount": {
+          "type": "string",
+          "format": "int64",
+          "title": "子任务最小成功数，非必填"
+        },
+        "isMainRole": {
+          "type": "boolean",
+          "title": "是否主任务，非必填"
+        }
+      }
+    },
+    "v1TrainJob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "任务ID"
+        },
+        "name": {
+          "type": "string",
+          "title": "job名称"
+        },
+        "desc": {
+          "type": "string",
+          "title": "job描述"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Dataset"
+          },
+          "title": "数据集"
+        },
+        "image": {
+          "$ref": "#/definitions/v1Image",
+          "title": "镜像"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Task"
+          },
+          "title": "子任务配置信息"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "创建时间"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "更新时间"
+        },
+        "status": {
+          "type": "string",
+          "title": "任务状态"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "job完成时间"
+        },
+        "runSec": {
+          "type": "string",
+          "format": "int64",
+          "title": "运行时"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "启动时间"
+        }
+      }
+    },
+    "v1TrainJobInfoReply": {
+      "type": "object",
+      "properties": {
+        "trainJob": {
+          "$ref": "#/definitions/v1TrainJob",
+          "title": "训练任务"
+        }
+      }
+    },
+    "v1TrainJobListReply": {
+      "type": "object",
+      "properties": {
+        "totalSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "查询结果总数"
+        },
+        "trainJobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TrainJob"
+          },
+          "title": "任务"
+        }
+      }
+    },
+    "v1TrainJobReply": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "title": "训练任务ID，必填"
+        }
+      }
+    },
+    "v1TrainJobRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "训练任务名称，必填，长度1-30"
+        },
+        "desc": {
+          "type": "string",
+          "title": "训练任务描述，非必填"
+        },
+        "image": {
+          "$ref": "#/definitions/v1Image",
+          "title": "镜像信息"
+        },
+        "output": {
+          "$ref": "#/definitions/v1Output",
+          "title": "输出路径信息"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Dataset"
+          },
+          "title": "数据集信息"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Task"
+          },
+          "title": "子任务信息"
+        }
+      }
+    },
+    "v1TrainJobStasticsReply": {
+      "type": "object",
+      "properties": {
+        "totalSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "任务数量"
+        },
+        "succeededSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "成功数量"
+        },
+        "failedSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "失败数量"
+        },
+        "stoppedSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "停止数量"
+        },
+        "runningSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "正在运行数量"
+        },
+        "waitingSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "等待数量"
+        }
+      }
+    }
+  }
+}
