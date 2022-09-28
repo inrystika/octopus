@@ -121,13 +121,12 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 type closeFunc func(ctx context.Context) error
 
 func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) (*startJobInfo, error) {
+	user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: nb.UserId})
+	if err != nil {
+		return nil, err
+	}
 	queue := nb.ResourcePool
 	if nb.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: nb.UserId})
-		if err != nil {
-			return nil, err
-		}
-
 		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
 			return nil, errors.Errorf(nil, errors.ErrorNotebookResourcePoolForbidden)
 		}
@@ -268,6 +267,10 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 				}
 			}
 		}
+	}
+
+	if !user.User.Permission.MountExternalStorage && len(nb.Mounts) > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
 	}
 
 	return &startJobInfo{
@@ -507,7 +510,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
 
-	VolumeMounts := []v1.VolumeMount{
+	volumeMounts := []v1.VolumeMount{
 		{
 			Name:      "data",
 			MountPath: s.conf.Service.DockerCodePath,
@@ -527,7 +530,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	}
 
 	if startJobInfo.datasetPath != "" {
-		VolumeMounts = append(VolumeMounts, v1.VolumeMount{
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
 			Name:      "data",
 			MountPath: s.conf.Service.DockerDatasetPath,
 			SubPath:   startJobInfo.datasetPath,
@@ -554,7 +557,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	}
 
 	if startJobInfo.shm != nil {
-		VolumeMounts = append(VolumeMounts, v1.VolumeMount{
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
 			Name:      "cache-volume",
 			MountPath: "/dev/shm",
 		})
@@ -567,6 +570,12 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 				},
 			},
 		})
+	}
+
+	vs, vms := common.GetVolumes(nb.Mounts)
+	if len(vms) > 0 {
+		volumeMounts = append(volumeMounts, vms...)
+		volumes = append(volumes, vs...)
 	}
 
 	tasks := make([]typeJob.TaskSpec, 0)
@@ -590,7 +599,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 							Requests: startJobInfo.resources,
 							Limits:   startJobInfo.resources,
 						},
-						VolumeMounts: VolumeMounts,
+						VolumeMounts: volumeMounts,
 						Env: []v1.EnvVar{{
 							Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
 							Value: buildNotebookUrl(nbJob.Id, i),

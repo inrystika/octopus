@@ -266,13 +266,12 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
+	if err != nil {
+		return nil, err
+	}
 	queue := job.ResourcePool
 	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
-		if err != nil {
-			return nil, err
-		}
-
 		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
 			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
 		}
@@ -438,6 +437,10 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 	}
 
+	if !user.User.Permission.MountExternalStorage && len(job.Mounts) > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	}
+
 	return &startJobInfo{
 		queue:         queue,
 		imageAddr:     imageAddr,
@@ -543,6 +546,12 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				VolumeSource: v1.VolumeSource{
 					EmptyDir: &v1.EmptyDirVolumeSource{}},
 			},
+		}
+
+		vs, vms := common.GetVolumes(job.Mounts)
+		if len(vms) > 0 {
+			volumeMounts = append(volumeMounts, vms...)
+			volumes = append(volumes, vs...)
 		}
 
 		//add shareMemory for each subTask

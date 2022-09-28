@@ -43,6 +43,7 @@ message CreateNotebookRequest {
   string datasetVersion = 10;
   int32 taskNumber = 11[(validate.rules).int32 = {gte:1}];
   string resourcePool = 12;
+  repeated common.api.v1.Mount mounts = 13;
 }
 
 message CreateNotebookReply {
