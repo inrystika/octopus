@@ -2,15 +2,17 @@ package user
 
 import (
 	"context"
-	"golang.org/x/crypto/bcrypt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
+	v1 "server/common/api/v1"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -91,6 +93,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			Bind:          bindInfo,
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
+			Permission:    (*v1.UserPermission)(user.Permission),
 		}
 		users[idx] = item
 	}
@@ -157,6 +160,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			Bind:          bindInfo,
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
+			Permission:    (*v1.UserPermission)(user.Permission),
 		},
 	}
 
@@ -239,7 +243,7 @@ func (s *UserService) AddUser(ctx context.Context, req *api.AddUserRequest) (*ap
 	user.Status = int32(api.UserStatus_ACTIVITY)
 	user.Bind = cond.Bind
 	user.ResourcePools = []string{s.conf.Service.Resource.DefaultPoolName}
-	user.Desc=req.Desc
+	user.Desc = req.Desc
 	u, err := s.data.UserDao.Add(ctx, &user)
 	if err != nil {
 		return nil, err
@@ -298,6 +302,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		Status:        int32(req.Status),
 		ResourcePools: req.ResourcePools,
 		Desc:          req.Desc,
+		Permission:    (*model.Permission)(req.Permission),
 	}
 	if len(bindInfo) > 0 {
 		user.Bind = bindInfo

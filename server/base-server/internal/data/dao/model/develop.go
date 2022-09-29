@@ -2,6 +2,7 @@ package model
 
 import (
 	api "server/base-server/api/v1"
+	"server/base-server/internal/common"
 	v1 "server/common/api/v1"
 	"server/common/dao"
 	"time"
@@ -19,6 +20,7 @@ type Notebook struct {
 	ImageId          string                `gorm:"type:varchar(100);not null;default:'';comment:镜像Id"`
 	ImageName        string                `gorm:"type:varchar(100);not null;default:'';comment:镜像名称"`
 	ImageVersion     string                `gorm:"type:varchar(100);not null;default:'';comment:镜像版本"`
+	ImageUrl         string                `gorm:"type:varchar(300);not null;default:'';comment:'镜像Url'"`
 	AlgorithmId      string                `gorm:"type:varchar(100);not null;default:'';comment:算法Id"`
 	AlgorithmVersion string                `gorm:"type:varchar(100);not null;default:'';comment:算法版本"`
 	AlgorithmName    string                `gorm:"type:varchar(100);not null;default:'';comment:算法名称"`
@@ -31,6 +33,7 @@ type Notebook struct {
 	Status           string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
 	TaskNumber       int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
 	ResourcePool     string                `gorm:"type:varchar(300);default:'';comment:资源池"`
+	Mounts           common.Mounts         `gorm:"type:json;comment:挂载外部存储"`
 	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
@@ -50,7 +53,7 @@ type NotebookJob struct {
 	PayEndedAt        *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus         api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
 	ResourceSpecPrice uint32                     `gorm:"type:int unsigned;not null;default:0;comment:资源规格价格"`
-	Detail       	  string                	 `gorm:"column:detail;type:json" json:"detail"`
+	Detail            string                     `gorm:"column:detail;type:json" json:"detail"`
 }
 
 func (NotebookJob) TableName() string {

@@ -7,9 +7,10 @@ import (
 )
 
 type ResponseErr struct {
-	Code    int    `json:"code"`
-	SubCode int    `json:"subcode"`
-	Message string `json:"message"`
+	Code       int    `json:"code"`
+	SubCode    int    `json:"subcode"`
+	Message    string `json:"message"`
+	SubMessage string `json:"subMessage"`
 }
 
 type Response struct {
@@ -36,9 +37,10 @@ func EncodeError(res http.ResponseWriter, req *http.Request, err error) {
 		return Response{
 			Success: false,
 			Error: &ResponseErr{
-				Code:    e.HTTPCode(),
-				SubCode: e.HTTPSubCode(),
-				Message: e.HTTPErrMsg(),
+				Code:       e.HTTPCode(),
+				SubCode:    e.HTTPSubCode(),
+				Message:    e.HTTPErrMsg(),
+				SubMessage: e.Message,
 			},
 		}
 	})
