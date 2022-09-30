@@ -37,6 +37,7 @@ const (
 	k8sTaskNamePrefix   = "task"
 	NoDistributedJobNum = 1
 	shmResource         = "shm"
+	readonlyCodeDir     = "/readonlycode"
 )
 
 type trainJobService struct {
@@ -137,8 +138,11 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	return &api.TrainJobReply{JobId: trainJobId}, nil
 }
 
-func (s *trainJobService) buildCmd(config *model.Config) []string {
-	cmd := fmt.Sprintf("cd %s;%s ", s.conf.Service.DockerCodePath, config.Command)
+func (s *trainJobService) buildCmd(job *model.TrainJob, config *model.Config) []string {
+	cmd := config.Command
+	if job.AlgorithmId != "" {
+		cmd = fmt.Sprintf("cp -r %s/* %s;cd %s;%s ", readonlyCodeDir, s.conf.Service.DockerCodePath, s.conf.Service.DockerCodePath, config.Command)
+	}
 	if len(config.Parameters) == 0 {
 		return []string{"sh", "-c", cmd}
 	} else {
@@ -262,13 +266,12 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		return nil, errors.Errorf(nil, errors.ErrorTrainBalanceNotEnough)
 	}
 
+	user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
+	if err != nil {
+		return nil, err
+	}
 	queue := job.ResourcePool
 	if job.WorkspaceId == constant.SYSTEM_WORKSPACE_DEFAULT {
-		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: job.UserId})
-		if err != nil {
-			return nil, err
-		}
-
 		if !utils.StringSliceContainsValue(user.User.ResourcePools, queue) {
 			return nil, errors.Errorf(nil, errors.ErrorTrainResourcePoolForbidden)
 		}
@@ -434,6 +437,10 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 	}
 
+	if !user.User.Permission.MountExternalStorage && len(job.Mounts) > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	}
+
 	return &startJobInfo{
 		queue:         queue,
 		imageAddr:     imageAddr,
@@ -476,18 +483,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		volumeMounts := []v1.VolumeMount{
 			{
 				Name:      "data",
-				MountPath: s.conf.Service.DockerCodePath,
-				SubPath:   startJobInfo.algorithmPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      "data",
-				MountPath: s.conf.Service.DockerDatasetPath,
-				SubPath:   startJobInfo.datasetPath,
-				ReadOnly:  true,
-			},
-			{
-				Name:      "data",
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
@@ -502,6 +497,32 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Name:      "localtime",
 				MountPath: "/etc/localtime",
 			},
+		}
+
+		if startJobInfo.algorithmPath != "" {
+			volumeMounts = append(volumeMounts,
+				v1.VolumeMount{
+					Name:      "data",
+					MountPath: readonlyCodeDir,
+					SubPath:   startJobInfo.algorithmPath,
+					ReadOnly:  true,
+				},
+				v1.VolumeMount{
+					Name:      "code",
+					MountPath: s.conf.Service.DockerCodePath,
+					ReadOnly:  false,
+				})
+
+		}
+
+		if startJobInfo.datasetPath != "" {
+			volumeMounts = append(volumeMounts,
+				v1.VolumeMount{
+					Name:      "data",
+					MountPath: s.conf.Service.DockerDatasetPath,
+					SubPath:   startJobInfo.datasetPath,
+					ReadOnly:  true,
+				})
 		}
 
 		volumes := []v1.Volume{
@@ -520,6 +541,17 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						Path: "/etc/localtime",
 					}},
 			},
+			{
+				Name: "code",
+				VolumeSource: v1.VolumeSource{
+					EmptyDir: &v1.EmptyDirVolumeSource{}},
+			},
+		}
+
+		vs, vms := common.GetVolumes(job.Mounts)
+		if len(vms) > 0 {
+			volumeMounts = append(volumeMounts, vms...)
+			volumes = append(volumes, vs...)
 		}
 
 		//add shareMemory for each subTask
@@ -562,7 +594,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 							Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
 						},
 						VolumeMounts: volumeMounts,
-						Command:      s.buildCmd(i),
+						Command:      s.buildCmd(job, i),
 					},
 				},
 				NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,

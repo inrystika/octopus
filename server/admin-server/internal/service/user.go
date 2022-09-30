@@ -58,6 +58,8 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 			Gender:        int32(user.Gender),
 			Status:        int32(user.Status),
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
+			Permission:    user.Permission,
 		}
 	}
 
@@ -102,6 +104,8 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 			Gender:        int32(user.Gender),
 			Status:        int32(user.Status),
 			ResourcePools: user.ResourcePools,
+			Desc:          user.Desc,
+			Permission:    user.Permission,
 		},
 		Workspaces: workspaces,
 	}, nil
@@ -114,12 +118,12 @@ func (s *UserService) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.
 		Email:    req.Email,
 		Phone:    req.Phone,
 		Gender:   innterapi.GenderType(req.Gender),
+		Desc:     req.Desc,
 	})
 
 	if err != nil {
 		return nil, err
 	}
-
 	user := addUserReply.User
 
 	_, err = s.data.BillingClient.CreateBillingOwner(ctx, &innterapi.CreateBillingOwnerRequest{
@@ -151,6 +155,8 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		Phone:         req.User.Phone,
 		Gender:        innterapi.GenderType(req.User.Gender),
 		ResourcePools: req.User.ResourcePools,
+		Desc:          req.User.Desc,
+		Permission:    req.User.Permission,
 	})
 
 	if err != nil {
@@ -159,14 +165,16 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 	return &pb.UpdateUserReply{
 		User: &pb.UserItem{
-			Id:        result.User.Id,
-			FullName:  result.User.FullName,
-			CreatedAt: result.User.CreatedAt,
-			UpdatedAt: result.User.UpdatedAt,
-			Email:     result.User.Email,
-			Phone:     result.User.Phone,
-			Gender:    int32(result.User.Gender),
-			Status:    int32(result.User.Status),
+			Id:         result.User.Id,
+			FullName:   result.User.FullName,
+			CreatedAt:  result.User.CreatedAt,
+			UpdatedAt:  result.User.UpdatedAt,
+			Email:      result.User.Email,
+			Phone:      result.User.Phone,
+			Gender:     int32(result.User.Gender),
+			Status:     int32(result.User.Status),
+			Desc:       result.User.Desc,
+			Permission: result.User.Permission,
 		},
 	}, nil
 }

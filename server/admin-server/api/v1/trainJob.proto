@@ -140,6 +140,8 @@ message TrainJob {
   int64  startedAt = 24;
   //用户邮箱
   string userEmail = 25;
+  //资源池
+  string resourcePool=26;
 }
 
 message TrainJobListRequest {

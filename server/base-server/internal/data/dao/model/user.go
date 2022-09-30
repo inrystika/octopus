@@ -7,6 +7,8 @@ import (
 	"server/common/dao"
 	"server/common/sql"
 
+	commapi "server/common/api/v1"
+
 	"gorm.io/gorm"
 )
 
@@ -41,6 +43,16 @@ func (r *ResourcePools) Scan(input interface{}) error {
 	return sql.Scan(r, input)
 }
 
+type Permission commapi.UserPermission
+
+func (r Permission) Value() (driver.Value, error) {
+	return sql.Value(r)
+}
+
+func (r *Permission) Scan(input interface{}) error {
+	return sql.Scan(r, input)
+}
+
 type User struct {
 	dao.Model
 	Id            string        `gorm:"type:varchar(100);not null;primaryKey;comment:'用户ID'"`
@@ -54,6 +66,8 @@ type User struct {
 	Bind          Binds         `gorm:"type:json;comment:'第三方账号绑定信息'"`
 	FtpUserName   string        `gorm:"type:varchar(100);uniqueIndex:ftpUserName;comment:'ftp用户名'"`
 	ResourcePools ResourcePools `gorm:"type:json;comment:'资源池'"`
+	Desc          string        `gorm:"type:varchar(100);default:'';index;comment:'备注'"`
+	Permission    *Permission   `gorm:"type:json;comment:权限"`
 }
 
 func (User) TableName() string {
@@ -74,6 +88,7 @@ type UserList struct {
 	SearchKey string
 	Status    int32
 	Bind      Binds
+	Desc      string
 }
 
 func (u UserList) Where(db *gorm.DB) *gorm.DB {
@@ -155,6 +170,7 @@ type UserQuery struct {
 	Phone       string
 	Bind        *Bind
 	FtpUserName string
+	Desc        string
 }
 
 type UserAdd struct {
@@ -167,6 +183,7 @@ type UserAdd struct {
 	Status        int32
 	Bind          *Bind
 	ResourcePools []string
+	Desc          string
 }
 
 type UserUpdate struct {
@@ -179,6 +196,8 @@ type UserUpdate struct {
 	Bind          Binds
 	FtpUserName   string
 	ResourcePools []string
+	Desc          string
+	Permission    *Permission
 }
 
 type UserUpdateCond struct {
