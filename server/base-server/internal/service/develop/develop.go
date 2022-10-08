@@ -282,7 +282,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	if !user.User.Permission.MountExternalStorage && len(nb.Mounts) > 0 {
+	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(nb.Mounts) > 0 {
 		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
 	}
 

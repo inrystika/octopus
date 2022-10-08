@@ -437,7 +437,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 	}
 
-	if !user.User.Permission.MountExternalStorage && len(job.Mounts) > 0 {
+	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(job.Mounts) > 0 {
 		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
 	}
 
