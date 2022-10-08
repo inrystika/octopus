@@ -494,3 +494,8 @@ rdma:
            }
         ]
     }
+
+enflame:
+  enabled: false
+  gcu-k8s-device-plugin-image: 192.168.202.110:5000/octopus/enflame-gcu-k8s-device-plugin:v1.0.0-dev
+  gcu-exporter-image: 192.168.202.110:5000/octopus/enflame-gcu-exporter:v1.0.1-dev
