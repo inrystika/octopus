@@ -8,6 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "validate/validate.proto";
 import "server/common/api/v1/develop.proto";
+import "server/common/api/v1/common.proto";
 
 service Develop {
   // 创建notebook
@@ -35,14 +36,17 @@ message CreateNotebookRequest {
   string workspaceId = 2[(validate.rules).string = {min_len: 1}];
   string name = 3[(validate.rules).string = {min_len: 1}];
   string desc = 4;
-  string imageId = 5[(validate.rules).string = {min_len: 1}];
-  string algorithmId = 6[(validate.rules).string = {min_len: 1}];
-  string algorithmVersion = 7[(validate.rules).string = {min_len: 1}];
+  string imageId = 5;
+  string algorithmId = 6;
+  string algorithmVersion = 7;
   string resourceSpecId = 8[(validate.rules).string = {min_len: 1}];
   string datasetId = 9;
   string datasetVersion = 10;
   int32 taskNumber = 11[(validate.rules).int32 = {gte:1}];
   string resourcePool = 12;
+  repeated common.api.v1.Mount mounts = 13;
+  //镜像地址，非必填，镜像地址和镜像ID填一个
+  string imageUrl = 14;
 }
 
 message CreateNotebookReply {
@@ -114,6 +118,8 @@ message Notebook {
   string notebookJobId = 21;
   string imageVersion = 22;
   repeated Task tasks = 23;
+  string resourcePool=24;
+  string imageUrl = 25;
 }
 
 message ListNotebookReply {

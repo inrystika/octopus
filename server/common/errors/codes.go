@@ -128,6 +128,7 @@ const (
 	ErrorNotebookRepeatedToSave           = 14011 // notebook保存中，禁止重复保存
 	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
 	ErrorNotebookResourcePoolForbidden    = 14013 // notebook使用资源池不允许操作
+	ErrorNotebookMountExternalForbidden   = 14014 // 用户不允许外部挂载
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -143,6 +144,7 @@ const (
 	ErrorJobUniqueIndexConflict      = 15011 // job任务重名
 	ErrorRepeatJobConfigName         = 15022 // 分布式子任务重名
 	ErrorTrainResourcePoolForbidden  = 15023 // 训练使用资源池不允许操作
+	ErrorTrainMountExternalForbidden = 15024 // 用户不允许外部挂载
 
 	/* 16001~17000 用户管理错误*/
 	// 用户登录
@@ -344,6 +346,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorNotebookRepeatedToSave:           {codeType: AlreadyExists, msg: "repeated notebook saveing"},
 	ErrorNotebookNoFoundRuntimeContainer:  {codeType: NotFound, msg: "no found runtime container"},
 	ErrorNotebookResourcePoolForbidden:    {codeType: OutOfRange, msg: "resource pool forbidden"},
+	ErrorNotebookMountExternalForbidden:   {codeType: OutOfRange, msg: "mount external forbidden"},
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden:         {codeType: PermissionDenied, msg: "image Auth forbidden"},
@@ -359,6 +362,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorJobUniqueIndexConflict:      {codeType: InvalidArgument, msg: "repeated job name causes conflict unique key"},
 	ErrorRepeatJobConfigName:         {codeType: InvalidArgument, msg: "repeated config name in distributed job"},
 	ErrorTrainResourcePoolForbidden:  {codeType: InvalidArgument, msg: "train resource pool forbidden"},
+	ErrorTrainMountExternalForbidden: {codeType: OutOfRange, msg: "mount external forbidden"},
 
 	/* 16001~17000 用户管理错误*/
 	// 用户登录相关错误

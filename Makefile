@@ -48,17 +48,17 @@ init:
 	mkdir -p ${SERVER_BINARY_DIR}
 
 base-server_build: init
-	cd ./server && go generate
+	cd ./server && go mod download && go generate
 
 	cd ./server/base-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
 admin-server_build: init
-	cd ./server && go generate
+	cd ./server && go mod download && go generate
 
 	cd ./server/admin-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
 openai-server_build: init
-	cd ./server && go generate
+	cd ./server && go mod download && go generate
 
 	cd ./server/openai-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
@@ -71,7 +71,7 @@ scheduler_build: init
 	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/scheduler
 
 api-doc_build: init
-	cd ./server && go generate
+	cd ./server && go mod download && go generate
 # 运行
 all_run: server_run
 

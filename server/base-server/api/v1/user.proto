@@ -7,6 +7,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "server/common/api/v1/configkey.proto";
 import "validate/validate.proto";
+import "server/common/api/v1/common.proto";
 
 service UserService {
   rpc ListUser (ListUserRequest) returns (ListUserReply);
@@ -50,6 +51,7 @@ message UserItem {
   string ftpUserName = 11;
   repeated string resourcePools = 12;
   string desc=13;
+  common.api.v1.UserPermission permission = 14;
 }
 
 message Bind {
@@ -120,6 +122,8 @@ message UpdateUserRequest {
   repeated Bind bind = 8;
   repeated string resourcePools = 9;
   string desc=10;
+  common.api.v1.UserPermission permission = 11;
+
 }
 
 message UpdateUserReply {

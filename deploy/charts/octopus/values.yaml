@@ -143,7 +143,6 @@ baseserver:
   service:
     billingPeriodSec: 1800
     develop:
-      jpyCommand: "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='/code' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
       autoStopIntervalSec: 7200
       isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制
   administrator:
@@ -495,3 +494,8 @@ rdma:
            }
         ]
     }
+
+enflame:
+  enabled: false
+  gcu-k8s-device-plugin-image: 192.168.202.110:5000/octopus/enflame-gcu-k8s-device-plugin:v1.0.0-dev
+  gcu-exporter-image: 192.168.202.110:5000/octopus/enflame-gcu-exporter:v1.0.1-dev

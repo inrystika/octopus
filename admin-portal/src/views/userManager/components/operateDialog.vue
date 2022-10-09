@@ -15,8 +15,15 @@
                 <el-form-item v-if="user&&edite" label="电话" :label-width="formLabelWidth" prop="phone">
                     <el-input v-model="ruleForm.phone" />
                 </el-form-item>
+                <el-form-item label="外部存储" v-if="user&&edite" :label-width="formLabelWidth">
+                    <el-radio-group v-model="mountExternalStorage">
+                        <el-radio :label="true">允许</el-radio>
+                        <el-radio :label="false">禁止</el-radio>
+                    </el-radio-group>
+                </el-form-item>
                 <el-form-item label="备注" prop="desc" v-if="user&&edite" :label-width="formLabelWidth">
-                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" :show-word-limit="true">
+                    </el-input>
                 </el-form-item>
                 <el-form-item v-if="group" label="群组名称" :label-width="formLabelWidth" prop="name">
                     <el-input v-model="ruleForm.name" disabled />
@@ -89,7 +96,7 @@
                 }
             };
             var validatePass2 = (rule, value, callback) => {
-                if (value === ''||value==undefined) {
+                if (value === '' || value == undefined) {
                     callback(new Error('请再次输入密码'));
                 } else if (value !== this.ruleForm.password) {
                     callback(new Error('两次输入密码不一致!'));
@@ -145,7 +152,8 @@
                 pageSize: 100,
                 userCount: 1,
                 edite: false,
-                password: false
+                password: false,
+                mountExternalStorage: false
 
             }
         },
@@ -157,6 +165,10 @@
                 this.ruleForm.phone = this.row.phone
                 this.ruleForm.desc = this.row.desc
                 this.id = this.row.id
+                if (this.row.permission) {
+                    this.mountExternalStorage = this.row.permission.mountExternalStorage
+                } else { this.mountExternalStorage = false }
+
                 if (this.type == 'password') {
                     this.password = true
                     this.edite = false
@@ -257,7 +269,7 @@
                             let data = {}
                             if (this.password) { data = { fullname: this.ruleForm.fullname, password: this.ruleForm.password, id: this.id } }
                             else {
-                                data = { id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc }
+                                data = { id: this.id, phone: this.ruleForm.phone.toString(), desc: this.ruleForm.desc, permission: { mountExternalStorage: this.mountExternalStorage } }
                             }
                             editUser(data).then(response => {
                                 if (response.success) {

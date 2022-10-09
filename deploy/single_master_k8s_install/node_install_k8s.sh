@@ -65,6 +65,11 @@ main() {
         install_nvidia_docker
     fi
 
+    # 安装enflame docker
+    if [[ $node_type == "enflame_gcu" ]];then
+        install_enflame_docker
+    fi
+
     # 安装k8s工具
     set_repo
     # pull镜像
@@ -79,6 +84,8 @@ main() {
         nvidia_gpu_label
     elif [[ $node_type == "huawei_a910" ]];then
         huawei_a910_label
+    elif [[ $node_type == "enflame_gcu" ]];then
+        enflame_gcu_label
     fi
 }
 

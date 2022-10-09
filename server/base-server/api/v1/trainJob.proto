@@ -7,6 +7,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 
 import "validate/validate.proto";
+import "server/common/api/v1/common.proto";
 
 service TrainJobService {
   //创建训练任务
@@ -51,6 +52,7 @@ message TrainJobRequest {
   //镜像地址，非必填，镜像地址和镜像ID填一个
   string imageUrl = 12[(validate.rules).string = {min_len: 0}];
   string resourcePool = 13;
+  repeated common.api.v1.Mount mounts = 14;
 }
 
 message TrainJobTemplateRequest {
@@ -233,6 +235,7 @@ message TrainJob{
   string dataSetName = 21;
   int64  startedAt = 22;
   string imageUrl = 23;
+  string resourcePool=24;
 }
 
 
