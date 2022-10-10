@@ -337,7 +337,7 @@ spec:
       nodeSelector:
         hardware-type: ENFLAMEGCU
       containers:
-        - image: {{ .Values.enflame.gcu-exporter-image }}
+        - image: {{ .Values.enflame.gcuExporterImage }}
           imagePullPolicy: IfNotPresent #Always
           name: pod-enflame-gcu-metrics-exporter
           resources:
