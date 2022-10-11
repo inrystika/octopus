@@ -474,7 +474,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 
 	minAvailable := 0
 	tasks := make([]typeJob.TaskSpec, 0)
-    fmt.Print(s.conf.Service.Alluxio.Tieredstore.Allow,"OPPO")
 	for idx, i := range job.Config {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
 		minAvailable += i.TaskNumber
