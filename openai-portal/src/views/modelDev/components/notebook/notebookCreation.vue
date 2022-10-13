@@ -128,10 +128,8 @@
                     );
                     SELECTWRAP_DOM.addEventListener("scroll", function () {
                         const CONDITION =
-                            this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
+                            this.scrollHeight - this.scrollTop <= this.clientHeight;                
                             binding.value();
-                        }
                     });
                 }
             }
