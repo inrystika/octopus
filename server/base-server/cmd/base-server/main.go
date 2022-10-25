@@ -60,7 +60,6 @@ func main() {
 		fmt.Printf("Miss param: -conf, use -h to get help\n")
 		return
 	}
-
 	conf, c, err := initConf()
 	if err != nil {
 		panic(err)
@@ -154,15 +153,14 @@ func initConf() (*conf.Bootstrap, config.Config, error) {
 			return yaml.Unmarshal(kv.Value, v)
 		}),
 	)
+	fmt.Print(c)
 	if err := c.Load(); err != nil {
 		return nil, nil, err
 	}
-
 	var conf conf.Bootstrap
 	if err := c.Scan(&conf); err != nil {
 		return nil, nil, err
 	}
-
 	if Name != "" {
 		conf.App.Name = Name
 	} else {

@@ -38,14 +38,14 @@ module.exports = {
     },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
-        target: 'http://192.168.203.154',
+        target: 'http://192.168.202.71',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: '/adminserver'
         }
       },
       [process.env.VUE_APP_BASE_API2]: {
-        target: 'http://192.168.203.154',
+        target: 'http://192.168.202.71',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''

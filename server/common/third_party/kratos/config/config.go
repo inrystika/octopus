@@ -3,11 +3,10 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-kratos/kratos/v2/log"
 	"reflect"
 	"sync"
 	"time"
-
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 var (

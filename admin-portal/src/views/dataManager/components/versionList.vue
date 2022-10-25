@@ -30,16 +30,20 @@
         <el-table-column label="操作" props="action">
           <template slot-scope="scope">
             <el-button v-if="(scope.row.status === 1 ) || (scope.row.status === 4 ) ? true : false"
-              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
+              v-show="versionListType === 1 ? false : true" type="text" @click="reupload(scope.row)"
+              :disabled="scope.row.progress&&scope.row.progress!=0">
               重新上传
             </el-button>
-            <el-button type="text" :disabled="scope.row.status === 3 ? false : true"
-              @click="handlePreview(scope.row)" style="margin-left: 0px;">
+            <el-button type="text" :disabled="scope.row.status === 3 ? false : true" @click="handlePreview(scope.row)"
+              style="margin-left: 0px;">
               预览
             </el-button>
             <el-button v-if="versionListType === 1 ? false : true" slot="reference" type="text"
               @click="confirmDelete(scope.row)" :disabled="scope.row.progress&&scope.row.progress!=0">
               删除
+            </el-button>
+            <el-button type="text" v-if="scope.row.status === 3 ? true : false" @click="handleCache(scope.row)">
+              加速设置
             </el-button>
           </template>
         </el-table-column>
@@ -55,9 +59,27 @@
     <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset v-if="myDatasetVisible" :data="data" :version-data="versionData" @close="close" @cancel="cancel"
       @confirm="confirm" />
+    <el-dialog title="加速设置" :visible.sync="dialogCache">
+      <el-form :model="cache">
+        <el-form-item label="即时配送">
+          <el-switch v-model="cache.open" @change="open"></el-switch>
+        </el-form-item>
+        <el-form-item label="缓存大小" v-if="show">
+          <el-select v-model="cache.quota" placeholder="请选择缓存大小">
+            <el-option label="500M" value="500M"></el-option>
+            <el-option label="1G" value="1G"></el-option>
+            <el-option label="2G" value="2G"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
-</template>
 
+</template>
 <script>
   import { getVersionList, deleteDatasetVersion } from "@/api/dataManager"
   import preview from './preview.vue'
@@ -88,7 +110,10 @@
         pageSize: 20,
         total: undefined,
         versionList: [],
-        timer: null
+        timer: null,
+        dialogCache: false,
+        cache: { open: false, quota: "1G" },
+        show:false
       }
     },
     created() {
@@ -104,7 +129,7 @@
       reupload(row) {
         this.myDatasetVisible = true
         this.versionData = row,
-        store.commit('user/SET_PROGRESSID', row.datasetId + row.version)
+          store.commit('user/SET_PROGRESSID', row.datasetId + row.version)
       },
       handlePreview(row) {
         this.preVisible = true
@@ -196,6 +221,14 @@
       },
       confirm(val) {
         this.myDatasetVisible = val
+      },
+      handleCache(val) {
+        this.dialogCache = true
+      },
+      open() {
+        if (this.cache.open) {
+          this.show = true
+        } else { this.show = false }
       }
     }
   }

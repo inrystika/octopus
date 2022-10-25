@@ -52,6 +52,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 )
 
@@ -73,7 +74,6 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	if err1 == nil {
 		return cfg, nil
 	}
-
 	cfg, err2 := buildConfigWithDefaultPath(configPath)
 	if err2 == nil {
 		return cfg, nil
@@ -150,6 +150,7 @@ type kubernetesCluster struct {
 
 	nodes  map[string]*v1.Node
 	config *rest.Config
+	rtClient           client.Client
 }
 
 func (kc *kubernetesCluster) Run() {
