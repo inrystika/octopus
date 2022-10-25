@@ -18,7 +18,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	"encoding/json"
@@ -475,7 +474,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 
 	minAvailable := 0
 	tasks := make([]typeJob.TaskSpec, 0)
-
 	for idx, i := range job.Config {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
 		minAvailable += i.TaskNumber
