@@ -34,6 +34,7 @@ import (
 
 	typejob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -655,4 +656,47 @@ func (kc *kubernetesCluster) DeleteJob(ctx context.Context, namespace, name stri
 		return nil
 	}
 	return err
+}
+func (kc *kubernetesCluster) CreateFluidDataset(ctx context.Context, dataset *fluidv1.Dataset) error {
+	err := kc.rtClient.Create(ctx, dataset)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.Dataset{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (kc *kubernetesCluster) CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error {
+	err := kc.rtClient.Create(ctx, alluxio)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.AlluxioRuntime{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -11,6 +11,7 @@ import (
 
 	typejob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -67,4 +68,8 @@ type Cluster interface {
 	GetJob(ctx context.Context, namespace, name string) (*typejob.Job, error)
 	CreateJob(ctx context.Context, job *typejob.Job) error
 	DeleteJob(ctx context.Context, namespace, name string) error
+	CreateFluidDataset(ctx context.Context, dataset *fluidv1.Dataset) error
+	DeleteFluidDataset(ctx context.Context, namespace string, name string) error
+	CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error
+	DeleteAlluxioRuntime(ctx context.Context, namespace string, name string) error
 }

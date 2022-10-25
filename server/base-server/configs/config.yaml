@@ -16,7 +16,7 @@ data:
     source: root:root@tcp(192.168.203.154:30336)/octopus?charset=utf8&parseTime=True&loc=Local
   kubernetes:
     masterUrl: https://192.168.203.154:6443/
-    configPath: C:\Users\dell\Desktop\kubeconfig
+    configPath: C:/Users/dell/Desktop/kubeconfig
   minio:
     base:
       endPoint: 192.168.203.154:31311
