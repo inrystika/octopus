@@ -61,27 +61,26 @@
       @confirm="confirm" />
     <el-dialog title="加速设置" :visible.sync="dialogCache">
       <el-form :model="cache">
-        <el-form-item label="即时配送">
-          <el-switch v-model="cache.open" @change="open"></el-switch>
+        <el-form-item label="是否启动">
+          <el-switch v-model="open" @change="switchshow"></el-switch>
         </el-form-item>
         <el-form-item label="缓存大小" v-if="show">
           <el-select v-model="cache.quota" placeholder="请选择缓存大小">
-            <el-option label="500M" value="500M"></el-option>
-            <el-option label="1G" value="1G"></el-option>
-            <el-option label="2G" value="2G"></el-option>
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button @click="dialogCache = false">取 消</el-button>
+        <el-button type="primary" @click="confirm">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 
 </template>
 <script>
-  import { getVersionList, deleteDatasetVersion } from "@/api/dataManager"
+  import { getVersionList, deleteDatasetVersion, createDatasetVersionCache, deleteDatasetVersionCache } from "@/api/dataManager"
   import preview from './preview.vue'
   import reuploadDataset from "./reuploadDataset.vue"
   import store from '@/store'
@@ -112,13 +111,24 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { open: false, quota: "1G" },
-        show:false
+        cache: { quota: "1G", datasetId: undefined, version: undefined },
+        open: false,
+        show: false,
+        options: [{
+          value: '500M',
+          label: '500M'
+        }, {
+          value: '1G',
+          label: '1G'
+        }, {
+          value: '2G',
+          label: '2G'
+        }]
       }
     },
     created() {
       this.getVersionList()
-      this.timer = setInterval(() => { this.getVersionList() }, 2000)
+      // this.timer = setInterval(() => { this.getVersionList() }, 2000)
 
     },
     destroyed() {
@@ -223,12 +233,53 @@
         this.myDatasetVisible = val
       },
       handleCache(val) {
+        this.cache.datasetId = val.datasetId
+        this.cache.version = val.version
+        this.cache.quota = val.cache.quota
+        if (val.cache.quota !== "0M") {
+          this.open = true
+          this.show = true
+        }
+        else { this.open = false; this.show = false }
         this.dialogCache = true
       },
-      open() {
-        if (this.cache.open) {
+      switchshow() {
+        if (this.open) {
           this.show = true
-        } else { this.show = false }
+          this.cache.quota = "500M"
+        }
+        else { this.show = false; this.cache.quota = "0M" }
+      },
+      confirm() {      
+        if (this.open) {
+          createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota } }).then(response => {
+            if (response.success) {
+              this.$message.success("开启成功");
+              this.getVersionList()
+            } else {
+              this.$message({
+                message: this.getErrorMsg(response.error.subcode),
+                type: 'warning'
+              });
+
+            }
+          })
+        }
+        else {
+          deleteDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: "0M" } }).then(response => {
+            if (response.success) {
+              this.$message.success("关闭成功");
+              this.getVersionList()
+            } else {
+              this.$message({
+                message: this.getErrorMsg(response.error.subcode),
+                type: 'warning'
+              });
+
+            }
+          })
+        }
+        this.dialogCache = false
       }
     }
   }

@@ -55,7 +55,6 @@ type NotebookJob struct {
 	ResourceSpecPrice uint32                     `gorm:"type:int unsigned;not null;default:0;comment:资源规格价格"`
 	Detail            string                     `gorm:"column:detail;type:json" json:"detail"`
 }
-
 func (NotebookJob) TableName() string {
 	return "notebook_job"
 }

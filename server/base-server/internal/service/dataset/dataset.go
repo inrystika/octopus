@@ -377,7 +377,6 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 	if err != nil {
 		return nil, err
 	}
-
 	versions := make([]*api.DatasetVersion, 0)
 	for _, n := range versionsTbl {
 		version := &api.DatasetVersion{}
@@ -387,9 +386,9 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
+		version.Cache.Quota=n.Cache.Quota
 		versions = append(versions, version)
 	}
-
 	return &api.ListDatasetVersionReply{
 		TotalSize: totalSize,
 		Versions:  versions,
@@ -697,7 +696,6 @@ func (s *datasetService) GetDatasetVersion(ctx context.Context, req *api.GetData
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-
 	return reply, nil
 }
 
@@ -751,6 +749,7 @@ func (s *datasetService) UpdateDatasetVersion(ctx context.Context, req *api.Upda
 		return nil, err
 	}
 
+
 	version.Desc = req.Desc
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, version)
 	if err != nil {
@@ -791,4 +790,39 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 	toBucket, toObject := getMinioPath(dataset, newV)
 	toPath := fmt.Sprintf("%s/%s", toBucket, toObject)
 	return toPath
+}
+func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
+	cache:=&model.Cache{
+		Quota:req.Cache.Quota,
+	}
+	err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     cache,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
+
+}
+func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
+	cache:=&model.Cache{
+	}
+	fmt.Print(&model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     cache,
+	})
+	err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     cache,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 }

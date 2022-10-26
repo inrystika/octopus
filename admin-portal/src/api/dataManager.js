@@ -203,3 +203,22 @@ export async function editeDataSet(data) {
   })
   return res
 }
+
+// 开启加速
+export async function createDatasetVersionCache(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/dataset/${data.datasetId}/version/${data.version}/cache`,
+    method: "post",
+    data: data
+  })
+  return res
+}
+// 关闭加速
+export async function deleteDatasetVersionCache(data) {
+  const res = await request({
+    url: `/v1/datasetmanage/dataset/${data.datasetId}/version/${data.version}/cache`,
+    method: "delete",
+    data: data
+  })
+  return res
+}

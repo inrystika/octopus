@@ -2,6 +2,8 @@ package model
 
 import (
 	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"server/common/dao"
 
 	commsql "server/common/sql"
@@ -46,6 +48,11 @@ type DatasetVersion struct {
 	Path         string                `gorm:"type:varchar(200);not null;default:'';comment:存储路径"`
 	OriginalPath string                `gorm:"type:varchar(200);not null;default:'';comment:原始文件路径"`
 	DeletedAt    soft_delete.DeletedAt `gorm:"uniqueIndex:datasetId_version"`
+	Cache        *Cache                 `gorm:"column:cache;type:json" json:"cache"`
+
+}
+type Cache struct{
+     Quota   string          `gorm:"type:varchar(1024);not null;default:'';comment:容量"`
 }
 
 func (DatasetVersion) TableName() string {
@@ -163,4 +170,17 @@ type DatasetVersionAccessDelete struct {
 type DatasetAccessId struct {
 	DatasetId string
 	SpaceId   string
+}
+
+func (r Cache) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *Cache) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }

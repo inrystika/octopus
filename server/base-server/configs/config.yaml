@@ -88,7 +88,6 @@ service:
       levels:
         - mediumtype: HDD
           path: /tmp/alluxiocache
-          quota: 1Gi
 administrator:
   username: "admin"
   password: "123456"

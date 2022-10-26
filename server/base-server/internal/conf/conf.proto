@@ -172,7 +172,6 @@ message Alluxio {
   message Level {
     string mediumtype = 1;
     string path = 2;
-    string quota = 3;
   }
   Tieredstore tieredstore = 1;
 }

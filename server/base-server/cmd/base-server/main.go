@@ -153,7 +153,6 @@ func initConf() (*conf.Bootstrap, config.Config, error) {
 			return yaml.Unmarshal(kv.Value, v)
 		}),
 	)
-	fmt.Print(c)
 	if err := c.Load(); err != nil {
 		return nil, nil, err
 	}
