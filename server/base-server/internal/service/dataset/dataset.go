@@ -810,11 +810,6 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
 	cache:=&model.Cache{
 	}
-	fmt.Print(&model.DatasetVersion{
-		DatasetId: req.DatasetId,
-		Version:   req.Version,
-		Cache:     cache,
-	})
 	err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
 		DatasetId: req.DatasetId,
 		Version:   req.Version,

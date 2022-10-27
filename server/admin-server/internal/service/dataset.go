@@ -457,7 +457,7 @@ func(s *DatasetService) CreateDatasetVersionCache(ctx context.Context, req *api.
 func(s *DatasetService) DeleteDatasetVersionCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
 	innerReq := &innerapi.CacheRequest{}
 	err := copier.Copy(innerReq, req)
-	reply, err :=s.data.DatasetClient.CreateCache(ctx, innerReq)
+	reply, err :=s.data.DatasetClient.DeleteCache(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}

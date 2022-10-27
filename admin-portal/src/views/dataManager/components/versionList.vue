@@ -236,7 +236,7 @@
         this.cache.datasetId = val.datasetId
         this.cache.version = val.version
         this.cache.quota = val.cache.quota
-        if (val.cache.quota !== "0M") {
+        if (val.cache.quota !== "") {
           this.open = true
           this.show = true
         }
