@@ -84,7 +84,6 @@ service:
     ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
   alluxio:
     tieredstore:
-      allow: true
       levels:
         - mediumtype: HDD
           path: /tmp/alluxiocache

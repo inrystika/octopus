@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
@@ -81,7 +81,7 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	return nil, fmt.Errorf("load kubernetes config failed %v %v", err1, err2)
 }
 
-func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc) {
+func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc,error) {
 	restConfig, err := buildConfigFromFlagsOrCluster(confData.Kubernetes.ConfigPath)
 	if err != nil {
 		panic(err)
@@ -89,7 +89,7 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 	return newKubernetesCluster(restConfig, logger)
 }
 
-func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
+func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc,error) {
 	c, cancel := context.WithCancel(context.Background())
 
 	kc := &kubernetesCluster{
@@ -102,7 +102,16 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 		log:          log.NewHelper("Cluster", logger),
 		config:       config,
 	}
-
+	scheme := runtime.NewScheme()
+	err := fluidv1.AddToScheme(scheme)
+	if err != nil {
+		return nil, nil, errors.Errorf(err, errors.ErrorFluidInitFailed)
+	}
+	rtClient, err := client.New(config, client.Options{Scheme: scheme})
+	if err != nil {
+		return nil, nil, errors.Errorf(err, errors.ErrorFluidInitFailed)
+	}
+	kc.rtClient = rtClient
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
 	naInformerFactory := nainformer.NewSharedInformerFactory(kc.naClient, 0)
 
@@ -128,10 +137,9 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 	vcjobInformer := jobInformerFactory.Batch().V1alpha1().Jobs()
 	kc.vcjobInformer = vcjobInformer
 	kc.vcjobLister = vcjobInformer.Lister()
-
 	kc.Run()
 	kc.WaitForCacheSync()
-	return kc, cancel
+	return kc, cancel,nil
 }
 
 type kubernetesCluster struct {
@@ -701,3 +709,4 @@ func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace
 
 	return nil
 }
+

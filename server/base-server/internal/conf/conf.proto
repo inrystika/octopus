@@ -12,6 +12,7 @@ message Bootstrap {
   Service service = 4;
   Administrator administrator = 5;
   bytes storage = 6;
+  Alluxio alluxio=7;
 }
 
 message App {
@@ -167,7 +168,6 @@ message Administrator {
 message Alluxio {
   message Tieredstore {
     repeated Level levels = 1;
-    bool allow =2;
   }
   message Level {
     string mediumtype = 1;

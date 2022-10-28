@@ -3,6 +3,14 @@ package dataset
 import (
 	"context"
 	"fmt"
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
+	"k8s.io/client-go/dynamic"
 	"path/filepath"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -12,11 +20,10 @@ import (
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/graceful"
+	"server/common/log"
 	"server/common/utils"
 	"time"
-
-	"server/common/log"
-
+	"k8s.io/apimachinery/pkg/util/json"
 	"github.com/jinzhu/copier"
 )
 
@@ -31,7 +38,6 @@ type datasetService struct {
 	data         *data.Data
 	lableService api.LableServiceServer
 }
-
 func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.DatasetServiceServer {
 	log := log.NewHelper("DatasetService", logger)
 
@@ -803,7 +809,27 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 	if err != nil {
 		return nil, err
 	}
+	err = s.data.Cluster.CreateFluidDataset(ctx, &fluidv1.Dataset{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "Dataset",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "spark",
+			Namespace: "default",
+		},
+		Spec: fluidv1.DatasetSpec{
+			Mounts: []fluidv1.Mount{
+				{
+					MountPoint: "https://mirrors.bit.edu.cn/apache/spark/",
+					Name:"spark",
 
+				},
+			},
+			PlacementMode:"Shared",
+			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadOnlyMany},
+		},
+	})
 	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 
 }
@@ -818,6 +844,43 @@ func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) 
 	if err != nil {
 		return nil, err
 	}
-
+	//err = s.data.Cluster.DeleteFluidDataset(ctx,"test")
+	if err != nil {
+		return nil, err
+	}
 	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
+}
+func createObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, gvk schema.GroupVersionKind, namespace string, manifest []byte) error{
+	obj := &unstructured.Unstructured{}
+	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+
+	if _, _, err := decoder.Decode(manifest, &gvk, obj); err != nil {
+		return err
+	}
+	_, err := dynamicClient.Resource(gvr).Namespace(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, namespace string, name string) error{
+	return dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+}
+
+func getObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, namespace string, name string, obj runtime.Object) error {
+	data, err := dynamicClient.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	dataJson, err := data.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	if err = json.Unmarshal(dataJson, obj); err != nil {
+		return err
+	}
+	return nil
 }
