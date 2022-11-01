@@ -28,7 +28,7 @@ service ResourceSpecService {
 message ResourceSpec {
   string id = 1;
   string name = 2;
-  uint32 price = 3;
+  double price = 3;
   map<string,string> resourceQuantity = 4;
 }
 
@@ -44,7 +44,7 @@ message ResourceSpecList {
 
 message CreateResourceSpecRequest {
   string name = 1;
-  uint32 price = 2;
+  double price = 2;
   map<string,string> resourceQuantity = 3;
 }
 

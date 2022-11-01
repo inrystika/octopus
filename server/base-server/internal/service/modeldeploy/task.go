@@ -35,8 +35,8 @@ func (s *modelDeployService) getOwner(modelDeploy *model.ModelDeploy) (string, a
 	return ownerId, ownerType
 }
 
-func (s *modelDeployService) calAmount(startAt int64, endedAt int64, price uint32) float64 {
-	return float64(endedAt-startAt) * float64(price) / 3600.0
+func (s *modelDeployService) calAmount(startAt int64, endedAt int64, price float64) float64 {
+	return float64(endedAt-startAt) * price / 3600.0
 }
 
 func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
