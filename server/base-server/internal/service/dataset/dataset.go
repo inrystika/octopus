@@ -4,13 +4,8 @@ import (
 	"context"
 	"fmt"
 	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
+	"github.com/jinzhu/copier"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
-	"k8s.io/client-go/dynamic"
 	"path/filepath"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -23,8 +18,6 @@ import (
 	"server/common/log"
 	"server/common/utils"
 	"time"
-	"k8s.io/apimachinery/pkg/util/json"
-	"github.com/jinzhu/copier"
 )
 
 var (
@@ -37,6 +30,7 @@ type datasetService struct {
 	log          *log.Helper
 	data         *data.Data
 	lableService api.LableServiceServer
+	tieredStore  fluidv1.TieredStore
 }
 func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.DatasetServiceServer {
 	log := log.NewHelper("DatasetService", logger)
@@ -46,6 +40,8 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		log:          log,
 		data:         data,
 		lableService: lableService,
+
+
 	}
 
 	return s
@@ -798,45 +794,118 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 	return toPath
 }
 func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
-	cache:=&model.Cache{
-		Quota:req.Cache.Quota,
-	}
-	err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
-		DatasetId: req.DatasetId,
-		Version:   req.Version,
-		Cache:     cache,
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = s.data.Cluster.CreateFluidDataset(ctx, &fluidv1.Dataset{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "data.fluid.io/v1alpha1",
-			Kind:       "Dataset",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "spark",
-			Namespace: "default",
-		},
-		Spec: fluidv1.DatasetSpec{
-			Mounts: []fluidv1.Mount{
-				{
-					MountPoint: "https://mirrors.bit.edu.cn/apache/spark/",
-					Name:"spark",
+	//version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	Name, _:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
+	name:=Name.Name
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if version.Cache.Quota!="" {
+    // _, err=s.DeleteCache(ctx,req)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//Dataset:=fluidv1.Dataset{
+	//	TypeMeta: metav1.TypeMeta{
+	//		APIVersion: "data.fluid.io/v1alpha1",
+	//		Kind:       "Dataset",
+	//	},
+	//	ObjectMeta: metav1.ObjectMeta{
+	//		Name: name,
+	//		Namespace: "test2",
+	//	},
+	//	Spec: fluidv1.DatasetSpec{
+	//		Mounts: []fluidv1.Mount{
+	//			{
+	//				MountPoint: fmt.Sprintf("s3://%s", version.Path),
+	//				Name:       name,
+	//				Options: map[string]string{
+	//					"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
+	//					"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
+	//					"alluxio.underfs.s3.endpoint":fmt.Sprintf("%s%s","http://" ,s.conf.Data.Minio.Base.EndPoint),
+	//				},
+	//			},
+	//		},
+	//		PlacementMode:"Shared",
+	//		AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+	//	},
+	//}
+	//err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//quantity := resource.MustParse(req.Cache.Quota)
+	//option:=s.conf.Service.Alluxio.Tieredstore.Levels[0]
+	//alluxioRuntime := fluidv1.AlluxioRuntime{
+	//	TypeMeta: metav1.TypeMeta{
+	//		APIVersion: "data.fluid.io/v1alpha1",
+	//		Kind:       "AlluxioRuntime",
+	//	},
+	//	ObjectMeta: metav1.ObjectMeta{
+	//		Name: name,
+	//		Namespace: "test2",
+	//	},
+	//	Spec: fluidv1.AlluxioRuntimeSpec{
+	//		Replicas: 1,
+	//		TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
+	//				{MediumType: Common.MediumType(option.Mediumtype),
+	//				Path:       fmt.Sprintf("%s", option.Path),
+	//				Quota:      &quantity,
+	//				High:       "0.95",
+	//				Low:        "0.7"},
+	//
+	//		}},
+	//
+	//	},
+	//}
+	//err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//cache:=&model.Cache{
+	//	Quota:req.Cache.Quota,
+	//}
+	//err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+	//	DatasetId: req.DatasetId,
+	//	Version:   req.Version,
+	//	Cache:     cache,
+	//})
+	pv,_:=s.data.Cluster.GetPersistentVolume(ctx,fmt.Sprintf("%s-%s", "test2",name))
+	pvc,_:=s.data.Cluster.GetPersistentVolumeClaim(ctx,"test2",name)
+	newPV:=&v1.PersistentVolume{
 
-				},
-			},
-			PlacementMode:"Shared",
-			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadOnlyMany},
-		},
-	})
+	}
+	newPVC:=&v1.PersistentVolumeClaim{
+
+	}
+	copier.Copy(newPV, pv)
+	copier.Copy(newPVC, pvc)
+	fmt.Print(pv)
+	newPV.ObjectMeta.Name="newpv"
+	s.data.Cluster.CreatePersistentVolume(ctx,newPV)
+	//s.data.Cluster.CreatePersistentVolumeClaim(ctx,newPVC)
 	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 
 }
 func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
-	cache:=&model.Cache{
+	Name, err:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
+	name:=Name.Name
+	if err != nil {
+		return nil, err
 	}
-	err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+	err = s.data.Cluster.DeleteFluidDataset(ctx,"test2",name)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteAlluxioRuntime(ctx,"test2",name)
+	if err != nil {
+		return nil, err
+	}
+	cache:=&model.Cache{
+		Quota: "",
+	}
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
 		DatasetId: req.DatasetId,
 		Version:   req.Version,
 		Cache:     cache,
@@ -844,43 +913,7 @@ func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) 
 	if err != nil {
 		return nil, err
 	}
-	//err = s.data.Cluster.DeleteFluidDataset(ctx,"test")
-	if err != nil {
-		return nil, err
-	}
 	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 }
-func createObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, gvk schema.GroupVersionKind, namespace string, manifest []byte) error{
-	obj := &unstructured.Unstructured{}
-	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 
-	if _, _, err := decoder.Decode(manifest, &gvk, obj); err != nil {
-		return err
-	}
-	_, err := dynamicClient.Resource(gvr).Namespace(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
-func deleteObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, namespace string, name string) error{
-	return dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
-}
-
-func getObject(dynamicClient dynamic.Interface, gvr schema.GroupVersionResource, namespace string, name string, obj runtime.Object) error {
-	data, err := dynamicClient.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	dataJson, err := data.MarshalJSON()
-	if err != nil {
-		return err
-	}
-
-	if err = json.Unmarshal(dataJson, obj); err != nil {
-		return err
-	}
-	return nil
-}

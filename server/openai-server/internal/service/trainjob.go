@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	innerapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
@@ -10,8 +11,6 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
-
-	"github.com/jinzhu/copier"
 )
 
 type TrainJobService struct {

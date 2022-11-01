@@ -111,9 +111,10 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { quota: "1G", datasetId: undefined, version: undefined },
+        cache: { quota: "", datasetId: undefined, version: undefined },
         open: false,
         show: false,
+        disabled: true,
         options: [{
           value: '500M',
           label: '500M'
@@ -239,18 +240,19 @@
         if (val.cache.quota !== "") {
           this.open = true
           this.show = true
+
         }
-        else { this.open = false; this.show = false }
+        else { this.open = false; this.show = false; }
         this.dialogCache = true
       },
       switchshow() {
         if (this.open) {
           this.show = true
-          this.cache.quota = "500M"
+          this.cache.quota = "1G"    
         }
         else { this.show = false; this.cache.quota = "0M" }
       },
-      confirm() {      
+      confirm() {
         if (this.open) {
           createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota } }).then(response => {
             if (response.success) {

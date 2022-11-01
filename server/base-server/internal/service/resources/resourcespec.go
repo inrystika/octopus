@@ -3,15 +3,13 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	"k8s.io/apimachinery/pkg/api/resource"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model/resources"
 	"server/common/errors"
-
 	"server/common/log"
-
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 type ResourceSpecService struct {
@@ -31,7 +29,6 @@ func NewResourceSpecService(conf *conf.Bootstrap, logger log.Logger, data *data.
 }
 
 func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *api.ListResourceSpecRequest) (*api.ResourceSpecList, error) {
-
 	if req.PageIndex < 0 || req.PageSize < 0 {
 		return &api.ResourceSpecList{}, errors.Errorf(nil, errors.ErrorListResourceSpec)
 	}
@@ -41,7 +38,6 @@ func (rsvc *ResourceSpecService) ListResourceSpec(ctx context.Context, req *api.
 	}
 
 	rsList, err := rsvc.data.ResourceSpecDao.ListResourceSpec(req.PageIndex, req.PageSize)
-
 	if err != nil {
 		return &api.ResourceSpecList{}, errors.Errorf(err, errors.ErrorListResourceSpec)
 	}
