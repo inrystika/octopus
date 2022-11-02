@@ -8,7 +8,7 @@
                     <el-input v-model="ruleForm.name" placeholder="请输入NoteBook名称" />
                 </el-form-item>
                 <div class="tip"><i
-                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录存储在<span>/userhome</span>中
+                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中
                 </div>
                 </el-alert>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
@@ -764,7 +764,7 @@
         margin: 16px 0 16px 120px;
         color:#B3B3B3
     }
-  .tip span{color:#000;font-weight: 700;}
+  .tip span{color:#000;font-weight: 600;}
     .el-alert__icon {
         color: orange
     }
