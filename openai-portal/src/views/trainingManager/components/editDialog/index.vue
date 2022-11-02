@@ -4,9 +4,13 @@
             :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" :label-width="formLabelWidth"
                 class="demo-ruleForm">
-                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name">
+                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name"
+                    class="[flag ==2 ： 'name'? '']">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
+                <div class="tip" v-if="flag==2"><i
+                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中，训练输出请存储在<span>/model</span>中以供后续下载
+                </div>
                 <el-form-item :label="desc" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.desc" type="textarea" maxlength="300" show-word-limit />
                 </el-form-item>
@@ -57,7 +61,8 @@
                 <!-- 数据集三级框 -->
                 <div>
                     <el-form-item label="数据集类型" :class="{inline:dataSetName}">
-                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择" @change="changedataSetSource" @clear="clearDataSetVersionOption">
+                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择"
+                            @change="changedataSetSource" @clear="clearDataSetVersionOption">
                             <el-option label="我的数据集" value="my" />
                             <el-option label="预置数据集" value="pre" />
                             <el-option label="公共数据集" value="common" />
@@ -112,12 +117,14 @@
 
                     <div>
                         <el-form-item label="资源池" prop="resourcePool" style="display:inline-block;">
-                            <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池" @change="changeResourceList">
+                            <el-select v-model="ruleForm.resourcePool" placeholder="请选择资源池"
+                                @change="changeResourceList">
                                 <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
                             </el-select>
                         </el-form-item>
                         <el-form-item label="资源规格" prop="resourceSpecId" style="display:inline-block;">
-                            <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格" @click.native="getResourceItem">
+                            <el-select v-model="ruleForm.resourceSpecId" placeholder="请选择资源规格"
+                                @click.native="getResourceItem">
                                 <el-option v-for="(item,index) in resourceOptions" :key="index" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -125,7 +132,8 @@
                     </div>
                 </div>
                 <div v-if="!show">
-                    <traningList :resourcePool="ruleForm.resourcePool" :training-table="table" @tableData="getTableData" />
+                    <traningList :resourcePool="ruleForm.resourcePool" :training-table="table"
+                        @tableData="getTableData" />
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -164,7 +172,7 @@
         },
         data() {
             var checkDatasetVersion = (rule, value, callback) => {
-                if(this.ruleForm.dataSetId && !value) {
+                if (this.ruleForm.dataSetId && !value) {
                     callback(new Error("请选择数据集版本"));
                 }
                 return callback();
@@ -276,7 +284,7 @@
                 imageTemp: '',
                 dataSetTemp: '',
                 name: '',
-                desc:''
+                desc: ''
 
             }
         },
@@ -286,14 +294,14 @@
                     case 1:
                         this.showTraning = false
                         this.name = '模版名称'
-                        this.desc='模版描述'
+                        this.desc = '模版描述'
                         return '编辑任务模板'
                         break
                     case 2:
                         this.showTraning = true
                         this.showTemplate = true
                         this.name = '任务名称'
-                        this.desc='任务描述'
+                        this.desc = '任务描述'
                         return '创建训练任务'
                         break
                 }
@@ -346,7 +354,7 @@
                 this.workspaces.forEach(
                     item => {
                         // 获取当前群组绑定资源池列表
-                        if(item.name == workspaceName) {
+                        if (item.name == workspaceName) {
                             this.poolList = item.resourcePools
                         }
                     }
@@ -396,7 +404,7 @@
             },
             getResourceItem() {
                 this.resourceOptions = []
-                this.ruleForm.resourceSpecId = ""          
+                this.ruleForm.resourceSpecId = ""
                 this.getResourceList()
             },
             // 获取资源规格
@@ -473,10 +481,10 @@
                             this.ruleForm.config[0].minSucceededTaskCount = 1
                             delete this.ruleForm.config[0].isMainRole
                             delete this.ruleForm.config[0].name
-                            if(this.ruleForm.resourceSpecId.slice(-2) == "/h") {
+                            if (this.ruleForm.resourceSpecId.slice(-2) == "/h") {
                                 this.resourceOptions.forEach(
                                     item => {
-                                        if(item.label == this.ruleForm.resourceSpecId) {
+                                        if (item.label == this.ruleForm.resourceSpecId) {
                                             this.ruleForm.config[0].resourceSpecId = item.value
                                         }
                                     }
@@ -802,5 +810,23 @@
 
     .block {
         display: block !important;
+    }
+
+    .name {
+        margin-bottom: 0px
+    }
+
+    .tip {
+        margin: 16px 0 16px 120px;
+        color: #B3B3B3
+    }
+
+    .tip span {
+        color: #000;
+        font-weight: 600;
+    }
+
+    .el-alert__icon {
+        color: orange
     }
 </style>
