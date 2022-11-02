@@ -8,7 +8,7 @@
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
                 <div class="tip" v-if="flag!=2"><i
-                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录存储在<span>/userhome</span>中
+                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录存储在<span>/userhome</span>中，训练输出请存储在<span>/model</span>中以供后续下载
                 </div>
                 <el-form-item :label="desc" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.desc" type="textarea" maxlength="300" show-word-limit />

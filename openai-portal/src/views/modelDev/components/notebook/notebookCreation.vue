@@ -8,7 +8,7 @@
                     <el-input v-model="ruleForm.name" placeholder="请输入NoteBook名称" />
                 </el-form-item>
                 <div class="tip"><i
-                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录存储在<span>/userhome</span>中，训练输出请存储在<span>/model</span>中以供后续下载
+                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录存储在<span>/userhome</span>中
                 </div>
                 </el-alert>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
