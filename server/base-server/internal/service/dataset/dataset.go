@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
+	Common "github.com/fluid-cloudnative/fluid/pkg/common"
 	"github.com/jinzhu/copier"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"path/filepath"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -131,8 +134,8 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 	for _, d := range datasetsTbl {
 		ids = append(ids, d.Id)
 	}
-
 	idsV, err := s.data.DatasetDao.ListDatasetVersionLatestVersion(ctx, ids)
+
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +150,6 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 		dataset.CreatedAt = n.CreatedAt.Unix()
 		dataset.UpdatedAt = n.UpdatedAt.Unix()
 		dataset.LatestVersion = common.VersionStrBuild(idsV[n.Id])
-
 		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.TypeId})
 		if err != nil {
 			dataset.TypeDesc = ""
@@ -157,6 +159,7 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 
 		if len(n.ApplyIds) > 0 {
 			datasetApply, err := s.lableService.ListLable(ctx, &api.ListLableRequest{PageIndex: 1, PageSize: int64(len(n.ApplyIds)), Ids: n.ApplyIds})
+
 			if err != nil {
 				return nil, err
 			}
@@ -170,7 +173,6 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 
 		datasets = append(datasets, dataset)
 	}
-
 	return &api.ListDatasetReply{
 		TotalSize: totalSize,
 		Datasets:  datasets,
@@ -301,11 +303,13 @@ func (s *datasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 
 func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *api.ConfirmUploadDatasetVersionRequest) (*api.ConfirmUploadDatasetVersionReply, error) {
 	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+
 	if err != nil {
 		return nil, err
 	}
 
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
 	if err != nil {
 		return nil, err
 	}
@@ -316,6 +320,7 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 
 	fromBucket, fromObject := getTempMinioPath(dataset, req.Version, req.FileName)
 	isExist, err := s.data.Minio.ObjectExist(fromBucket, fromObject)
+
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +393,11 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
-		version.Cache.Quota=n.Cache.Quota
+		if n.Cache==nil{
+			version.Cache=&api.Cache{}
+		}else{
+			version.Cache.Quota=n.Cache.Quota
+		}
 		versions = append(versions, version)
 	}
 	return &api.ListDatasetVersionReply{
@@ -418,6 +427,11 @@ func (s *datasetService) ListCommDatasetVersion(ctx context.Context, req *api.Li
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
+		if n.Cache==nil{
+			version.Cache=&api.Cache{}
+		}else{
+			version.Cache.Quota=n.Cache.Quota
+		}
 		versions = append(versions, version)
 	}
 
@@ -644,11 +658,13 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 
 func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.UploadDatasetVersionRequest) (*api.UploadDatasetVersionReply, error) {
 	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+
 	if err != nil {
 		return nil, err
 	}
 
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
 	if err != nil {
 		return nil, err
 	}
@@ -656,12 +672,11 @@ func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.Uplo
 	if !utils.IntInSlice(version.Status, statusForUpload) {
 		return nil, errors.Errorf(nil, errors.ErrorDatasetStatusForbidden)
 	}
-
 	uploadUrl, err := s.getUploadUrl(dataset, req.Version, req.FileName, req.Domain)
+
 	if err != nil {
 		return nil, err
 	}
-
 	return &api.UploadDatasetVersionReply{
 		UploadUrl: uploadUrl,
 	}, nil
@@ -794,97 +809,84 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 	return toPath
 }
 func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
-	//version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
 	Name, _:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
 	name:=Name.Name
-	//if err != nil {
-	//	return nil, err
-	//}
-	//if version.Cache.Quota!="" {
-    // _, err=s.DeleteCache(ctx,req)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//}
-	//Dataset:=fluidv1.Dataset{
-	//	TypeMeta: metav1.TypeMeta{
-	//		APIVersion: "data.fluid.io/v1alpha1",
-	//		Kind:       "Dataset",
-	//	},
-	//	ObjectMeta: metav1.ObjectMeta{
-	//		Name: name,
-	//		Namespace: "test2",
-	//	},
-	//	Spec: fluidv1.DatasetSpec{
-	//		Mounts: []fluidv1.Mount{
-	//			{
-	//				MountPoint: fmt.Sprintf("s3://%s", version.Path),
-	//				Name:       name,
-	//				Options: map[string]string{
-	//					"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
-	//					"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
-	//					"alluxio.underfs.s3.endpoint":fmt.Sprintf("%s%s","http://" ,s.conf.Data.Minio.Base.EndPoint),
-	//				},
-	//			},
-	//		},
-	//		PlacementMode:"Shared",
-	//		AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
-	//	},
-	//}
-	//err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//quantity := resource.MustParse(req.Cache.Quota)
-	//option:=s.conf.Service.Alluxio.Tieredstore.Levels[0]
-	//alluxioRuntime := fluidv1.AlluxioRuntime{
-	//	TypeMeta: metav1.TypeMeta{
-	//		APIVersion: "data.fluid.io/v1alpha1",
-	//		Kind:       "AlluxioRuntime",
-	//	},
-	//	ObjectMeta: metav1.ObjectMeta{
-	//		Name: name,
-	//		Namespace: "test2",
-	//	},
-	//	Spec: fluidv1.AlluxioRuntimeSpec{
-	//		Replicas: 1,
-	//		TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
-	//				{MediumType: Common.MediumType(option.Mediumtype),
-	//				Path:       fmt.Sprintf("%s", option.Path),
-	//				Quota:      &quantity,
-	//				High:       "0.95",
-	//				Low:        "0.7"},
-	//
-	//		}},
-	//
-	//	},
-	//}
-	//err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//cache:=&model.Cache{
-	//	Quota:req.Cache.Quota,
-	//}
-	//err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
-	//	DatasetId: req.DatasetId,
-	//	Version:   req.Version,
-	//	Cache:     cache,
-	//})
-	pv,_:=s.data.Cluster.GetPersistentVolume(ctx,fmt.Sprintf("%s-%s", "test2",name))
-	pvc,_:=s.data.Cluster.GetPersistentVolumeClaim(ctx,"test2",name)
-	newPV:=&v1.PersistentVolume{
-
+	if err != nil {
+		return nil, err
 	}
-	newPVC:=&v1.PersistentVolumeClaim{
-
+	if version.Cache.Quota!="" {
+    _, err=s.DeleteCache(ctx,req)
+		if err != nil {
+			return nil, err
+		}
 	}
-	copier.Copy(newPV, pv)
-	copier.Copy(newPVC, pvc)
-	fmt.Print(pv)
-	newPV.ObjectMeta.Name="newpv"
-	s.data.Cluster.CreatePersistentVolume(ctx,newPV)
-	//s.data.Cluster.CreatePersistentVolumeClaim(ctx,newPVC)
+	Dataset:=fluidv1.Dataset{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "Dataset",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Namespace: "test2",
+		},
+		Spec: fluidv1.DatasetSpec{
+			Mounts: []fluidv1.Mount{
+				{
+					MountPoint: fmt.Sprintf("s3://%s", version.Path),
+					Name:       name,
+					Options: map[string]string{
+						"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
+						"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
+						"alluxio.underfs.s3.endpoint":fmt.Sprintf("%s%s","http://" ,s.conf.Data.Minio.Base.EndPoint),
+					},
+				},
+			},
+			PlacementMode:"Shared",
+			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+		},
+	}
+	err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
+	if err != nil {
+		return nil, err
+	}
+	quantity := resource.MustParse(req.Cache.Quota)
+	option:=s.conf.Service.Alluxio.Tieredstore.Levels[0]
+	alluxioRuntime := fluidv1.AlluxioRuntime{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "AlluxioRuntime",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Namespace: "test2",
+		},
+		Spec: fluidv1.AlluxioRuntimeSpec{
+			Replicas: 1,
+			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
+					{MediumType: Common.MediumType(option.Mediumtype),
+					Path:       fmt.Sprintf("%s", option.Path),
+					Quota:      &quantity,
+					High:       "0.95",
+					Low:        "0.7"},
+
+			}},
+
+		},
+	}
+	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
+	if err != nil {
+		return nil, err
+	}
+	cache:=&model.Cache{
+		Quota:req.Cache.Quota,
+	}
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     cache,
+	})
+
 	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 
 }

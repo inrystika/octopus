@@ -224,13 +224,16 @@ func (s *DatasetService) ListPreDataset(ctx context.Context, req *api.ListPreDat
 }
 
 func (s *DatasetService) ListDatasetVersion(ctx context.Context, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
+
 	innerReq := &innerapi.ListDatasetVersionRequest{}
 	err := copier.Copy(innerReq, req)
+
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 
 	innerReply, err := s.data.DatasetClient.ListDatasetVersion(ctx, innerReq)
+
 	if err != nil {
 		return nil, err
 	}

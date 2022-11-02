@@ -2,7 +2,7 @@
   <div>
     <el-upload v-if="showUpload" class="upload-demo" action="#" :on-change="upload" :file-list="fileList"
       :http-request="httpRequest" multiple :accept="accept" :disabled="show||progress>=0&&progress<=100">
-      <el-button size="small" type="primary" :disabled="show||progress>=0&&progress<=100" >点击上传
+      <el-button size="small" type="primary" :disabled="show||progress>=0&&progress<=100">点击上传
       </el-button>
       <div class="tipText">{{ tipText }}</div>
     </el-upload>
@@ -93,6 +93,7 @@
       httpRequest() {
         const fileName = this.fileList[0].name
         const fileForm = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase() // 获取上传文件格式后缀
+
         if (this.uploadData.type === "imageManager") {
           this.loadingShow = true
           this.showUpload = false
@@ -180,7 +181,7 @@
             domain: this.GLOBAL.DOMAIN
           }
           if (fileForm === 'zip') {
-            this.$emit('upload', false)
+            this.$emit('upload', false)       
             uploadPreDataset(param).then(response => {
               if (response.success) {
                 // let uploadUrl = response.data.uploadUrl.replace("octopus-dev-minio:9000","192.168.202.73")
@@ -228,6 +229,7 @@
           }
           if (fileForm === 'zip') {
             this.$emit('upload', false)
+
             uploadNewVersion(param).then(response => {
               if (response.success) {
                 store.commit('user/SET_PROGRESSID', this.uploadData.datasetId + this.uploadData.version)
@@ -236,6 +238,7 @@
                   file: this.fileList[0].raw,
                   id: this.uploadData.datasetId + this.uploadData.version
                 }
+              
                 minIO(param).then(response => {
                   this.loadingShow = false
                   this.show = true

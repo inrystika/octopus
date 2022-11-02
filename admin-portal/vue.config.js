@@ -41,14 +41,21 @@ module.exports = {
         target: 'http://127.0.0.1:8002',
         changeOrigin: true,
         pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
+          ['^' + process.env.VUE_APP_BASE_API]: '/'
         }
       },
       [process.env.VUE_APP_BASE_API2]: {
         target: 'http://127.0.0.1:8002',
         changeOrigin: true,
         pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
+          ['^' + process.env.VUE_APP_BASE_API2]: ''
+        }
+      },
+      [process.env.VUE_APP_BASE_API3]: {
+        target: 'http://192.168.203.154',
+        changeOrigin: true,
+        pathRewrite: {
+          ['^' + process.env.VUE_APP_BASE_API3]: '/adminserver'
         }
       }
     }
