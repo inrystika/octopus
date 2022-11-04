@@ -21,6 +21,7 @@ import (
 	"server/common/log"
 	"server/common/utils"
 	"time"
+	"strings"
 )
 
 var (
@@ -66,6 +67,7 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		SpaceId:    req.SpaceId,
 		Name:       req.Name,
 		SourceType: int(req.SourceType),
+
 	})
 	if err != nil {
 		return nil, err
@@ -87,6 +89,8 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		Desc:       req.Desc,
 		Status:     int(api.DatasetVersionStatus_DVS_Init),
 		Path:       toPath,
+		Cache:      &model.Cache{Quota: ""},
+
 	}
 	err = s.data.DatasetDao.CreateDatasetVersion(ctx, version)
 	if err != nil {
@@ -289,6 +293,7 @@ func (s *datasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 		Desc:       req.Desc,
 		Status:     int(api.DatasetVersionStatus_DVS_Init),
 		Path:       toPath,
+		Cache:      &model.Cache{Quota: "50M"},
 	}
 	err = s.data.DatasetDao.CreateDatasetVersion(ctx, version)
 	if err != nil {
@@ -810,11 +815,23 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 }
 func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
-	Name, _:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
-	name:=Name.Name
 	if err != nil {
 		return nil, err
 	}
+	Name, err:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
+
+	if err != nil {
+		return nil, err
+	}
+	name:=fmt.Sprintf("%s%s%s","cache",version.DatasetId[0:10],strings.ToLower(version.Version))
+	namespace:=""
+	if Name.UserId!=""{
+		namespace=Name.UserId
+
+	} else{
+		return nil, err
+	}
+
 	if version.Cache.Quota!="" {
     _, err=s.DeleteCache(ctx,req)
 		if err != nil {
@@ -828,7 +845,7 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
-			Namespace: "test2",
+			Namespace: namespace,
 		},
 		Spec: fluidv1.DatasetSpec{
 			Mounts: []fluidv1.Mount{
@@ -859,7 +876,7 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
-			Namespace: "test2",
+			Namespace: namespace,
 		},
 		Spec: fluidv1.AlluxioRuntimeSpec{
 			Replicas: 1,
@@ -891,16 +908,29 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 
 }
 func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
+		return nil, err
+	}
 	Name, err:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
-	name:=Name.Name
 	if err != nil {
 		return nil, err
 	}
-	err = s.data.Cluster.DeleteFluidDataset(ctx,"test2",name)
+	name:=fmt.Sprintf("%s%s%s","cache",version.DatasetId[0:10],strings.ToLower(version.Version))
+	namespace:=""
+	if Name.UserId!=""{
+		namespace=Name.UserId
+	} else{
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
-	err = s.data.Cluster.DeleteAlluxioRuntime(ctx,"test2",name)
+	err = s.data.Cluster.DeleteFluidDataset(ctx,namespace,name)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteAlluxioRuntime(ctx,namespace,name)
 	if err != nil {
 		return nil, err
 	}

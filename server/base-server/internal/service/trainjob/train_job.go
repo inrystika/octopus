@@ -451,7 +451,15 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 //提交任务并将算法名称、数据集名称等字段赋值
 func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, startJobInfo *startJobInfo) (closeFunc, error) {
-	var err error
+	//获取pv和pvc
+	datasetVersion, err := s.data.DatasetDao.GetDatasetVersion(ctx, job.DataSetId, job.DataSetVersion)
+	var datasetCache bool
+	if datasetVersion.Cache.Quota!=""{
+		datasetCache=true
+	}else{
+		datasetCache=false
+	}
+	//var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
 		var err2 error
@@ -512,40 +520,73 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				})
 
 		}
-
-		if startJobInfo.datasetPath != "" {
-			volumeMounts = append(volumeMounts,
-				v1.VolumeMount{
-					Name:      "data",
-					MountPath: s.conf.Service.DockerDatasetPath,
-					SubPath:   startJobInfo.datasetPath,
-					ReadOnly:  true,
-				})
+		if datasetCache==false{
+		   if startJobInfo.datasetPath != "" {
+			   volumeMounts = append(volumeMounts,
+				   v1.VolumeMount{
+					   Name:      "data",
+					   MountPath: s.conf.Service.DockerDatasetPath,
+					   SubPath:   startJobInfo.datasetPath,
+					   ReadOnly:  true,
+				   })
+		   }}else{
+			if startJobInfo.datasetPath != "" {
+				volumeMounts = append(volumeMounts,
+					v1.VolumeMount{
+						Name:      "data",
+						MountPath: s.conf.Service.DockerDatasetPath,
+						SubPath:    fmt.Sprintf("%s%s%s","cache",job.DataSetId[0:10],strings.ToLower(job.DataSetVersion)),
+						ReadOnly:  true,
+					})
+			}
 		}
-
-		volumes := []v1.Volume{
-			{
-				Name: "data",
-				VolumeSource: v1.VolumeSource{
-					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-						ClaimName: common.GetStoragePersistentVolumeChaim(job.UserId),
+		var volumes  []v1.Volume
+		if datasetCache==false{
+		volumes = []v1.Volume{
+				{
+					Name: "data",
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: common.GetStoragePersistentVolumeChaim(job.UserId),
+						},
 					},
 				},
-			},
-			{
-				Name: "localtime",
-				VolumeSource: v1.VolumeSource{
-					HostPath: &v1.HostPathVolumeSource{
-						Path: "/etc/localtime",
-					}},
-			},
-			{
-				Name: "code",
-				VolumeSource: v1.VolumeSource{
-					EmptyDir: &v1.EmptyDirVolumeSource{}},
-			},
+				{
+					Name: "localtime",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{
+							Path: "/etc/localtime",
+						}},
+				},
+				{
+					Name: "code",
+					VolumeSource: v1.VolumeSource{
+						EmptyDir: &v1.EmptyDirVolumeSource{}},
+				},
+			}}else{
+			volumes = []v1.Volume{
+				{
+					Name: "data",
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: fmt.Sprintf("%s%s%s","cache",job.DataSetId[0:10],strings.ToLower(job.DataSetVersion)),
+						},
+					},
+				},
+				{
+					Name: "localtime",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{
+							Path: "/etc/localtime",
+						}},
+				},
+				{
+					Name: "code",
+					VolumeSource: v1.VolumeSource{
+						EmptyDir: &v1.EmptyDirVolumeSource{}},
+				},
+			}
 		}
-
 		vs, vms := common.GetVolumes(job.Mounts)
 		if len(vms) > 0 {
 			volumeMounts = append(volumeMounts, vms...)

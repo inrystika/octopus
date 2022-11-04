@@ -31,7 +31,6 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 //创建训练任务
 func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest) (*api.TrainJobReply, error) {
 	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
-
 	innerReq := &innerapi.TrainJobRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {

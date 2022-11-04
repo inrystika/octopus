@@ -50,13 +50,6 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API2]: ''
         }
-      },
-      [process.env.VUE_APP_BASE_API3]: {
-        target: 'http://192.168.203.154',
-        changeOrigin: true,
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API3]: '/adminserver'
-        }
       }
     }
     // before: require('./mock/mock-server.js')
