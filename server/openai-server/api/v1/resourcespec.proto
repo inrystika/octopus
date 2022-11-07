@@ -28,7 +28,7 @@ message ListResourceSpecReply {
 message ResourceSpec {
   string id = 1;
   string name = 2;
-  uint32 price = 3;
+  double price = 3;
   map<string,string> resourceQuantity = 4;
 }
 

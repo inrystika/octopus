@@ -60,7 +60,7 @@ message Config {
   //资源规格名称
   string resourceSpecName = 9;
   //资源规格价格
-  uint32 resourceSpecPrice = 10;
+  double resourceSpecPrice = 10;
   //子任务副本状态
   repeated ReplicaState replicaStates = 11;
   //子任务状态

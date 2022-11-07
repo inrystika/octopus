@@ -67,7 +67,7 @@ message DepInfo {
 
 message ResSpecPrice {
   int64 task = 1;
-	int64 price = 2;
+  double price = 2;
 }
 
 message DepInfoRequest {

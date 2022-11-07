@@ -89,7 +89,7 @@ message Config {
   int64  minSucceededTaskCount = 7[(validate.rules).int64 = {gte:1}];
   bool isMainRole = 8;
   string resourceSpecName = 9;
-  int32  resourceSpecPrice = 10;
+  double resourceSpecPrice = 10;
   repeated ReplicaState replicaStates = 11;
   string  subTaskState = 12;
 }

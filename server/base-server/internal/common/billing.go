@@ -11,7 +11,7 @@ import (
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
-func CalculateAmount(ctx context.Context, job *typeJob.JobStatusDetail, prices []uint32) (float64, time.Time) {
+func CalculateAmount(ctx context.Context, job *typeJob.JobStatusDetail, prices []float64) (float64, time.Time) {
 	var rs float64
 	var startTime time.Time
 	for ti, t := range job.Tasks {
@@ -26,7 +26,7 @@ func CalculateAmount(ctx context.Context, job *typeJob.JobStatusDetail, prices [
 			} else {
 				log.Infof(ctx, "calculate amount abnormal,jobId:%v", job.Job.ID)
 			}
-			rs += float64(finishedAt-startAt) * float64(prices[ti]) / 3600.0
+			rs += float64(finishedAt-startAt) * prices[ti] / 3600.0
 			if r.StartAt != nil {
 				if startTime.IsZero() {
 					startTime = r.StartAt.Time
