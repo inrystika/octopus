@@ -55,7 +55,7 @@ const (
 	ErrorK8sDeletePVFailed      = 10074 // k8s删除PV失败
 	ErrorK8sDeletePVCFailed     = 10075 // k8s删除PVC失败
 	ErrorK8sDeleteSecretFailed  = 10076 // k8s删除Secret失败
-	ErrorFluidInitFailed          = 10077 // Fluid初始化失败
+	ErrorFluidInitFailed        = 10077 // Fluid初始化失败
 	// Harbor操作相关错误
 	ErrorHarborProjectExists       = 10080 // harbor项目已存在
 	ErrorHarborCreateProjectFailed = 10081 // harbor创建项目失败
