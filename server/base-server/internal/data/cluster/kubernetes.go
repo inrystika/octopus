@@ -666,7 +666,6 @@ func (kc *kubernetesCluster) DeleteJob(ctx context.Context, namespace, name stri
 }
 func (kc *kubernetesCluster) CreateFluidDataset(ctx context.Context, dataset *fluidv1.Dataset) error {
 	err := kc.rtClient.Create(ctx, dataset)
-	fmt.Print(err,"创建数据集")
 	if err != nil {
 		return err
 	}
@@ -680,7 +679,6 @@ func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace s
 			Name:      name,
 		},
 	})
-	fmt.Print(err,"删除数据集")
 	if err != nil {
 		return err
 	}
@@ -688,7 +686,6 @@ func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace s
 }
 func (kc *kubernetesCluster) CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error {
 	err := kc.rtClient.Create(ctx, alluxio)
-	fmt.Print(err,"创建runtime")
 	if err != nil {
 		return err
 	}
@@ -702,7 +699,6 @@ func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace
 			Name:      name,
 		},
 	})
-	fmt.Print(err,"删除runtime")
 	if err != nil {
 		return err
 	}

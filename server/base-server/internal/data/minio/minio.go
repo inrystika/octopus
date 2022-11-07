@@ -30,6 +30,7 @@ type Minio interface {
 	ListObjects(bucketName string, objectPrefix string, recurSvie bool) ([]*ObjectInfo, error)
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
+
 }
 
 type ObjectInfo struct {

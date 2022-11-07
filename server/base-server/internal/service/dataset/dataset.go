@@ -293,7 +293,7 @@ func (s *datasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 		Desc:       req.Desc,
 		Status:     int(api.DatasetVersionStatus_DVS_Init),
 		Path:       toPath,
-		Cache:      &model.Cache{Quota: "50M"},
+		Cache:      &model.Cache{Quota: ""},
 	}
 	err = s.data.DatasetDao.CreateDatasetVersion(ctx, version)
 	if err != nil {
@@ -831,7 +831,6 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 	} else{
 		return nil, err
 	}
-
 	if version.Cache.Quota!="" {
     _, err=s.DeleteCache(ctx,req)
 		if err != nil {
