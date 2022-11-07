@@ -75,9 +75,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.22.1 // indirect
 	k8s.io/component-base v0.22.1 // indirect
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176 // indirect
-<<<<<<< HEAD
-	sigs.k8s.io/controller-runtime v0.10.0
-=======
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
     github.com/influxdata/flux v0.127.3 // indirect
     github.com/influxdata/influxql v1.1.1-0.20210223160523-b6ab99450c93 // indirect
@@ -134,7 +131,6 @@ require (
     sigs.k8s.io/controller-runtime v0.10.0 // indirect
     sigs.k8s.io/structured-merge-diff/v4 v4.0.3 // indirect
     sigs.k8s.io/yaml v1.2.0 // indirect
->>>>>>> master
 )
 
 replace (
