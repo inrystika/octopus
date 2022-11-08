@@ -566,7 +566,7 @@ octopus.pcl.ac.cn/resource: {{ .Values.common.resourceTagValuePrefix }}_{{ inclu
 {{- end -}}
 
 {{- define "minio.serviceAddr" -}}
-{{- printf "%s:%s" (include "minio.serviceName" .) .Values.minio.service.port  -}}
+{{- printf "%s:%s" (include "minio.serviceName" .) .Values.minio.service.ports.api  -}}
 {{- end -}}
 
 {{/******************mysql******************/}}
