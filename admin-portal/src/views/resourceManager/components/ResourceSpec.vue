@@ -38,8 +38,8 @@
                     <el-input v-model="ruleForm.name" />
                 </el-form-item>
                 <el-form-item label="机时价格" prop="price">
-                    <el-input-number v-model="ruleForm.price" :min="0" label="描述文字" :precision="0"/>
-                    <span class="red">仅支持正整数</span>
+                    <el-input-number v-model="ruleForm.price" :min="0" label="描述文字" :precision="2" :step="0.01"/>
+                    <span class="red">支持两位小数</span>
                 </el-form-item>
                 <el-form-item label="资源信息" prop="resourceQuantity">
                     <div v-for="(item, index) in ruleForm.resourceQuantity" :key="index">
@@ -139,7 +139,6 @@
                             }
                         )
                         data.resourceQuantity = obj
-                        data.price = parseInt(data.price)
                         let flag = true
                         for (var key in data.resourceQuantity) {
                             if (key === '' || data.resourceQuantity[key] === '') {

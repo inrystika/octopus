@@ -887,7 +887,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 	if err != nil {
 		return nil, err
 	}
-	priceMap := make(map[string]uint32)
+	priceMap := make(map[string]float64)
 	for _, j := range notebookJobs {
 		priceMap[j.Id] = j.ResourceSpecPrice
 	}

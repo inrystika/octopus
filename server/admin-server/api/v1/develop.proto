@@ -85,7 +85,7 @@ message Notebook {
   string datasetId = 19;
   string datasetVersion = 20;
   string datasetName = 21;
-  uint32 resourceSpecPrice = 22;
+  double resourceSpecPrice = 22;
   string notebookJobId = 23;
   string imageVersion = 24;
   repeated Task tasks = 25;

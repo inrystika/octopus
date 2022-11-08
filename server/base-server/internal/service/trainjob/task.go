@@ -39,8 +39,8 @@ func (s *trainJobService) getOwner(trainJob *model.TrainJob) (string, api.Billin
 	return ownerId, ownerType
 }
 
-func (s *trainJobService) calAmount(startAt int64, endedAt int64, price uint32) float64 {
-	return float64(endedAt-startAt) * float64(price) / 3600.0
+func (s *trainJobService) calAmount(startAt int64, endedAt int64, price float64) float64 {
+	return float64(endedAt-startAt) * price / 3600.0
 }
 
 func (s *trainJobService) trainJobBilling(ctx context.Context) {
@@ -147,7 +147,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 							payStartAt := j.StartedAt.Unix()
 							s.log.Info(ctx, "train bill service try to calculate job pay amount, jobId is: "+j.Id)
 							now := time.Now().Unix()
-							specPriceMap := map[int]uint32{}
+							specPriceMap := map[int]float64{}
 							for _, p := range j.ResSpecPrice {
 								specPriceMap[p.Task] = p.Price
 							}
