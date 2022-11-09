@@ -189,6 +189,7 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+	ErrorDatasetisBeingUsing    = 19006 //数据集正在被使用
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered   = 19501 // 标签被引用，不能删除
@@ -406,6 +407,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+	ErrorDatasetisBeingUsing:    {codeType: PermissionDenied, msg: "dataset is being used"},
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered:   {codeType: Unimplemented, msg: "lable refered"},

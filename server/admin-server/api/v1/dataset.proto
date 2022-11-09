@@ -147,7 +147,7 @@ service DatasetService {
     };
   }
   // 关闭缓存加速
-  rpc deleteDatasetVersionCache (CacheRequest) returns (CacheReply) {
+  rpc deleteDatasetVersionCache (DeleteCacheRequest) returns (CacheReply) {
     option (google.api.http) = {
       delete: "/v1/datasetmanage/dataset/{datasetId}/version/{version}/cache"
     };
@@ -410,10 +410,14 @@ message CacheRequest {
   string version = 2[(validate.rules).string = {min_len: 1}];
   Cache cache = 3;
 }
+message DeleteCacheRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+}
 message Cache {
   string quota = 1;
 
 }
 message CacheReply {
-  int64 updatedAt  = 1;
+
 }

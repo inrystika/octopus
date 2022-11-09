@@ -28,6 +28,7 @@ type DatasetDao interface {
 	GetDatasetVersion(ctx context.Context, datasetId string, version string) (*model.DatasetVersion, error)
 	DeleteDatasetVersion(ctx context.Context, delete *model.DatasetVersionDelete) error
 	UpdateDatasetVersionSelective(ctx context.Context, version *model.DatasetVersion) error
+	UpdateDatasetVersionCache(ctx context.Context, version *model.DatasetVersion) error
 	ListDatasetVersionLatestVersion(ctx context.Context, datasetIds []string) (map[string]int64, error)
 	ListDatasetAccess(ctx context.Context, query *model.DatasetAccessQuery) ([]*model.DatasetAccess, error)
 	CreateDatasetAccess(ctx context.Context, access *model.DatasetAccess) error
@@ -472,7 +473,17 @@ func (d *datasetDao) UpdateDatasetVersionSelective(ctx context.Context, version 
 	}
 	return nil
 }
-
+func (d *datasetDao) UpdateDatasetVersionCache(ctx context.Context, version *model.DatasetVersion) error {
+	if version.DatasetId == "" || version.Version == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	db := d.db(ctx)
+	res := db.Model(&version).Where("dataset_id = ? and version = ?", version.DatasetId, version.Version).Updates(map[string]interface{}{"cache": version.Cache})
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
+}
 func (d *datasetDao) ListDatasetVersionLatestVersion(ctx context.Context, datasetIds []string) (map[string]int64, error) {
 	db := d.db(ctx)
 	versions := make([]*model.DatasetVersion, 0)

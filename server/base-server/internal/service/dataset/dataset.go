@@ -20,8 +20,8 @@ import (
 	"server/common/graceful"
 	"server/common/log"
 	"server/common/utils"
-	"time"
 	"strings"
+	"time"
 )
 
 var (
@@ -36,6 +36,7 @@ type datasetService struct {
 	lableService api.LableServiceServer
 	tieredStore  fluidv1.TieredStore
 }
+
 func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.DatasetServiceServer {
 	log := log.NewHelper("DatasetService", logger)
 
@@ -44,8 +45,6 @@ func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		log:          log,
 		data:         data,
 		lableService: lableService,
-
-
 	}
 
 	return s
@@ -67,7 +66,6 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		SpaceId:    req.SpaceId,
 		Name:       req.Name,
 		SourceType: int(req.SourceType),
-
 	})
 	if err != nil {
 		return nil, err
@@ -89,8 +87,6 @@ func (s *datasetService) CreateDataset(ctx context.Context, req *api.CreateDatas
 		Desc:       req.Desc,
 		Status:     int(api.DatasetVersionStatus_DVS_Init),
 		Path:       toPath,
-		Cache:      &model.Cache{Quota: ""},
-
 	}
 	err = s.data.DatasetDao.CreateDatasetVersion(ctx, version)
 	if err != nil {
@@ -293,7 +289,6 @@ func (s *datasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 		Desc:       req.Desc,
 		Status:     int(api.DatasetVersionStatus_DVS_Init),
 		Path:       toPath,
-		Cache:      &model.Cache{Quota: ""},
 	}
 	err = s.data.DatasetDao.CreateDatasetVersion(ctx, version)
 	if err != nil {
@@ -398,12 +393,13 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
-		if n.Cache==nil{
-			version.Cache=&api.Cache{}
-		}else{
-			version.Cache.Quota=n.Cache.Quota
-		}
 		versions = append(versions, version)
+		if n.Cache != nil {
+			version.Cache.Quota = n.Cache.Quota
+		} else {
+
+			n.Cache = nil
+		}
 	}
 	return &api.ListDatasetVersionReply{
 		TotalSize: totalSize,
@@ -432,10 +428,10 @@ func (s *datasetService) ListCommDatasetVersion(ctx context.Context, req *api.Li
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
-		if n.Cache==nil{
-			version.Cache=&api.Cache{}
-		}else{
-			version.Cache.Quota=n.Cache.Quota
+		if n.Cache == nil {
+			version.Cache = nil
+		} else {
+			version.Cache.Quota = n.Cache.Quota
 		}
 		versions = append(versions, version)
 	}
@@ -771,7 +767,6 @@ func (s *datasetService) UpdateDatasetVersion(ctx context.Context, req *api.Upda
 		return nil, err
 	}
 
-
 	version.Desc = req.Desc
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, version)
 	if err != nil {
@@ -813,37 +808,77 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 	toPath := fmt.Sprintf("%s/%s", toBucket, toObject)
 	return toPath
 }
-func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
+func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error) {
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
 	if err != nil {
 		return nil, err
 	}
-	Name, err:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
+	Name, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
 
 	if err != nil {
 		return nil, err
 	}
-	name:=fmt.Sprintf("%s%s%s","cache",version.DatasetId[0:10],strings.ToLower(version.Version))
-	namespace:=""
-	if Name.UserId!=""{
-		namespace=Name.UserId
+	name := fmt.Sprintf("%s%s%s", "cache", version.DatasetId[0:10], strings.ToLower(version.Version))
+	namespace := ""
+	if Name.UserId != "" {
+		namespace = Name.UserId
 
-	} else{
+	} else {
 		return nil, err
 	}
-	if version.Cache.Quota!="" {
-    _, err=s.DeleteCache(ctx,req)
+
+	if version.Cache != nil {
+		innerReq := &api.DeleteCacheRequest{
+			DatasetId: req.DatasetId,
+			Version:   req.Version,
+			Cache:     nil,
+		}
+		_, err = s.DeleteCache(ctx, innerReq)
 		if err != nil {
 			return nil, err
 		}
 	}
-	Dataset:=fluidv1.Dataset{
+	quantity := resource.MustParse(req.Cache.Quota)
+	option := s.conf.Service.Dataset.Cache
+	alluxioRuntime := fluidv1.AlluxioRuntime{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "AlluxioRuntime",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: fluidv1.AlluxioRuntimeSpec{
+			Replicas: 1,
+			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
+				{MediumType: Common.MediumType(option.Mediumtype),
+					Path:  fmt.Sprintf("%s", option.Path),
+					Quota: &quantity,
+					High:  "0.95",
+					Low:   "0.7"},
+			}},
+		},
+	}
+	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
+	if err != nil {
+		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
+			DatasetId: req.DatasetId,
+			Version:   req.Version,
+			Cache:     nil,
+		})
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	Dataset := fluidv1.Dataset{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "data.fluid.io/v1alpha1",
 			Kind:       "Dataset",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:      name,
 			Namespace: namespace,
 		},
 		Spec: fluidv1.DatasetSpec{
@@ -854,97 +889,84 @@ func(s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) 
 					Options: map[string]string{
 						"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
 						"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
-						"alluxio.underfs.s3.endpoint":fmt.Sprintf("%s%s","http://" ,s.conf.Data.Minio.Base.EndPoint),
+						"alluxio.underfs.s3.endpoint": fmt.Sprintf("%s%s", "http://", s.conf.Data.Minio.Base.EndPoint),
 					},
 				},
 			},
-			PlacementMode:"Shared",
-			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			PlacementMode: "Shared",
+			AccessModes:   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
 		},
 	}
 	err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
 	if err != nil {
+		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
+			DatasetId: req.DatasetId,
+			Version:   req.Version,
+			Cache:     nil,
+		})
 		return nil, err
 	}
-	quantity := resource.MustParse(req.Cache.Quota)
-	option:=s.conf.Service.Alluxio.Tieredstore.Levels[0]
-	alluxioRuntime := fluidv1.AlluxioRuntime{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "data.fluid.io/v1alpha1",
-			Kind:       "AlluxioRuntime",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-			Namespace: namespace,
-		},
-		Spec: fluidv1.AlluxioRuntimeSpec{
-			Replicas: 1,
-			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
-					{MediumType: Common.MediumType(option.Mediumtype),
-					Path:       fmt.Sprintf("%s", option.Path),
-					Quota:      &quantity,
-					High:       "0.95",
-					Low:        "0.7"},
-
-			}},
-
-		},
-	}
-	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
 	if err != nil {
 		return nil, err
 	}
-	cache:=&model.Cache{
-		Quota:req.Cache.Quota,
+	cache := &model.Cache{
+		Quota: req.Cache.Quota,
 	}
-	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 		DatasetId: req.DatasetId,
 		Version:   req.Version,
 		Cache:     cache,
 	})
 
-	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
+	return &api.CacheReply{}, nil
 
 }
-func(s *datasetService) DeleteCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
-	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRequest) (*api.CacheReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
 	if err != nil {
 		return nil, err
 	}
-	Name, err:=s.data.DatasetDao.GetDataset(ctx,req.DatasetId)
-	if err != nil {
+	query := &model.TrainJobListQuery{Status: "running", UserId: dataset.UserId}
+	jobList, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
+	query = &model.TrainJobListQuery{Status: "pending", UserId: dataset.UserId}
+	jobList2, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
+	jobList = append(jobList, jobList2...)
+	//判断是否正在被运行中任务使用
+	isUsed := true
+	for _, job := range jobList {
+		if fmt.Sprintf("%s-%s", job.DataSetId, job.DataSetVersion) == fmt.Sprintf("%s-%s", req.DatasetId, req.Version) {
+			err := errors.Errorf(nil, errors.ErrorDatasetisBeingUsing)
+			isUsed = false
+			return nil, err
+		}
+	}
+	if !isUsed {
 		return nil, err
+	} else {
+		version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+		if err != nil {
+			return nil, err
+		}
+		name := fmt.Sprintf("%s%s%s", "cache", version.DatasetId[0:10], strings.ToLower(version.Version))
+		namespace := ""
+		if dataset.UserId != "" {
+			namespace = dataset.UserId
+		} else {
+			return nil, err
+		}
+		if err != nil {
+			return nil, err
+		}
+		err = s.data.Cluster.DeleteFluidDataset(ctx, namespace, name)
+		err = s.data.Cluster.DeleteAlluxioRuntime(ctx, namespace, name)
+		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
+			DatasetId: req.DatasetId,
+			Version:   req.Version,
+			Cache:     nil,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &api.CacheReply{}, nil
 	}
-	name:=fmt.Sprintf("%s%s%s","cache",version.DatasetId[0:10],strings.ToLower(version.Version))
-	namespace:=""
-	if Name.UserId!=""{
-		namespace=Name.UserId
-	} else{
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	err = s.data.Cluster.DeleteFluidDataset(ctx,namespace,name)
-	if err != nil {
-		return nil, err
-	}
-	err = s.data.Cluster.DeleteAlluxioRuntime(ctx,namespace,name)
-	if err != nil {
-		return nil, err
-	}
-	cache:=&model.Cache{
-		Quota: "",
-	}
-	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx,&model.DatasetVersion{
-		DatasetId: req.DatasetId,
-		Version:   req.Version,
-		Cache:     cache,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &api.CacheReply{UpdatedAt: time.Now().Unix()}, nil
 }
-
-

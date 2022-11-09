@@ -48,11 +48,10 @@ type DatasetVersion struct {
 	Path         string                `gorm:"type:varchar(200);not null;default:'';comment:存储路径"`
 	OriginalPath string                `gorm:"type:varchar(200);not null;default:'';comment:原始文件路径"`
 	DeletedAt    soft_delete.DeletedAt `gorm:"uniqueIndex:datasetId_version"`
-	Cache        *Cache                 `gorm:"column:cache;type:json" json:"cache",not null`
-
+	Cache        *Cache                `gorm:"column:cache;type:json";`
 }
-type Cache struct{
-     Quota   string          `gorm:"type:varchar(1024);not null;default:'';comment:容量"`
+type Cache struct {
+	Quota string `gorm:"type:varchar(1024);not null;default:'';comment:容量"`
 }
 
 func (DatasetVersion) TableName() string {

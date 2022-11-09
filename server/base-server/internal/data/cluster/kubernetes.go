@@ -81,7 +81,7 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	return nil, fmt.Errorf("load kubernetes config failed %v %v", err1, err2)
 }
 
-func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc,error) {
+func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc, error) {
 	restConfig, err := buildConfigFromFlagsOrCluster(confData.Kubernetes.ConfigPath)
 	if err != nil {
 		panic(err)
@@ -89,7 +89,7 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 	return newKubernetesCluster(restConfig, logger)
 }
 
-func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc,error) {
+func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc, error) {
 	c, cancel := context.WithCancel(context.Background())
 
 	kc := &kubernetesCluster{
@@ -139,7 +139,7 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 	kc.vcjobLister = vcjobInformer.Lister()
 	kc.Run()
 	kc.WaitForCacheSync()
-	return kc, cancel,nil
+	return kc, cancel, nil
 }
 
 type kubernetesCluster struct {
@@ -156,9 +156,9 @@ type kubernetesCluster struct {
 	nodeInformer       infov1.NodeInformer
 	nodeActionInformer nainformerv1.NodeActionInformer
 
-	nodes  map[string]*v1.Node
-	config *rest.Config
-	rtClient           client.Client
+	nodes    map[string]*v1.Node
+	config   *rest.Config
+	rtClient client.Client
 }
 
 func (kc *kubernetesCluster) Run() {
@@ -704,4 +704,3 @@ func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace
 	}
 	return nil
 }
-

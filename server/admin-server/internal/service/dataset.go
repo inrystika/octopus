@@ -445,27 +445,23 @@ func (s *DatasetService) assignValue(ctx context.Context, datasets []*api.Datase
 
 	return nil
 }
-func(s *DatasetService) CreateDatasetVersionCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
+func (s *DatasetService) CreateDatasetVersionCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error) {
 	innerReq := &innerapi.CacheRequest{}
 	err := copier.Copy(innerReq, req)
-	reply, err :=s.data.DatasetClient.CreateCache(ctx, innerReq)
+	_, err = s.data.DatasetClient.CreateCache(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.CacheReply{
-		UpdatedAt: reply.UpdatedAt,
-	}, nil
+	return &api.CacheReply{}, nil
 }
-func(s *DatasetService) DeleteDatasetVersionCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error){
-	innerReq := &innerapi.CacheRequest{}
+func (s *DatasetService) DeleteDatasetVersionCache(ctx context.Context, req *api.DeleteCacheRequest) (*api.CacheReply, error) {
+	innerReq := &innerapi.DeleteCacheRequest{}
 	err := copier.Copy(innerReq, req)
-	reply, err :=s.data.DatasetClient.DeleteCache(ctx, innerReq)
+	_, err = s.data.DatasetClient.DeleteCache(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.CacheReply{
-		UpdatedAt: reply.UpdatedAt,
-	}, nil
+	return &api.CacheReply{}, nil
 }

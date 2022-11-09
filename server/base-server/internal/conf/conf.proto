@@ -12,7 +12,6 @@ message Bootstrap {
   Service service = 4;
   Administrator administrator = 5;
   bytes storage = 6;
-  Alluxio alluxio=7;
 }
 
 message App {
@@ -155,7 +154,7 @@ message Service {
   int64  billingPeriodSec = 9;
   string dockerModelDeployPath = 10;
   string dockerUserHomePath = 11;
-  Alluxio alluxio = 12;
+  Dataset dataset = 12;
 }
 
 message Administrator {
@@ -165,14 +164,10 @@ message Administrator {
   string phone = 4;
 }
 
-message Alluxio {
-  message Tieredstore {
-    repeated Level levels = 1;
-  }
-  message Level {
+message Dataset {
+    Cache cache = 1;
+    message  Cache {
     string mediumtype = 1;
     string path = 2;
-    string quota=3;
-  }
-  Tieredstore tieredstore = 1;
+    }
 }

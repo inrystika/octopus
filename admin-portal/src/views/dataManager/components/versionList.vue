@@ -60,6 +60,8 @@
     <reuploadDataset v-if="myDatasetVisible" :data="data" :version-data="versionData" @close="close" @cancel="cancel"
       @confirm="confirm" />
     <el-dialog title="加速设置" :visible.sync="dialogCache">
+      <el-alert title="如需要改变缓存配置请先关闭缓存等待几分钟再进行" type="warning" :closable="false">
+      </el-alert>
       <el-form :model="cache">
         <el-form-item label="是否启动">
           <el-switch v-model="open" @change="switchshow"></el-switch>
@@ -234,12 +236,13 @@
         this.myDatasetVisible = val
       },
       handleCache(val) {
+
         this.cache.datasetId = val.datasetId
         this.cache.version = val.version
-        this.cache.quota = val.cache.quota
-        if (val.cache.quota !== "") {
+        if (val.cache != null) {
           this.open = true
           this.show = true
+          this.cache.quota = val.cache.quota
 
         }
         else { this.open = false; this.show = false; }
@@ -248,9 +251,9 @@
       switchshow() {
         if (this.open) {
           this.show = true
-          this.cache.quota = "1G"    
+          this.cache.quota = "1G"
         }
-        else { this.show = false; this.cache.quota = "0M" }
+        else { this.show = false }
       },
       confirm() {
         if (this.open) {
@@ -268,11 +271,12 @@
           })
         }
         else {
-          deleteDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: "0M" } }).then(response => {
+          deleteDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version }).then(response => {
             if (response.success) {
               this.$message.success("关闭成功");
               this.getVersionList()
             } else {
+              this.show = false
               this.$message({
                 message: this.getErrorMsg(response.error.subcode),
                 type: 'warning'
