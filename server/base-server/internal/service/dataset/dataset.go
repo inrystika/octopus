@@ -930,6 +930,7 @@ func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRe
 	jobList, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
 	query = &model.TrainJobListQuery{Status: "pending", UserId: dataset.UserId}
 	jobList2, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
+	fmt.Print(jobList2)
 	jobList = append(jobList, jobList2...)
 	//判断是否正在被运行中任务使用
 	isUsed := true
