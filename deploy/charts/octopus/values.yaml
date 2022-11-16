@@ -269,8 +269,8 @@ minio:
   service:
     type: NodePort
     ports:
-      api: 9000
-      console: 9001
+      api: "9000"
+      console: "9001"
     nodePorts:
       api: "31311"
   nodeSelector:

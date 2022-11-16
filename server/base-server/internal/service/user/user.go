@@ -447,3 +447,25 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 
 	return &api.UpdateUserFtpAccountReply{}, nil
 }
+
+func (s *UserService) UpdateUserMinioAccount(ctx context.Context, req *api.UpdateUserMinioAccountRequest) (*api.UpdateUserMinioAccountReply, error) {
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+
+	if user.MinioUserName != "" && user.MinioUserName != req.MinioUserName {
+		return nil, errors.Errorf(nil, errors.ErrorUserChangeMinioUsernameForbidden)
+	}
+	err = s.data.Minio.CreateOrUpdateAccount(req.MinioUserName, req.MinioPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: req.UserId}, &model.UserUpdate{MinioUserName: req.MinioUserName})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserMinioAccountReply{}, nil
+}

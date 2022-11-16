@@ -21,6 +21,7 @@ service UserService {
   rpc GetUserConfig (GetUserConfigRequest) returns (GetUserConfigReply);
   rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
   rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply);
+  rpc UpdateUserMinioAccount (UpdateUserMinioAccountRequest) returns (UpdateUserMinioAccountReply);
 }
 
 enum UserStatus
@@ -170,5 +171,15 @@ message UpdateUserFtpAccountRequest {
 }
 
 message UpdateUserFtpAccountReply {
+
+}
+
+message UpdateUserMinioAccountRequest {
+  string userId = 1;
+  string minioUserName = 2;
+  string minioPassword = 3;
+}
+
+message UpdateUserMinioAccountReply {
 
 }

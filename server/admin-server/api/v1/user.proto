@@ -65,6 +65,13 @@ service User {
         body: "*"
       };
     };
+
+    rpc UpdateUserMinioAccount (UpdateUserMinioAccountRequest) returns (UpdateUserMinioAccountReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/minioaccount"
+        body: "*"
+      };
+    };
 }
 
 message UserItem {
@@ -177,5 +184,15 @@ message UpdateUserConfigRequest {
 }
 
 message UpdateUserConfigReply {
+
+}
+
+message UpdateUserMinioAccountRequest {
+  string userId = 1;
+  string minioUserName = 2;
+  string minioPassword = 3;
+}
+
+message UpdateUserMinioAccountReply {
 
 }

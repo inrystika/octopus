@@ -241,3 +241,17 @@ func (s *UserService) UpdateUserConfig(ctx context.Context, req *pb.UpdateUserCo
 	}
 	return &pb.UpdateUserConfigReply{}, nil
 }
+
+func (s *UserService) UpdateUserMinioAccount(ctx context.Context, req *pb.UpdateUserMinioAccountRequest) (*pb.UpdateUserMinioAccountReply, error) {
+	_, err := s.data.UserClient.UpdateUserMinioAccount(ctx, &innterapi.UpdateUserMinioAccountRequest{
+		MinioUserName: req.MinioUserName,
+		MinioPassword: req.MinioPassword,
+		UserId:        req.UserId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateUserMinioAccountReply{}, nil
+}

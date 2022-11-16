@@ -11,6 +11,8 @@ import (
 	"server/common/errors"
 	"time"
 
+	"github.com/minio/madmin-go"
+
 	"server/common/log"
 
 	miniogo "github.com/minio/minio-go/v7"
@@ -30,6 +32,8 @@ type Minio interface {
 	ListObjects(bucketName string, objectPrefix string, recurSvie bool) ([]*ObjectInfo, error)
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
+
+	CreateOrUpdateAccount(userName string, password string) error
 }
 
 type ObjectInfo struct {
@@ -40,9 +44,10 @@ type ObjectInfo struct {
 }
 
 type minio struct {
-	log    *log.Helper
-	conf   *conf.Data
-	client *miniogo.Client
+	log         *log.Helper
+	conf        *conf.Data
+	client      *miniogo.Client
+	adminClient *madmin.AdminClient
 }
 
 func NewMinio(conf *conf.Data, logger log.Logger) Minio {
@@ -55,10 +60,16 @@ func NewMinio(conf *conf.Data, logger log.Logger) Minio {
 		panic(err)
 	}
 
+	adminClient, err := madmin.New(conf.Minio.Base.EndPoint, conf.Minio.Base.AccessKeyID, conf.Minio.Base.SecretAccessKey, false)
+	if err != nil {
+		panic(err)
+	}
+
 	minio := &minio{
-		log:    log.NewHelper("Minio", logger),
-		conf:   conf,
-		client: client,
+		log:         log.NewHelper("Minio", logger),
+		conf:        conf,
+		client:      client,
+		adminClient: adminClient,
 	}
 
 	// 创建默认的桶
@@ -240,4 +251,13 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 	}
 
 	return true, nil
+}
+
+func (m *minio) CreateOrUpdateAccount(userName string, password string) error {
+	ctx := context.Background()
+	err := m.adminClient.AddUser(ctx, userName, password)
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorMinioCreateAccountFailed)
+	}
+	return nil
 }
