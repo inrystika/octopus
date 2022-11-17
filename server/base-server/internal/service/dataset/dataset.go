@@ -933,7 +933,7 @@ func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRe
 	for _, job := range jobList2 {
 		jobList = append(jobList, job)
 	}
-	//判断是否正在被运行中任务使用
+	//判断是否正在被运行中或者等待中的任务使用
 	isUsed := true
 	for _, job := range jobList {
 		if fmt.Sprintf("%s-%s", job.DataSetId, job.DataSetVersion) == fmt.Sprintf("%s-%s", req.DatasetId, req.Version) {
