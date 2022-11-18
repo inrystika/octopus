@@ -240,6 +240,14 @@ enflame_gcu_label() {
     echo -e "---------------------\033[31m enflame gcu label success \033[0m---------------------"
 }
 
+# cambricon mlu节点打标签
+cambricon_mlu_label() {
+    set -e
+    echo -e "---------------------\033[31m cambricon mlu label \033[0m---------------------"
+    kubectl label nodes `hostname` hardware-type=CAMBRICONMLU
+    echo -e "---------------------\033[31m cambricon mlu label success \033[0m---------------------"
+}
+
 # huawei a910节点打标签
 huawei_a910_label() {
     kubectl label nodes `hostname` a910-device-plugin=active
