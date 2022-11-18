@@ -93,6 +93,8 @@ message UserItem {
   repeated string resourcePools = 9;
   string desc=10;
   common.api.v1.UserPermission permission = 11;
+  repeated string buckets = 12;
+  string minioUserName = 13;
 }
 
 message ListUserRequest {
