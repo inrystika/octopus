@@ -37,6 +37,8 @@ const (
 	ErrorMinioCheckObjectExistFailed   = 10039 // 查看对象失败
 	ErrorMinioCheckObjectNotExisted    = 10040 // 对象不存在
 	ErrorMinioCreateAccountFailed      = 10041 // 创建用户失败
+	ErrorMinioOperationFailed          = 10042 // 操作失败
+
 	// db操作相关错误
 	ErrorDBInitFailed        = 10050 // db初始化失败
 	ErrorDBFindFailed        = 10051 // db列表查询失败
@@ -171,6 +173,7 @@ const (
 	ErrorUserConfigKeyNotExist            = 16027 // 配置项不存在
 	ErrorUserAccountBinded                = 16028 // 账号已绑定
 	ErrorUserChangeMinioUsernameForbidden = 16029 // 不能修改minio用户名
+	ErrorUserMinioUsernameNotExist        = 16030 // minio用户不存在
 
 	/* 17001~18000 计费管理错误*/
 	ErrorBillingObtainLockFailed = 17001 // 获取锁失败
@@ -265,6 +268,8 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorMinioCheckObjectExistFailed:   {codeType: Internal, msg: "minio check object failed"},
 	ErrorMinioCheckObjectNotExisted:    {codeType: NotFound, msg: "minio object not exist"},
 	ErrorMinioCreateAccountFailed:      {codeType: Internal, msg: "minio create account failed"},
+	ErrorMinioOperationFailed:          {codeType: Internal, msg: "minio operation failed"},
+
 	// db 操作相关错误
 	ErrorDBInitFailed:        {codeType: Internal, msg: "db init failed"},
 	ErrorDBFindFailed:        {codeType: Internal, msg: "db find failed"},
@@ -390,6 +395,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorWorkSpaceResourcePoolBound:       {codeType: ResourceExhausted, msg: "workspace and resource pool had bind"},
 	ErrorUserConfigKeyNotExist:            {codeType: InvalidArgument, msg: "user config key not exist"},
 	ErrorUserChangeMinioUsernameForbidden: {codeType: InvalidArgument, msg: "change minio username forbidden"},
+	ErrorUserMinioUsernameNotExist:        {codeType: InvalidArgument, msg: "minio username not exist"},
 
 	/* 17001~18000 机时管理错误*/
 	ErrorBillingObtainLockFailed: {codeType: Internal, msg: "billing obtain lock failed"},

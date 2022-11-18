@@ -255,3 +255,16 @@ func (s *UserService) UpdateUserMinioAccount(ctx context.Context, req *pb.Update
 
 	return &pb.UpdateUserMinioAccountReply{}, nil
 }
+
+func (s *UserService) UpdateUserMinioBuckets(ctx context.Context, req *pb.UpdateUserMinioBucketsRequest) (*pb.UpdateUserMinioBucketsReply, error) {
+	_, err := s.data.UserClient.UpdateUserMinioBuckets(ctx, &innterapi.UpdateUserMinioBucketsRequest{
+		UserId:  req.UserId,
+		Buckets: req.Buckets,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateUserMinioBucketsReply{}, nil
+}

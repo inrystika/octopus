@@ -22,6 +22,7 @@ service UserService {
   rpc UpdateUserConfig (UpdateUserConfigRequest) returns (UpdateUserConfigReply);
   rpc UpdateUserFtpAccount (UpdateUserFtpAccountRequest) returns (UpdateUserFtpAccountReply);
   rpc UpdateUserMinioAccount (UpdateUserMinioAccountRequest) returns (UpdateUserMinioAccountReply);
+  rpc UpdateUserMinioBuckets (UpdateUserMinioBucketsRequest) returns (UpdateUserMinioBucketsReply);
 }
 
 enum UserStatus
@@ -53,6 +54,7 @@ message UserItem {
   repeated string resourcePools = 12;
   string desc=13;
   common.api.v1.UserPermission permission = 14;
+  repeated string buckets = 15;
 }
 
 message Bind {
@@ -181,5 +183,14 @@ message UpdateUserMinioAccountRequest {
 }
 
 message UpdateUserMinioAccountReply {
+
+}
+
+message UpdateUserMinioBucketsRequest {
+  string userId = 1;
+  repeated string buckets = 2;
+}
+
+message UpdateUserMinioBucketsReply {
 
 }

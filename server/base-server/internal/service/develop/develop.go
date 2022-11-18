@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/strings/slices"
+
 	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 
 	"server/common/log"
@@ -66,7 +68,7 @@ const (
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
-	jpyCommand                   = "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
+	jpyCommand                   = `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL;sleep 3600`
 )
 
 func buildTaskName(idx int) string {
@@ -284,6 +286,14 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 
 	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(nb.Mounts) > 0 {
 		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	}
+
+	for _, m := range nb.Mounts {
+		if m.Octopus != nil {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+			}
+		}
 	}
 
 	command := ""
@@ -529,10 +539,10 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 }
 
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
-
+	volume := "data"
 	volumeMounts := []v1.VolumeMount{
 		{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerUserHomePath,
 			SubPath:   common.GetUserHomePath(nb.UserId),
 			ReadOnly:  false,
@@ -545,7 +555,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	if startJobInfo.algorithmPath != "" {
 		volumeMounts = append(volumeMounts, v1.VolumeMount{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerCodePath,
 			SubPath:   startJobInfo.algorithmPath,
 			ReadOnly:  false,
@@ -554,7 +564,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	if startJobInfo.datasetPath != "" {
 		volumeMounts = append(volumeMounts, v1.VolumeMount{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerDatasetPath,
 			SubPath:   startJobInfo.datasetPath,
 			ReadOnly:  true,
@@ -563,7 +573,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	volumes := []v1.Volume{
 		{
-			Name: "data",
+			Name: volume,
 			VolumeSource: v1.VolumeSource{
 				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 					ClaimName: common.GetStoragePersistentVolumeChaim(nb.UserId),
@@ -595,7 +605,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		})
 	}
 
-	vs, vms := common.GetVolumes(nb.Mounts)
+	vs, vms := common.GetVolumes(nb.Mounts, volume)
 	if len(vms) > 0 {
 		volumeMounts = append(volumeMounts, vms...)
 		volumes = append(volumes, vs...)

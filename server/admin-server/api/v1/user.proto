@@ -72,6 +72,13 @@ service User {
         body: "*"
       };
     };
+
+    rpc UpdateUserMinioBuckets (UpdateUserMinioBucketsRequest) returns (UpdateUserMinioBucketsReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/miniobuckets"
+        body: "*"
+      };
+    };
 }
 
 message UserItem {
@@ -194,5 +201,14 @@ message UpdateUserMinioAccountRequest {
 }
 
 message UpdateUserMinioAccountReply {
+
+}
+
+message UpdateUserMinioBucketsRequest {
+  string userId = 1;
+  repeated string buckets = 2;
+}
+
+message UpdateUserMinioBucketsReply {
 
 }

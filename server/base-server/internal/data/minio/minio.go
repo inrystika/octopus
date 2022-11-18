@@ -9,6 +9,7 @@ import (
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/common/errors"
+	"strings"
 	"time"
 
 	"github.com/minio/madmin-go"
@@ -33,7 +34,11 @@ type Minio interface {
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
 
-	CreateOrUpdateAccount(userName string, password string) error
+	CreateOrUpdateAccount(ctx context.Context, userName string, password string) error
+
+	BucketExists(ctx context.Context, bucketName string) (bool, error)
+
+	SetUserBucketsAccess(ctx context.Context, userName string, buckets []string) error
 }
 
 type ObjectInfo struct {
@@ -253,11 +258,40 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 	return true, nil
 }
 
-func (m *minio) CreateOrUpdateAccount(userName string, password string) error {
-	ctx := context.Background()
+func (m *minio) CreateOrUpdateAccount(ctx context.Context, userName string, password string) error {
 	err := m.adminClient.AddUser(ctx, userName, password)
 	if err != nil {
 		return errors.Errorf(err, errors.ErrorMinioCreateAccountFailed)
 	}
+	return nil
+}
+
+func (m *minio) BucketExists(ctx context.Context, bucketName string) (bool, error) {
+	isExist, err := m.client.BucketExists(ctx, bucketName)
+	if err != nil {
+		return false, errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
+	}
+
+	return isExist, nil
+}
+
+func (m *minio) SetUserBucketsAccess(ctx context.Context, userName string, buckets []string) error {
+	rs := make([]string, 0)
+	for _, b := range buckets {
+		rs = append(rs, fmt.Sprintf(`"arn:aws:s3:::%s"`, b))
+	}
+
+	policy := fmt.Sprintf(`{"Version": "2012-10-17","Statement": [{"Action": ["s3:*"],"Effect": "Allow","Resource": [%s]}]}`, strings.Join(rs, ","))
+	fmt.Println(policy)
+	err := m.adminClient.AddCannedPolicy(ctx, userName, []byte(policy))
+	if err != nil {
+		return errors.Errorf(nil, errors.ErrorMinioOperationFailed)
+	}
+
+	err = m.adminClient.SetPolicy(ctx, userName, userName, false)
+	if err != nil {
+		return errors.Errorf(nil, errors.ErrorMinioOperationFailed)
+	}
+
 	return nil
 }
