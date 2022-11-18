@@ -1,12 +1,15 @@
 package minio_test
 
 import (
+	"context"
 	"fmt"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data/minio"
 	"server/common/errors"
 	"server/common/utils"
 	"testing"
+
+	"github.com/minio/madmin-go"
 
 	"server/common/log"
 
@@ -113,4 +116,23 @@ func TestPresignedUploadObject(t *testing.T) {
 	}
 
 	logger.Print(url.String())
+}
+
+func TestUser(t *testing.T) {
+	ctx := context.Background()
+	madmClnt, err := madmin.New("192.168.202.73:31311", "minioadmin", "minioadmin", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = madmClnt.AddCannedPolicy(ctx, "lfj", []byte(`{"Version": "2012-10-17","Statement": [{"Action": ["s3:*"],"Effect": "Allow","Resource": ["arn:aws:s3:::lfj"]}]}`)); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = madmClnt.AddUser(ctx, "lfj", "123456789"); err != nil {
+		t.Fatal(err)
+	}
+	if err = madmClnt.SetPolicy(ctx, "lfj", "lfj", false); err != nil {
+		panic(err)
+	}
 }

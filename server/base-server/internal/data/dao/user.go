@@ -156,6 +156,8 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		ResourcePools: user.ResourcePools,
 		Desc:          user.Desc,
 		Permission:    user.Permission,
+		MinioUserName: user.MinioUserName,
+		Buckets:       user.Buckets,
 	})
 	if result.Error != nil {
 		return nil, result.Error

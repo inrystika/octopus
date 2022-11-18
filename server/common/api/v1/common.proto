@@ -9,9 +9,14 @@ message Mount {
     string server = 1;
     string path = 2;
   }
+  message Octopus {
+    string bucket = 1;
+    string object = 2;
+  }
   string containerPath = 1;
   bool readOnly = 2;
   Nfs nfs = 3;
+  Octopus octopus = 4;
 }
 
 message UserPermission {

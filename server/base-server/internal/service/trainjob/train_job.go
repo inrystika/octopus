@@ -473,6 +473,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		}
 	}()
 
+	volume := "data"
 	minAvailable := 0
 	tasks := make([]typeJob.TaskSpec, 0)
 
@@ -482,13 +483,13 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		//挂载卷
 		volumeMounts := []v1.VolumeMount{
 			{
-				Name:      "data",
+				Name:      volume,
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
 			},
 			{
-				Name:      "data",
+				Name:      volume,
 				MountPath: s.conf.Service.DockerUserHomePath,
 				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
@@ -502,7 +503,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		if startJobInfo.algorithmPath != "" {
 			volumeMounts = append(volumeMounts,
 				v1.VolumeMount{
-					Name:      "data",
+					Name:      volume,
 					MountPath: readonlyCodeDir,
 					SubPath:   startJobInfo.algorithmPath,
 					ReadOnly:  true,
@@ -518,7 +519,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		if startJobInfo.datasetPath != "" {
 			volumeMounts = append(volumeMounts,
 				v1.VolumeMount{
-					Name:      "data",
+					Name:      volume,
 					MountPath: s.conf.Service.DockerDatasetPath,
 					SubPath:   startJobInfo.datasetPath,
 					ReadOnly:  true,
@@ -527,7 +528,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 
 		volumes := []v1.Volume{
 			{
-				Name: "data",
+				Name: volume,
 				VolumeSource: v1.VolumeSource{
 					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 						ClaimName: common.GetStoragePersistentVolumeChaim(job.UserId),
@@ -548,7 +549,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			},
 		}
 
-		vs, vms := common.GetVolumes(job.Mounts)
+		vs, vms := common.GetVolumes(job.Mounts, volume)
 		if len(vms) > 0 {
 			volumeMounts = append(volumeMounts, vms...)
 			volumes = append(volumes, vs...)

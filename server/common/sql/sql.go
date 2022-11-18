@@ -21,6 +21,16 @@ func (r *SqlJson) Scan(input interface{}) error {
 	}
 }
 
+type Strings []string
+
+func (r Strings) Value() (driver.Value, error) {
+	return Value(r)
+}
+
+func (r *Strings) Scan(input interface{}) error {
+	return Scan(r, input)
+}
+
 func Value(r interface{}) (driver.Value, error) {
 	return json.Marshal(r)
 }

@@ -9,7 +9,10 @@ import (
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/common/errors"
+	"strings"
 	"time"
+
+	"github.com/minio/madmin-go"
 
 	"server/common/log"
 
@@ -30,6 +33,12 @@ type Minio interface {
 	ListObjects(bucketName string, objectPrefix string, recurSvie bool) ([]*ObjectInfo, error)
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
+
+	CreateOrUpdateAccount(ctx context.Context, userName string, password string) error
+
+	BucketExists(ctx context.Context, bucketName string) (bool, error)
+
+	SetUserBucketsAccess(ctx context.Context, userName string, buckets []string) error
 }
 
 type ObjectInfo struct {
@@ -40,9 +49,10 @@ type ObjectInfo struct {
 }
 
 type minio struct {
-	log    *log.Helper
-	conf   *conf.Data
-	client *miniogo.Client
+	log         *log.Helper
+	conf        *conf.Data
+	client      *miniogo.Client
+	adminClient *madmin.AdminClient
 }
 
 func NewMinio(conf *conf.Data, logger log.Logger) Minio {
@@ -55,10 +65,16 @@ func NewMinio(conf *conf.Data, logger log.Logger) Minio {
 		panic(err)
 	}
 
+	adminClient, err := madmin.New(conf.Minio.Base.EndPoint, conf.Minio.Base.AccessKeyID, conf.Minio.Base.SecretAccessKey, false)
+	if err != nil {
+		panic(err)
+	}
+
 	minio := &minio{
-		log:    log.NewHelper("Minio", logger),
-		conf:   conf,
-		client: client,
+		log:         log.NewHelper("Minio", logger),
+		conf:        conf,
+		client:      client,
+		adminClient: adminClient,
 	}
 
 	// 创建默认的桶
@@ -240,4 +256,42 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 	}
 
 	return true, nil
+}
+
+func (m *minio) CreateOrUpdateAccount(ctx context.Context, userName string, password string) error {
+	err := m.adminClient.AddUser(ctx, userName, password)
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorMinioCreateAccountFailed)
+	}
+	return nil
+}
+
+func (m *minio) BucketExists(ctx context.Context, bucketName string) (bool, error) {
+	isExist, err := m.client.BucketExists(ctx, bucketName)
+	if err != nil {
+		return false, errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
+	}
+
+	return isExist, nil
+}
+
+func (m *minio) SetUserBucketsAccess(ctx context.Context, userName string, buckets []string) error {
+	rs := make([]string, 0)
+	for _, b := range buckets {
+		rs = append(rs, fmt.Sprintf(`"arn:aws:s3:::%s"`, b))
+	}
+
+	policy := fmt.Sprintf(`{"Version": "2012-10-17","Statement": [{"Action": ["s3:*"],"Effect": "Allow","Resource": [%s]}]}`, strings.Join(rs, ","))
+	fmt.Println(policy)
+	err := m.adminClient.AddCannedPolicy(ctx, userName, []byte(policy))
+	if err != nil {
+		return errors.Errorf(nil, errors.ErrorMinioOperationFailed)
+	}
+
+	err = m.adminClient.SetPolicy(ctx, userName, userName, false)
+	if err != nil {
+		return errors.Errorf(nil, errors.ErrorMinioOperationFailed)
+	}
+
+	return nil
 }
