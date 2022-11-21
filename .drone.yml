@@ -9,6 +9,10 @@ trigger:
   event:
     - push
     - pull_request
+dns_config:
+  nameservers:
+    - 8.8.8.8
+    - 114.114.114.114
 steps:
   - name: 代码检查
     image: golangci/golangci-lint:v1.40.1
@@ -17,11 +21,6 @@ steps:
       GOPROXY: https://goproxy.cn,direct
     commands:
       - make lint
-
-host_aliases:
-  - ip: 120.237.18.29
-    hostnames:
-      - openi.pcl.ac.cn
 ---
 kind: pipeline
 name: base-server
