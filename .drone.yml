@@ -9,10 +9,11 @@ trigger:
   event:
     - push
     - pull_request
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
+clone:
+  dns_config:
+    nameservers:
+      - 8.8.8.8
+      - 114.114.114.114
 steps:
   - name: 代码检查
     image: golangci/golangci-lint:v1.40.1
