@@ -18,6 +18,10 @@ steps:
     commands:
       - make lint
 
+host_aliases:
+  - ip: 120.237.18.29
+    hostnames:
+      - openi.pcl.ac.cn
 ---
 kind: pipeline
 name: base-server
