@@ -9,7 +9,6 @@ trigger:
   event:
     - push
     - pull_request
-dns_policy: "Default"
 steps:
   - name: 代码检查
     image: golangci/golangci-lint:v1.40.1
@@ -32,10 +31,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   # - name: 代码检查
   #   image: golangci/golangci-lint:v1.40.1
@@ -84,10 +79,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   # - name: 代码检查
   #   image: golangci/golangci-lint:v1.40.1
@@ -136,10 +127,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   # - name: 代码检查
   #   image: golangci/golangci-lint:v1.40.1
@@ -188,10 +175,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   - name: 构建镜像
     image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
@@ -232,10 +215,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
 
   - name: 构建镜像
@@ -277,10 +256,6 @@ volumes:
   - name: dockeretc
     host:
       path: /etc/docker
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   - name: Chart构建
     image: swr.cn-south-1.myhuaweicloud.com/openioctopus/helm:3.5.4-make
@@ -325,10 +300,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   - name: 构建镜像
     image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
@@ -368,10 +339,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   - name: 构建镜像
     image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
@@ -411,10 +378,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   # - name: 代码检查
   #   image: golangci/golangci-lint:v1.40.1
@@ -462,10 +425,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/
-dns_config:
-  nameservers:
-    - 8.8.8.8
-    - 114.114.114.114
 steps:
   - name: 构建镜像
     image: swr.cn-south-1.myhuaweicloud.com/openioctopus/docker:20.10.6-make
