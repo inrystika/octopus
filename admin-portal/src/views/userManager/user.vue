@@ -65,6 +65,8 @@
                     <el-button v-if="group" type="text" @click="handleEdit(scope.row)">编辑</el-button>
                     <!-- <el-button @click="handleDelete(scope.row)" type="text" v-if="group">删除</el-button> -->
                     <el-button type="text" @click="handleDetail(scope.row)">{{ user?'所属群组':'用户列表' }}</el-button>
+                    <el-button v-if="user" type="text" @click="handleMinioUserDialog(scope.row)">minio用户</el-button>
+                    <el-button v-if="user" type="text" @click="handleMinioBucketDialog(scope.row)">minio桶</el-button>
                     <!-- <el-button v-if="user" type="text" @click="handleUserConfig(scope.row)">用户配置</el-button> -->
                 </template>
             </el-table-column>
@@ -79,6 +81,12 @@
         <!-- 创修改信息对话框 -->
         <operateDialog v-if="operateVisible" :row="row" :user-type="change" @cancel="cancel" @confirm="confirm"
             @close="close" :type='type'/>
+        <!-- 创建minio账户 -->
+        <minioAccount v-if="minioUserDialogVisible" :row="row" @cancel="cancel" @confirm="confirm"
+            @close="close" />
+        <!-- 创建minio桶 -->
+        <minioBuckets v-if="minioBucketDialogVisible" :row="row" @cancel="cancel" @confirm="confirm"
+            @close="close" />
         <!-- 用户配置对话框 -->
         <userConfig v-if="userConfigVisible" :conKey="conKey" :conValue="conValue" :row="row" @cancel="cancel"
             @confirm="confirm" @close="close">
@@ -109,6 +117,8 @@
     import { getResourcePool } from '@/api/resourceManager.js'
     import { getUserConfigKey, getUserConfig } from '@/api/userManager.js'
     import operateDialog from "./components/operateDialog.vue";
+    import minioAccount from "./components/minioAccount.vue";
+    import minioBuckets from "./components/minioBuckets.vue";
     import addDialog from "./components/addDialog.vue";
     import userConfig from "./components/userConfig.vue";
     import userEdit from "./components/userEdit.vue";
@@ -120,13 +130,17 @@
             addDialog,
             searchForm,
             userConfig,
-            userEdit
+            userEdit,
+            minioAccount,
+            minioBuckets
         },
         props: {
             userTabType: { type: Number, default: undefined }
         },
         data() {
             return {
+                minioUserDialogVisible: false,
+                minioBucketDialogVisible: false,
                 tableData: [],
                 row: {},
                 CreateVisible: false,
@@ -185,6 +199,14 @@
             this.timer = null;
         },
         methods: {
+            handleMinioUserDialog(row) {
+                this.row = row
+                this.minioUserDialogVisible = true
+            },
+            handleMinioBucketDialog(row) {
+                this.row = row
+                this.minioBucketDialogVisible = true
+            },
             handleUserEdit(row) {
                 this.row = row
                 getResourcePool().then(response => {
@@ -306,6 +328,8 @@
                 this.operateVisible = val
                 this.userConfigVisible = val
                 this.userEdit = val
+                this.minioUserDialogVisible = val
+                this.minioBucketDialogVisible = val
                 this.getList(this.searchData)
             },
             confirm(val) {
@@ -313,6 +337,8 @@
                 this.operateVisible = val
                 this.userConfigVisible = val
                 this.userEdit = val
+                this.minioUserDialogVisible = val
+                this.minioBucketDialogVisible = val
                 this.timer = setTimeout(this.getList, 500)
 
             },
@@ -321,6 +347,8 @@
                 this.operateVisible = val
                 this.userConfigVisible = val
                 this.userEdit = val
+                this.minioUserDialogVisible = val
+                this.minioBucketDialogVisible = val
                 this.getList(this.searchData)
             },
             create() {
