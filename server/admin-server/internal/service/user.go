@@ -60,6 +60,8 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    user.Permission,
+			MinioUserName: user.MinioUserName,
+			Buckets:       user.Buckets,
 		}
 	}
 
@@ -106,6 +108,8 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    user.Permission,
+			MinioUserName: user.MinioUserName,
+			Buckets:       user.Buckets,
 		},
 		Workspaces: workspaces,
 	}, nil

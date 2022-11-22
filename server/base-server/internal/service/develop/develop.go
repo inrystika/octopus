@@ -294,6 +294,10 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 			}
 		}
+
+		if m.Nfs != nil && (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookMountExternalForbidden)
+		}
 	}
 
 	command := ""
