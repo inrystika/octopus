@@ -55,6 +55,7 @@ message UserItem {
   string desc=13;
   common.api.v1.UserPermission permission = 14;
   repeated string buckets = 15;
+  string minioUserName = 16;
 }
 
 message Bind {

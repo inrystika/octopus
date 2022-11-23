@@ -94,6 +94,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    (*v1.UserPermission)(user.Permission),
+			MinioUserName: user.MinioUserName,
 			Buckets:       user.Buckets,
 		}
 		users[idx] = item
@@ -162,6 +163,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    (*v1.UserPermission)(user.Permission),
+			MinioUserName: user.MinioUserName,
 			Buckets:       user.Buckets,
 		},
 	}

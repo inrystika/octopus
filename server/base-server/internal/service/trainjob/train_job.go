@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/strings/slices"
+
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	"encoding/json"
@@ -437,8 +439,16 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 	}
 
-	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(job.Mounts) > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	for _, m := range job.Mounts {
+		if m.Octopus != nil {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+			}
+		}
+
+		if m.Nfs != nil && (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) {
+			return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+		}
 	}
 
 	return &startJobInfo{

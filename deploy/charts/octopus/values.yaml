@@ -273,6 +273,7 @@ minio:
       console: "9001"
     nodePorts:
       api: "31311"
+      console: "31312"
   nodeSelector:
     <<: *nodeSelector
   affinity:

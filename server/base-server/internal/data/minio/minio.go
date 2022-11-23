@@ -278,7 +278,7 @@ func (m *minio) BucketExists(ctx context.Context, bucketName string) (bool, erro
 func (m *minio) SetUserBucketsAccess(ctx context.Context, userName string, buckets []string) error {
 	rs := make([]string, 0)
 	for _, b := range buckets {
-		rs = append(rs, fmt.Sprintf(`"arn:aws:s3:::%s"`, b))
+		rs = append(rs, fmt.Sprintf(`"arn:aws:s3:::%s/*"`, b))
 	}
 
 	policy := fmt.Sprintf(`{"Version": "2012-10-17","Statement": [{"Action": ["s3:*"],"Effect": "Allow","Resource": [%s]}]}`, strings.Join(rs, ","))

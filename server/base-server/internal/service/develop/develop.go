@@ -68,7 +68,6 @@ const (
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
-	jpyCommand                   = `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL;sleep 3600`
 )
 
 func buildTaskName(idx int) string {
@@ -85,6 +84,25 @@ func buildIngressName(jobId string, idx int) string {
 
 func buildNotebookUrl(jobId string, idx int) string {
 	return fmt.Sprintf("/notebook_%s_%s", jobId, buildTaskName(idx))
+}
+
+func (s *developService) buildCommand(cover map[string]string) string {
+	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab `
+	p := map[string]string{"no-browser": "", "ip": "0.0.0.0", "allow-root": "", "notebook-dir": "/", "port": "8888", "LabApp.token": `''`, "LabApp.allow_origin": `'*'`, "LabApp.base_url": "$OCTOPUS_JPY_BASE_URL"}
+	for k, v := range cover {
+		p[k] = v
+	}
+
+	for k, v := range p {
+		if v == "" {
+			c += fmt.Sprintf("--%s", k)
+		} else {
+			c += fmt.Sprintf("--%s=%s", k, v)
+		}
+		c += " "
+	}
+
+	return c
 }
 
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
@@ -284,23 +302,23 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(nb.Mounts) > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
-	}
-
 	for _, m := range nb.Mounts {
 		if m.Octopus != nil {
 			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
 				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 			}
 		}
+
+		if m.Nfs != nil && (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookMountExternalForbidden)
+		}
 	}
 
 	command := ""
 	if nb.AlgorithmId != "" {
-		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerCodePath)
+		command = s.buildCommand(map[string]string{"notebook-dir": s.conf.Service.DockerCodePath})
 	} else {
-		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerUserHomePath)
+		command = s.buildCommand(nb.RunParams)
 	}
 
 	return &startJobInfo{
@@ -617,6 +635,13 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		task := typeJob.TaskSpec{}
 		task.Name = taskName
 		task.Replicas = 1
+		envs := []v1.EnvVar{{
+			Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
+			Value: buildNotebookUrl(nbJob.Id, i),
+		}}
+		for k, v := range nb.Envs {
+			envs = append(envs, v1.EnvVar{Name: k, Value: v})
+		}
 		task.Template = v1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{"volcano.sh/task-spec": buildTaskName(i)},
@@ -633,10 +658,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 							Limits:   startJobInfo.resources,
 						},
 						VolumeMounts: volumeMounts,
-						Env: []v1.EnvVar{{
-							Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-							Value: buildNotebookUrl(nbJob.Id, i),
-						}},
+						Env:          envs,
 					},
 				},
 				NodeSelector: startJobInfo.nodeSelectors,
