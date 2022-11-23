@@ -6,13 +6,13 @@ import (
 	"fmt"
 )
 
-type SqlJson map[string]string
+type Map map[string]string
 
-func (r SqlJson) Value() (driver.Value, error) {
+func (r Map) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-func (r *SqlJson) Scan(input interface{}) error {
+func (r *Map) Scan(input interface{}) error {
 	switch v := input.(type) {
 	case []byte:
 		return json.Unmarshal(input.([]byte), r)
