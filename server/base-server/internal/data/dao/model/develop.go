@@ -5,6 +5,7 @@ import (
 	"server/base-server/internal/common"
 	v1 "server/common/api/v1"
 	"server/common/dao"
+	"server/common/sql"
 	"time"
 
 	"gorm.io/plugin/soft_delete"
@@ -33,7 +34,9 @@ type Notebook struct {
 	Status           string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
 	TaskNumber       int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
 	ResourcePool     string                `gorm:"type:varchar(300);default:'';comment:资源池"`
-	Mounts           common.Mounts         `gorm:"type:json;comment:挂载外部存储"`
+	Mounts           common.Mounts         `gorm:"type:json;comment:挂载存储"`
+	Envs             sql.Map               `gorm:"type:json;comment:环境变量"`
+	RunParams        sql.Map               `gorm:"type:json;comment:运行参数"`
 	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
