@@ -508,3 +508,7 @@ cambricon:
   enabled: false
   mluDevicePluginImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-k8s-device-plugin:v1.3.6
   mluExporterImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-mlu-exporter:v1.6.7
+
+nvidia:
+  # nvidia节点需要打标签hardware-type=NVIDIAGPU
+  enabled: true
