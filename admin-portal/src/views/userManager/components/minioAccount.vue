@@ -9,10 +9,10 @@
     >
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
         <el-form-item label="minio用户名称" prop="minioUserName" :label-width="formLabelWidth">
-          <el-input v-model="ruleForm.minioUserName" placeholder="请填写账号" :disabled="isShow" minlength="4" maxlength="30" show-word-limit/>
+          <el-input v-model="ruleForm.minioUserName" placeholder="请填写账号" :disabled="isShow" minlength="3" maxlength="20" show-word-limit/>
         </el-form-item>
         <el-form-item label="minio账户密码" prop="minioPassword" :label-width="formLabelWidth">
-          <el-input v-model="ruleForm.minioPassword" show-password placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit />
+          <el-input v-model="ruleForm.minioPassword" show-password placeholder="请输入密码" minlength="8" maxlength="40" show-word-limit />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -34,13 +34,13 @@ export default {
     }
   },
   data() {
-    var checkName = (rule, value, callback) => {
-      const regName = /^[a-zA-Z][0-9a-zA-Z_]{3,30}$/;
-      if (regName.test(value)) {
-        return callback();
-      }
-      callback(new Error("账号由字母开头,长度4-30个字符,允许字母数字下划线"));
-    };
+    // var checkName = (rule, value, callback) => {
+    //   const regName = /^[a-zA-Z][0-9a-zA-Z_]{3,30}$/;
+    //   if (regName.test(value)) {
+    //     return callback();
+    //   }
+    //   callback(new Error("账号由字母开头,长度4-30个字符,允许字母数字下划线"));
+    // };
     return {
       isShow: false,
       CreateFormVisible: true,
@@ -52,11 +52,11 @@ export default {
       rules: {
         minioUserName: [
           { required: true, message: "请输入账号", trigger: "blur" },
-          { validator: checkName, trigger: "blur" }
+          { min: 3, max: 20, message: '名称长度在3-20个字符', trigger: 'blur' }
 
         ], minioPassword: [
           { required: true, message: '请输入密码！', trigger: 'blur' },
-          { min: 8, max: 30, message: '密码长度在8-30位之间', trigger: 'blur' }
+          { min: 8, max: 40, message: '密码长度在8-40位之间', trigger: 'blur' }
         ]
       },
     }
