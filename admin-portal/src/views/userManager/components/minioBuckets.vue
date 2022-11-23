@@ -36,10 +36,10 @@ export default {
   },
   data () {
     var checkName = (rule, value, callback) => {
-      const regName = /^[a-z][0-9a-z]{3,3000}$/;
+      const regName = /^[a-z][0-9a-z]{3,}$/;
       for(let i = 0; i < value.length; i++) {
-        if (value[i].length <= 3 || !regName.test(value[i])) {
-          callback(new Error("小写字母开头,长度至少4个字符,只允许由小写字母和数字组成"));
+        if (!regName.test(value[i])) {
+          callback(new Error("小写字母开头,允许小写字母和数字,至少4个字符"));
         }
       }
       return callback();
