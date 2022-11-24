@@ -48,7 +48,7 @@ message CreateNotebookRequest {
   //镜像地址，非必填，镜像地址和镜像ID填一个
   string imageUrl = 14;
   map<string, string> envs = 15;
-  map<string, string> runParams = 16;
+  string command = 16;
 }
 
 message CreateNotebookReply {
