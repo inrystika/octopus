@@ -12,6 +12,7 @@ import (
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/utils"
+	"strconv"
 	"strings"
 	"time"
 
@@ -68,7 +69,14 @@ const (
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
+	envNotebookBaseUrl           = "OCTOPUS_NOTEBOOK_BASE_URL"
+	envNotebookPort              = "OCTOPUS_NOTEBOOK_PORT"
 )
+
+func buildCommand(nbDir string) string {
+	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=$%s --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$%s;`
+	return fmt.Sprintf(c, nbDir, envNotebookPort, envNotebookBaseUrl)
+}
 
 func buildTaskName(idx int) string {
 	return fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
@@ -84,25 +92,6 @@ func buildIngressName(jobId string, idx int) string {
 
 func buildNotebookUrl(jobId string, idx int) string {
 	return fmt.Sprintf("/notebook_%s_%s", jobId, buildTaskName(idx))
-}
-
-func (s *developService) buildCommand(cover map[string]string) string {
-	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab `
-	p := map[string]string{"no-browser": "", "ip": "0.0.0.0", "allow-root": "", "notebook-dir": "/", "port": "8888", "LabApp.token": `''`, "LabApp.allow_origin": `'*'`, "LabApp.base_url": "$OCTOPUS_JPY_BASE_URL"}
-	for k, v := range cover {
-		p[k] = v
-	}
-
-	for k, v := range p {
-		if v == "" {
-			c += fmt.Sprintf("--%s", k)
-		} else {
-			c += fmt.Sprintf("--%s=%s", k, v)
-		}
-		c += " "
-	}
-
-	return c
 }
 
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
@@ -315,10 +304,14 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 	}
 
 	command := ""
-	if nb.AlgorithmId != "" {
-		command = s.buildCommand(map[string]string{"notebook-dir": s.conf.Service.DockerCodePath})
+	if nb.Command != "" {
+		command = nb.Command
 	} else {
-		command = s.buildCommand(nb.RunParams)
+		if nb.AlgorithmId != "" {
+			command = buildCommand(s.conf.Service.DockerCodePath)
+		} else {
+			command = buildCommand(s.conf.Service.DockerUserHomePath)
+		}
 	}
 
 	return &startJobInfo{
@@ -636,8 +629,11 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		task.Name = taskName
 		task.Replicas = 1
 		envs := []v1.EnvVar{{
-			Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
+			Name:  envNotebookBaseUrl,
 			Value: buildNotebookUrl(nbJob.Id, i),
+		}, {
+			Name:  envNotebookPort,
+			Value: strconv.Itoa(servicePort),
 		}}
 		for k, v := range nb.Envs {
 			envs = append(envs, v1.EnvVar{Name: k, Value: v})
