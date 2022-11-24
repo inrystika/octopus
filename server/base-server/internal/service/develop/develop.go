@@ -74,7 +74,7 @@ const (
 )
 
 func buildCommand(nbDir string) string {
-	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=$%s --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$%s;`
+	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab==3 -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=$%s --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$%s;`
 	return fmt.Sprintf(c, nbDir, envNotebookPort, envNotebookBaseUrl)
 }
 
