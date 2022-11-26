@@ -581,6 +581,11 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				},
 			})
 		}
+
+		envs := make([]v1.EnvVar, 0)
+		for k, v := range i.Envs {
+			envs = append(envs, v1.EnvVar{Name: k, Value: v})
+		}
 		//pod template
 		task := typeJob.TaskSpec{
 			CompletionPolicy: typeJob.CompletionPolicy{
@@ -606,6 +611,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						},
 						VolumeMounts: volumeMounts,
 						Command:      s.buildCmd(job, i),
+						Env:          envs,
 					},
 				},
 				NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,

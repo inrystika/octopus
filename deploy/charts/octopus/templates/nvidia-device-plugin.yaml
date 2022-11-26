@@ -52,10 +52,14 @@ spec:
         - image: nvcr.io/nvidia/k8s-device-plugin:v0.9.0
           name: nvidia-device-plugin-ctr
           args: ["--fail-on-init-error=false","--mig-strategy=mixed"]
+          env:
+            - name: NVIDIA_MIG_MONITOR_DEVICES
+              value: all
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+              add: ["SYS_ADMIN"]
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins
