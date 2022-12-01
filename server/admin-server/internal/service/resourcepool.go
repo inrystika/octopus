@@ -10,6 +10,10 @@ import (
 	"server/common/errors"
 	"server/common/log"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/golang/protobuf/ptypes/empty"
 )
 
@@ -47,6 +51,56 @@ func (rsps *ResourcePoolService) ListResourcePool(ctx context.Context, req *empt
 
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorListResourcePool)
+	}
+
+	nodes, err := rsps.data.NodeClient.ListNode(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorListResourcePool)
+	}
+	for _, p := range apiReply.ResourcePools {
+		capacity := make(map[string]*resource.Quantity)
+		allocated := make(map[string]*resource.Quantity)
+		for _, nn := range p.BindingNodes {
+			for _, n := range nodes.Nodes {
+				if nn == n.Name {
+					for k, v := range n.Capacity {
+						q, err := resource.ParseQuantity(v)
+						if err != nil {
+							log.Errorf(ctx, "parse %s error", v)
+							continue
+						}
+						_, exist := capacity[k]
+						if !exist {
+							capacity[k] = &q
+						} else {
+							capacity[k].Add(q)
+						}
+					}
+
+					for k, v := range n.Allocated {
+						q, err := resource.ParseQuantity(v)
+						if err != nil {
+							log.Errorf(ctx, "parse %s error", v)
+							continue
+						}
+						_, exist := allocated[k]
+						if !exist {
+							allocated[k] = &q
+						} else {
+							allocated[k].Add(q)
+						}
+					}
+				}
+			}
+		}
+		p.ResourceCapacity = make(map[string]string)
+		p.ResourceAllocated = make(map[string]string)
+		for k, v := range capacity {
+			p.ResourceCapacity[k] = v.String()
+		}
+		for k, v := range allocated {
+			p.ResourceAllocated[k] = v.String()
+		}
 	}
 
 	return apiReply, nil
