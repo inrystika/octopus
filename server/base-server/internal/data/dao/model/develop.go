@@ -36,7 +36,7 @@ type Notebook struct {
 	ResourcePool     string                `gorm:"type:varchar(300);default:'';comment:资源池"`
 	Mounts           common.Mounts         `gorm:"type:json;comment:挂载存储"`
 	Envs             sql.Map               `gorm:"type:json;comment:环境变量"`
-	RunParams        sql.Map               `gorm:"type:json;comment:运行参数"`
+	Command          string                `gorm:"type:text;comment:启动命令"`
 	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
