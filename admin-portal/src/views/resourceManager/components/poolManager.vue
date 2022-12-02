@@ -30,12 +30,6 @@
                     <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
-            <el-table-column label="操作">
-                <template slot-scope="scope">
-                    <el-button v-if="scope.row.default===false" type="text" @click="open(scope.row)">删除</el-button>
-                    <el-button type="text" @click="handleEdit( scope.row)">编辑</el-button>
-                </template>
-            </el-table-column>
             <el-table-column label="资源信息">
                 <el-table-column label="名称">
                     <template slot-scope="scope">
@@ -70,6 +64,12 @@
                         </div>
                     </template>
                 </el-table-column>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-button v-if="scope.row.default===false" type="text" @click="delete(scope.row)">删除</el-button>
+                    <el-button type="text" @click="handleEdit( scope.row)">编辑</el-button>
+                </template>
             </el-table-column>
         </el-table>
         <!-- 节点详情对话框 -->
@@ -194,7 +194,7 @@
         },
         methods: {
           listSpanMethod({ row, column, rowIndex, columnIndex }) {
-            if (columnIndex < 6) {
+            if (columnIndex < 5 || columnIndex > 8) {
                     if (row.span_num > 0) {
                         return {
                             rowspan: row.span_num,
@@ -225,7 +225,9 @@
                             name: data[i].name,
                             default: data[i].default,
                             desc: data[i].desc,
-                            bindingNodes: data[i].bindingNodes
+                            bindingNodes: data[i].bindingNodes,
+                            mapResourceSpecIdList: data[i].mapResourceSpecIdList,
+                            id: data[i].id,
                         }
                         arr.push(info)
                     }
@@ -242,14 +244,14 @@
                                 if (parseInt(val.resourceAllocated[key1]) === 0) {
                                     0
                                 } else if ((/^\d+$/.test(val.resourceAllocated[key1])) && (/^\d+$/.test(val.resourceCapacity[key1]))) {
-                                    percentage = val.resourceAllocated[key1] / val.resourceCapacity[key1] * 100
-                                    percentage = parseFloat(percentage.toFixed(2))
-                                } else {
+                                  percentage = val.resourceAllocated[key1] / val.resourceCapacity[key1] * 100
+                                  percentage = parseFloat(percentage.toFixed(2))
+                                } else {                               
                                     percentage = formatSize(val.resourceAllocated[key1]) / formatSize(val.resourceCapacity[key1])
                                     percentage = percentage * 100
                                     percentage = parseFloat(percentage.toFixed(2))
                                 }
-                                data.push({ childName: key1, use: val.resourceAllocated[key1], total: val.resourceCapacity[key1], percentage: percentage, id: Math.random() })
+                                data.push({ childName: key1, use: val.resourceAllocated[key1], total: val.resourceCapacity[key1], percentage: percentage})
                             }
                         }
                     }
@@ -434,7 +436,7 @@
                             this.isLoading = false
                             response.data.resourcePools.forEach(
                                 item => {
-                                    item.id = Math.random()
+                                    // item.id = Math.random()
                                     if (this.getDetail(item) !== []) {
                                         item.children = this.getDetail(item)
                                     }
@@ -487,7 +489,7 @@
                 })
             },
             // 删除确认
-            open(val) {
+            delete(val) {
                 this.$confirm('此操作将永久删除该资源规格, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
