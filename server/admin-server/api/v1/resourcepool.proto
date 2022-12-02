@@ -43,6 +43,8 @@ message ResourcePool {
   bool default = 4;
   repeated string bindingNodes = 5;
   map<string,ResourceSpecIdList> mapResourceSpecIdList = 6;
+  map<string,string> resourceCapacity = 7;
+  map<string,string> resourceAllocated = 8;
 }
 
 message ResourcePoolList {
