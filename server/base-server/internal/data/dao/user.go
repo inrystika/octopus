@@ -125,7 +125,7 @@ func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, er
 		Desc:          user.Desc,
 	}
 
-	result := db.Omit("ftp_user_name").Omit("minio_user_name").Create(&u)
+	result := db.Omit("ftp_user_name", "minio_user_name").Create(&u)
 	if result.Error != nil {
 		return nil, result.Error
 	}
