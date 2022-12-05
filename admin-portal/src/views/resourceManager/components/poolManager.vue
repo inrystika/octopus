@@ -67,7 +67,7 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.default===false" type="text" @click="delete(scope.row)">删除</el-button>
+                    <el-button v-if="scope.row.default===false" type="text" @click="handleDeletePool(scope.row)">删除</el-button>
                     <el-button type="text" @click="handleEdit( scope.row)">编辑</el-button>
                 </template>
             </el-table-column>
@@ -489,7 +489,7 @@
                 })
             },
             // 删除确认
-            delete(val) {
+            handleDeletePool(val) {
                 this.$confirm('此操作将永久删除该资源规格, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
