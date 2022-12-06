@@ -174,8 +174,8 @@
                     }
                 });
             },
-            handleDelete(row) {
-                deleteResource(row.id).then(response => {
+            deleteRes(val) {
+                deleteResource(val.id).then(response => {
                     if (response.success) {
                         this.$message({
                             message: '删除成功',
@@ -189,6 +189,21 @@
                         });
                     }
                 })
+            },
+            handleDelete(row) {
+              this.$confirm('此操作将永久删除该资源规格, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.deleteRes(row)
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+                
             },
             add() {
                 this.ruleForm = {}
