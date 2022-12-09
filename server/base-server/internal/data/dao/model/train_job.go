@@ -69,6 +69,7 @@ type Config struct {
 	ResourceSpecPrice     float64            `json:"resourceSpecPrice"`
 	IsMainRole            bool               `json:"isMainRole"`
 	ShareMemory           *resource.Quantity `json:"shareMemory"`
+	Envs                  map[string]string  `json:"envs"`
 }
 
 type ResourceSpecPrice struct {

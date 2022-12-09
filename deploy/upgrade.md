@@ -61,3 +61,11 @@ alter table model_deploy modify res_spec_price decimal(10,2) null comment '资�
 ```
 
 
+## v4.2.6
+
+升级前：
+1. v4.2.6已经将nvidia设备插件集成到章鱼安装包，需要先将原先的nvidia设备插件卸载
+```
+wget https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.9.0/nvidia-device-plugin.yml
+kubectl delete -f nvidia-device-plugin.yml
+```

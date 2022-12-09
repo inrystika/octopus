@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"path"
 	commapi "server/common/api/v1"
 
 	v1 "k8s.io/api/core/v1"
@@ -24,7 +25,7 @@ func (r *Mounts) Scan(input interface{}) error {
 	}
 }
 
-func GetVolumes(mounts Mounts) ([]v1.Volume, []v1.VolumeMount) {
+func GetVolumes(mounts Mounts, octopusVolume string) ([]v1.Volume, []v1.VolumeMount) {
 	volumes := make([]v1.Volume, 0)
 	volumeMounts := make([]v1.VolumeMount, 0)
 	for i, m := range mounts {
@@ -42,6 +43,15 @@ func GetVolumes(mounts Mounts) ([]v1.Volume, []v1.VolumeMount) {
 			volumeMounts = append(volumeMounts, v1.VolumeMount{
 				Name:      name,
 				MountPath: m.ContainerPath,
+				ReadOnly:  m.ReadOnly,
+			})
+		}
+
+		if m.Octopus != nil {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
+				Name:      octopusVolume,
+				MountPath: m.ContainerPath,
+				SubPath:   path.Join(m.Octopus.Bucket, m.Octopus.Object),
 				ReadOnly:  m.ReadOnly,
 			})
 		}

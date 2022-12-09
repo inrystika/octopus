@@ -83,6 +83,8 @@ message CreateNotebookRequest {
   repeated common.api.v1.Mount mounts = 11;
   //镜像地址，非必填，镜像地址和镜像ID填一个
   string imageUrl = 12;
+  map<string, string> envs = 13;
+  string command = 14;
 }
 
 message CreateNotebookReply {

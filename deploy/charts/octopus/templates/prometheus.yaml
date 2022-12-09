@@ -375,6 +375,59 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  name: {{ template "prometheus.fullname" . }}-mlu-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "prometheus.name" . }}-mlu-exporter
+      app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-mlu-exporter
+      app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+  template:
+    metadata:
+      name: {{ template "prometheus.fullname" . }}-mlu-exporter
+      labels:
+{{ include "prometheus.common-labels" . | indent 8 }}
+        app.kubernetes.io/name: {{ template "prometheus.name" . }}-mlu-exporter
+        app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-mlu-exporter
+        app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+    spec:
+      nodeSelector:
+        hardware-type: CAMBRICONMLU
+      containers:
+        - image: {{ .Values.cambricon.mluExporterImage }}
+          imagePullPolicy: IfNotPresent #Always
+          name: pod-cambricon-mlu-metrics-exporter
+          command:
+            - /usr/bin/mlu-exporter
+          args:
+            - --metrics-config=/etc/mlu-exporter/metrics.yaml
+            - --metrics-path=/metrics
+            - --port=9400
+            - --collector=cndev
+            - --collector=podresources
+            - --metrics-prefix=mlu
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 2000Mi
+              cpu: 2000m
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/lib/kubelet/pod-resources/
+              name: pod-resources
+      hostPID: true
+      hostIPC: true
+      volumes:
+        - name: pod-resources
+          hostPath:
+            path: /var/lib/kubelet/pod-resources/
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
   name: {{ template "prometheus.fullname" . }}-npu-exporter
 spec:
   selector:
@@ -510,6 +563,30 @@ apiVersion: v1
 metadata:
   labels:
 {{ include "prometheus.common-labels" . | indent 4 }}
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
+    app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+  annotations:
+    prometheus.io/port: "8082"
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+  name: {{ template "prometheus.fullname" . }}-npu-exporter
+spec:
+  type: NodePort
+  ports:
+    - port: 8082
+      targetPort: 8082
+      nodePort: 30401
+  selector:
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
+    app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+{{ include "prometheus.common-labels" . | indent 4 }}
     app.kubernetes.io/name: {{ template "prometheus.name" . }}-gcu-exporter
     app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-gcu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
@@ -534,21 +611,22 @@ apiVersion: v1
 metadata:
   labels:
 {{ include "prometheus.common-labels" . | indent 4 }}
-    app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
-    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-mlu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-mlu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
   annotations:
-    prometheus.io/port: "8082"
+    prometheus.io/port: "9400"
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
-  name: {{ template "prometheus.fullname" . }}-npu-exporter
+  name: {{ template "prometheus.fullname" . }}-mlu-exporter
 spec:
   type: NodePort
   ports:
-    - port: 8082
-      targetPort: 8082
-      nodePort: 30401
+    - port: 9400
+      targetPort: 9400
+      nodePort: 30403
   selector:
-    app.kubernetes.io/name: {{ template "prometheus.name" . }}-npu-exporter
-    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-npu-exporter
+    app.kubernetes.io/name: {{ template "prometheus.name" . }}-mlu-exporter
+    app.kubernetes.io/instance: {{ template "prometheus.fullname" . }}-mlu-exporter
     app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
+

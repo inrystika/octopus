@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/strings/slices"
+
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	"encoding/json"
@@ -437,8 +439,16 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 	}
 
-	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(job.Mounts) > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	for _, m := range job.Mounts {
+		if m.Octopus != nil {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+			}
+		}
+
+		if m.Nfs != nil && (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) {
+			return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+		}
 	}
 
 	return &startJobInfo{
@@ -473,6 +483,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		}
 	}()
 
+	volume := "data"
 	minAvailable := 0
 	tasks := make([]typeJob.TaskSpec, 0)
 
@@ -482,13 +493,13 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		//挂载卷
 		volumeMounts := []v1.VolumeMount{
 			{
-				Name:      "data",
+				Name:      volume,
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
 			},
 			{
-				Name:      "data",
+				Name:      volume,
 				MountPath: s.conf.Service.DockerUserHomePath,
 				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
@@ -502,7 +513,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		if startJobInfo.algorithmPath != "" {
 			volumeMounts = append(volumeMounts,
 				v1.VolumeMount{
-					Name:      "data",
+					Name:      volume,
 					MountPath: readonlyCodeDir,
 					SubPath:   startJobInfo.algorithmPath,
 					ReadOnly:  true,
@@ -518,7 +529,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		if startJobInfo.datasetPath != "" {
 			volumeMounts = append(volumeMounts,
 				v1.VolumeMount{
-					Name:      "data",
+					Name:      volume,
 					MountPath: s.conf.Service.DockerDatasetPath,
 					SubPath:   startJobInfo.datasetPath,
 					ReadOnly:  true,
@@ -527,7 +538,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 
 		volumes := []v1.Volume{
 			{
-				Name: "data",
+				Name: volume,
 				VolumeSource: v1.VolumeSource{
 					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 						ClaimName: common.GetStoragePersistentVolumeChaim(job.UserId),
@@ -548,7 +559,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			},
 		}
 
-		vs, vms := common.GetVolumes(job.Mounts)
+		vs, vms := common.GetVolumes(job.Mounts, volume)
 		if len(vms) > 0 {
 			volumeMounts = append(volumeMounts, vms...)
 			volumes = append(volumes, vs...)
@@ -569,6 +580,11 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 					},
 				},
 			})
+		}
+
+		envs := make([]v1.EnvVar, 0)
+		for k, v := range i.Envs {
+			envs = append(envs, v1.EnvVar{Name: k, Value: v})
 		}
 		//pod template
 		task := typeJob.TaskSpec{
@@ -595,6 +611,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						},
 						VolumeMounts: volumeMounts,
 						Command:      s.buildCmd(job, i),
+						Env:          envs,
 					},
 				},
 				NodeSelector: startJobInfo.specs[i.ResourceSpecId].nodeSelectors,
