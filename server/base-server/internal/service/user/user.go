@@ -94,6 +94,8 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    (*v1.UserPermission)(user.Permission),
+			MinioUserName: user.MinioUserName,
+			Buckets:       user.Buckets,
 		}
 		users[idx] = item
 	}
@@ -161,6 +163,8 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			ResourcePools: user.ResourcePools,
 			Desc:          user.Desc,
 			Permission:    (*v1.UserPermission)(user.Permission),
+			MinioUserName: user.MinioUserName,
+			Buckets:       user.Buckets,
 		},
 	}
 
@@ -446,4 +450,62 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 	}
 
 	return &api.UpdateUserFtpAccountReply{}, nil
+}
+
+func (s *UserService) UpdateUserMinioAccount(ctx context.Context, req *api.UpdateUserMinioAccountRequest) (*api.UpdateUserMinioAccountReply, error) {
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+
+	if user.MinioUserName != "" && user.MinioUserName != req.MinioUserName {
+		return nil, errors.Errorf(nil, errors.ErrorUserChangeMinioUsernameForbidden)
+	}
+	err = s.data.Minio.CreateOrUpdateAccount(ctx, req.MinioUserName, req.MinioPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: req.UserId}, &model.UserUpdate{MinioUserName: req.MinioUserName})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserMinioAccountReply{}, nil
+}
+
+func (s *UserService) UpdateUserMinioBuckets(ctx context.Context, req *api.UpdateUserMinioBucketsRequest) (*api.UpdateUserMinioBucketsReply, error) {
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
+	if err != nil {
+		return nil, err
+	}
+
+	if user.MinioUserName == "" {
+		return nil, errors.Errorf(nil, errors.ErrorUserMinioUsernameNotExist)
+	}
+
+	for _, b := range req.Buckets {
+		isExist, err := s.data.Minio.BucketExists(ctx, b)
+		if err != nil {
+			return nil, err
+		}
+		if !isExist {
+			err := s.data.Minio.CreateBucket(b)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	err = s.data.Minio.SetUserBucketsAccess(ctx, user.MinioUserName, req.Buckets)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.data.UserDao.Update(ctx, &model.UserUpdateCond{Id: req.UserId}, &model.UserUpdate{Buckets: req.Buckets})
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UpdateUserMinioBucketsReply{}, nil
 }

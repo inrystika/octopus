@@ -68,6 +68,8 @@ type User struct {
 	ResourcePools ResourcePools `gorm:"type:json;comment:'资源池'"`
 	Desc          string        `gorm:"type:varchar(100);default:'';index;comment:'备注'"`
 	Permission    *Permission   `gorm:"type:json;comment:权限"`
+	MinioUserName string        `gorm:"type:varchar(100);uniqueIndex:minioUserName;comment:'minio用户名'"`
+	Buckets       sql.Strings   `gorm:"type:json;comment:'允许访问的buckets'"`
 }
 
 func (User) TableName() string {
@@ -198,6 +200,8 @@ type UserUpdate struct {
 	ResourcePools []string
 	Desc          string
 	Permission    *Permission
+	MinioUserName string
+	Buckets       []string
 }
 
 type UserUpdateCond struct {
@@ -212,8 +216,8 @@ type UserListIn struct {
 
 type UserConfig struct {
 	dao.Model
-	UserId string      `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:用户id"`
-	Config sql.SqlJson `gorm:"type:json;comment:配置"`
+	UserId string  `gorm:"primaryKey;type:varchar(100);not null;default:'';comment:用户id"`
+	Config sql.Map `gorm:"type:json;comment:配置"`
 }
 
 func (UserConfig) TableName() string {

@@ -65,6 +65,20 @@ service User {
         body: "*"
       };
     };
+
+    rpc UpdateUserMinioAccount (UpdateUserMinioAccountRequest) returns (UpdateUserMinioAccountReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/minioaccount"
+        body: "*"
+      };
+    };
+
+    rpc UpdateUserMinioBuckets (UpdateUserMinioBucketsRequest) returns (UpdateUserMinioBucketsReply) {
+      option (google.api.http) = {
+        put: "/v1/usermanage/user/{userId}/miniobuckets"
+        body: "*"
+      };
+    };
 }
 
 message UserItem {
@@ -79,6 +93,8 @@ message UserItem {
   repeated string resourcePools = 9;
   string desc=10;
   common.api.v1.UserPermission permission = 11;
+  repeated string buckets = 12;
+  string minioUserName = 13;
 }
 
 message ListUserRequest {
@@ -177,5 +193,24 @@ message UpdateUserConfigRequest {
 }
 
 message UpdateUserConfigReply {
+
+}
+
+message UpdateUserMinioAccountRequest {
+  string userId = 1;
+  string minioUserName = 2;
+  string minioPassword = 3;
+}
+
+message UpdateUserMinioAccountReply {
+
+}
+
+message UpdateUserMinioBucketsRequest {
+  string userId = 1;
+  repeated string buckets = 2;
+}
+
+message UpdateUserMinioBucketsReply {
 
 }

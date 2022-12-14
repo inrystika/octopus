@@ -139,6 +139,7 @@ message Config {
   repeated ReplicaState replicaStates = 11;
   //子任务状态
   string subTaskState = 12;
+  map<string, string> envs = 13;
 }
 
 message ReplicaState {

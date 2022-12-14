@@ -114,4 +114,20 @@ export function updateUserConfig(userId,params) {
     }
   })
 }
+// 创建minio账户
+export function createMinIOAccount(userId,data) {
+  return request({
+    url: `/v1/usermanage/user/${userId}/minioaccount`,
+    method: 'put',
+    data
+  })
+}
+// 创建minio桶
+export function createMinIOBucket(userId,data) {
+  return request({
+    url: `/v1/usermanage/user/${userId}/miniobuckets`,
+    method: 'put',
+    data
+  })
+}
 
