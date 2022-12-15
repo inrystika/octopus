@@ -4,14 +4,13 @@
             :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" :label-width="formLabelWidth"
                 class="demo-ruleForm">
-                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入镜像名称" prop="name"
-                    class="[flag ==2 ： 'name'? '']">
+                <el-form-item label="任务名称" :label-width="formLabelWidth" placeholder="请输入任务名称" prop="name">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
-                <div class="tip" v-if="flag==2"><i
+                <div class="tip"><i
                         class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中，训练输出请存储在<span>/model</span>中以供后续下载
                 </div>
-                <el-form-item :label="desc" :label-width="formLabelWidth">
+                <el-form-item label="任务描述" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.desc" type="textarea" maxlength="300" show-word-limit />
                 </el-form-item>
                 <!-- 算法三级框 -->
@@ -137,10 +136,10 @@
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button v-if="showTraning" type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练
+                <el-button type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练
                 </el-button>
-                <el-button v-if="!showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
-                </el-button>
+                <!-- <el-button v-if="!showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
+                </el-button> -->
                 <el-button type="warning" @click="cancel">取消</el-button>
             </div>
         </el-dialog>
@@ -283,8 +282,6 @@
                 algorithmNameTemp: '',
                 imageTemp: '',
                 dataSetTemp: '',
-                name: '',
-                desc: ''
 
             }
         },
@@ -293,15 +290,13 @@
                 switch (this.flag) {
                     case 1:
                         this.showTraning = false
-                        this.name = '模版名称'
-                        this.desc = '模版描述'
-                        return '编辑任务模板'
+                        delete this.rules.resourcePool
+                        return '编辑训练任务'
                         break
                     case 2:
                         this.showTraning = true
                         this.showTemplate = true
-                        this.name = '任务名称'
-                        this.desc = '任务描述'
+
                         return '创建训练任务'
                         break
                 }
@@ -387,7 +382,7 @@
                 if (this.flag === 2) {
                     this.ruleForm.name = ''
                 }
-                this.getResourceList()
+                // this.getResourceList()
             },
             changeDisResourceList() {
                 this.resourceOptions = []
@@ -437,7 +432,7 @@
             },
             cancel() {
                 let message = ''
-                if (this.flag === 1) { message = '此操作将放弃编辑任务模板, 是否继续?' } else { message = '此操作将放弃创建训练任务，是否继续' }
+                if (this.flag === 1) { message = '此操作将放弃编辑训练任务, 是否继续?' } else { message = '此操作将放弃创建训练任务，是否继续' }
                 this.$confirm(message, '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',

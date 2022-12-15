@@ -139,8 +139,8 @@
             <div slot="footer" class="dialog-footer">
                 <el-button v-if="showTraning" type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练
                 </el-button>
-                <el-button v-if="showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
-                </el-button>
+                <!-- <el-button v-if="showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
+                </el-button> -->
                 <el-button type="warning" @click="cancel">取消</el-button>
             </div>
         </el-dialog>

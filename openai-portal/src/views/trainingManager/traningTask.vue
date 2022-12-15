@@ -5,14 +5,9 @@
         </div>
         <el-button type="primary" class="create" @click="open()">批量删除</el-button>
         <el-button type="primary" class="create" @click="create">创建任务</el-button>
-        <el-table
-            ref="multipleTable"
-            :data="tableData"
-            style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}"
-            :cell-style="{'text-align':'left'}"
-            @selection-change="handleSelectionChange"
-        >
+        <el-table ref="multipleTable" :data="tableData" style="width: 100%;font-size: 15px;"
+            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}"
+            @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" :selectable="checkSelectable" />
             <el-table-column label="任务名称" align="center">
                 <template slot-scope="scope">
@@ -59,42 +54,35 @@
                 <template slot-scope="scope">
                     <el-button
                         v-if="scope.row.status==='pending'||scope.row.status==='running'||scope.row.status==='preparing'"
-                        type="text"
-                        @click="open2(scope.row)"
-                    >
+                        type="text" @click="open2(scope.row)">
                         停止
                     </el-button>
                     <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
                     <el-button
                         v-if="scope.row.status==='failed'||scope.row.status==='succeeded'||scope.row.status==='stopped'"
-                        type="text"
-                        @click="open(scope.row)"
-                    >删除
+                        type="text" @click="open(scope.row)">删除
                     </el-button>
+                    <el-button type="text" @click="handleEdit(scope.row,'editTemplate')">编辑</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <div class="block">
-            <el-pagination
-                :current-page="searchData.pageIndex"
-                :page-sizes="[10, 20, 50, 80]"
-                :page-size="searchData.pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="total"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
+            <el-pagination :current-page="searchData.pageIndex" :page-sizes="[10, 20, 50, 80]"
+                :page-size="searchData.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
         <!-- 创建对话框 -->
         <createDialog v-if="createDialog" :row="row" :flag="flag" @cancel="cancel" @confirm="confirm" @close="close" />
         <!-- 详情对话框 -->
         <detailDialog v-if="detailDialog" :data="data" @cancel="cancel" @confirm="confirm" @close="close" />
+        <editDialog v-if="editDialog" :flag="flag" :row="row" @cancel="cancel" @confirm="confirm" @close="close" />
 
     </div>
 </template>
 <script>
     import createDialog from "./components/createDialog/index.vue";
     import detailDialog from "./components/detailDialog/index.vue";
+    import editDialog from "./components/editDialog/index.vue";
     import { getList, stop, Delete, getTraningDetail } from '@/api/trainingManager'
     import searchForm from '@/components/search/index.vue'
     import { formatDuring } from '@/utils/index'
@@ -103,13 +91,14 @@
         components: {
             createDialog,
             detailDialog,
-            searchForm
+            searchForm,
+            editDialog,
         },
         props: {
-          trainingTask: {
-            type: Boolean,
-            default: false
-          }
+            trainingTask: {
+                type: Boolean,
+                default: false
+            }
         },
         data() {
             return {
@@ -119,6 +108,7 @@
                 data: {},
                 createDialog: false,
                 detailDialog: false,
+                editDialog: false,
                 total: undefined,
                 statusText: { 'preparing': ['status-ready', '初始中'], 'pending': ['status-agent', '等待中'], 'running': ['status-running', '运行中'], 'failed': ['status-danger', '失败'], 'succeeded': ['status-success', '成功'], 'stopped': ['status-stopping', '已停止'] },
                 flag: undefined,
@@ -266,17 +256,20 @@
             cancel(val) {
                 this.getList(this.searchData)
                 this.createDialog = val;
-                this.detailDialog = val
+                this.detailDialog = val;
+                this.editDialog = val
             },
             confirm(val) {
                 this.getList(this.searchData)
                 this.createDialog = val;
-                this.detailDialog = val
+                this.detailDialog = val;
+                this.editDialog = val
             },
             close(val) {
                 this.getList(this.searchData)
                 this.createDialog = val;
-                this.detailDialog = val
+                this.detailDialog = val;
+                this.editDialog = val
             },
             create() {
                 this.createDialog = true; this.row = {}
@@ -327,7 +320,21 @@
                         message: '已取消操作'
                     });
                 });
-            }
+            },
+            handleEdit(val, name) {
+                getTraningDetail(val.id).then(response => {
+                    if (response.success) {
+                        this.editDialog = true
+                        this.row = response.data.trainJob
+                        if (name === 'editTemplate') { this.flag = 1 } else { this.flag = 2 }
+                    } else {
+                        this.$message({
+                            message: this.getErrorMsg(response.error.subcode),
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
 
         }
     }
