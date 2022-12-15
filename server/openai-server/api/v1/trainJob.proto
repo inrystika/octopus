@@ -179,7 +179,7 @@ message TrainJobTemplateRequest {
   bool isDistributed = 9;
   //job子任务及其配置信息，必填
   repeated Config config = 10[(validate.rules).repeated.min_items = 1];
-  string resourcePool = 11[(validate.rules).string = {min_len: 1}];
+  string resourcePool = 11[(validate.rules).string = {min_len: 0}];
 }
 
 message TrainJobTemplateReply {
