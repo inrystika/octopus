@@ -4,14 +4,13 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"gorm.io/gorm"
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/transaction"
 	"server/common/utils"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type BillingDao interface {
@@ -74,7 +73,10 @@ func (d *billingDao) CreateBillingOwner(ctx context.Context, owner *model.Billin
 
 func (d *billingDao) UpdateBillingOwnerSelective(ctx context.Context, key *model.BillingOwnerKey, owner *model.BillingOwner) error {
 	db := d.db(ctx)
-	res := db.Where("owner_id = ? and owner_type = ? ", key.OwnerId, key.OwnerType).Updates(owner)
+	ownerMap := map[string]interface{}{
+		"amount":owner.Amount,
+	}
+	res := db.Model(model.BillingOwner{}).Where("owner_id = ? and owner_type = ? ", key.OwnerId, key.OwnerType).Updates(ownerMap)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)

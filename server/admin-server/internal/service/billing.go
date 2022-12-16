@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
@@ -9,8 +10,6 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils/collections/set"
-
-	"github.com/jinzhu/copier"
 )
 
 type billingService struct {
@@ -111,7 +110,6 @@ func (s *billingService) RechargeUser(ctx context.Context, req *api.RechargeUser
 		Amount:    req.Amount,
 		Title:     req.Title,
 	})
-
 	if err != nil {
 		return nil, err
 	}
