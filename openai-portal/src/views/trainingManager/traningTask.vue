@@ -62,7 +62,7 @@
                         v-if="scope.row.status==='failed'||scope.row.status==='succeeded'||scope.row.status==='stopped'"
                         type="text" @click="open(scope.row)">删除
                     </el-button>
-                    <el-button type="text" @click="handleEdit(scope.row,'editTemplate')">编辑</el-button>
+                    <el-button type="text" @click="handleEdit(scope.row,'editTemplate')">重新训练</el-button>
                 </template>
             </el-table-column>
         </el-table>
