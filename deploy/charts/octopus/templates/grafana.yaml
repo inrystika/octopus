@@ -1869,7 +1869,7 @@ data:
               "expr": "sum((sum(npu_chip_info_utilization{pod_name=~\".*\"}) / count(npu_chip_info_utilization{pod_name=~\".*\"}) ) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
-              "legendFormat": "Cluster Ascend NPU utilization (avg)",
+              "legendFormat": "Cluster NPU utilization (avg)",
               "refId": "A"
             }
           ],
@@ -1877,7 +1877,93 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Cluster Ascend NPU utilization (avg)",
+          "title": "Cluster NPU utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 10
+          },
+          "id": 16,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(npu_chip_info_hbm_used_memory) / sum(npu_chip_info_hbm_total_memory) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Cluster NPU memory utilization(avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Cluster NPU memory utilization (avg)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1935,7 +2021,7 @@ data:
           "gridPos": {
             "h": 4,
             "w": 8,
-            "x": 8,
+            "x": 16,
             "y": 10
           },
           "id": 9,
@@ -1986,91 +2072,7 @@ data:
           "thresholds": "65,90",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Cluster Ascend NPU usage",
-          "type": "singlestat",
-          "valueFontSize": "80%",
-          "valueMaps": [
-            {
-              "op": "=",
-              "text": "N/A",
-              "value": "null"
-            }
-          ],
-          "valueName": "current"
-        },
-        {
-          "cacheTimeout": null,
-          "colorBackground": false,
-          "colorValue": true,
-          "colors": [
-              "#299c46",
-              "rgba(237, 129, 40, 0.89)",
-              "#d44a3a"
-          ],
-          "datasource": "Prometheus",
-          "format": "percent",
-          "gauge": {
-            "maxValue": 100,
-            "minValue": 0,
-            "show": true,
-            "thresholdLabels": false,
-            "thresholdMarkers": true
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 8,
-            "x": 16,
-            "y": 10
-          },
-          "id": 10,
-          "interval": null,
-          "links": [],
-          "mappingType": 1,
-          "mappingTypes": [
-            {
-              "name": "value to text",
-              "value": 1
-            },
-            {
-              "name": "range to text",
-              "value": 2
-            }
-          ],
-          "maxDataPoints": 100,
-          "nullPointMode": "connected",
-          "nullText": null,
-          "options": {},
-          "pluginVersion": "6.2.0",
-          "postfix": "",
-          "postfixFontSize": "50%",
-          "prefix": "",
-          "prefixFontSize": "50%",
-          "rangeMaps": [
-            {
-              "from": "null",
-              "text": "N/A",
-              "to": "null"
-            }
-          ],
-          "sparkline": {
-            "fillColor": "rgba(31, 118, 189, 0.18)",
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "show": false
-          },
-          "tableColumn": "",
-          "targets": [
-            {
-              "expr": "sum(npu_chip_info_hbm_used_memory) / sum(npu_chip_info_hbm_total_memory) or vector(0)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "thresholds": "65,90",
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Cluster Ascend HBM usage",
+          "title": "Cluster NPU usage",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -2103,7 +2105,7 @@ data:
           "gridPos": {
             "h": 2,
             "w": 4,
-            "x": 8,
+            "x": 16,
             "y": 14
           },
           "id": 11,
@@ -2153,7 +2155,7 @@ data:
           "thresholds": "",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Used  Npus",
+          "title": "Used Npus",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -2186,7 +2188,7 @@ data:
           "gridPos": {
             "h": 2,
             "w": 4,
-            "x": 12,
+            "x": 20,
             "y": 14
           },
           "id": 12,
@@ -2236,174 +2238,7 @@ data:
           "thresholds": "100000000000000",
           "timeFrom": null,
           "timeShift": null,
-          "title": "Total  Npus",
-          "type": "singlestat",
-          "valueFontSize": "80%",
-          "valueMaps": [
-            {
-              "op": "=",
-              "text": "N/A",
-              "value": "null"
-            }
-          ],
-          "valueName": "avg"
-        },
-        {
-          "cacheTimeout": null,
-          "colorBackground": false,
-          "colorValue": true,
-          "colors": [
-              "#299c46",
-              "rgba(237, 129, 40, 0.89)",
-              "#d44a3a"
-          ],
-          "datasource": "Prometheus",
-          "format": "none",
-          "gauge": {
-            "maxValue": 100,
-            "minValue": 0,
-            "show": false,
-            "thresholdLabels": false,
-            "thresholdMarkers": true
-          },
-          "gridPos": {
-            "h": 2,
-            "w": 4,
-            "x": 16,
-            "y": 14
-          },
-          "id": 13,
-          "interval": null,
-          "links": [],
-          "mappingType": 1,
-          "mappingTypes": [
-            {
-              "name": "value to text",
-              "value": 1
-            },
-            {
-              "name": "range to text",
-              "value": 2
-            }
-          ],
-          "maxDataPoints": 100,
-          "nullPointMode": "connected",
-          "nullText": null,
-          "options": {},
-          "postfix": "",
-          "postfixFontSize": "50%",
-          "prefix": "",
-          "prefixFontSize": "50%",
-          "rangeMaps": [
-            {
-              "from": "null",
-              "text": "N/A",
-              "to": "null"
-            }
-          ],
-          "sparkline": {
-            "fillColor": "rgba(31, 118, 189, 0.18)",
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "show": false
-          },
-          "tableColumn": "",
-          "targets": [
-            {
-              "expr": "sum(npu_chip_info_hbm_used_memory)or vector(0)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "thresholds": "100000000000000",
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Used HBM (MB)",
-          "type": "singlestat",
-          "valueFontSize": "80%",
-          "valueMaps": [
-            {
-              "op": "=",
-              "text": "N/A",
-              "value": "null"
-            }
-          ],
-          "valueName": "avg"
-        },
-        {
-          "cacheTimeout": null,
-          "colorBackground": false,
-          "colorValue": true,
-          "colors": [
-              "#299c46",
-              "rgba(237, 129, 40, 0.89)",
-              "#d44a3a"
-          ],
-          "datasource": "Prometheus",
-          "description": "",
-          "format": "none",
-          "gauge": {
-            "maxValue": 100,
-            "minValue": 0,
-            "show": false,
-            "thresholdLabels": false,
-            "thresholdMarkers": true
-          },
-          "gridPos": {
-            "h": 2,
-            "w": 4,
-            "x": 20,
-            "y": 14
-          },
-          "id": 14,
-          "interval": null,
-          "links": [],
-          "mappingType": 1,
-          "mappingTypes": [
-            {
-              "name": "value to text",
-              "value": 1
-            },
-            {
-              "name": "range to text",
-              "value": 2
-            }
-          ],
-          "maxDataPoints": 100,
-          "nullPointMode": "connected",
-          "nullText": null,
-          "options": {},
-          "postfix": "",
-          "postfixFontSize": "50%",
-          "prefix": "",
-          "prefixFontSize": "50%",
-          "rangeMaps": [
-            {
-              "from": "null",
-              "text": "N/A",
-              "to": "null"
-            }
-          ],
-          "sparkline": {
-            "fillColor": "rgba(31, 118, 189, 0.18)",
-            "full": false,
-            "lineColor": "rgb(31, 120, 193)",
-            "show": false
-          },
-          "tableColumn": "",
-          "targets": [
-            {
-              "expr": "sum(npu_chip_info_hbm_total_memory) /1024 ",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "thresholds": "100000000000000",
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Total  HBM (GB)",
+          "title": "Total Npus",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
