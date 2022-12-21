@@ -443,12 +443,12 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "npu_chip_info_utilization{id=~\"$npu_id\"}",
+              "expr": "npu_chip_info_utilization{id=~\"$npu_id\", name=\"$npu_hostname\"}",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "NPU utilization",
-              "metric": "dcgm_npu_utilization",
+              "metric": "npu_chip_info_utilization",
               "refId": "A",
               "step": 2
             }
@@ -532,11 +532,11 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "npu_chip_info_utilization{id=~\"$npu_id\"}",
+              "expr": "npu_chip_info_hbm_used_memory{id=~\"$npu_id\", name=\"$npu_hostname\"} / npu_chip_info_hbm_total_memory{id=~\"$npu_id\", name=\"$npu_hostname\"} * 100",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "NPU memory utilization",
-              "metric": "dcgm_mem_copy_utilization",
+              "legendFormat": "NPU hbm memory utilization",
+              "metric": "npu_chip_info_hbm_used_memory",
               "refId": "A",
               "step": 2
             }
@@ -545,7 +545,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "NPU memory utilization",
+          "title": "NPU hbm memory utilization",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1372,6 +1372,31 @@ data:
             "name": "npu_id",
             "options": [],
             "query": "label_values(npu_container_info{containerName=~\".*$pod_name.*\"},npuID)",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {
+              "text": "1",
+              "value": "1"
+            },
+            "datasource": "Prometheus",
+            "definition": "",
+            "hide": 2,
+            "includeAll": false,
+            "label": null,
+            "multi": false,
+            "name": "npu_hostname",
+            "options": [],
+            "query": "label_values(npu_container_info{containerName=~\".*$pod_name.*\"},name)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
