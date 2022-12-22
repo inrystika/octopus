@@ -5623,7 +5623,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "(count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1)/ (count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1) * 100",
+              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$Node\"}) / sum(machine_npu_nums{name=\"$Node\"}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -5706,7 +5706,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1",
+              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$Node\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -5790,7 +5790,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1",
+              "expr": "sum(machine_npu_nums{name=\"$Node\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -7541,6 +7541,31 @@ data:
             "name": "Node",
             "options": [],
             "query": "label_values(kubernetes_io_hostname)",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {
+              "text": "1",
+              "value": "1"
+            },
+            "datasource": "Prometheus",
+            "definition": "",
+            "hide": 2,
+            "includeAll": true,
+            "label": null,
+            "multi": true,
+            "name": "npu_id",
+            "options": [],
+            "query": "label_values(npu_container_info{name=\"$Node\"},npuID)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
