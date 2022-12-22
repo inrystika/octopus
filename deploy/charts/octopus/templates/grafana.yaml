@@ -4580,12 +4580,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
-            "w": 6,
-            "x": 0,
+            "h": 4,
+            "w": 8,
+            "x": 16,
             "y": 0
           },
-          "id": 1,
+          "id": 3,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4663,12 +4663,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 0,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 0
           },
-          "id": 2,
+          "id": 4,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4747,12 +4747,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 3,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 0
           },
-          "id": 3,
+          "id": 5,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4830,12 +4830,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
-            "w": 6,
-            "x": 6,
-            "y": 0
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 12
           },
-          "id": 4,
+          "id": 13,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4913,12 +4913,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 6,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 16
           },
-          "id": 5,
+          "id": 14,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4997,12 +4997,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 9,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 16
           },
-          "id": 6,
+          "id": 15,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5080,12 +5080,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
-            "w": 6,
-            "x": 12,
-            "y": 0
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 18
           },
-          "id": 7,
+          "id": 18,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5163,12 +5163,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 12,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 18
           },
-          "id": 8,
+          "id": 19,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5247,12 +5247,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 15,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 18
           },
-          "id": 9,
+          "id": 20,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5330,12 +5330,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
-            "w": 6,
-            "x": 18,
-            "y": 0
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 24
           },
-          "id": 10,
+          "id": 23,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5413,12 +5413,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 18,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 28
           },
-          "id": 11,
+          "id": 24,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5497,12 +5497,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 3,
-            "w": 3,
-            "x": 21,
-            "y": 6
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 28
           },
-          "id": 12,
+          "id": 25,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5561,6 +5561,256 @@ data:
           ],
           "valueName": "current"
         },
+       {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "percent",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": true,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 6
+          },
+          "id": 8,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "(count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1)/ (count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1) * 100",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "65,90",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Node NPU usage",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 10
+          },
+          "id": 9,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Used NPUs",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "decimals": null,
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 10
+          },
+          "id": 10,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "100000000000",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Total NPUs",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
         {
           "aliasColors": {},
           "bars": false,
@@ -5569,12 +5819,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 6,
+            "w": 8,
             "x": 0,
-            "y": 9
+            "y": 0
           },
-          "id": 13,
+          "id": 1,
           "legend": {
             "avg": false,
             "current": false,
@@ -5655,12 +5905,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 9
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 0
           },
-          "id": 14,
+          "id": 2,
           "legend": {
             "avg": false,
             "current": false,
@@ -5741,12 +5991,185 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 6,
+            "w": 8,
             "x": 0,
-            "y": 17
+            "y": 6
           },
-          "id": 15,
+          "id": 6,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(npu_chip_info_utilization{name=\"$Node\"}) / count(npu_chip_info_utilization{name=\"$Node\"})",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Node NPU utilization (avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Node NPU utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 6
+          },
+          "id": 7,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(npu_chip_info_hbm_used_memory{name=\"$Node\"}) / count(npu_chip_info_hbm_total_memory{name=\"$Node\"}) * 100",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Node NPU hbm memory utilization(avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Node NPU hbm memory utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 12
+          },
+          "id": 11,
           "legend": {
             "avg": false,
             "current": false,
@@ -5827,12 +6250,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 17
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 12
           },
-          "id": 16,
+          "id": 12,
           "legend": {
             "avg": false,
             "current": false,
@@ -5913,12 +6336,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 6,
+            "w": 8,
             "x": 0,
-            "y": 25
+            "y": 18
           },
-          "id": 17,
+          "id": 16,
           "legend": {
             "avg": false,
             "current": false,
@@ -5999,12 +6422,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 25
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 18
           },
-          "id": 18,
+          "id": 17,
           "legend": {
             "avg": false,
             "current": false,
@@ -6085,12 +6508,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 6,
+            "w": 8,
             "x": 0,
-            "y": 33
+            "y": 24
           },
-          "id": 19,
+          "id": 21,
           "legend": {
             "avg": false,
             "current": false,
@@ -6171,12 +6594,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 33
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 24
           },
-          "id": 20,
+          "id": 22,
           "legend": {
             "avg": false,
             "current": false,
@@ -6268,12 +6691,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 8,
             "x": 0,
-            "y": 41
+            "y": 30
           },
-          "id": 21,
+          "id": 26,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6352,12 +6775,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 8,
             "x": 8,
-            "y": 41
+            "y": 30
           },
-          "id": 22,
+          "id": 29,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6435,12 +6858,12 @@ data:
             "thresholdMarkers": true
           },
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 8,
             "x": 16,
-            "y": 41
+            "y": 30
           },
-          "id": 23,
+          "id": 32,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6522,9 +6945,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 0,
-            "y": 47
+            "y": 34
           },
-          "id": 24,
+          "id": 27,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6606,9 +7029,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 4,
-            "y": 47
+            "y": 34
           },
-          "id": 25,
+          "id": 28,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6690,9 +7113,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 8,
-            "y": 47
+            "y": 34
           },
-          "id": 26,
+          "id": 30,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6773,9 +7196,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 12,
-            "y": 47
+            "y": 34
           },
-          "id": 27,
+          "id": 31,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6857,9 +7280,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 16,
-            "y": 47
+            "y": 34
           },
-          "id": 28,
+          "id": 33,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6941,9 +7364,9 @@ data:
             "h": 2,
             "w": 4,
             "x": 20,
-            "y": 47
+            "y": 34
           },
-          "id": 29,
+          "id": 34,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -7010,12 +7433,12 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 9,
-            "w": 12,
+            "h": 6,
+            "w": 8,
             "x": 0,
-            "y": 58
+            "y": 36
           },
-          "id": 30,
+          "id": 35,
           "legend": {
             "avg": false,
             "current": false,
