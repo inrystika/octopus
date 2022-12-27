@@ -2206,7 +2206,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(npu_chip_info_utilization{}) / machine_npu_nums or vector(0)",
+              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=~\"$npu_hostname\"}) / sum(machine_npu_nums{}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2375,7 +2375,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(machine_npu_nums) - count(npu_chip_info_utilization==0) or vector(0)",
+              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$npu_hostname\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4503,6 +4503,56 @@ data:
             "tagsQuery": "",
             "type": "query",
             "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {
+              "text": "1",
+              "value": "1"
+            },
+            "datasource": "Prometheus",
+            "definition": "",
+            "hide": 2,
+            "includeAll": true,
+            "label": null,
+            "multi": true,
+            "name": "npu_id",
+            "options": [],
+            "query": "label_values(npu_container_info{},npuID)",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "allValue": null,
+            "current": {
+              "text": "1",
+              "value": "1"
+            },
+            "datasource": "Prometheus",
+            "definition": "",
+            "hide": 2,
+            "includeAll": false,
+            "label": null,
+            "multi": false,
+            "name": "npu_hostname",
+            "options": [],
+            "query": "label_values(npu_container_info{},name)",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tags": [],
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
           }
         ]
       },
@@ -6107,7 +6157,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(npu_chip_info_hbm_used_memory{name=\"$Node\"}) / count(npu_chip_info_hbm_total_memory{name=\"$Node\"}) * 100",
+              "expr": "sum(npu_chip_info_hbm_used_memory{name=\"$Node\"}) / sum(npu_chip_info_hbm_total_memory{name=\"$Node\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node NPU hbm memory utilization(avg)",
