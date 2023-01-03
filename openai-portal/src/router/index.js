@@ -138,18 +138,18 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/cloudInterconnection',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'cloudInterconnection',
-        component: () => import('@/views/cloudInterconnection/index'),
-        meta: { title: '云际互联', icon: 'cloudConnection' }
-      }
-    ]
-  },
+  // {
+  //   path: '/cloudInterconnection',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'cloudInterconnection',
+  //       component: () => import('@/views/cloudInterconnection/index'),
+  //       meta: { title: '云际互联', icon: 'cloudConnection' }
+  //     }
+  //   ]
+  // },
   {
     path: '/setting',
     component: Layout,
