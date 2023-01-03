@@ -457,7 +457,7 @@ spec:
             limits:
               memory: 1000Mi
               cpu: 1000m
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           command: [ "/bin/bash", "-c", "--"]
           # NOTE: enable HTTPS needs to use
           # ./cert-importer -certFile=../cert/rsa_aes.crt -keyFile=../cert/rsa_aes_private.key to import certificate

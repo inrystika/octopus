@@ -47,7 +47,7 @@ spec:
           securityContext:
             privileged: true
             readOnlyRootFilesystem: true
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins
