@@ -123,6 +123,7 @@
     import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
     import { getResourceList } from "@/api/trainingManager";
     import { mapGetters } from 'vuex'
+    import { randomName } from '@/utils/index'
     export default {
         name: "NotebookCreation",
         directives: {
@@ -264,6 +265,7 @@
         created() {
             // this.getResource();
             this.getSpacePools();
+            this.ruleForm.name = this.randomName('notebook')
         },
         computed: {
             ...mapGetters([
@@ -271,6 +273,9 @@
             ])
         },
         methods: {
+            randomName(val) {
+                return randomName(val)
+            },
             clearDataSetVersionOption() {
                 this.dataSetVersionOption = []
             },
@@ -762,9 +767,14 @@
 
     .tip {
         margin: 16px 0 16px 120px;
-        color:#B3B3B3
+        color: #B3B3B3
     }
-  .tip span{color:#000;font-weight: 600;}
+
+    .tip span {
+        color: #000;
+        font-weight: 600;
+    }
+
     .el-alert__icon {
         color: orange
     }
