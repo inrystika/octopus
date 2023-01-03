@@ -32,7 +32,7 @@ spec:
       nodeSelector:
         hardware-type: ASCENDNPU
       containers:
-        - image: ascend-k8sdeviceplugin:v3.0.RC1
+        - image: swr.cn-south-1.myhuaweicloud.com/openioctopus/ascend-k8sdeviceplugin:v3.0.RC1
           name: device-plugin-01
           resources:
             requests:

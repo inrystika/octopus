@@ -449,7 +449,7 @@ spec:
         hardware-type: ASCENDNPU
       containers:
         - name: huawei-npu-exporter
-          image: 192.168.202.110:5000/octopus/npu-exporter:v3.0.RC1
+          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/npu-exporter:v3.0.RC1
           resources:
             requests:
               memory: 1000Mi
