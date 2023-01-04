@@ -152,3 +152,24 @@ export function clearProgress(paraName) {
   }
 }
 
+// 生成随机名字
+export function randomName(val) {
+  var myDate = new Date();
+  const year = myDate.getFullYear().toString()
+  let month = (myDate.getMonth() + 1).toString()
+  if (month < 10) {
+    month = '0' + (myDate.getMonth() + 1).toString()
+  }
+  let date = myDate.getDate().toString()
+  if (date < 10) {
+    date = '0' + myDate.getDate().toString()
+  }
+  var charactors = "ab1cd2ef3gh4ij5kl6mn7opq8rst9uvw0xyz";
+  var value = ''; var i;
+  for (let j = 1; j <= 4; j++) {
+    i = parseInt(35 * Math.random());
+    value = value + charactors.charAt(i);
+  }
+  const name = val + '-' + year + month + date + '-' + value
+  return name
+}

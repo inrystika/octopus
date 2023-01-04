@@ -512,3 +512,7 @@ cambricon:
 nvidia:
   # nvidia节点需要打标签hardware-type=NVIDIAGPU
   enabled: true
+
+ascend:
+  # ascend节点需要打标签hardware-type=ASCENDNPU
+  enabled: false

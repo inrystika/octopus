@@ -51,7 +51,7 @@ spec:
             mountPath: /etc/localtime
         env:
           - name: URLS
-            value: "[{url:\"{{ .Values.ingress.apidocPath }}/admin.swagger.json\",name:\"admin\"},{url:\"{{ .Values.ingress.apidocPath }}/openai.swagger.json\",name:\"openai\"}]"
+            value: "[{url:\"{{ .Values.ingress.apidocPath }}/openai.swagger.json\",name:\"计算平台API\"},{url:\"{{ .Values.ingress.apidocPath }}/admin.swagger.json\",name:\"管理后台API\"}]"
         ports:
         - name: http
           containerPort: {{ template "apidoc.targetPort" . }}

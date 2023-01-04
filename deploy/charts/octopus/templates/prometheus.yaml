@@ -446,10 +446,10 @@ spec:
         app.kubernetes.io/part-of: {{ template "prometheus.name" . }}
     spec:
       nodeSelector:
-        workerselector: dls-worker-node
+        hardware-type: ASCENDNPU
       containers:
         - name: huawei-npu-exporter
-          image: 192.168.202.110:5000/octopus/npu-exporter:v3.0.RC1
+          image: swr.cn-south-1.myhuaweicloud.com/openioctopus/npu-exporter:v3.0.RC1
           resources:
             requests:
               memory: 1000Mi
@@ -457,7 +457,7 @@ spec:
             limits:
               memory: 1000Mi
               cpu: 1000m
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           command: [ "/bin/bash", "-c", "--"]
           # NOTE: enable HTTPS needs to use
           # ./cert-importer -certFile=../cert/rsa_aes.crt -keyFile=../cert/rsa_aes_private.key to import certificate
