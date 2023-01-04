@@ -13,7 +13,7 @@
             <el-dropdown>
               <div v-show="!this.GLOBAL.THEME_MANUAL_INVISIBLE">
                 <i class="el-icon-document" :style="{'color':fontColor?fontColor:'#666699'}" />
-                <a href="https://octopus.openi.org.cn/docs/manual/intro" target="_blank" class="manual"
+                <a href="https://octopus.pcl.ac.cn/" target="_blank" class="manual"
                   :style="{'color':fontColor}">使用手册</a>
                 <i class="el-icon-service" :style="{'color':fontColor?fontColor:'#666699'}" />
                 <a href="https://git.openi.org.cn/OpenI/octopus/issues" target="_blank" class="manual"

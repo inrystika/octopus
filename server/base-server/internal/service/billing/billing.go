@@ -210,7 +210,6 @@ func (s *billingService) Recharge(ctx context.Context, req *api.RechargeRequest)
 			if err != nil {
 				return err
 			}
-
 			err = s.data.BillingDao.UpdateBillingOwnerSelective(ctx, ownerKey, &model.BillingOwner{Amount: owner.Amount + req.Amount})
 			if err != nil {
 				return err

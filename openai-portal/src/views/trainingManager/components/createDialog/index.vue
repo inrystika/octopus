@@ -4,7 +4,8 @@
             :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" :label-width="formLabelWidth"
                 class="demo-ruleForm">
-                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入任务名称" prop="name" class="[flag ==2 ： 'name'? '']">
+                <el-form-item :label="name" :label-width="formLabelWidth" placeholder="请输入任务名称" prop="name"
+                    class="[flag ==2 ： 'name'? '']">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
                 <div class="tip" v-if="flag!=2"><i
@@ -139,8 +140,8 @@
             <div slot="footer" class="dialog-footer">
                 <el-button v-if="showTraning" type="success" @click="traningAndSave('traning')" v-preventReClick>开始训练
                 </el-button>
-                <el-button v-if="showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
-                </el-button>
+                <!-- <el-button v-if="showTemplate" type="primary" @click="traningAndSave('save')" v-preventReClick>保存模板
+                </el-button> -->
                 <el-button type="warning" @click="cancel">取消</el-button>
             </div>
         </el-dialog>
@@ -154,6 +155,7 @@
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
     import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from '@/api/datasetManager'
+    import { randomName } from '@/utils/index'
     export default {
         name: "DialogCreateForm",
         components: {
@@ -360,8 +362,12 @@
                 this.algorithmName = true
                 this.algorithmVersion = true
             }
+            this.ruleForm.name = this.randomName('trainjob')
         },
         methods: {
+            randomName(val) {
+                return randomName(val)
+            },
             clearDataSetVersionOption() {
                 this.dataSetVersionOption = []
             },
@@ -886,15 +892,21 @@
     .block {
         display: block !important;
     }
+
     .name {
         margin-bottom: 0px
     }
 
     .tip {
         margin: 16px 0 16px 120px;
-        color:#B3B3B3
+        color: #B3B3B3
     }
-  .tip span{color:#000;font-weight: 600;}
+
+    .tip span {
+        color: #000;
+        font-weight: 600;
+    }
+
     .el-alert__icon {
         color: orange
     }

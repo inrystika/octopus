@@ -250,5 +250,5 @@ cambricon_mlu_label() {
 
 # huawei a910节点打标签
 huawei_a910_label() {
-    kubectl label nodes `hostname` a910-device-plugin=active
+    kubectl label nodes `hostname` hardware-type=ASCENDNPU
 }
