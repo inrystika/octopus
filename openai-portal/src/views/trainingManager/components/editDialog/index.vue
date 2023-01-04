@@ -153,6 +153,7 @@
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
     import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from '@/api/datasetManager'
+    import { randomName } from '@/utils/index'
     export default {
         name: "DialogEditForm",
         components: {
@@ -339,8 +340,12 @@
             this.dataSetVersion = true
             // 获取模板信息
             this.getSpacePools()
+            this.ruleForm.name = this.randomName('trainjob')
         },
         methods: {
+            randomName(val) {
+                return randomName(val)
+            },
             clearDataSetVersionOption() {
                 this.dataSetVersionOption = []
             },
