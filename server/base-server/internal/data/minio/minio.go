@@ -258,6 +258,20 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 	return true, nil
 }
 
+// RemoveObject 删除对象
+func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
+	ctx := context.Background()
+
+	opts := miniogo.RemoveObjectOptions{
+		GovernanceBypass: true,
+	}
+	err := m.client.RemoveObject(ctx, bucketName, objectName, opts)
+	if err != nil {
+		return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
+	}
+	return true, nil
+}
+
 func (m *minio) CreateOrUpdateAccount(ctx context.Context, userName string, password string) error {
 	err := m.adminClient.AddUser(ctx, userName, password)
 	if err != nil {
