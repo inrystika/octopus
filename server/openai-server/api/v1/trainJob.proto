@@ -43,44 +43,44 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjob"
        };
     };
-    // 创建训练任务模板
-    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
-      option (google.api.http) = {
-         post: "/v1/trainmanage/trainjobtemplate"
-         body: "*"
-      };
-    };
-    // 编辑训练任务模板
-    rpc UpdateJobTemplate (TrainJobTemplate) returns (TrainJobTemplateReply) {
-      option (google.api.http) = {
-         put: "/v1/trainmanage/trainjobtemplate/{id}"
-         body: "*"
-      };
-    };
-    // 删除训练任务模板
-    rpc DeleteTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply) {
-      option (google.api.http) = {
-          delete: "/v1/trainmanage/trainjobtemplate"
-       };
-    };
-    // 获取训练任务模板详情
-    rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply) {
-      option (google.api.http) = {
-        get: "/v1/trainmanage/trainjobtemplate/{id}"
-      };
-    };
-    // 获取训练任务列表
-    rpc TrainJobTemplateList (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply) {
-      option (google.api.http) = {
-         get: "/v1/trainmanage/trainjobtemplate"
-      };
-    };
-    // 复制训练任务模板
-    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
-      option (google.api.http) = {
-        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
-      };
-    };
+//    // 创建训练任务模板
+//    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
+//      option (google.api.http) = {
+//         post: "/v1/trainmanage/trainjobtemplate"
+//         body: "*"
+//      };
+//    };
+//    // 编辑训练任务模板
+//    rpc UpdateJobTemplate (TrainJobTemplate) returns (TrainJobTemplateReply) {
+//      option (google.api.http) = {
+//         put: "/v1/trainmanage/trainjobtemplate/{id}"
+//         body: "*"
+//      };
+//    };
+//    // 删除训练任务模板
+//    rpc DeleteTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply) {
+//      option (google.api.http) = {
+//          delete: "/v1/trainmanage/trainjobtemplate"
+//       };
+//    };
+//    // 获取训练任务模板详情
+//    rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply) {
+//      option (google.api.http) = {
+//        get: "/v1/trainmanage/trainjobtemplate/{id}"
+//      };
+//    };
+//    // 获取训练任务列表
+//    rpc TrainJobTemplateList (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply) {
+//      option (google.api.http) = {
+//         get: "/v1/trainmanage/trainjobtemplate"
+//      };
+//    };
+//    // 复制训练任务模板
+//    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
+//      option (google.api.http) = {
+//        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
+//      };
+//    };
     // 获取训练任务事件列表
     rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply) {
       option (google.api.http) = {
