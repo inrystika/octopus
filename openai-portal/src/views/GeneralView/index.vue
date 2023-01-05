@@ -111,12 +111,6 @@
                   创建训练任务
                 </span>
               </el-button>
-              <el-button :style="{'border-color':mainColor}" class="mainButtonBorder" size="small"
-                @click="create('trainingTemplate')">
-                <span :style="{'color':mainColor}" class="mainButtonText">
-                  创建训练模板
-                </span>
-              </el-button>
             </div>
             <div class="mainColText">
               总训练任务：
@@ -125,13 +119,13 @@
               </span>
               个
             </div>
-            <div class="mainBlockText">
+            <!-- <div class="mainBlockText">
               任务模板：
               <span :style="{'color':mainColor}" class="mainNum">
                 {{ trainingTemplateNum }}
               </span>
               个
-            </div>
+            </div> -->
           </el-col>
           <el-col :span="8">
             <span class="mainTitle" :style="{'color':mainColor}">
@@ -251,7 +245,6 @@
               </el-col>
             </el-row>
           </el-col>
-
           <el-col :span="8">
             <span class="mainTitle" :style="{'color':mainColor}">
               镜像
@@ -436,16 +429,6 @@
         getList(param).then(response => {
           if (response.success) {
             this.totalTrainingTaskNum = response.data.totalSize
-          } else {
-            this.$message({
-              message: this.getErrorMsg(response.error.subcode),
-              type: 'warning'
-            });
-          }
-        })
-        getTemplate(param).then(response => {
-          if (response.success) {
-            this.trainingTemplateNum = response.data.totalSize
           } else {
             this.$message({
               message: this.getErrorMsg(response.error.subcode),
