@@ -88,6 +88,8 @@ main() {
         enflame_gcu_label
     elif [[ $node_type == "cambricon_mlu" ]];then
         cambricon_mlu_label
+    elif [[ $node_type == "xilinx_fpga" ]];then
+        xilinx_fpga_label
     fi
 }
 
