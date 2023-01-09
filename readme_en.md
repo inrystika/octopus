@@ -13,7 +13,7 @@ At the same time, cluster management personnel are provided with functions such 
 
 ## Documentations
 
-For detailed documentation, please refer to [here](https:///octopus.openi.org.cn/docs/introduction/intro).
+For detailed documentation, please refer to [here](https:///octopus.pcl.ac.cn/docs/introduction/intro).
 
 ## Features and Scenarios
 
@@ -47,20 +47,20 @@ Octopus provides end-to-end manuals for cluster users and administrators.
 
 Documents related to cluster administrators include the following:
 
-- ***Cluster Deployment Guide***: the main contents provided in this part include: preparation and installation of cluster dependent environment and components, Octopus system deployment guide and follow-up system upgrade instructions to facilitate installation and maintenance. For details, please refer to [here](https://octopus.openi.org.cn/docs/deployment/environment) 。
+- ***Cluster Deployment Guide***: the main contents provided in this part include: preparation and installation of cluster dependent environment and components, Octopus system deployment guide and follow-up system upgrade instructions to facilitate installation and maintenance. For details, please refer to [here](https://octopus.pcl.ac.cn/docs/deployment/environment) 。
 
-- ***Cluster Management Manual***: This part mainly introduces the operations that the cluster administrator can perform after entering the Octopus management system through the management system page entrance. The main function descriptions include: platform monitoring, resource management, user management, machine time management, data management, algorithm management, development and training management And other functions. For details, please refer to [here](https://octopus.openi.org.cn/docs/management/intro).
+- ***Cluster Management Manual***: This part mainly introduces the operations that the cluster administrator can perform after entering the Octopus management system through the management system page entrance. The main function descriptions include: platform monitoring, resource management, user management, machine time management, data management, algorithm management, development and training management And other functions. For details, please refer to [here](https://octopus.pcl.ac.cn/docs/management/intro).
 
 ### For cluster users
 
 The main documents related to cluster users are as follows:
 
-- ***User Manual***： this part mainly introduces the operations that cluster users can perform after entering the Octopus system through the Octopus system page entrance. The main function descriptions include: data management, algorithm management, mirroring management, development and training management and other functions. For details, please refer to [here](https://octopus.openi.org.cn/docs/manual/intro).
+- ***User Manual***： this part mainly introduces the operations that cluster users can perform after entering the Octopus system through the Octopus system page entrance. The main function descriptions include: data management, algorithm management, mirroring management, development and training management and other functions. For details, please refer to [here](https://octopus.pcl.ac.cn/docs/manual/intro).
 
 ## How to Contribute
 
-For detailed contribution guidelines, please refer to [here](https://octopus.openi.org.cn/docs/community/contribution).
+For detailed contribution guidelines, please refer to [here](https://octopus.pcl.ac.cn/docs/community/contribution).
 
 ## License
 
-[Apache License](https://octopus.openi.org.cn/docs/community/LICENSE)
+[Apache License](https://octopus.pcl.ac.cn/docs/community/LICENSE)
