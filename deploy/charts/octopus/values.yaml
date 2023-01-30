@@ -268,8 +268,12 @@ minio:
     existingClaim: "octopus-minio-pvc"
   service:
     type: NodePort
-    nodePort: "31311"
-    port: "9000"
+    ports:
+      api: "9000"
+      console: "9001"
+    nodePorts:
+      api: "31311"
+      console: "31312"
   nodeSelector:
     <<: *nodeSelector
   affinity:
@@ -499,3 +503,16 @@ enflame:
   enabled: false
   gcuDevicePluginImage: 192.168.202.110:5000/octopus/enflame-gcu-k8s-device-plugin:v1.0.0-dev
   gcuExporterImage: 192.168.202.110:5000/octopus/enflame-gcu-exporter:v1.0.1-dev
+
+cambricon:
+  enabled: false
+  mluDevicePluginImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-k8s-device-plugin:v1.3.6
+  mluExporterImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-mlu-exporter:v1.6.7
+
+nvidia:
+  # nvidia节点需要打标签hardware-type=NVIDIAGPU
+  enabled: true
+
+ascend:
+  # ascend节点需要打标签hardware-type=ASCENDNPU
+  enabled: false

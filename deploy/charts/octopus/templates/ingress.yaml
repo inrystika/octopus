@@ -110,7 +110,7 @@ spec:
       paths:
       - backend:
           serviceName: {{ $minioName }}
-          servicePort: {{ .Values.minio.service.port }}
+          servicePort: {{ .Values.minio.service.ports.console }}
         path: {{ $minioWebPath }}
 
 ---
@@ -135,7 +135,7 @@ spec:
       paths:
       - backend:
           serviceName: {{ $minioName }}
-          servicePort: {{ .Values.minio.service.port }}
+          servicePort: {{ .Values.minio.service.ports.api}}
         path: {{ $minioApiPath }}(/|$)(.*)
 
 ---

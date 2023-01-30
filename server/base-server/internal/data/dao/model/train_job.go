@@ -66,14 +66,15 @@ type Config struct {
 	MinSucceededTaskCount int                `json:"minSucceededTaskCount"`
 	ResourceSpecId        string             `json:"resourceSpecId"`
 	ResourceSpecName      string             `json:"resourceSpecName"`
-	ResourceSpecPrice     uint32             `json:"resourceSpecPrice"`
+	ResourceSpecPrice     float64            `json:"resourceSpecPrice"`
 	IsMainRole            bool               `json:"isMainRole"`
 	ShareMemory           *resource.Quantity `json:"shareMemory"`
+	Envs                  map[string]string  `json:"envs"`
 }
 
 type ResourceSpecPrice struct {
-	Task  int    `json:"task"`
-	Price uint32 `json:"price"`
+	Task  int     `json:"task"`
+	Price float64 `json:"price"`
 }
 
 type Parameter struct {

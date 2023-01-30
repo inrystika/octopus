@@ -118,6 +118,8 @@ main() {
         huawei_a910_label
     elif [[ $node_type == "enflame_gcu" ]];then
         enflame_gcu_label
+    elif [[ $node_type == "cambricon_mlu" ]];then
+        cambricon_mlu_label
     fi
     
     # 验证

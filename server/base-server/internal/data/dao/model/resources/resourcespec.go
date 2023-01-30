@@ -6,10 +6,10 @@ import (
 
 type ResourceSpec struct {
 	dao.Model
-	Id               string `gorm:"primaryKey;type:varchar(100);not null"`
-	Name             string `gorm:"uniqueIndex;type:varchar(100);not null;default:''"`
-	Price            uint32 `gorm:"type:int unsigned"`
-	ResourceQuantity string `gorm:"type:text"`
+	Id               string  `gorm:"primaryKey;type:varchar(100);not null"`
+	Name             string  `gorm:"uniqueIndex;type:varchar(100);not null;default:''"`
+	Price            float64 `gorm:"type:decimal(10,2)"`
+	ResourceQuantity string  `gorm:"type:text"`
 }
 
 func (ResourceSpec) TableName() string {
@@ -18,11 +18,11 @@ func (ResourceSpec) TableName() string {
 
 type CreateResourceSpecRequest struct {
 	Name             string
-	Price            uint32
+	Price            float64
 	ResourceQuantity string
 }
 
 type UpdateResourceSpecRequest struct {
-	Price            uint32
+	Price            float64
 	ResourceQuantity string
 }

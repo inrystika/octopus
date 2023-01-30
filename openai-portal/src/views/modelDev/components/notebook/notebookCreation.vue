@@ -4,9 +4,13 @@
             :close-on-click-modal="false">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" :label-width="formLabelWidth"
                 class="demo-ruleForm">
-                <el-form-item label="名称" :label-width="formLabelWidth" prop="name">
+                <el-form-item label="名称" :label-width="formLabelWidth" prop="name" class="name">
                     <el-input v-model="ruleForm.name" placeholder="请输入NoteBook名称" />
                 </el-form-item>
+                <div class="tip"><i
+                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中
+                </div>
+                </el-alert>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input v-model="ruleForm.desc" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请输入NoteBook描述"
                         maxlength="300" show-word-limit />
@@ -21,7 +25,7 @@
                                 :label="item.algorithmName" :value="item.algorithmId" />
                         </el-select>
                         <el-tooltip class="tipClass" effect="dark" :content="tipMessage" placement="top-start">
-                          <i class="el-icon-warning-outline"></i>
+                            <i class="el-icon-warning-outline"></i>
                         </el-tooltip>
                     </el-form-item>
                     <el-form-item v-if="algorithmVersion" label="算法版本" prop="algorithmVersion"
@@ -56,8 +60,8 @@
                 <!-- 数据集三级框 -->
                 <div>
                     <el-form-item label="数据集类型" prop="dataSetSource" :class="{inline:dataSetName}">
-                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择" @clear="clearDataSetVersionOption"
-                            @change="changedataSetSource">
+                        <el-select v-model="ruleForm.dataSetSource" clearable placeholder="请选择"
+                            @clear="clearDataSetVersionOption" @change="changedataSetSource">
                             <el-option label="我的数据集" value="my" />
                             <el-option label="预置数据集" value="pre" />
                             <el-option label="公共数据集" value="common" />
@@ -87,7 +91,8 @@
                             <el-option v-for="(item, index) in poolList" :key="index" :label="item" :value="item" />
                         </el-select>
                     </el-form-item>
-                    <el-form-item v-if="specificationVisible" label="资源规格" prop="specification" style="display:inline-block;">
+                    <el-form-item v-if="specificationVisible" label="资源规格" prop="specification"
+                        style="display:inline-block;">
                         <el-select v-model="ruleForm.specification" placeholder="请选择资源规格">
                             <el-option v-for="(item, index) in resourceList" :key="index" :label="item.label"
                                 :value="item.value" />
@@ -118,6 +123,7 @@
     import { getMyImage, getPublicImage, getPreImage } from "@/api/imageManager";
     import { getResourceList } from "@/api/trainingManager";
     import { mapGetters } from 'vuex'
+    import { randomName } from '@/utils/index'
     export default {
         name: "NotebookCreation",
         directives: {
@@ -128,21 +134,21 @@
                     );
                     SELECTWRAP_DOM.addEventListener("scroll", function () {
                         const CONDITION =
-                            this.scrollHeight - this.scrollTop <= this.clientHeight;                
-                            binding.value();
+                            this.scrollHeight - this.scrollTop <= this.clientHeight;
+                        binding.value();
                     });
                 }
             }
         },
         data() {
             var checkDatasetVersion = (rule, value, callback) => {
-                if(this.ruleForm.dataSetId && !value) {
+                if (this.ruleForm.dataSetId && !value) {
                     callback(new Error("请选择数据集版本"));
                 }
                 return callback();
             };
             return {
-                specificationVisible:false,
+                specificationVisible: false,
                 poolList: [],
                 ruleForm: {
                     name: "",
@@ -253,12 +259,13 @@
                 algorithmNameTemp: '',
                 imageTemp: '',
                 dataSetTemp: '',
-                tipMessage:"创建Notebook任务时，算法只能从‘我的算法’中选择；请先在‘我的算法’中上传算法。"
+                tipMessage: "创建Notebook任务时，算法只能从‘我的算法’中选择；请先在‘我的算法’中上传算法。"
             };
         },
         created() {
             // this.getResource();
             this.getSpacePools();
+            this.ruleForm.name = this.randomName('notebook')
         },
         computed: {
             ...mapGetters([
@@ -266,6 +273,9 @@
             ])
         },
         methods: {
+            randomName(val) {
+                return randomName(val)
+            },
             clearDataSetVersionOption() {
                 this.dataSetVersionOption = []
             },
@@ -274,7 +284,7 @@
                 this.workspaces.forEach(
                     item => {
                         // 获取当前群组绑定资源池列表
-                        if(item.name == workspaceName) {
+                        if (item.name == workspaceName) {
                             this.poolList = item.resourcePools
                         }
                     }
@@ -299,7 +309,7 @@
                         });
                     });
             },
-            getResource() {               
+            getResource() {
                 this.specificationVisible = true
                 this.ruleForm.specification = ""
                 this.resourceList = []
@@ -740,12 +750,32 @@
     .inline {
         display: inline-block !important;
     }
+
     .block {
         display: block !important;
     }
+
     .tipClass {
-      margin-left: 5px;
-      font-size: 16px;
-      color: #409EFF;
+        margin-left: 5px;
+        font-size: 16px;
+        color: #409EFF;
+    }
+
+    .name {
+        margin-bottom: 0px
+    }
+
+    .tip {
+        margin: 16px 0 16px 120px;
+        color: #B3B3B3
+    }
+
+    .tip span {
+        color: #000;
+        font-weight: 600;
+    }
+
+    .el-alert__icon {
+        color: orange
     }
 </style>

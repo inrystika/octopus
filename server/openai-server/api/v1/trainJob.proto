@@ -43,44 +43,44 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjob"
        };
     };
-    // 创建训练任务模板
-    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
-      option (google.api.http) = {
-         post: "/v1/trainmanage/trainjobtemplate"
-         body: "*"
-      };
-    };
-    // 编辑训练任务模板
-    rpc UpdateJobTemplate (TrainJobTemplate) returns (TrainJobTemplateReply) {
-      option (google.api.http) = {
-         put: "/v1/trainmanage/trainjobtemplate/{id}"
-         body: "*"
-      };
-    };
-    // 删除训练任务模板
-    rpc DeleteTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply) {
-      option (google.api.http) = {
-          delete: "/v1/trainmanage/trainjobtemplate"
-       };
-    };
-    // 获取训练任务模板详情
-    rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply) {
-      option (google.api.http) = {
-        get: "/v1/trainmanage/trainjobtemplate/{id}"
-      };
-    };
-    // 获取训练任务列表
-    rpc TrainJobTemplateList (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply) {
-      option (google.api.http) = {
-         get: "/v1/trainmanage/trainjobtemplate"
-      };
-    };
-    // 复制训练任务模板
-    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
-      option (google.api.http) = {
-        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
-      };
-    };
+//    // 创建训练任务模板
+//    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
+//      option (google.api.http) = {
+//         post: "/v1/trainmanage/trainjobtemplate"
+//         body: "*"
+//      };
+//    };
+//    // 编辑训练任务模板
+//    rpc UpdateJobTemplate (TrainJobTemplate) returns (TrainJobTemplateReply) {
+//      option (google.api.http) = {
+//         put: "/v1/trainmanage/trainjobtemplate/{id}"
+//         body: "*"
+//      };
+//    };
+//    // 删除训练任务模板
+//    rpc DeleteTemplate (DeleteJobTemplateRequest) returns (DeleteJobTemplateReply) {
+//      option (google.api.http) = {
+//          delete: "/v1/trainmanage/trainjobtemplate"
+//       };
+//    };
+//    // 获取训练任务模板详情
+//    rpc GetJobTemplate (GetJobTemplateRequest) returns (GetJobTemplateReply) {
+//      option (google.api.http) = {
+//        get: "/v1/trainmanage/trainjobtemplate/{id}"
+//      };
+//    };
+//    // 获取训练任务列表
+//    rpc TrainJobTemplateList (TrainJobTemplateListRequest) returns (TrainJobTemplateListReply) {
+//      option (google.api.http) = {
+//         get: "/v1/trainmanage/trainjobtemplate"
+//      };
+//    };
+//    // 复制训练任务模板
+//    rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply) {
+//      option (google.api.http) = {
+//        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
+//      };
+//    };
     // 获取训练任务事件列表
     rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply) {
       option (google.api.http) = {
@@ -134,11 +134,12 @@ message Config {
   //资源规格名称
   string resourceSpecName = 9;
   //资源规格价格
-  uint32 resourceSpecPrice = 10;
+  double resourceSpecPrice = 10;
   //子任务副本状态
   repeated ReplicaState replicaStates = 11;
   //子任务状态
   string subTaskState = 12;
+  map<string, string> envs = 13;
 }
 
 message ReplicaState {
@@ -178,7 +179,7 @@ message TrainJobTemplateRequest {
   bool isDistributed = 9;
   //job子任务及其配置信息，必填
   repeated Config config = 10[(validate.rules).repeated.min_items = 1];
-  string resourcePool = 11[(validate.rules).string = {min_len: 1}];
+  string resourcePool = 11[(validate.rules).string = {min_len:1}];
 }
 
 message TrainJobTemplateReply {
@@ -334,6 +335,8 @@ message TrainJob{
   //启动时间
   int64  startedAt = 22;
   string imageUrl = 23;
+  //资源池
+  string resourcePool=24;
 }
 
 message TrainJobTemplate{

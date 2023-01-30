@@ -9,6 +9,7 @@ trigger:
   event:
     - push
     - pull_request
+
 steps:
   - name: 代码检查
     image: golangci/golangci-lint:v1.40.1
@@ -17,7 +18,6 @@ steps:
       GOPROXY: https://goproxy.cn,direct
     commands:
       - make lint
-
 ---
 kind: pipeline
 name: base-server

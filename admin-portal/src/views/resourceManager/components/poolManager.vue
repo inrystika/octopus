@@ -3,36 +3,71 @@
         <div class="function">
             <el-button type="primary" @click="add">添加资源池</el-button>
         </div>
-        <el-table v-loading="isLoading" :data="tableData" style="width: 100%;font-size: 15px;"
-            :header-cell-style="{'text-align':'left','color':'black'}" :cell-style="{'text-align':'left'}">
-            <el-table-column label="资源池名称" align="center">
+        <el-table v-loading="isLoading" :data="tableData" style="width: 100%;font-size: 15px;" :span-method="listSpanMethod"
+            :header-cell-style="{'text-align':'center','color':'black'}" :cell-style="{'text-align':'left'}">
+            <el-table-column label="资源池名称">
                 <template slot-scope="scope">
                     <span>{{ scope.row.name }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="默认资源池" align="center">
+            <el-table-column label="默认资源池">
                 <template slot-scope="scope">
                     <span>{{ scope.row.default?'是':'否' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="描述" align="center">
+            <el-table-column label="描述">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="节点列表" align="center" show-overflow-tooltip>
+            <el-table-column label="节点列表" show-overflow-tooltip>
                 <template slot-scope="scope">
                     <span>{{  nodeList(scope.row.bindingNodes) }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="资源规格" align="center">
+            <el-table-column label="资源规格">
                 <template slot-scope="scope">
                     <el-button type="text" @click="handleDetail(scope.row)">详情</el-button>
                 </template>
             </el-table-column>
+            <el-table-column label="资源信息">
+                <el-table-column label="名称">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff">
+                            {{ scope.row.childName }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="已分配">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff;">
+                            {{ scope.row.use }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="总量">
+                    <template slot-scope="scope">
+                        <span style="color: #409eff;">
+                            {{ scope.row.total }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="已分配百分比" width="120px">
+                    <template slot-scope="scope">
+                        <div class="circleBox" v-if="!scope.row.children">
+                            <el-progress color="#409EFF" type="circle" :show-text="false"
+                                :percentage="scope.row.percentage" :width="60" :height="60">
+                            </el-progress>
+                            <div class="circleCenter">
+                                <div style=" font-weight: bold; font-size: 12px;"> {{scope.row.percentage?scope.row.percentage:0}}%</div>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button v-if="scope.row.default===false" type="text" @click="open(scope.row)">删除</el-button>
+                    <el-button v-if="scope.row.default===false" type="text" @click="handleDeletePool(scope.row)">删除</el-button>
                     <el-button type="text" @click="handleEdit( scope.row)">编辑</el-button>
                 </template>
             </el-table-column>
@@ -106,6 +141,7 @@
 
 <script>
     import { getResourcePool, deleteResourcePool, createResourcePool, updateResourcePool, getNodeList, getResource } from '@/api/resourceManager.js'
+    import { formatSize } from '@/utils/index.js'
     export default {
         name: "ResourcePool",
         data() {
@@ -157,6 +193,88 @@
             clearInterval(this.timer);
         },
         methods: {
+          listSpanMethod({ row, column, rowIndex, columnIndex }) {
+            if (columnIndex < 5 || columnIndex > 8) {
+                    if (row.span_num > 0) {
+                        return {
+                            rowspan: row.span_num,
+                            colspan: 1
+                        };
+
+                    }
+                    else {
+                        return { rowspan: 0, colspan: 0 }
+                    }
+                }
+            },
+            handleTableData(data) {
+                let arr = [];
+                let on = 0;
+                let spanNum = 0;
+                for (let i = 0; i < data.length; i++) {
+                    let node_info = data[i].children
+                    on++;
+                    for (let j = 0; j < node_info.length; j++) {
+                        let info = {
+                            on: on,
+                            span_num: j === 0 ? node_info.length : 0,
+                            childName: node_info[j].childName,
+                            use: node_info[j].use,
+                            total: node_info[j].total,
+                            percentage: node_info[j].percentage,
+                            name: data[i].name,
+                            default: data[i].default,
+                            desc: data[i].desc,
+                            bindingNodes: data[i].bindingNodes,
+                            mapResourceSpecIdList: data[i].mapResourceSpecIdList,
+                            id: data[i].id,
+                        }
+                        arr.push(info)
+                    }
+                }
+                return arr
+            },
+            getDetail(val) {
+                let data = []
+                if (Object.getOwnPropertyNames(val.resourceAllocated).length && Object.getOwnPropertyNames(val.resourceCapacity).length) {
+                    for (const key1 in val.resourceAllocated) {
+                        for (const key2 in val.resourceCapacity) {
+                            if (key1 === key2) {
+                                let percentage
+                                if (parseInt(val.resourceAllocated[key1]) === 0) {
+                                    0
+                                } else if ((/^\d+$/.test(val.resourceAllocated[key1])) && (/^\d+$/.test(val.resourceCapacity[key1]))) {
+                                  percentage = val.resourceAllocated[key1] / val.resourceCapacity[key1] * 100
+                                  percentage = parseFloat(percentage.toFixed(2))
+                                } else {                               
+                                    percentage = formatSize(val.resourceAllocated[key1]) / formatSize(val.resourceCapacity[key1])
+                                    percentage = percentage * 100
+                                    percentage = parseFloat(percentage.toFixed(2))
+                                }
+                                data.push({ childName: key1, use: val.resourceAllocated[key1], total: val.resourceCapacity[key1], percentage: percentage})
+                            }
+                        }
+                    }
+                } else {
+                  data.push(
+                    {
+                        childName: "cpu",
+                        id: "",
+                        percentage: 0,
+                        total: "0",
+                        use: "0"
+                    },
+                    {
+                        childName: "memory",
+                        id: "",
+                        percentage: 0,
+                        total: "0",
+                        use: "0"
+                    },
+                  )
+                }
+                return data
+            },
             handleDetail(val) {
                 this.detailDialog = true
                 const mapResourceSpecIdList = JSON.parse(JSON.stringify(val.mapResourceSpecIdList))
@@ -315,8 +433,17 @@
                 getResourcePool().then(response => {
                     if (response.success) {
                         if (response.data !== null && response.data.resourcePools !== null) {
-                            this.tableData = response.data.resourcePools
                             this.isLoading = false
+                            response.data.resourcePools.forEach(
+                                item => {
+                                    // item.id = Math.random()
+                                    if (this.getDetail(item) !== []) {
+                                        item.children = this.getDetail(item)
+                                    }
+                                    else { item.children = [] }
+                                }
+                            )
+                            this.tableData = this.handleTableData(response.data.resourcePools)
                         } else {
                             this.tableData = []
                         }
@@ -362,7 +489,7 @@
                 })
             },
             // 删除确认
-            open(val) {
+            handleDeletePool(val) {
                 this.$confirm('此操作将永久删除该资源规格, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -410,5 +537,16 @@
 
     .item {
         margin: 5px;
+    }
+    .circleBox {
+        position: relative;
+        text-align: center;
+        top:20px
+    }
+
+    .circleCenter {
+        position: relative;
+        top: -45px;
+
     }
 </style>

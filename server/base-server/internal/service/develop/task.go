@@ -167,7 +167,7 @@ func (s *developService) startNotebookTask() {
 									payStatus = api.BillingPayRecordStatus_BPRS_PAYING
 								}
 
-								prices := make([]uint32, 0)
+								prices := make([]float64, 0)
 								for i := 0; i < nb.TaskNumber; i++ {
 									prices = append(prices, j.ResourceSpecPrice)
 								}

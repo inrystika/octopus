@@ -125,7 +125,7 @@ func (d *userDao) Add(ctx context.Context, user *model.UserAdd) (*model.User, er
 		Desc:          user.Desc,
 	}
 
-	result := db.Omit("ftp_user_name").Create(&u)
+	result := db.Omit("ftp_user_name", "minio_user_name").Create(&u)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -156,6 +156,8 @@ func (d *userDao) Update(ctx context.Context, cond *model.UserUpdateCond, user *
 		ResourcePools: user.ResourcePools,
 		Desc:          user.Desc,
 		Permission:    user.Permission,
+		MinioUserName: user.MinioUserName,
+		Buckets:       user.Buckets,
 	})
 	if result.Error != nil {
 		return nil, result.Error

@@ -5,6 +5,7 @@ import (
 	"server/base-server/internal/common"
 	v1 "server/common/api/v1"
 	"server/common/dao"
+	"server/common/sql"
 	"time"
 
 	"gorm.io/plugin/soft_delete"
@@ -33,7 +34,9 @@ type Notebook struct {
 	Status           string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
 	TaskNumber       int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
 	ResourcePool     string                `gorm:"type:varchar(300);default:'';comment:资源池"`
-	Mounts           common.Mounts         `gorm:"type:json;comment:挂载外部存储"`
+	Mounts           common.Mounts         `gorm:"type:json;comment:挂载存储"`
+	Envs             sql.Map               `gorm:"type:json;comment:环境变量"`
+	Command          string                `gorm:"type:text;comment:启动命令"`
 	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
@@ -52,7 +55,7 @@ type NotebookJob struct {
 	PayStartedAt      *time.Time                 `gorm:"type:datetime(3);comment:计费起始时间"`
 	PayEndedAt        *time.Time                 `gorm:"type:datetime(3);comment:计费截止时间"`
 	PayStatus         api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
-	ResourceSpecPrice uint32                     `gorm:"type:int unsigned;not null;default:0;comment:资源规格价格"`
+	ResourceSpecPrice float64                    `gorm:"type:decimal(10,2);not null;default:0;comment:资源规格价格"`
 	Detail            string                     `gorm:"column:detail;type:json" json:"detail"`
 }
 func (NotebookJob) TableName() string {

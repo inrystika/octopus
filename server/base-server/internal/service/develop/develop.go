@@ -12,8 +12,11 @@ import (
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/utils"
+	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/utils/strings/slices"
 
 	vcBus "volcano.sh/apis/pkg/apis/bus/v1alpha1"
 
@@ -66,8 +69,14 @@ const (
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
-	jpyCommand                   = "jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=8888 --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$OCTOPUS_JPY_BASE_URL"
+	envNotebookBaseUrl           = "OCTOPUS_NOTEBOOK_BASE_URL"
+	envNotebookPort              = "OCTOPUS_NOTEBOOK_PORT"
 )
+
+func buildCommand(nbDir string) string {
+	c := `! [ -x "$(command -v jupyter)" ] && pip install jupyterlab==3 -i https://pypi.tuna.tsinghua.edu.cn/simple;jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir='%s' --port=$%s --LabApp.token='' --LabApp.allow_origin='*' --LabApp.base_url=$%s;`
+	return fmt.Sprintf(c, nbDir, envNotebookPort, envNotebookBaseUrl)
+}
 
 func buildTaskName(idx int) string {
 	return fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
@@ -282,15 +291,27 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	if (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) && len(nb.Mounts) > 0 {
-		return nil, errors.Errorf(nil, errors.ErrorTrainMountExternalForbidden)
+	for _, m := range nb.Mounts {
+		if m.Octopus != nil {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+			}
+		}
+
+		if m.Nfs != nil && (user.User.Permission == nil || !user.User.Permission.MountExternalStorage) {
+			return nil, errors.Errorf(nil, errors.ErrorNotebookMountExternalForbidden)
+		}
 	}
 
 	command := ""
-	if nb.AlgorithmId != "" {
-		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerCodePath)
+	if nb.Command != "" {
+		command = nb.Command
 	} else {
-		command = fmt.Sprintf(jpyCommand, s.conf.Service.DockerUserHomePath)
+		if nb.AlgorithmId != "" {
+			command = buildCommand(s.conf.Service.DockerCodePath)
+		} else {
+			command = buildCommand(s.conf.Service.DockerUserHomePath)
+		}
 	}
 
 	return &startJobInfo{
@@ -529,10 +550,10 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 }
 
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
-
+	volume := "data"
 	volumeMounts := []v1.VolumeMount{
 		{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerUserHomePath,
 			SubPath:   common.GetUserHomePath(nb.UserId),
 			ReadOnly:  false,
@@ -545,7 +566,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	if startJobInfo.algorithmPath != "" {
 		volumeMounts = append(volumeMounts, v1.VolumeMount{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerCodePath,
 			SubPath:   startJobInfo.algorithmPath,
 			ReadOnly:  false,
@@ -554,7 +575,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	if startJobInfo.datasetPath != "" {
 		volumeMounts = append(volumeMounts, v1.VolumeMount{
-			Name:      "data",
+			Name:      volume,
 			MountPath: s.conf.Service.DockerDatasetPath,
 			SubPath:   startJobInfo.datasetPath,
 			ReadOnly:  true,
@@ -563,7 +584,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 
 	volumes := []v1.Volume{
 		{
-			Name: "data",
+			Name: volume,
 			VolumeSource: v1.VolumeSource{
 				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 					ClaimName: common.GetStoragePersistentVolumeChaim(nb.UserId),
@@ -595,7 +616,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		})
 	}
 
-	vs, vms := common.GetVolumes(nb.Mounts)
+	vs, vms := common.GetVolumes(nb.Mounts, volume)
 	if len(vms) > 0 {
 		volumeMounts = append(volumeMounts, vms...)
 		volumes = append(volumes, vs...)
@@ -607,6 +628,16 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		task := typeJob.TaskSpec{}
 		task.Name = taskName
 		task.Replicas = 1
+		envs := []v1.EnvVar{{
+			Name:  envNotebookBaseUrl,
+			Value: buildNotebookUrl(nbJob.Id, i),
+		}, {
+			Name:  envNotebookPort,
+			Value: strconv.Itoa(servicePort),
+		}}
+		for k, v := range nb.Envs {
+			envs = append(envs, v1.EnvVar{Name: k, Value: v})
+		}
 		task.Template = v1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{"volcano.sh/task-spec": buildTaskName(i)},
@@ -623,10 +654,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 							Limits:   startJobInfo.resources,
 						},
 						VolumeMounts: volumeMounts,
-						Env: []v1.EnvVar{{
-							Name:  s.conf.Service.Develop.JpyBaseUrlEnv,
-							Value: buildNotebookUrl(nbJob.Id, i),
-						}},
+						Env:          envs,
 					},
 				},
 				NodeSelector: startJobInfo.nodeSelectors,
@@ -887,7 +915,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 	if err != nil {
 		return nil, err
 	}
-	priceMap := make(map[string]uint32)
+	priceMap := make(map[string]float64)
 	for _, j := range notebookJobs {
 		priceMap[j.Id] = j.ResourceSpecPrice
 	}

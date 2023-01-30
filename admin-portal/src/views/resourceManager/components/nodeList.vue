@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-table :data="tableData" style="width: 100%;font-size: 15px" :header-cell-style="{'color':'black'}"
+        <el-table :data="tableData" style="width: 100%;font-size: 15px" :header-cell-style="{'text-align':'center','color':'black'}"
             :span-method="listSpanMethod" :row-style="{height:'5px'}" :cell-style="{padding:'5px 0'}">
             <el-table-column label="节点名字">
                 <template slot-scope="scope">
@@ -22,7 +22,7 @@
                     <span>{{ scope.row.resourcePools }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="节点信息" align="center">
+            <el-table-column label="资源信息">
                 <el-table-column label="名称">
                     <template slot-scope="scope">
                         <span style="color: #409eff">
@@ -30,7 +30,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="使用量">
+                <el-table-column label="已分配">
                     <template slot-scope="scope">
                         <span style="color: #409eff;">
                             {{ scope.row.use }}
@@ -44,7 +44,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column label="使用百分比" align="center" width="120px">
+                <el-table-column label="已分配百分比" width="120px">
                     <template slot-scope="scope">
                         <div class="circleBox" v-if="!scope.row.children">
                             <el-progress color="#409EFF" type="circle" :show-text="false"
