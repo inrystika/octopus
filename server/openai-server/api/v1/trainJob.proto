@@ -43,6 +43,7 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjob"
        };
     };
+
 //    // 创建训练任务模板
 //    rpc CreateJobTemplate (TrainJobTemplateRequest) returns (TrainJobTemplateReply) {
 //      option (google.api.http) = {
@@ -81,6 +82,7 @@ service TrainJobService {
 //        post: "/v1/trainmanage/trainjobtemplate/{id}/copy"
 //      };
 //    };
+
     // 获取训练任务事件列表
     rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply) {
       option (google.api.http) = {
