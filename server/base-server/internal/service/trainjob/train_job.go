@@ -564,14 +564,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				VolumeSource: v1.VolumeSource{
 					EmptyDir: &v1.EmptyDirVolumeSource{}},
 			},
-			{
-				Name: "data",
-				VolumeSource: v1.VolumeSource{
-					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-						ClaimName: common.GetStoragePersistentVolumeChaim(job.UserId),
-					},
-				},
-			},
 		}
 		if datasetCache {
 			volume := v1.Volume{
