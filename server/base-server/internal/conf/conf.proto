@@ -48,6 +48,7 @@ message Kubernetes {
   string masterUrl = 1;
   string configPath = 2;
   bool isSetUploadFileSize = 3;
+  bool isUseMultusCNI = 4;
 }
 message MinioBase {
   string endPoint = 1;
@@ -114,6 +115,7 @@ message Develop {
   string jpyBaseUrlEnv = 1;
   int64  autoStopIntervalSec = 2;
   bool   isSetUploadFileSize = 4;
+  bool   isUseMultusCNI = 5;
 }
 
 message Resource {
