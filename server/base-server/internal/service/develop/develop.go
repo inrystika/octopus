@@ -663,7 +663,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		}
 		if s.conf.Service.Develop.IsUseMultusCNI {
 			task.Template.Annotations =
-				map[string]string{"k8s.v1.cni.cncf.io/networks": "default/macvlan-cx5-bond-conf"}
+				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
 		}
 
 		for k, _ := range startJobInfo.resources {

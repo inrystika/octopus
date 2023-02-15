@@ -49,6 +49,7 @@ message Kubernetes {
   string configPath = 2;
   bool isSetUploadFileSize = 3;
   bool isUseMultusCNI = 4;
+  string networksConf = 5;
 }
 message MinioBase {
   string endPoint = 1;
@@ -116,6 +117,7 @@ message Develop {
   int64  autoStopIntervalSec = 2;
   bool   isSetUploadFileSize = 4;
   bool   isUseMultusCNI = 5;
+  string networksConf = 6;
 }
 
 message Resource {

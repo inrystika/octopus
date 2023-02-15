@@ -160,6 +160,7 @@ data:
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
         isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}
         isUseMultusCNI: {{ .Values.baseserver.service.develop.isUseMultusCNI }}
+        networksConf: {{ .Values.baseserver.service.develop.networksConf }}
       resource:
         customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
         customizedResourceBindingNodeLabelValue: bound

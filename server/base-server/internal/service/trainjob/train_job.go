@@ -688,6 +688,10 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			constant.JOB_TYPE: constant.TrainJob,
 		},
 	}
+	if s.conf.Service.Develop.IsUseMultusCNI {
+		Job.Annotations =
+			map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
+	}
 	Job.Spec = typeJob.JobSpec{}
 	Job.Spec.MinAvailable = int32(minAvailable)
 	Job.Spec.Queue = startJobInfo.queue
