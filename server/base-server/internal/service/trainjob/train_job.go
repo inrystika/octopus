@@ -618,6 +618,10 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Volumes:      volumes,
 			},
 		}
+		if s.conf.Service.Develop.IsUseMultusCNI {
+			task.Template.Annotations =
+				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
+		}
 		if i.IsMainRole {
 			task.Policies = []vcBatch.LifecyclePolicy{
 				{Event: vcBus.PodFailedEvent, Action: vcBus.AbortJobAction},
@@ -687,10 +691,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		Annotations: map[string]string{
 			constant.JOB_TYPE: constant.TrainJob,
 		},
-	}
-	if s.conf.Service.Develop.IsUseMultusCNI {
-		Job.Annotations =
-			map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
 	}
 	Job.Spec = typeJob.JobSpec{}
 	Job.Spec.MinAvailable = int32(minAvailable)
