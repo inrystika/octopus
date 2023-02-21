@@ -2095,7 +2095,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(npu_chip_info_utilization{pod_name=~\".*\"}) / count(npu_chip_info_utilization{pod_name=~\".*\"}) ) or vector(0))",
+              "expr": "sum((sum(npu_chip_info_utilization{}) / count(npu_chip_info_utilization{}) ) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster NPU utilization (avg)",
@@ -2206,7 +2206,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=~\"$npu_hostname\"}) / sum(machine_npu_nums{}) * 100 or vector(0)",
+              "expr": "count(npu_container_info{npuID =~\"0|1|2|3|4|5|6|7\"}) / sum(machine_npu_nums{}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2375,7 +2375,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$npu_hostname\"}) or vector(0)",
+              "expr": "count(npu_container_info{npuID =~\"0|1|2|3|4|5|6|7\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2394,7 +2394,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "avg"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -2477,7 +2477,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "avg"
+          "valueName": "current"
         },
 
 
@@ -4503,56 +4503,6 @@ data:
             "tagsQuery": "",
             "type": "query",
             "useTags": false
-          },
-          {
-            "allValue": null,
-            "current": {
-              "text": "1",
-              "value": "1"
-            },
-            "datasource": "Prometheus",
-            "definition": "",
-            "hide": 2,
-            "includeAll": true,
-            "label": null,
-            "multi": true,
-            "name": "npu_id",
-            "options": [],
-            "query": "label_values(npu_container_info{},npuID)",
-            "refresh": 1,
-            "regex": "",
-            "skipUrlSync": false,
-            "sort": 0,
-            "tagValuesQuery": "",
-            "tags": [],
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
-          },
-          {
-            "allValue": null,
-            "current": {
-              "text": "1",
-              "value": "1"
-            },
-            "datasource": "Prometheus",
-            "definition": "",
-            "hide": 2,
-            "includeAll": false,
-            "label": null,
-            "multi": false,
-            "name": "npu_hostname",
-            "options": [],
-            "query": "label_values(npu_container_info{},name)",
-            "refresh": 1,
-            "regex": "",
-            "skipUrlSync": false,
-            "sort": 0,
-            "tagValuesQuery": "",
-            "tags": [],
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
           }
         ]
       },
@@ -5673,7 +5623,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$Node\"}) / sum(machine_npu_nums{name=\"$Node\"}) * 100 or vector(0)",
+              "expr": "count(npu_container_info{npuID =~\"0|1|2|3|4|5|6|7\", name=\"$Node\"}) / sum(machine_npu_nums{name=\"$Node\"}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -5756,7 +5706,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(npu_chip_info_utilization{id=~\"$npu_id\", name=\"$Node\"}) or vector(0)",
+              "expr": "count(npu_container_info{npuID =~\"0|1|2|3|4|5|6|7\", name=\"$Node\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -7591,31 +7541,6 @@ data:
             "name": "Node",
             "options": [],
             "query": "label_values(kubernetes_io_hostname)",
-            "refresh": 1,
-            "regex": "",
-            "skipUrlSync": false,
-            "sort": 0,
-            "tagValuesQuery": "",
-            "tags": [],
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
-          },
-          {
-            "allValue": null,
-            "current": {
-              "text": "1",
-              "value": "1"
-            },
-            "datasource": "Prometheus",
-            "definition": "",
-            "hide": 2,
-            "includeAll": true,
-            "label": null,
-            "multi": true,
-            "name": "npu_id",
-            "options": [],
-            "query": "label_values(npu_container_info{name=\"$Node\"},npuID)",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,

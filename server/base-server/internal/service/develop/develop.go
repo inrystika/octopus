@@ -661,6 +661,10 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 				Volumes:      volumes,
 			},
 		}
+		if s.conf.Service.Develop.IsUseMultusCNI {
+			task.Template.Annotations =
+				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
+		}
 
 		for k, _ := range startJobInfo.resources {
 			if strings.HasPrefix(string(k), common.RdmaPrefix) {
