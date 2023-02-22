@@ -363,7 +363,7 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		}
 
 		// 删除数据集压缩包临时文件
-		go s.data.Minio.RemoveObject(fromBucket, fromObject)
+		go s.data.Minio.RemoveObject(fromBucket, fromObject, true)
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
 
 	return &api.ConfirmUploadDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
@@ -571,7 +571,7 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 	}
 
 	bucketName, objectName := getMinioPath(dataset, version.Version)
-	go s.data.Minio.RemoveObject(bucketName, objectName)
+	go s.data.Minio.RemoveObject(bucketName, objectName, false)
 
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
@@ -609,7 +609,7 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	}
 
 	bucket, object := getMinioPathObject(dataset)
-	go s.data.Minio.RemoveObject(bucket, object)
+	go s.data.Minio.RemoveObject(bucket, object, false)
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
