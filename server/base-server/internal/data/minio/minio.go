@@ -264,7 +264,7 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
 	ctx := context.Background()
 
-	m.log.Info(ctx, "bucketName: %s, objectName: %s", bucketName, objectName)
+	m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
 	removeOpts := miniogo.RemoveObjectOptions{
 		GovernanceBypass: true,
 	}
@@ -272,13 +272,13 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 	objectPrefix := objectName + "/"
 	listOpts := miniogo.ListObjectsOptions{
 		Prefix:    objectPrefix,
-		Recursive: false,
+		Recursive: true,
 		MaxKeys:   0, // 暂时没用，先随便赋值
 		UseV1:     false,
 	}
 	objectCh := m.client.ListObjects(ctx, bucketName, listOpts)
 	for object := range objectCh {
-		m.log.Info(ctx, "bucketName: %s, object.Key: %s", bucketName, object.Key)
+		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
 		err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)
 		if err != nil {
 			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
