@@ -13,17 +13,17 @@ server:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(192.168.203.154:30336)/octopus?charset=utf8&parseTime=True&loc=Local
+    source: root:root@tcp(192.168.242.41:30336)/octopus?charset=utf8&parseTime=True&loc=Local
   kubernetes:
-    masterUrl: https://192.168.203.154:6443/
-    configPath: C:/Users/dell/Desktop/kubeconfig
+    masterUrl: https://192.168.242.41:6443/
+    configPath: /Users/zhangjiayuan/project/pcl/octopus/dev/env/41/kubeconfig
   minio:
     base:
-      endPoint: 192.168.203.154:31311
+      endPoint: 192.168.242.41:31311
       accessKeyID: minioadmin
       secretAccessKey: minioadmin
       useSSL: false
-      mountPath: /data
+      mountPath: /nfsdata/octopus-242-41/minio
       pvcName: octopus-minio-pvc
       proxyPath: /oss
     business:
@@ -36,11 +36,11 @@ data:
     apiVersion: v1.0
     useSSL: false
   redis:
-    addr: 192.168.203.154:32260
+    addr: 192.168.242.41:30667
     username:
     password: abcde
   influxdb:
-    addr: 192.168.203.154:8086
+    addr: 192.168.242.41:30086
     username: octopus
     password: octopus
     database: octopus
@@ -50,12 +50,12 @@ data:
     password: 7ee15bc8fee766cad1bd70ccf5f4dc14
     sessionExpirySec: 540 #实际有效期为600
   ambassador:
-    baseUrl: 192.168.203.154
+    baseUrl: 192.168.242.41
   pytorchServer:
     imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
     version: 2.0.2
   sftpgo:
-    baseUrl: 192.168.203.154:30022
+    baseUrl: 192.168.242.41:30022
     username: admin
     password: abcde
 service:

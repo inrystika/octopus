@@ -106,6 +106,11 @@ func GetMinioDataSetObject(spaceId string, userId string, dataSetId string, vers
 	return fmt.Sprintf("%s/%s/%s/%s/%s", DATASET_FOLDER, spaceId, userId, dataSetId, version)
 }
 
+// 数据集对象:dataSets/spaceId/userId/dataSetId
+func GetMinioDataSetPathObject(spaceId string, userId string, dataSetId string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", DATASET_FOLDER, spaceId, userId, dataSetId)
+}
+
 // 训练任务对象:trainJobs/spaceId/userId/trainJobId
 func GetMinioTrainJobObject(spaceId string, userId string, trainJobId string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", TRAIN_JOB_FOLDER, spaceId, userId, trainJobId)

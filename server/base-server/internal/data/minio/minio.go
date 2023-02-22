@@ -33,6 +33,8 @@ type Minio interface {
 	ListObjects(bucketName string, objectPrefix string, recurSvie bool) ([]*ObjectInfo, error)
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
+	// RemoveObject 删除对象
+	RemoveObject(bucketName string, objectName string) (bool, error)
 
 	CreateOrUpdateAccount(ctx context.Context, userName string, password string) error
 
