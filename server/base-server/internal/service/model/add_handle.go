@@ -312,7 +312,6 @@ func (h *modelAddHandle) ConfirmUploadPreModelVersionHandle(ctx context.Context,
 		}()
 		// 删除模型压缩包临时文件
 		wg.Wait()
-		h.log.Infof(ctx, "fromBucketName:%s fromObjectName:%s", fromBucketName, fromObjectName)
 		go h.data.Minio.RemoveObject(fromBucketName, fromObjectName)
 	}()
 
