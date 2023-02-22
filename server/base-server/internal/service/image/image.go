@@ -429,7 +429,7 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 
 		// 删除镜像压缩包临时文件
 		bucketName, objectName := getTempMinioPath(image, image.SourceFilePath)
-		go s.data.Minio.RemoveObject(bucketName, objectName, true)
+		go s.data.Minio.RemoveObject(bucketName, objectName)
 	}()
 	// create async job to handle image.tar
 	//err = s.data.Cluster.CreateAndListenJob(ctx, s.generateJobToHandleImageTar(image), func (e error) {

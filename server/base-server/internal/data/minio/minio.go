@@ -34,7 +34,7 @@ type Minio interface {
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
 	// RemoveObject 删除对象
-	RemoveObject(bucketName string, objectName string, isFile bool) (bool, error)
+	RemoveObject(bucketName string, objectName string) (bool, error)
 
 	CreateOrUpdateAccount(ctx context.Context, userName string, password string) error
 
@@ -262,7 +262,7 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 
 // RemoveObject 删除对象
 // objectType: 1->file; 2->path
-func (m *minio) RemoveObject(bucketName string, objectName string, isFile bool) (bool, error) {
+func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
 	ctx := context.Background()
 
 	m.log.Info(ctx, "RemoveObject param. bucketName:", bucketName, ", objectName:", objectName)
@@ -274,23 +274,11 @@ func (m *minio) RemoveObject(bucketName string, objectName string, isFile bool) 
 	if !isExist {
 		return true, nil
 	}
-	_, err = m.client.StatObject(ctx, bucketName, objectName, miniogo.StatObjectOptions{})
-	if err != nil {
-		err = errors.Errorf(err, errors.ErrorMinioCheckObjectExistFailed)
-		m.log.Info(ctx, err)
-		return true, nil
-	}
-
 	removeOpts := miniogo.RemoveObjectOptions{
 		GovernanceBypass: true,
 	}
-	if isFile {
-		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
-		err = m.client.RemoveObject(ctx, bucketName, objectName, removeOpts)
-		if err != nil {
-			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
-		}
-	} else {
+	_, err = m.client.StatObject(ctx, bucketName, objectName, miniogo.StatObjectOptions{})
+	if err != nil {
 		objectPrefix := objectName + "/"
 		listOpts := miniogo.ListObjectsOptions{
 			Prefix:    objectPrefix,
@@ -305,6 +293,12 @@ func (m *minio) RemoveObject(bucketName string, objectName string, isFile bool) 
 			if err != nil {
 				return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 			}
+		}
+	} else {
+		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
+		err = m.client.RemoveObject(ctx, bucketName, objectName, removeOpts)
+		if err != nil {
+			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 		}
 	}
 	return true, nil
