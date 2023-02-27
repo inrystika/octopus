@@ -38,6 +38,7 @@ const (
 	ErrorMinioCheckObjectNotExisted    = 10040 // 对象不存在
 	ErrorMinioCreateAccountFailed      = 10041 // 创建用户失败
 	ErrorMinioOperationFailed          = 10042 // 操作失败
+	ErrorMinioRemoveObjectFailed       = 10043 // 删除对象失败
 
 	// db操作相关错误
 	ErrorDBInitFailed        = 10050 // db初始化失败

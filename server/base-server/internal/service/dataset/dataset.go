@@ -361,6 +361,9 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		if err != nil {
 			s.log.Errorw(ctx, err)
 		}
+
+		// 删除数据集压缩包临时文件
+		go s.data.Minio.RemoveObject(fromBucket, fromObject)
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
 
 	return &api.ConfirmUploadDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
@@ -510,7 +513,13 @@ func (s *datasetService) CloseShareDatasetVersion(ctx context.Context, req *api.
 }
 
 func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.DeleteDatasetVersionRequest) (*api.DeleteDatasetVersionReply, error) {
-	_, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -561,6 +570,9 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 		}
 	}
 
+	bucketName, objectName := getMinioPath(dataset, version.Version)
+	go s.data.Minio.RemoveObject(bucketName, objectName)
+
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
 
@@ -595,6 +607,9 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	if err != nil {
 		return nil, err
 	}
+
+	bucket, object := getMinioPathObject(dataset)
+	go s.data.Minio.RemoveObject(bucket, object)
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
@@ -773,6 +788,14 @@ func getMinioPath(dataset *model.Dataset, version string) (bucketName string, ob
 	} else {
 		bucketName = common.GetMinioBucket()
 		objectName = common.GetMinioDataSetObject(dataset.SpaceId, dataset.UserId, dataset.Id, version)
+	}
+	return
+}
+
+func getMinioPathObject(dataset *model.Dataset) (bucketName string, objectName string) {
+	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioDataSetPathObject(dataset.SpaceId, dataset.UserId, dataset.Id)
 	}
 	return
 }

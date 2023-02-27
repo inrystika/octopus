@@ -33,6 +33,8 @@ type Minio interface {
 	ListObjects(bucketName string, objectPrefix string, recurSvie bool) ([]*ObjectInfo, error)
 	// 查看对象是否存在
 	ObjectExist(bucketName string, objectName string) (bool, error)
+	// RemoveObject 删除对象
+	RemoveObject(bucketName string, objectName string) (bool, error)
 
 	CreateOrUpdateAccount(ctx context.Context, userName string, password string) error
 
@@ -255,6 +257,50 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 		return false, nil
 	}
 
+	return true, nil
+}
+
+// RemoveObject 删除对象
+// objectType: 1->file; 2->path
+func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
+	ctx := context.Background()
+
+	m.log.Info(ctx, "RemoveObject param. bucketName:", bucketName, ", objectName:", objectName)
+	isExist, err := m.client.BucketExists(ctx, bucketName)
+	if err != nil {
+		err = errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
+		return false, err
+	}
+	if !isExist {
+		return true, nil
+	}
+	removeOpts := miniogo.RemoveObjectOptions{
+		GovernanceBypass: true,
+	}
+	_, err = m.client.StatObject(ctx, bucketName, objectName, miniogo.StatObjectOptions{})
+	if err != nil {
+		objectPrefix := objectName + "/"
+		listOpts := miniogo.ListObjectsOptions{
+			Prefix:    objectPrefix,
+			Recursive: true,
+			MaxKeys:   0, // 暂时没用，先随便赋值
+			UseV1:     false,
+		}
+		objectCh := m.client.ListObjects(ctx, bucketName, listOpts)
+		for object := range objectCh {
+			m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
+			err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)
+			if err != nil {
+				return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
+			}
+		}
+	} else {
+		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
+		err = m.client.RemoveObject(ctx, bucketName, objectName, removeOpts)
+		if err != nil {
+			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
+		}
+	}
 	return true, nil
 }
 

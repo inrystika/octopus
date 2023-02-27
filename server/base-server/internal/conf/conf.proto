@@ -154,6 +154,8 @@ message Service {
   int64  billingPeriodSec = 9;
   string dockerModelDeployPath = 10;
   string dockerUserHomePath = 11;
+  bool   isUseMultusCNI = 12;
+  string networksConf = 13;
 }
 
 message Administrator {

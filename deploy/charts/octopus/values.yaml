@@ -142,6 +142,8 @@ baseserver:
       password: abcde
   service:
     billingPeriodSec: 1800
+    isUseMultusCNI: false  #集群是否使用多网卡网络配置
+    networksConf: default/macvlan-cx5-bond-conf # 集群使用多网卡网络配置项
     develop:
       autoStopIntervalSec: 7200
       isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制

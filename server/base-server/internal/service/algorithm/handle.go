@@ -996,6 +996,8 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 		if err != nil {
 			return
 		}
+		// 删除算法压缩包临时文件
+		go h.data.Minio.RemoveObject(bucektName, objectName)
 	}()
 
 	return &api.ConfirmUploadAlgorithmReply{
