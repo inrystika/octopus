@@ -618,9 +618,9 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				Volumes:      volumes,
 			},
 		}
-		if s.conf.Service.Develop.IsUseMultusCNI {
+		if s.conf.Service.IsUseMultusCNI {
 			task.Template.Annotations =
-				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.Develop.NetworksConf}
+				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.NetworksConf}
 		}
 		if i.IsMainRole {
 			task.Policies = []vcBatch.LifecyclePolicy{
