@@ -301,7 +301,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 		job.ImageName = image.Image.ImageName
 		job.ImageVersion = image.Image.ImageVersion
-		imageAddr = image.ImageFullAddr
+		imageAddr = image.Image.ImageFullAddr
 	} else if job.ImageUrl != "" {
 		imageAddr = job.ImageUrl
 	} else {

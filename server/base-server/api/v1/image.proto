@@ -81,6 +81,7 @@ message ImageDetail {
   int64     updatedAt = 10;
   ImageStatus     imageStatus = 11;
   string    imageAddr = 12;
+  string    imageFullAddr = 13;
 }
 
 message ImageAccess {
@@ -95,8 +96,7 @@ message FindImageRequest {
 
 message FindImageReply {
   ImageDetail image = 1;
-  string      imageFullAddr = 2;
-  repeated    ImageAccess accesses = 3;
+  repeated    ImageAccess accesses = 2;
 }
 
 message ListImageInCondRequest {

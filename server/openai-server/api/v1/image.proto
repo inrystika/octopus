@@ -75,6 +75,13 @@ service ImageService {
       put: "/v1/imagemanage/image/{imageId}/uploadconfirm"
     };
   };
+
+  // 获取镜像详情
+  rpc FindImage (FindImageRequest) returns (FindImageReply) {
+    option (google.api.http) = {
+      get: "/v1/imagemanage/image/{imageId}"
+    };
+  }
 }
 
 message ImageDetail {
@@ -90,6 +97,7 @@ message ImageDetail {
   int32 imageStatus = 10;
   string username = 11;
   string imageVersion = 12;
+  string imageFullAddr = 13;
 }
 
 message UserImage {
@@ -227,4 +235,12 @@ message ConfirmUploadImageRequest {
 
 message ConfirmUploadImageReply {
   int64 updatedAt = 1;
+}
+
+message FindImageRequest {
+  string imageId = 1[(validate.rules).string = {min_len: 1, max_len: 36}];
+}
+
+message FindImageReply {
+  ImageDetail image = 1;
 }
