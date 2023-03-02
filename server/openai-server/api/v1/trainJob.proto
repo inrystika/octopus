@@ -89,6 +89,12 @@ service TrainJobService {
          get: "/v1/trainmanage/trainjobevent"
       };
     };
+  // 获取训练任务监控数据
+  rpc GetJobMetric (GetJobMetricRequest) returns (GetJobMetricReply) {
+    option (google.api.http) = {
+      get: "/v1/trainmanage/trainjobmetric"
+    };
+  };
 }
 
 message TrainJobRequest {
@@ -420,4 +426,30 @@ message JobEvent{
   string reason = 3;
   //消息
   string message = 4;
+}
+
+message GetJobMetricRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  //子任务序号，从0开始
+  int32 taskIndex = 2;
+  //副本序号，从0开始
+  int32 replicaIndex = 3;
+  //开始时间
+  int64 start = 4;
+  //数量
+  int32 size = 5[(validate.rules).int32 = {gte:0,lte:1000}];
+  //间隔（秒）
+  int32 step = 6;
+}
+
+message GetJobMetricReply {
+  //百分比
+  repeated double cpuUsage = 1;
+  //字节
+  repeated double memUsage = 2;
+  //百分比
+  repeated double gpuUtil = 3;
+  //百分比
+  repeated double gpuMemUsage = 4;
 }

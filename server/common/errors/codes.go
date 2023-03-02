@@ -16,6 +16,7 @@ const (
 	ErrorOperateFileFailed         = 10012 // 操作文件失败
 	ErrorConfigValueValidateFailed = 10013 // 校验配置值失败
 	ErrorFormatParseFailed         = 10014 // 格式解析失败
+	ErrorInternal                  = 10015 // 内部错误
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -225,6 +226,9 @@ const (
 	ErrorSFtpGOAPIRequestFailed     = 22001 // 接口请求错误
 	ErrorSFtpGOUserNotExist         = 22002 // 用户未存在
 	ErrorSFtpGOUserNotOwnVirtualDir = 22003 // 虚拟目录未属于用户
+
+	/* 23001-24000 prometheus操作相关错误*/
+	ErrorPrometheusQueryFailed = 23001 // 查询错误
 )
 
 type codeMsg struct {
@@ -248,6 +252,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorOperateFileFailed:         {codeType: Internal, msg: "file operate failed"},
 	ErrorConfigValueValidateFailed: {codeType: Internal, msg: "config value validate failed"},
 	ErrorFormatParseFailed:         {codeType: Internal, msg: "format parse failed"},
+	ErrorInternal:                  {codeType: Internal, msg: "internal error"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},
@@ -443,4 +448,7 @@ var codeMsgMap = map[int]codeMsg{
 
 	/* 21001-22000 云际请求错误*/
 	ErrorSFtpGOAPIRequestFailed: {codeType: Internal, msg: "sftpgo api request failed"},
+
+	/* 23001-24000 prometheus操作相关错误*/
+	ErrorPrometheusQueryFailed: {codeType: Internal, msg: "prometheus query failed"}, // 查询错误
 }

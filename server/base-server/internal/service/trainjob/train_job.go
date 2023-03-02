@@ -1306,3 +1306,29 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 		}
 	}
 }
+
+func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
+	podName := fmt.Sprintf("%s-task%d-%d", req.Id, req.TaskIndex, req.ReplicaIndex)
+	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	memUsage, err := s.data.Prometheus.QueryMemUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuUtil, err := s.data.Prometheus.QueryGpuUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuMemUtil, err := s.data.Prometheus.QueryGpuMemUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	return &api.GetJobMetricReply{
+		CpuUsage:    cpuUsage,
+		MemUsage:    memUsage,
+		GpuUtil:     gpuUtil,
+		GpuMemUsage: gpuMemUtil,
+	}, nil
+}

@@ -97,6 +97,10 @@ message PytorchServer {
   string version = 2;
 }
 
+message Prometheus {
+  string baseUrl = 1;
+}
+
 message Data {
   Database database = 1;
   Kubernetes kubernetes = 2;
@@ -108,6 +112,7 @@ message Data {
   Ambassador ambassador = 8;
   PytorchServer pytorchServer = 9;
   sftpgo sftpgo = 10;
+  Prometheus prometheus = 11;
 }
 
 message Develop {
