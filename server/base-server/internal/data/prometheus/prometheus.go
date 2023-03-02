@@ -39,7 +39,7 @@ func NewPrometheus(baseUrl string) Prometheus {
 
 func (p *prometheus) QueryCpuUsage(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
 	query := fmt.Sprintf(`sum (rate (container_cpu_usage_seconds_total{pod="%s"}[1m]))`, podName)
-	vals, err := p.query(ctx, query, start, size, step)
+	vals, err := p.query(query, start, size, step)
 	for i, v := range vals {
 		if v != -1 {
 			vals[i] = v * 100
@@ -50,20 +50,20 @@ func (p *prometheus) QueryCpuUsage(ctx context.Context, podName string, start in
 
 func (p *prometheus) QueryMemUsage(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
 	query := fmt.Sprintf(`sum (container_memory_working_set_bytes{pod="%s"})`, podName)
-	return p.query(ctx, query, start, size, step)
+	return p.query(query, start, size, step)
 }
 
 func (p *prometheus) QueryGpuUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
 	query := fmt.Sprintf(`dcgm_gpu_utilization{pod_name="%s"}`, podName)
-	return p.query(ctx, query, start, size, step)
+	return p.query(query, start, size, step)
 }
 
 func (p *prometheus) QueryGpuMemUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
 	query := fmt.Sprintf(`dcgm_mem_copy_utilization{pod_name="%s"}`, podName)
-	return p.query(ctx, query, start, size, step)
+	return p.query(query, start, size, step)
 }
 
-func (p *prometheus) query(ctx context.Context, query string, start int64, size int, step int) ([]float64, error) {
+func (p *prometheus) query(query string, start int64, size int, step int) ([]float64, error) {
 	r := &Reply{}
 	params := map[string]string{
 		"query": query,
