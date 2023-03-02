@@ -261,7 +261,6 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 }
 
 // RemoveObject 删除对象
-// objectType: 1->file; 2->path
 func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
 	ctx := context.Background()
 

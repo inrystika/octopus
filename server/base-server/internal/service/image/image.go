@@ -426,11 +426,14 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 		if err != nil {
 			s.log.Errorw(ctx, err)
 		}
-
 		// 删除镜像压缩包临时文件
-		filename := image.SourceFilePath[strings.LastIndex(image.SourceFilePath, "/")+1:]
-		bucketName, objectName := getTempMinioPath(image, filename)
-		go s.data.Minio.RemoveObject(bucketName, objectName)
+		go func() {
+			filename := image.SourceFilePath[strings.LastIndex(image.SourceFilePath, "/")+1:]
+			bucketName, objectName := getTempMinioPath(image, filename)
+			s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
+			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucketName+"-"+objectName)
+			s.data.Minio.RemoveObject(bucketName, objectName)
+		}()
 	}()
 	// create async job to handle image.tar
 	//err = s.data.Cluster.CreateAndListenJob(ctx, s.generateJobToHandleImageTar(image), func (e error) {

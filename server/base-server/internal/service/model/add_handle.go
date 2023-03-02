@@ -310,9 +310,13 @@ func (h *modelAddHandle) ConfirmUploadPreModelVersionHandle(ctx context.Context,
 
 			h.log.Infof(ctx, "CopyFile success, from: %s, to:%s, cost time: %d", fromPath, toPath, time.Since(startT))
 		}()
-		// 删除模型压缩包临时文件
 		wg.Wait()
-		go h.data.Minio.RemoveObject(fromBucketName, fromObjectName)
+		// 删除模型压缩包临时文件
+		go func() {
+			h.data.Redis.SAddMinioRemovingObject(ctx, fromBucketName+"-"+fromObjectName)
+			defer h.data.Redis.SRemMinioRemovingObject(ctx, fromBucketName+"-"+fromObjectName)
+			h.data.Minio.RemoveObject(fromBucketName, fromObjectName)
+		}()
 	}()
 
 	return &api.ConfirmUploadPreModelVersionReply{

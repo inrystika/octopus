@@ -11,6 +11,9 @@ import (
 
 type Redis interface {
 	LockAndCall(ctx context.Context, key string, ttl time.Duration, f func() error) error
+	SMembersMinioRemovingObject(ctx context.Context) ([]string, error)
+	SAddMinioRemovingObject(ctx context.Context, object string) error
+	SRemMinioRemovingObject(ctx context.Context, object string) error
 	Close()
 }
 
@@ -39,6 +42,18 @@ func NewRedis(conf *conf.Data, logger log.Logger) (Redis, error) {
 
 func (r *redis) LockAndCall(ctx context.Context, key string, ttl time.Duration, f func() error) error {
 	return r.instance.LockAndCall(ctx, key, ttl, f)
+}
+
+func (r *redis) SMembersMinioRemovingObject(ctx context.Context) ([]string, error) {
+	return r.instance.SMembersMinioRemovingObject(ctx)
+}
+
+func (r *redis) SAddMinioRemovingObject(ctx context.Context, object string) error {
+	return r.instance.SAddMinioRemovingObject(ctx, object)
+}
+
+func (r *redis) SRemMinioRemovingObject(ctx context.Context, object string) error {
+	return r.instance.SRemMinioRemovingObject(ctx, object)
 }
 
 func (r *redis) Close() {

@@ -8,6 +8,7 @@ import (
 	"server/base-server/internal/server"
 	"server/common/errors"
 	"server/common/graceful"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/reflection"
@@ -127,7 +128,24 @@ func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*krato
 	reflection.Register(grpcServer.Server)
 	httpServer := server.NewHTTPServer(bc.Server, service)
 	app := newApp(ctx, logger, httpServer, grpcServer)
+
+	// 服务初始化启动时，重试Minio对象删除任务
+	go initMinioRemovingObjectTask(ctx, data)
+
 	return app, close, nil
+}
+
+func initMinioRemovingObjectTask(ctx context.Context, data *data.Data) error {
+	objects, err := data.Redis.SMembersMinioRemovingObject(ctx)
+	if err != nil {
+		return err
+	}
+	for _, object := range objects {
+		bucketName := object[:strings.Index(object, "-")]
+		objectName := object[strings.Index(object, "-")+1:]
+		go data.Minio.RemoveObject(bucketName, objectName)
+	}
+	return nil
 }
 
 func initStorageConf(c config.Config) ([]byte, error) {
