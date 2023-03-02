@@ -437,12 +437,13 @@ message GetJobMetricRequest {
   int32 replicaIndex = 3;
   //开始时间
   int64 start = 4;
-  //数量
+  //数量, 最大1000
   int32 size = 5[(validate.rules).int32 = {gte:0,lte:1000}];
   //间隔（秒）
   int32 step = 6;
 }
 
+//值为-1表示该时间点没有数据
 message GetJobMetricReply {
   //百分比
   repeated double cpuUsage = 1;
