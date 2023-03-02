@@ -574,12 +574,14 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 		}
 	}
 	// 删除数据集版本Minio存储
-	go func() {
-		bucketName, objectName := getMinioPath(dataset, version.Version)
-		s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
-		defer s.data.Redis.SRemMinioRemovingObject(ctx, bucketName+"-"+objectName)
-		s.data.Minio.RemoveObject(bucketName, objectName)
-	}()
+	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+		go func() {
+			bucketName, objectName := getMinioPath(dataset, version.Version)
+			s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
+			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucketName+"-"+objectName)
+			s.data.Minio.RemoveObject(bucketName, objectName)
+		}()
+	}
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
 
@@ -615,12 +617,14 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 		return nil, err
 	}
 	// 删除数据集Minio存储
-	go func() {
-		bucket, object := getMinioPathObject(dataset)
-		s.data.Redis.SAddMinioRemovingObject(ctx, bucket+"-"+object)
-		defer s.data.Redis.SRemMinioRemovingObject(ctx, bucket+"-"+object)
-		s.data.Minio.RemoveObject(bucket, object)
-	}()
+	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+		go func() {
+			bucket, object := getMinioPathObject(dataset)
+			s.data.Redis.SAddMinioRemovingObject(ctx, bucket+"-"+object)
+			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucket+"-"+object)
+			s.data.Minio.RemoveObject(bucket, object)
+		}()
+	}
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})

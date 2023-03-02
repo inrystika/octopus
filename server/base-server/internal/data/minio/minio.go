@@ -265,6 +265,18 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 	ctx := context.Background()
 
 	m.log.Info(ctx, "RemoveObject param. bucketName:", bucketName, ", objectName:", objectName)
+	//time.Sleep(1800 * time.Second)
+	if strings.Count(objectName, "/") < 3 {
+		m.log.Error(ctx, "RemoveObject not safe Path depth. bucketName:", bucketName, ", objectName:", objectName)
+		return true, nil
+	}
+	if strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.MODEL_FOLDER, common.PREAB_FOLDER)) ||
+		strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.CODE_FOLDER, common.PREAB_FOLDER)) ||
+		strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.DATASET_FOLDER, common.PREAB_FOLDER)) {
+
+		m.log.Error(ctx, "RemoveObject not safe Path. bucketName:", bucketName, ", objectName:", objectName)
+		return true, nil
+	}
 	isExist, err := m.client.BucketExists(ctx, bucketName)
 	if err != nil {
 		err = errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
