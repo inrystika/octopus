@@ -160,6 +160,7 @@ data:
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
       isUseMultusCNI: {{ .Values.baseserver.service.isUseMultusCNI }}
       networksConf: {{ .Values.baseserver.service.networksConf }}
+      routineNum: {{ .Values.baseserver.service.routineNum }}
       develop:
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
         isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}

@@ -161,6 +161,7 @@ message Service {
   string dockerUserHomePath = 11;
   bool   isUseMultusCNI = 12;
   string networksConf = 13;
+  int32 routineNum = 14;
 }
 
 message Administrator {
