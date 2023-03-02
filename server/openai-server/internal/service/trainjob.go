@@ -464,3 +464,23 @@ func (s *TrainJobService) GetJobEventList(ctx context.Context, req *api.JobEvent
 	}
 	return reply, nil
 }
+
+func (s *TrainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
+	innerReq := &innerapi.GetJobMetricRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.TrainJobClient.GetJobMetric(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.GetJobMetricReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

@@ -34,6 +34,8 @@ service TrainJobService {
   rpc CopyJobTemplate (CopyJobTemplateRequest) returns (CopyJobTemplateReply);
   //获取任务事件列表
   rpc GetJobEventList (JobEventListRequest) returns (JobEventListReply);
+  //获取任务指标, 值为-1表示没有值
+  rpc GetJobMetric(GetJobMetricRequest) returns (GetJobMetricReply);
 }
 
 
@@ -277,4 +279,26 @@ message JobEvent{
   string reason = 3;
   //消息
   string message = 4;
+}
+
+message GetJobMetricRequest {
+  //任务ID
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  //子任务序号，从0开始
+  int32 taskIndex = 2;
+  //副本序号，从0开始
+  int32 replicaIndex = 3;
+  //开始时间
+  int64 start = 4;
+  //数量
+  int32 size = 5;
+  //间隔（秒）
+  int32 step = 6;
+}
+
+message GetJobMetricReply {
+  repeated double cpuUsage = 1;
+  repeated double memUsage = 2;
+  repeated double gpuUtil = 3;
+  repeated double gpuMemUsage = 4;
 }

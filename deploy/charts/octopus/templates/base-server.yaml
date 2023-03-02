@@ -147,6 +147,8 @@ data:
         baseUrl: {{ include "sftpgo.serviceAddr" . }}
         username: {{ .Values.baseserver.data.sftpgo.username }}
         password: {{ .Values.baseserver.data.sftpgo.password }}
+      prometheus:
+        baseUrl: {{ include "prometheus.address" . }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
