@@ -82,6 +82,7 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 
 func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc) {
 	restConfig, err := buildConfigFromFlagsOrCluster(confData.Kubernetes.ConfigPath)
+	restConfig.QPS = float32(confData.Kubernetes.Qps)
 	if err != nil {
 		panic(err)
 	}
@@ -90,7 +91,6 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 
 func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
 	c, cancel := context.WithCancel(context.Background())
-
 	kc := &kubernetesCluster{
 		ctx:          c,
 		nodes:        make(map[string]*v1.Node),

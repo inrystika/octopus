@@ -106,6 +106,7 @@ data:
       kubernetes:
         masterUrl: ""
         configPath: ""
+        qps:  {{ .Values.baseserver.data.kubernetes.qps }}
       minio:
         base:
           endPoint: {{ include "minio.serviceAddr" . }}

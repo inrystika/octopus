@@ -112,6 +112,8 @@ baseserver:
   app:
     logLevel: info
   data:
+    kubernetes:
+      qps: 20
     minio:
       base:
         accessKeyID: minioadmin
