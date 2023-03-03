@@ -278,7 +278,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 		m.log.Error(ctx, "RemoveObject not safe Path. bucketName:", bucketName, ", objectName:", objectName)
 		return true, nil
 	}
-	time.Sleep(360 * time.Second)
+	//time.Sleep(360 * time.Second)
 	isExist, err := m.client.BucketExists(ctx, bucketName)
 	if err != nil {
 		err = errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
@@ -294,6 +294,8 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 	}
 	_, err = m.client.StatObject(ctx, bucketName, objectName, miniogo.StatObjectOptions{})
 	if err != nil {
+		m.log.Error(ctx, "RemoveObject StatObject error. bucketName:", bucketName, ", objectName:", objectName,
+			", error:", err.Error())
 		objectPrefix := objectName + "/"
 		listOpts := miniogo.ListObjectsOptions{
 			Prefix:    objectPrefix,
@@ -302,6 +304,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 			UseV1:     false,
 		}
 		objectCh := m.client.ListObjects(ctx, bucketName, listOpts)
+		m.log.Info(ctx, "RemoveObject trace 0.")
 		for object := range objectCh {
 			m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
 			err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)
