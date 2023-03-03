@@ -131,16 +131,15 @@ func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*krato
 	app := newApp(ctx, logger, httpServer, grpcServer)
 
 	// 服务初始化启动时，重试Minio对象删除任务
-	utils.HandlePanic(ctx, func(i ...interface{}) {
-		ctxBG := context.Background()
-		initMinioRemovingObjectTask(ctxBG, data)
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		initMinioRemovingObjectTask(data)
 	})()
 
 	return app, close, nil
 }
 
-func initMinioRemovingObjectTask(ctx context.Context, data *data.Data) error {
-	objects, err := data.Redis.SMembersMinioRemovingObject(ctx)
+func initMinioRemovingObjectTask(data *data.Data) error {
+	objects, err := data.Redis.SMembersMinioRemovingObject()
 	if err != nil {
 		return err
 	}
@@ -150,7 +149,7 @@ func initMinioRemovingObjectTask(ctx context.Context, data *data.Data) error {
 		go func() {
 			success, _ := data.Minio.RemoveObject(bucketName, objectName)
 			if success {
-				data.Redis.SRemMinioRemovingObject(ctx, object)
+				data.Redis.SRemMinioRemovingObject(object)
 			}
 		}()
 	}

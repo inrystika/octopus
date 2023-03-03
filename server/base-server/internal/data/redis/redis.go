@@ -11,9 +11,9 @@ import (
 
 type Redis interface {
 	LockAndCall(ctx context.Context, key string, ttl time.Duration, f func() error) error
-	SMembersMinioRemovingObject(ctx context.Context) ([]string, error)
-	SAddMinioRemovingObject(ctx context.Context, object string) error
-	SRemMinioRemovingObject(ctx context.Context, object string) error
+	SMembersMinioRemovingObject() ([]string, error)
+	SAddMinioRemovingObject(object string) error
+	SRemMinioRemovingObject(object string) error
 	Close()
 }
 
@@ -44,16 +44,16 @@ func (r *redis) LockAndCall(ctx context.Context, key string, ttl time.Duration, 
 	return r.instance.LockAndCall(ctx, key, ttl, f)
 }
 
-func (r *redis) SMembersMinioRemovingObject(ctx context.Context) ([]string, error) {
-	return r.instance.SMembersMinioRemovingObject(ctx)
+func (r *redis) SMembersMinioRemovingObject() ([]string, error) {
+	return r.instance.SMembersMinioRemovingObject()
 }
 
-func (r *redis) SAddMinioRemovingObject(ctx context.Context, object string) error {
-	return r.instance.SAddMinioRemovingObject(ctx, object)
+func (r *redis) SAddMinioRemovingObject(object string) error {
+	return r.instance.SAddMinioRemovingObject(object)
 }
 
-func (r *redis) SRemMinioRemovingObject(ctx context.Context, object string) error {
-	return r.instance.SRemMinioRemovingObject(ctx, object)
+func (r *redis) SRemMinioRemovingObject(object string) error {
+	return r.instance.SRemMinioRemovingObject(object)
 }
 
 func (r *redis) Close() {

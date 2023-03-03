@@ -312,10 +312,9 @@ func (h *modelAddHandle) ConfirmUploadPreModelVersionHandle(ctx context.Context,
 		}()
 		wg.Wait()
 		// 删除模型压缩包临时文件
-		ctxBG := context.Background()
-		go utils.HandlePanic(ctxBG, func(i ...interface{}) {
-			h.data.Redis.SAddMinioRemovingObject(ctxBG, fromBucketName+"-"+fromObjectName)
-			defer h.data.Redis.SRemMinioRemovingObject(ctxBG, fromBucketName+"-"+fromObjectName)
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			h.data.Redis.SAddMinioRemovingObject(fromBucketName + "-" + fromObjectName)
+			defer h.data.Redis.SRemMinioRemovingObject(fromBucketName + "-" + fromObjectName)
 			h.data.Minio.RemoveObject(fromBucketName, fromObjectName)
 		})()
 	}()
