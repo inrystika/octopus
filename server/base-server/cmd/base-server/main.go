@@ -147,12 +147,12 @@ func initMinioRemovingObjectTask(ctx context.Context, data *data.Data) error {
 	for _, object := range objects {
 		bucketName := object[:strings.Index(object, "-")]
 		objectName := object[strings.Index(object, "-")+1:]
-		go utils.HandlePanic(ctx, func(i ...interface{}) {
+		go func() {
 			success, _ := data.Minio.RemoveObject(bucketName, objectName)
 			if success {
 				data.Redis.SRemMinioRemovingObject(ctx, object)
 			}
-		})()
+		}()
 	}
 	return nil
 }
