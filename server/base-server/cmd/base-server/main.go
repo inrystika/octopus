@@ -8,6 +8,7 @@ import (
 	"server/base-server/internal/server"
 	"server/common/errors"
 	"server/common/graceful"
+	"server/common/utils"
 	"strings"
 	"time"
 
@@ -130,7 +131,9 @@ func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*krato
 	app := newApp(ctx, logger, httpServer, grpcServer)
 
 	// 服务初始化启动时，重试Minio对象删除任务
-	go initMinioRemovingObjectTask(ctx, data)
+	utils.HandlePanic(ctx, func(i ...interface{}) {
+		initMinioRemovingObjectTask(ctx, data)
+	})()
 
 	return app, close, nil
 }
@@ -143,7 +146,12 @@ func initMinioRemovingObjectTask(ctx context.Context, data *data.Data) error {
 	for _, object := range objects {
 		bucketName := object[:strings.Index(object, "-")]
 		objectName := object[strings.Index(object, "-")+1:]
-		go data.Minio.RemoveObject(bucketName, objectName)
+		utils.HandlePanic(ctx, func(i ...interface{}) {
+			success, _ := data.Minio.RemoveObject(bucketName, objectName)
+			if success {
+				data.Redis.SRemMinioRemovingObject(ctx, object)
+			}
+		})()
 	}
 	return nil
 }
