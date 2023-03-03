@@ -144,9 +144,9 @@ func initMinioRemovingObjectTask(data *data.Data) error {
 		return err
 	}
 	for _, object := range objects {
-		bucketName := object[:strings.Index(object, "-")]
-		objectName := object[strings.Index(object, "-")+1:]
 		go func() {
+			bucketName := object[:strings.Index(object, "-")]
+			objectName := object[strings.Index(object, "-")+1:]
 			success, _ := data.Minio.RemoveObject(bucketName, objectName)
 			if success {
 				data.Redis.SRemMinioRemovingObject(object)
