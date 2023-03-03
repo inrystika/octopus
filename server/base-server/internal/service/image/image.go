@@ -427,7 +427,7 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 			s.log.Errorw(ctx, err)
 		}
 		// 删除镜像压缩包临时文件
-		utils.HandlePanic(ctx, func(i ...interface{}) {
+		go utils.HandlePanic(ctx, func(i ...interface{}) {
 			filename := image.SourceFilePath[strings.LastIndex(image.SourceFilePath, "/")+1:]
 			bucketName, objectName := getTempMinioPath(image, filename)
 			s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)

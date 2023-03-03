@@ -363,7 +363,7 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		}
 
 		// 删除数据集压缩包临时文件
-		utils.HandlePanic(ctx, func(i ...interface{}) {
+		go utils.HandlePanic(ctx, func(i ...interface{}) {
 			s.data.Redis.SAddMinioRemovingObject(ctx, fromBucket+"-"+fromObject)
 			defer s.data.Redis.SRemMinioRemovingObject(ctx, fromBucket+"-"+fromObject)
 			s.data.Minio.RemoveObject(fromBucket, fromObject)
@@ -575,7 +575,7 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 	}
 	// 删除数据集版本Minio存储
 	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		utils.HandlePanic(ctx, func(i ...interface{}) {
+		go utils.HandlePanic(ctx, func(i ...interface{}) {
 			bucketName, objectName := getMinioPath(dataset, version.Version)
 			s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
 			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucketName+"-"+objectName)
@@ -618,7 +618,7 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	}
 	// 删除数据集Minio存储
 	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		utils.HandlePanic(ctx, func(i ...interface{}) {
+		go utils.HandlePanic(ctx, func(i ...interface{}) {
 			bucket, object := getMinioPathObject(dataset)
 			s.data.Redis.SAddMinioRemovingObject(ctx, bucket+"-"+object)
 			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucket+"-"+object)

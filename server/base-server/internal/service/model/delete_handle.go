@@ -89,7 +89,7 @@ func (h *modelDeleteHandle) DeleteMyModelVersionHandle(ctx context.Context, req 
 		}
 	}
 	// 删除模型版本Minio存储
-	utils.HandlePanic(ctx, func(i ...interface{}) {
+	go utils.HandlePanic(ctx, func(i ...interface{}) {
 		bucketName := common.GetMinioBucket()
 		objectName := common.GetMinioModelObject(spaceId, userId, modelId, version)
 		h.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
@@ -126,7 +126,7 @@ func (h *modelDeleteHandle) DeleteMyModelHandle(ctx context.Context, req *api.De
 	}
 
 	// 删除模型版本Minio存储
-	utils.HandlePanic(ctx, func(i ...interface{}) {
+	go utils.HandlePanic(ctx, func(i ...interface{}) {
 		bucketName := common.GetMinioBucket()
 		objectName := common.GetMinioModelPathObject(spaceId, userId, modelId)
 		h.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
