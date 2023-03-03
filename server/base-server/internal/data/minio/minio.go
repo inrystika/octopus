@@ -303,7 +303,9 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 			MaxKeys:   0, // 暂时没用，先随便赋值
 			UseV1:     false,
 		}
+		m.log.Info(ctx, "RemoveObject trace 0")
 		objectCh := m.client.ListObjects(ctx, bucketName, listOpts)
+		m.log.Info(ctx, "RemoveObject trace 1")
 		for object := range objectCh {
 			m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
 			err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)
@@ -312,6 +314,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 				return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 			}
 		}
+		m.log.Info(ctx, "RemoveObject trace 2")
 	} else {
 		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
 		err = m.client.RemoveObject(ctx, bucketName, objectName, removeOpts)
@@ -320,6 +323,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 		}
 	}
+	m.log.Info(ctx, "RemoveObject trace 3")
 	return true, nil
 }
 
