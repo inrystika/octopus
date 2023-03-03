@@ -363,9 +363,10 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		}
 
 		// 删除数据集压缩包临时文件
-		go utils.HandlePanic(ctx, func(i ...interface{}) {
-			s.data.Redis.SAddMinioRemovingObject(ctx, fromBucket+"-"+fromObject)
-			defer s.data.Redis.SRemMinioRemovingObject(ctx, fromBucket+"-"+fromObject)
+		ctxBG := context.Background()
+		go utils.HandlePanic(ctxBG, func(i ...interface{}) {
+			s.data.Redis.SAddMinioRemovingObject(ctxBG, fromBucket+"-"+fromObject)
+			defer s.data.Redis.SRemMinioRemovingObject(ctxBG, fromBucket+"-"+fromObject)
 			s.data.Minio.RemoveObject(fromBucket, fromObject)
 		})()
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
@@ -575,10 +576,11 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 	}
 	// 删除数据集版本Minio存储
 	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		go utils.HandlePanic(ctx, func(i ...interface{}) {
+		ctxBG := context.Background()
+		go utils.HandlePanic(ctxBG, func(i ...interface{}) {
 			bucketName, objectName := getMinioPath(dataset, version.Version)
-			s.data.Redis.SAddMinioRemovingObject(ctx, bucketName+"-"+objectName)
-			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucketName+"-"+objectName)
+			s.data.Redis.SAddMinioRemovingObject(ctxBG, bucketName+"-"+objectName)
+			defer s.data.Redis.SRemMinioRemovingObject(ctxBG, bucketName+"-"+objectName)
 			s.data.Minio.RemoveObject(bucketName, objectName)
 		})()
 	}
@@ -618,10 +620,11 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	}
 	// 删除数据集Minio存储
 	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		go utils.HandlePanic(ctx, func(i ...interface{}) {
+		ctxBG := context.Background()
+		go utils.HandlePanic(ctxBG, func(i ...interface{}) {
 			bucket, object := getMinioPathObject(dataset)
-			s.data.Redis.SAddMinioRemovingObject(ctx, bucket+"-"+object)
-			defer s.data.Redis.SRemMinioRemovingObject(ctx, bucket+"-"+object)
+			s.data.Redis.SAddMinioRemovingObject(ctxBG, bucket+"-"+object)
+			defer s.data.Redis.SRemMinioRemovingObject(ctxBG, bucket+"-"+object)
 			s.data.Minio.RemoveObject(bucket, object)
 		})()
 	}

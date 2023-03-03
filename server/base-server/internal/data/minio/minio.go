@@ -304,7 +304,6 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 			UseV1:     false,
 		}
 		objectCh := m.client.ListObjects(ctx, bucketName, listOpts)
-		m.log.Info(ctx, "RemoveObject trace 0.")
 		for object := range objectCh {
 			m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
 			err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)

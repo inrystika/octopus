@@ -132,7 +132,8 @@ func initApp(ctx context.Context, bc *conf.Bootstrap, logger log.Logger) (*krato
 
 	// 服务初始化启动时，重试Minio对象删除任务
 	utils.HandlePanic(ctx, func(i ...interface{}) {
-		initMinioRemovingObjectTask(ctx, data)
+		ctxBG := context.Background()
+		initMinioRemovingObjectTask(ctxBG, data)
 	})()
 
 	return app, close, nil
