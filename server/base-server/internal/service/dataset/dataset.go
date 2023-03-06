@@ -363,7 +363,11 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		}
 
 		// 删除数据集压缩包临时文件
-		go s.data.Minio.RemoveObject(fromBucket, fromObject)
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
+			defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
+			s.data.Minio.RemoveObject(fromBucket, fromObject)
+		})()
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
 
 	return &api.ConfirmUploadDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
@@ -569,10 +573,15 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 			return nil, err
 		}
 	}
-
-	bucketName, objectName := getMinioPath(dataset, version.Version)
-	go s.data.Minio.RemoveObject(bucketName, objectName)
-
+	// 删除数据集版本Minio存储
+	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			bucketName, objectName := getMinioPath(dataset, version.Version)
+			s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+			defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+			s.data.Minio.RemoveObject(bucketName, objectName)
+		})()
+	}
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
 
@@ -607,9 +616,15 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	if err != nil {
 		return nil, err
 	}
-
-	bucket, object := getMinioPathObject(dataset)
-	go s.data.Minio.RemoveObject(bucket, object)
+	// 删除数据集Minio存储
+	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			bucket, object := getMinioPathObject(dataset)
+			s.data.Redis.SAddMinioRemovingObject(bucket + "-" + object)
+			defer s.data.Redis.SRemMinioRemovingObject(bucket + "-" + object)
+			s.data.Minio.RemoveObject(bucket, object)
+		})()
+	}
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})

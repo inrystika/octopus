@@ -261,17 +261,31 @@ func (m *minio) ObjectExist(bucketName string, objectName string) (bool, error) 
 }
 
 // RemoveObject 删除对象
-// objectType: 1->file; 2->path
 func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error) {
 	ctx := context.Background()
 
 	m.log.Info(ctx, "RemoveObject param. bucketName:", bucketName, ", objectName:", objectName)
+	// 安全校验逻辑，判断object至少位于3层路径之下，防止大范围删除动作
+	if strings.Count(objectName, "/") < 3 {
+		m.log.Error(ctx, "RemoveObject not safe Path depth. bucketName:", bucketName, ", objectName:", objectName)
+		return true, nil
+	}
+	/* 安全校验逻辑，判断object非如下路径，PREAB_FOLDER放开删除
+	if strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.MODEL_FOLDER, common.PREAB_FOLDER)) ||
+		strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.CODE_FOLDER, common.PREAB_FOLDER)) ||
+		strings.Contains(objectName, fmt.Sprintf("%s/%s/", common.DATASET_FOLDER, common.PREAB_FOLDER)) {
+
+		m.log.Error(ctx, "RemoveObject not safe Path. bucketName:", bucketName, ", objectName:", objectName)
+		return true, nil
+	}*/
 	isExist, err := m.client.BucketExists(ctx, bucketName)
 	if err != nil {
 		err = errors.Errorf(err, errors.ErrorMinioCheckBucketExistFailed)
+		m.log.Error(ctx, "RemoveObject check bucket exists failed. bucketName:", bucketName, ", error:", err)
 		return false, err
 	}
 	if !isExist {
+		m.log.Error(ctx, "RemoveObject bucket not exists. bucketName:", bucketName)
 		return true, nil
 	}
 	removeOpts := miniogo.RemoveObjectOptions{
@@ -279,6 +293,8 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 	}
 	_, err = m.client.StatObject(ctx, bucketName, objectName, miniogo.StatObjectOptions{})
 	if err != nil {
+		m.log.Error(ctx, "RemoveObject StatObject error. bucketName:", bucketName, ", objectName:", objectName,
+			", error:", err.Error())
 		objectPrefix := objectName + "/"
 		listOpts := miniogo.ListObjectsOptions{
 			Prefix:    objectPrefix,
@@ -291,6 +307,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 			m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", object.Key)
 			err := m.client.RemoveObject(ctx, bucketName, object.Key, removeOpts)
 			if err != nil {
+				m.log.Error(ctx, "RemoveObject failed. objectName:", object.Key, ", error:", err)
 				return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 			}
 		}
@@ -298,6 +315,7 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 		m.log.Info(ctx, "RemoveObject bucketName:", bucketName, ", objectName:", objectName)
 		err = m.client.RemoveObject(ctx, bucketName, objectName, removeOpts)
 		if err != nil {
+			m.log.Error(ctx, "RemoveObject failed. objectName:", objectName, ", error:", err)
 			return false, errors.Errorf(err, errors.ErrorMinioRemoveObjectFailed)
 		}
 	}

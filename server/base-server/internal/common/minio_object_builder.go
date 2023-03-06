@@ -96,9 +96,19 @@ func GetMinioModelObject(spaceId string, userId string, modelId string, version 
 	return fmt.Sprintf("%s/%s/%s/%s/%s", MODEL_FOLDER, spaceId, userId, modelId, version)
 }
 
+// 模型对象:models/spaceId/userId/modelId/version
+func GetMinioModelPathObject(spaceId string, userId string, modelId string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", MODEL_FOLDER, spaceId, userId, modelId)
+}
+
 // 算法对象:codes/spaceId/userId/algorithmId/version
 func GetMinioCodeObject(spaceId string, userId string, algorithmId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s", CODE_FOLDER, spaceId, userId, algorithmId, version)
+}
+
+// 算法对象:codes/spaceId/userId/algorithmId
+func GetMinioCodePathObject(spaceId string, userId string, algorithmId string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", CODE_FOLDER, spaceId, userId, algorithmId)
 }
 
 // 数据集对象:dataSets/spaceId/userId/dataSetId/version
