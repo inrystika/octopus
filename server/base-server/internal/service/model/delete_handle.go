@@ -3,10 +3,12 @@ package model
 import (
 	"context"
 	api "server/base-server/api/v1"
+	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
+	"server/common/utils"
 	"time"
 
 	"server/common/log"
@@ -86,7 +88,14 @@ func (h *modelDeleteHandle) DeleteMyModelVersionHandle(ctx context.Context, req 
 			return nil, err
 		}
 	}
-
+	// 删除模型版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioModelObject(spaceId, userId, modelId, version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 	return &api.DeleteMyModelVersionReply{
 		DeletedAt: time.Now().Unix(),
 	}, nil
@@ -116,6 +125,14 @@ func (h *modelDeleteHandle) DeleteMyModelHandle(ctx context.Context, req *api.De
 		return nil, err
 	}
 
+	// 删除模型版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioModelPathObject(spaceId, userId, modelId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 	return &api.DeleteMyModelReply{
 		DeletedAt: time.Now().Unix(),
 	}, nil
