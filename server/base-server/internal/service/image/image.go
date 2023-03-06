@@ -642,21 +642,21 @@ func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) 
 	}
 	reply := &pb.FindImageReply{
 		Image: &pb.ImageDetail{
-			Id:           image.Id,
-			ImageName:    image.ImageName,
-			ImageVersion: image.ImageVersion,
-			ImageDesc:    image.ImageDesc,
-			ImageAddr:    image.ImageAddr,
-			ImageStatus:  pb.ImageStatus(image.Status),
-			SourceType:   pb.ImageSourceType(image.SourceType),
-			SpaceId:      image.SpaceId,
-			UserId:       image.UserId,
-			IsPrefab:     pb.ImageIsPrefab(image.IsPrefab),
-			CreatedAt:    image.CreatedAt.Unix(),
-			UpdatedAt:    image.UpdatedAt.Unix(),
+			Id:            image.Id,
+			ImageName:     image.ImageName,
+			ImageVersion:  image.ImageVersion,
+			ImageDesc:     image.ImageDesc,
+			ImageAddr:     image.ImageAddr,
+			ImageStatus:   pb.ImageStatus(image.Status),
+			SourceType:    pb.ImageSourceType(image.SourceType),
+			SpaceId:       image.SpaceId,
+			UserId:        image.UserId,
+			IsPrefab:      pb.ImageIsPrefab(image.IsPrefab),
+			CreatedAt:     image.CreatedAt.Unix(),
+			UpdatedAt:     image.UpdatedAt.Unix(),
+			ImageFullAddr: imageFullAddr,
 		},
-		ImageFullAddr: imageFullAddr,
-		Accesses:      accesses,
+		Accesses: accesses,
 	}
 
 	return reply, nil

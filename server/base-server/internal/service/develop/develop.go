@@ -180,7 +180,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 		nb.ImageName = image.Image.ImageName
 		nb.ImageVersion = image.Image.ImageVersion
-		imageAddr = image.ImageFullAddr
+		imageAddr = image.Image.ImageFullAddr
 	} else if nb.ImageUrl != "" {
 		imageAddr = nb.ImageUrl
 	} else {
@@ -1059,7 +1059,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	}
 
 	// acc node agent to commit image
-	return &api.SaveNotebookReply{}, nil
+	return &api.SaveNotebookReply{ImageId: imageReply.ImageId}, nil
 }
 
 func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, taskName string) string {

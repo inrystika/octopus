@@ -183,10 +183,11 @@ func (s *DevelopService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 		ImageVersion:     req.ImageVersion,
 		LayerDescription: req.LayerDescription,
 	}
-	if _, err := s.data.DevelopClient.SaveNotebook(ctx, sReq); err != nil {
+	sReply, err := s.data.DevelopClient.SaveNotebook(ctx, sReq)
+	if err != nil {
 		return nil, err
 	}
-	return &api.SaveNotebookReply{}, nil
+	return &api.SaveNotebookReply{ImageId: sReply.ImageId}, nil
 }
 
 func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.ListNotebookEventRecordRequest) (*api.ListNotebookEventRecordReply, error) {

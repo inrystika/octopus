@@ -10,6 +10,7 @@ import (
 	"server/base-server/internal/data/dao/model/resources"
 	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/minio"
+	"server/base-server/internal/data/prometheus"
 	"server/base-server/internal/data/redis"
 	"server/base-server/internal/data/registry"
 
@@ -40,6 +41,7 @@ type Data struct {
 	Influxdb              influxdb.Influxdb
 	ModelDeployDao        dao.ModelDeployDao
 	PlatformStatisticsDao dao.PlatformStatisticsDao
+	Prometheus            prometheus.Prometheus
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
@@ -68,6 +70,8 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.Redis = redis
 	cluster, clusterCancel := cluster.NewCluster(confData, logger)
 	d.Cluster = cluster
+	prometheus := prometheus.NewPrometheus(confData.Prometheus.BaseUrl)
+	d.Prometheus = prometheus
 
 	d.UserDao = dao.NewUserDao(db, logger)
 	d.AdminUserDao = dao.NewAdminUserDao(db, logger)

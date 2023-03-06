@@ -10,6 +10,8 @@ import (
 	pb "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
+
+	"github.com/jinzhu/copier"
 )
 
 type ImageService struct {
@@ -346,4 +348,25 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 		return nil, err
 	}
 	return &pb.ConfirmUploadImageReply{UpdatedAt: reply.UpdatedAt}, nil
+}
+
+func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) (*pb.FindImageReply, error) {
+	innerReq := &innterapi.FindImageRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.ImageClient.FindImage(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &pb.FindImageReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
