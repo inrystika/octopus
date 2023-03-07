@@ -1218,6 +1218,13 @@ func (h *algorithmHandle) DeleteMyAlgorithmVersionHandle(ctx context.Context, re
 		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
 		h.data.Minio.RemoveObject(bucketName, objectName)
 	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodeVersionObject(algorithmId, req.Version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeleteMyAlgorithmVersionReply{
 		DeletedAt: time.Now().Unix(),
@@ -1275,6 +1282,13 @@ func (h *algorithmHandle) DeleteMyAlgorithmHandle(ctx context.Context, req *api.
 	go utils.HandlePanicBG(func(i ...interface{}) {
 		bucketName := common.GetMinioBucket()
 		objectName := common.GetMinioCodePathObject(req.SpaceId, req.UserId, algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodePathObject(algorithmId)
 		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
 		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
 		h.data.Minio.RemoveObject(bucketName, objectName)
@@ -1410,6 +1424,13 @@ func (h *algorithmHandle) DeletePreAlgorithmVersionHandle(ctx context.Context, r
 		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
 		h.data.Minio.RemoveObject(bucketName, objectName)
 	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodeVersionObject(algorithmId, version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeletePreAlgorithmVersionReply{
 		DeletedAt: time.Now().Unix(),
@@ -1450,6 +1471,13 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 	go utils.HandlePanicBG(func(i ...interface{}) {
 		bucketName := common.GetMinioBucket()
 		objectName := common.GetMinioPreCodePathObject(algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodePathObject(algorithmId)
 		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
 		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
 		h.data.Minio.RemoveObject(bucketName, objectName)
