@@ -265,8 +265,8 @@ func (m *minio) RemoveObject(bucketName string, objectName string) (bool, error)
 	ctx := context.Background()
 
 	m.log.Info(ctx, "RemoveObject param. bucketName:", bucketName, ", objectName:", objectName)
-	// 安全校验逻辑，判断object至少位于3层路径之下，防止大范围删除动作
-	if strings.Count(objectName, "/") < 3 {
+	// 安全校验逻辑，判断object至少位于2层路径之下，防止大范围删除动作
+	if strings.Count(objectName, "/") < 2 {
 		m.log.Error(ctx, "RemoveObject not safe Path depth. bucketName:", bucketName, ", objectName:", objectName)
 		return true, nil
 	}
