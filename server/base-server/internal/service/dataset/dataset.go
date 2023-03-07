@@ -574,14 +574,12 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 		}
 	}
 	// 删除数据集版本Minio存储
-	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		go utils.HandlePanicBG(func(i ...interface{}) {
-			bucketName, objectName := getMinioPath(dataset, version.Version)
-			s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
-			defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
-			s.data.Minio.RemoveObject(bucketName, objectName)
-		})()
-	}
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName, objectName := getMinioPath(dataset, version.Version)
+		s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		s.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
 
@@ -617,14 +615,12 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 		return nil, err
 	}
 	// 删除数据集Minio存储
-	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
-		go utils.HandlePanicBG(func(i ...interface{}) {
-			bucket, object := getMinioPathObject(dataset)
-			s.data.Redis.SAddMinioRemovingObject(bucket + "-" + object)
-			defer s.data.Redis.SRemMinioRemovingObject(bucket + "-" + object)
-			s.data.Minio.RemoveObject(bucket, object)
-		})()
-	}
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucket, object := getMinioPathObject(dataset)
+		s.data.Redis.SAddMinioRemovingObject(bucket + "-" + object)
+		defer s.data.Redis.SRemMinioRemovingObject(bucket + "-" + object)
+		s.data.Minio.RemoveObject(bucket, object)
+	})()
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
@@ -808,7 +804,10 @@ func getMinioPath(dataset *model.Dataset, version string) (bucketName string, ob
 }
 
 func getMinioPathObject(dataset *model.Dataset) (bucketName string, objectName string) {
-	if dataset.SourceType == int(api.DatasetSourceType_DST_USER) {
+	if dataset.SourceType == int(api.DatasetSourceType_DST_PRE) {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioPreDataSetPathObject(dataset.Id)
+	} else {
 		bucketName = common.GetMinioBucket()
 		objectName = common.GetMinioDataSetPathObject(dataset.SpaceId, dataset.UserId, dataset.Id)
 	}

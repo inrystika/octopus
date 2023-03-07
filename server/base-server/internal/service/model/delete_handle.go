@@ -182,13 +182,21 @@ func (h *modelDeleteHandle) DeletePreModelVersionHandle(ctx context.Context, req
 			return nil, err
 		}
 	}
+	// 删除预置模型版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioPreModelObject(modelId, version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeletePreModelVersionReply{
 		DeletedAt: time.Now().Unix(),
 	}, nil
 }
 
-// 删除预置模型
+// DeletePreModelHandle 删除预置模型
 func (h *modelDeleteHandle) DeletePreModelHandle(ctx context.Context, req *api.DeletePreModelRequest) (*api.DeletePreModelReply, error) {
 	modelDao := h.data.ModelDao
 	modelId := req.ModelId
@@ -207,6 +215,15 @@ func (h *modelDeleteHandle) DeletePreModelHandle(ctx context.Context, req *api.D
 	if err != nil {
 		return nil, err
 	}
+
+	// 删除预置模型Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioPreModelPathObject(modelId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeletePreModelReply{
 		DeletedAt: time.Now().Unix(),
