@@ -58,9 +58,29 @@ func GetMinioDownloadModelObject(modelId string, version string, fileName string
 	return fmt.Sprintf("%s/%s/%s/%s", DOWNLOAD_MODEL_FOLDER, modelId, version, fileName)
 }
 
+// 下载模型对象:models/swap/download/modelId/version
+func GetMinioDownloadModelVersionObject(modelId string, version string) string {
+	return fmt.Sprintf("%s/%s/%s", DOWNLOAD_MODEL_FOLDER, modelId, version)
+}
+
+// 下载模型对象:models/swap/download/modelId
+func GetMinioDownloadModelPathObject(modelId string) string {
+	return fmt.Sprintf("%s/%s", DOWNLOAD_MODEL_FOLDER, modelId)
+}
+
 // 下载算法对象名：codes/swap/download/algorithmId/version/fileName
 func GetMinioDownloadCodeObject(algorithmId string, version string, fileName string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId, version, fileName)
+}
+
+// 下载算法对象名：codes/swap/download/algorithmId/version
+func GetMinioDownloadCodeVersionObject(algorithmId string, version string) string {
+	return fmt.Sprintf("%s/%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId, version)
+}
+
+// 下载算法对象名：codes/swap/download/algorithmId
+func GetMinioDownloadCodePathObject(algorithmId string) string {
+	return fmt.Sprintf("%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId)
 }
 
 // 下载数据集对象名：dataSets/swap/download/dataSetId/version/fileName
