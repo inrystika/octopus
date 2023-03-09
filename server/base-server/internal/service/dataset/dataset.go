@@ -363,11 +363,13 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		}
 
 		// 删除数据集压缩包临时文件
-		go utils.HandlePanicBG(func(i ...interface{}) {
-			s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
-			defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
-			s.data.Minio.RemoveObject(fromBucket, fromObject)
-		})()
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
+				defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
+				s.data.Minio.RemoveObject(fromBucket, fromObject)
+			})()
+		}()
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
 
 	return &api.ConfirmUploadDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
