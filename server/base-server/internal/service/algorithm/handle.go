@@ -997,11 +997,13 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 			return
 		}
 		// 删除算法压缩包临时文件
-		go utils.HandlePanicBG(func(i ...interface{}) {
-			h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
-			defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
-			h.data.Minio.RemoveObject(bucketName, objectName)
-		})()
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+				defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+				h.data.Minio.RemoveObject(bucketName, objectName)
+			})()
+		}()
 	}()
 
 	return &api.ConfirmUploadAlgorithmReply{
