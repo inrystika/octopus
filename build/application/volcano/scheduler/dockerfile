@@ -1,4 +1,4 @@
-from golang:1.18.0 as builder
+from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
 WORKDIR /app
 COPY ./ ./
 
