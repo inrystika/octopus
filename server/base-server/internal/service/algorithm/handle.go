@@ -951,13 +951,13 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 		return nil, err
 	}
 
-	bucektName := common.GetMinioBucket()
+	bucketName := common.GetMinioBucket()
 	objectName := common.GetMinioUploadCodeObject(myAlgorithm.AlgorithmId, myAlgorithmVersion.Version, req.FileName)
 
-	fromPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, bucektName, objectName)
+	fromPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, bucketName, objectName)
 
 	// 看下文件在不在
-	isExist, err := h.data.Minio.ObjectExist(bucektName, objectName)
+	isExist, err := h.data.Minio.ObjectExist(bucketName, objectName)
 	if err != nil {
 		return nil, err
 	}
@@ -997,7 +997,13 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 			return
 		}
 		// 删除算法压缩包临时文件
-		go h.data.Minio.RemoveObject(bucektName, objectName)
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+				defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+				h.data.Minio.RemoveObject(bucketName, objectName)
+			})()
+		}()
 	}()
 
 	return &api.ConfirmUploadAlgorithmReply{
@@ -1206,6 +1212,21 @@ func (h *algorithmHandle) DeleteMyAlgorithmVersionHandle(ctx context.Context, re
 			return nil, err
 		}
 	}
+	// 删除算法版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioCodeObject(req.SpaceId, req.UserId, algorithmId, req.Version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodeVersionObject(algorithmId, req.Version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeleteMyAlgorithmVersionReply{
 		DeletedAt: time.Now().Unix(),
@@ -1258,6 +1279,22 @@ func (h *algorithmHandle) DeleteMyAlgorithmHandle(ctx context.Context, req *api.
 	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.ApplyId})
 	// 减少算法框架引用
 	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: algorithmInt.FrameworkId})
+
+	// 删除算法版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioCodePathObject(req.SpaceId, req.UserId, algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodePathObject(algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeleteMyAlgorithmReply{
 		DeletedAt: time.Now().Unix(),
@@ -1381,6 +1418,22 @@ func (h *algorithmHandle) DeletePreAlgorithmVersionHandle(ctx context.Context, r
 		}
 	}
 
+	// 删除预置算法版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioPreCodeObject(algorithmId, version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodeVersionObject(algorithmId, version)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+
 	return &api.DeletePreAlgorithmVersionReply{
 		DeletedAt: time.Now().Unix(),
 	}, nil
@@ -1415,6 +1468,22 @@ func (h *algorithmHandle) DeletePreAlgorithmHandle(ctx context.Context, req *api
 	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.ApplyId})
 	// 减少算法框架引用
 	_, _ = h.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: preAlgorithm.FrameworkId})
+
+	// 删除预置算法Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioPreCodePathObject(algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName := common.GetMinioBucket()
+		objectName := common.GetMinioDownloadCodePathObject(algorithmId)
+		h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		h.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 
 	return &api.DeletePreAlgorithmReply{
 		DeletedAt: time.Now().Unix(),

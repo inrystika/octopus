@@ -58,9 +58,29 @@ func GetMinioDownloadModelObject(modelId string, version string, fileName string
 	return fmt.Sprintf("%s/%s/%s/%s", DOWNLOAD_MODEL_FOLDER, modelId, version, fileName)
 }
 
+// 下载模型对象:models/swap/download/modelId/version
+func GetMinioDownloadModelVersionObject(modelId string, version string) string {
+	return fmt.Sprintf("%s/%s/%s", DOWNLOAD_MODEL_FOLDER, modelId, version)
+}
+
+// 下载模型对象:models/swap/download/modelId
+func GetMinioDownloadModelPathObject(modelId string) string {
+	return fmt.Sprintf("%s/%s", DOWNLOAD_MODEL_FOLDER, modelId)
+}
+
 // 下载算法对象名：codes/swap/download/algorithmId/version/fileName
 func GetMinioDownloadCodeObject(algorithmId string, version string, fileName string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId, version, fileName)
+}
+
+// 下载算法对象名：codes/swap/download/algorithmId/version
+func GetMinioDownloadCodeVersionObject(algorithmId string, version string) string {
+	return fmt.Sprintf("%s/%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId, version)
+}
+
+// 下载算法对象名：codes/swap/download/algorithmId
+func GetMinioDownloadCodePathObject(algorithmId string) string {
+	return fmt.Sprintf("%s/%s", DOWNLOAD_CODE_FOLDER, algorithmId)
 }
 
 // 下载数据集对象名：dataSets/swap/download/dataSetId/version/fileName
@@ -77,14 +97,29 @@ func GetMinioPreModelObject(modelId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", MODEL_FOLDER, PREAB_FOLDER, modelId, version)
 }
 
+// 模型对象:models/global/modelId
+func GetMinioPreModelPathObject(modelId string) string {
+	return fmt.Sprintf("%s/%s/%s", MODEL_FOLDER, PREAB_FOLDER, modelId)
+}
+
 // 算法对象:codes/global/algorithmId/version
 func GetMinioPreCodeObject(algorithmId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", CODE_FOLDER, PREAB_FOLDER, algorithmId, version)
 }
 
+// 算法对象:codes/global/algorithmId
+func GetMinioPreCodePathObject(algorithmId string) string {
+	return fmt.Sprintf("%s/%s/%s", CODE_FOLDER, PREAB_FOLDER, algorithmId)
+}
+
 // 数据集对象:datasets/global/dataSetId/version
 func GetMinioPreDataSetObject(dataSetId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s", DATASET_FOLDER, PREAB_FOLDER, dataSetId, version)
+}
+
+// 数据集对象:datasets/global/dataSetId
+func GetMinioPreDataSetPathObject(dataSetId string) string {
+	return fmt.Sprintf("%s/%s/%s", DATASET_FOLDER, PREAB_FOLDER, dataSetId)
 }
 
 /**************************************
@@ -96,9 +131,19 @@ func GetMinioModelObject(spaceId string, userId string, modelId string, version 
 	return fmt.Sprintf("%s/%s/%s/%s/%s", MODEL_FOLDER, spaceId, userId, modelId, version)
 }
 
+// 模型对象:models/spaceId/userId/modelId/version
+func GetMinioModelPathObject(spaceId string, userId string, modelId string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", MODEL_FOLDER, spaceId, userId, modelId)
+}
+
 // 算法对象:codes/spaceId/userId/algorithmId/version
 func GetMinioCodeObject(spaceId string, userId string, algorithmId string, version string) string {
 	return fmt.Sprintf("%s/%s/%s/%s/%s", CODE_FOLDER, spaceId, userId, algorithmId, version)
+}
+
+// 算法对象:codes/spaceId/userId/algorithmId
+func GetMinioCodePathObject(spaceId string, userId string, algorithmId string) string {
+	return fmt.Sprintf("%s/%s/%s/%s", CODE_FOLDER, spaceId, userId, algorithmId)
 }
 
 // 数据集对象:dataSets/spaceId/userId/dataSetId/version

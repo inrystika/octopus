@@ -324,12 +324,10 @@ func (s *AlgorithmService) DeletePreAlgorithm(ctx context.Context, req *api.Dele
 	}, nil
 }
 
-// 删除我的算法版本
+// 删除预置算法版本
 func (s *AlgorithmService) DeletePreAlgorithmVersion(ctx context.Context, req *api.DeletePreAlgorithmVersionRequest) (*api.DeletePreAlgorithmVersionReply, error) {
 
-	reply, err := s.data.AlgorithmClient.DeleteMyAlgorithmVersion(ctx, &innterapi.DeleteMyAlgorithmVersionRequest{
-		SpaceId:     "",
-		UserId:      "",
+	reply, err := s.data.AlgorithmClient.DeletePreAlgorithmVersion(ctx, &innterapi.DeletePreAlgorithmVersionRequest{
 		AlgorithmId: req.AlgorithmId,
 		Version:     req.Version,
 	})

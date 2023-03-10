@@ -20,4 +20,6 @@ const (
 	JOB_TYPE    = "jobType"
 	NotebookJob = "notebookjob"
 	TrainJob    = "trainjob"
+
+	REDIS_MINIO_REMOVING_OBJECT_SET = "minio-removing-object-set"
 )
