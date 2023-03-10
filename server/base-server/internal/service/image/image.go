@@ -417,6 +417,14 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 			if err != nil {
 				s.log.Errorw(ctx, err)
 			}
+			// 删除镜像压缩包临时文件
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				filename := image.SourceFilePath[strings.LastIndex(image.SourceFilePath, "/")+1:]
+				bucketName, objectName := getTempMinioPath(image, filename)
+				s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+				defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+				s.data.Minio.RemoveObject(bucketName, objectName)
+			})()
 			return
 		}
 
@@ -426,6 +434,14 @@ func (s *ImageService) ConfirmUploadImage(ctx context.Context, req *pb.ConfirmUp
 		if err != nil {
 			s.log.Errorw(ctx, err)
 		}
+		// 删除镜像压缩包临时文件
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			filename := image.SourceFilePath[strings.LastIndex(image.SourceFilePath, "/")+1:]
+			bucketName, objectName := getTempMinioPath(image, filename)
+			s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+			defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+			s.data.Minio.RemoveObject(bucketName, objectName)
+		})()
 	}()
 	// create async job to handle image.tar
 	//err = s.data.Cluster.CreateAndListenJob(ctx, s.generateJobToHandleImageTar(image), func (e error) {
@@ -637,21 +653,21 @@ func (s *ImageService) FindImage(ctx context.Context, req *pb.FindImageRequest) 
 	}
 	reply := &pb.FindImageReply{
 		Image: &pb.ImageDetail{
-			Id:           image.Id,
-			ImageName:    image.ImageName,
-			ImageVersion: image.ImageVersion,
-			ImageDesc:    image.ImageDesc,
-			ImageAddr:    image.ImageAddr,
-			ImageStatus:  pb.ImageStatus(image.Status),
-			SourceType:   pb.ImageSourceType(image.SourceType),
-			SpaceId:      image.SpaceId,
-			UserId:       image.UserId,
-			IsPrefab:     pb.ImageIsPrefab(image.IsPrefab),
-			CreatedAt:    image.CreatedAt.Unix(),
-			UpdatedAt:    image.UpdatedAt.Unix(),
+			Id:            image.Id,
+			ImageName:     image.ImageName,
+			ImageVersion:  image.ImageVersion,
+			ImageDesc:     image.ImageDesc,
+			ImageAddr:     image.ImageAddr,
+			ImageStatus:   pb.ImageStatus(image.Status),
+			SourceType:    pb.ImageSourceType(image.SourceType),
+			SpaceId:       image.SpaceId,
+			UserId:        image.UserId,
+			IsPrefab:      pb.ImageIsPrefab(image.IsPrefab),
+			CreatedAt:     image.CreatedAt.Unix(),
+			UpdatedAt:     image.UpdatedAt.Unix(),
+			ImageFullAddr: imageFullAddr,
 		},
-		ImageFullAddr: imageFullAddr,
-		Accesses:      accesses,
+		Accesses: accesses,
 	}
 
 	return reply, nil

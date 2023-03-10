@@ -335,6 +335,14 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 	graceful.AddOne()
 	go utils.HandlePanic(ctx, func(i ...interface{}) {
 		defer graceful.Done()
+		// 删除数据集压缩包临时文件
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
+				defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
+				s.data.Minio.RemoveObject(fromBucket, fromObject)
+			})()
+		}()
 		ctx := i[0].(context.Context)
 		err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 			DatasetId: req.DatasetId,
@@ -526,7 +534,13 @@ func (s *datasetService) CloseShareDatasetVersion(ctx context.Context, req *api.
 }
 
 func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.DeleteDatasetVersionRequest) (*api.DeleteDatasetVersionReply, error) {
-	_, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -576,7 +590,13 @@ func (s *datasetService) DeleteDatasetVersion(ctx context.Context, req *api.Dele
 			return nil, err
 		}
 	}
-
+	// 删除数据集版本Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucketName, objectName := getMinioPath(dataset, version.Version)
+		s.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+		defer s.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+		s.data.Minio.RemoveObject(bucketName, objectName)
+	})()
 	return &api.DeleteDatasetVersionReply{DeletedAt: time.Now().Unix()}, nil
 }
 
@@ -611,6 +631,13 @@ func (s *datasetService) DeleteDataset(ctx context.Context, req *api.DeleteDatas
 	if err != nil {
 		return nil, err
 	}
+	// 删除数据集Minio存储
+	go utils.HandlePanicBG(func(i ...interface{}) {
+		bucket, object := getMinioPathObject(dataset)
+		s.data.Redis.SAddMinioRemovingObject(bucket + "-" + object)
+		defer s.data.Redis.SRemMinioRemovingObject(bucket + "-" + object)
+		s.data.Minio.RemoveObject(bucket, object)
+	})()
 
 	// 减小数据类型引用
 	_, _ = s.lableService.ReduceLableReferTimes(ctx, &api.ReduceLableReferTimesRequest{Id: dataset.TypeId})
@@ -789,6 +816,17 @@ func getMinioPath(dataset *model.Dataset, version string) (bucketName string, ob
 	} else {
 		bucketName = common.GetMinioBucket()
 		objectName = common.GetMinioDataSetObject(dataset.SpaceId, dataset.UserId, dataset.Id, version)
+	}
+	return
+}
+
+func getMinioPathObject(dataset *model.Dataset) (bucketName string, objectName string) {
+	if dataset.SourceType == int(api.DatasetSourceType_DST_PRE) {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioPreDataSetPathObject(dataset.Id)
+	} else {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioDataSetPathObject(dataset.SpaceId, dataset.UserId, dataset.Id)
 	}
 	return
 }

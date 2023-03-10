@@ -106,6 +106,7 @@ data:
       kubernetes:
         masterUrl: ""
         configPath: ""
+        qps:  {{ .Values.baseserver.data.kubernetes.qps }}
       minio:
         base:
           endPoint: {{ include "minio.serviceAddr" . }}
@@ -147,6 +148,8 @@ data:
         baseUrl: {{ include "sftpgo.serviceAddr" . }}
         username: {{ .Values.baseserver.data.sftpgo.username }}
         password: {{ .Values.baseserver.data.sftpgo.password }}
+      prometheus:
+        baseUrl: {{ include "prometheus.address" . }}
     service:
       nfsRootPath: /octopus-storage
       baseServerAddr: {{ include "baseserver.httpServiceAddr" . }}
@@ -156,6 +159,9 @@ data:
       dockerUserHomePath: /userhome
       resourceLabelKey: {{ .Values.common.resourceTagKey }}
       billingPeriodSec: {{ .Values.baseserver.service.billingPeriodSec }}
+      isUseMultusCNI: {{ .Values.baseserver.service.isUseMultusCNI }}
+      networksConf: {{ .Values.baseserver.service.networksConf }}
+      routineNum: {{ .Values.baseserver.service.routineNum }}
       develop:
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
         isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}

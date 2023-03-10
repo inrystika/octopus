@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"server/common/constant"
 	"server/common/errors"
 	"server/common/log"
 	"time"
@@ -66,5 +67,43 @@ func (r *RedisInstance) LockAndCall(ctx context.Context, key string, ttl time.Du
 		return err
 	}
 
+	return nil
+}
+
+func (r *RedisInstance) SMembersMinioRemovingObject() ([]string, error) {
+	ctx := context.Background()
+	log.Info(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET, " members minio removing object")
+	objects, err := r.Redis.SMembers(ctx, constant.REDIS_MINIO_REMOVING_OBJECT_SET).Result()
+	if err != nil {
+		log.Error(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET,
+			" members minio removing object: failed. err:", err.Error())
+		return objects, err
+	}
+	return objects, nil
+}
+
+func (r *RedisInstance) SAddMinioRemovingObject(object string) error {
+	ctx := context.Background()
+	log.Info(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET,
+		" add minio removing object:", object)
+	_, err := r.Redis.SAdd(ctx, constant.REDIS_MINIO_REMOVING_OBJECT_SET, object).Result()
+	if err != nil {
+		log.Error(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET,
+			" add minio removing object:", object, " failed. err:", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (r *RedisInstance) SRemMinioRemovingObject(object string) error {
+	ctx := context.Background()
+	log.Info(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET,
+		" rem minio removing object:", object)
+	_, err := r.Redis.SRem(ctx, constant.REDIS_MINIO_REMOVING_OBJECT_SET, object).Result()
+	if err != nil {
+		log.Error(ctx, "set:", constant.REDIS_MINIO_REMOVING_OBJECT_SET,
+			" rem minio removing object:", object, " failed. err:", err.Error())
+		return err
+	}
 	return nil
 }

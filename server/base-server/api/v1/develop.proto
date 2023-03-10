@@ -177,7 +177,7 @@ message SaveNotebookRequest {
 }
 
 message SaveNotebookReply {
-
+  string imageId = 1;
 }
 
 message NotebookEventRecord {

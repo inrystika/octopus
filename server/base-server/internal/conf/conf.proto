@@ -48,6 +48,7 @@ message Kubernetes {
   string masterUrl = 1;
   string configPath = 2;
   bool isSetUploadFileSize = 3;
+  int32 qps = 4;
 }
 message MinioBase {
   string endPoint = 1;
@@ -97,6 +98,10 @@ message PytorchServer {
   string version = 2;
 }
 
+message Prometheus {
+  string baseUrl = 1;
+}
+
 message Data {
   Database database = 1;
   Kubernetes kubernetes = 2;
@@ -108,6 +113,7 @@ message Data {
   Ambassador ambassador = 8;
   PytorchServer pytorchServer = 9;
   sftpgo sftpgo = 10;
+  Prometheus prometheus = 11;
 }
 
 message Develop {
@@ -154,7 +160,10 @@ message Service {
   int64  billingPeriodSec = 9;
   string dockerModelDeployPath = 10;
   string dockerUserHomePath = 11;
-  Dataset dataset = 12;
+  bool   isUseMultusCNI = 12;
+  string networksConf = 13;
+  int32 routineNum = 14;
+  Dataset dataset = 15;
 }
 
 message Administrator {

@@ -180,7 +180,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		}
 		nb.ImageName = image.Image.ImageName
 		nb.ImageVersion = image.Image.ImageVersion
-		imageAddr = image.ImageFullAddr
+		imageAddr = image.Image.ImageFullAddr
 	} else if nb.ImageUrl != "" {
 		imageAddr = nb.ImageUrl
 	} else {
@@ -661,6 +661,10 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 				Volumes:      volumes,
 			},
 		}
+		if s.conf.Service.IsUseMultusCNI {
+			task.Template.Annotations =
+				map[string]string{"k8s.v1.cni.cncf.io/networks": s.conf.Service.NetworksConf}
+		}
 
 		for k, _ := range startJobInfo.resources {
 			if strings.HasPrefix(string(k), common.RdmaPrefix) {
@@ -1055,7 +1059,7 @@ func (s *developService) SaveNotebook(ctx context.Context, req *api.SaveNotebook
 	}
 
 	// acc node agent to commit image
-	return &api.SaveNotebookReply{}, nil
+	return &api.SaveNotebookReply{ImageId: imageReply.ImageId}, nil
 }
 
 func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, taskName string) string {

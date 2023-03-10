@@ -10,6 +10,7 @@ import (
 	"server/base-server/internal/data/dao/model"
 	"server/common/errors"
 	"server/common/utils"
+	"sync"
 	"time"
 
 	"server/common/log"
@@ -267,41 +268,55 @@ func (h *modelAddHandle) ConfirmUploadPreModelVersionHandle(ctx context.Context,
 
 	fromPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, fromBucketName, fromObjectName)
 
-	// 解压拷贝
 	go func() {
-		toBucketName := common.GetMinioBucket()
-		toObjectName := common.GetMinioPreModelObject(preModelVersion.ModelId, preModelVersion.Version)
-		toPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, toBucketName, toObjectName)
-		h.log.Infof(ctx, "begin to Unzip, from: %s, to:%s", fromPath, toPath)
-		startT := time.Now()
-		err := utils.Unzip(fromPath, toPath)
-		if err != nil {
-			preModelVersion.FileStatus = model.FILESTATUS_FAILED
-			h.log.Errorw(ctx, err)
-		} else {
-			preModelVersion.FileStatus = model.FILESTATUS_FINISH
-			h.log.Infof(ctx, "Unzip success, from: %s, to:%s, cost time: %d", fromPath, toPath, time.Since(startT))
-		}
+		var wg sync.WaitGroup
+		// 解压拷贝
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			toBucketName := common.GetMinioBucket()
+			toObjectName := common.GetMinioPreModelObject(preModelVersion.ModelId, preModelVersion.Version)
+			toPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, toBucketName, toObjectName)
+			h.log.Infof(ctx, "begin to Unzip, from: %s, to:%s", fromPath, toPath)
+			startT := time.Now()
+			err := utils.Unzip(fromPath, toPath)
+			if err != nil {
+				preModelVersion.FileStatus = model.FILESTATUS_FAILED
+				h.log.Errorw(ctx, err)
+			} else {
+				preModelVersion.FileStatus = model.FILESTATUS_FINISH
+				h.log.Infof(ctx, "Unzip success, from: %s, to:%s, cost time: %d", fromPath, toPath, time.Since(startT))
+			}
 
-		err = modelDao.UpdateModelVersion(ctx, preModelVersion)
-		if err != nil {
-			return
-		}
-	}()
-	// 拷贝压缩包到特定位置，用于下载
-	go func() {
-		toBucketName := common.GetMinioBucket()
-		toObjectName := common.GetMinioDownloadModelObject(preModelVersion.ModelId, preModelVersion.Version, fmt.Sprintf("%s-%s.zip", preModel.ModelName, preModelVersion.Version))
-		toPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, toBucketName, toObjectName)
-		h.log.Infof(ctx, "begin to CopyFile, from: %s, to:%s", fromPath, toPath)
-		startT := time.Now()
-		err := utils.CopyFile(fromPath, toPath)
-		if err != nil {
-			h.log.Errorw(ctx, err)
-			return
-		}
+			err = modelDao.UpdateModelVersion(ctx, preModelVersion)
+			if err != nil {
+				return
+			}
+		}()
+		// 拷贝压缩包到特定位置，用于下载
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			toBucketName := common.GetMinioBucket()
+			toObjectName := common.GetMinioDownloadModelObject(preModelVersion.ModelId, preModelVersion.Version, fmt.Sprintf("%s-%s.zip", preModel.ModelName, preModelVersion.Version))
+			toPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, toBucketName, toObjectName)
+			h.log.Infof(ctx, "begin to CopyFile, from: %s, to:%s", fromPath, toPath)
+			startT := time.Now()
+			err := utils.CopyFile(fromPath, toPath)
+			if err != nil {
+				h.log.Errorw(ctx, err)
+				return
+			}
 
-		h.log.Infof(ctx, "CopyFile success, from: %s, to:%s, cost time: %d", fromPath, toPath, time.Since(startT))
+			h.log.Infof(ctx, "CopyFile success, from: %s, to:%s, cost time: %d", fromPath, toPath, time.Since(startT))
+		}()
+		wg.Wait()
+		// 删除模型压缩包临时文件
+		go utils.HandlePanicBG(func(i ...interface{}) {
+			h.data.Redis.SAddMinioRemovingObject(fromBucketName + "-" + fromObjectName)
+			defer h.data.Redis.SRemMinioRemovingObject(fromBucketName + "-" + fromObjectName)
+			h.data.Minio.RemoveObject(fromBucketName, fromObjectName)
+		})()
 	}()
 
 	return &api.ConfirmUploadPreModelVersionReply{
