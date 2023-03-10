@@ -328,6 +328,14 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 	graceful.AddOne()
 	go utils.HandlePanic(ctx, func(i ...interface{}) {
 		defer graceful.Done()
+		// 删除数据集压缩包临时文件
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
+				defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
+				s.data.Minio.RemoveObject(fromBucket, fromObject)
+			})()
+		}()
 		ctx := i[0].(context.Context)
 		err := s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 			DatasetId: req.DatasetId,
@@ -361,15 +369,6 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 		if err != nil {
 			s.log.Errorw(ctx, err)
 		}
-
-		// 删除数据集压缩包临时文件
-		defer func() {
-			go utils.HandlePanicBG(func(i ...interface{}) {
-				s.data.Redis.SAddMinioRemovingObject(fromBucket + "-" + fromObject)
-				defer s.data.Redis.SRemMinioRemovingObject(fromBucket + "-" + fromObject)
-				s.data.Minio.RemoveObject(fromBucket, fromObject)
-			})()
-		}()
 	})(commctx.WithoutCancel(ctx)) // http请求结束后ctx会被cancel 这里创建一个不会取消的ctx并传值
 
 	return &api.ConfirmUploadDatasetVersionReply{UpdatedAt: time.Now().Unix()}, nil
