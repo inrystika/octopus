@@ -985,6 +985,14 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 	toPath := fmt.Sprintf("%s/%s/%s", h.conf.Data.Minio.Base.MountPath, toBucketName, toObjectName)
 	// 解压
 	go func() {
+		// 删除算法压缩包临时文件
+		defer func() {
+			go utils.HandlePanicBG(func(i ...interface{}) {
+				h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
+				defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
+				h.data.Minio.RemoveObject(bucketName, objectName)
+			})()
+		}()
 		err := utils.Unzip(fromPath, toPath)
 		if err != nil {
 			myAlgorithmVersion.FileStatus = FILESTATUS_FAILED
@@ -996,14 +1004,6 @@ func (h *algorithmHandle) ConfirmUploadAlgorithmHandle(ctx context.Context, req 
 		if err != nil {
 			return
 		}
-		// 删除算法压缩包临时文件
-		defer func() {
-			go utils.HandlePanicBG(func(i ...interface{}) {
-				h.data.Redis.SAddMinioRemovingObject(bucketName + "-" + objectName)
-				defer h.data.Redis.SRemMinioRemovingObject(bucketName + "-" + objectName)
-				h.data.Minio.RemoveObject(bucketName, objectName)
-			})()
-		}()
 	}()
 
 	return &api.ConfirmUploadAlgorithmReply{
