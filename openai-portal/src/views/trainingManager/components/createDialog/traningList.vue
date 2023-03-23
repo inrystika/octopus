@@ -118,10 +118,11 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
-                this.tableData[this.currentIndex] = val
+                // this.tableData[this.currentIndex] = val
                 // flag为true新增
                 // flag为false编辑
                 if (this.flag) { this.tableData.push(val); }
+                else{ this.tableData[this.currentIndex] = val}
             },
             showResource(row) {
                 let name = ''
