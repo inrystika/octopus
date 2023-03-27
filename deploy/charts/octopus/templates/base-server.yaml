@@ -177,6 +177,10 @@ data:
         discoveryLeaderLeaseLockName: resourcediscovery
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+      dataset:
+        cache:
+          mediumtype: {{ .Values.baseserver.service.dataset.cache.mediumtype }}
+          path: {{ .Values.baseserver.service.dataset.cache.path }}
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"

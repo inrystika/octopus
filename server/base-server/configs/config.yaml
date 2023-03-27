@@ -90,7 +90,7 @@ service:
   dataset:
     cache:
       mediumtype: HDD
-      path: /tmp/alluxiocache
+      path: /tmp/datasetcache
 administrator:
   username: "admin"
   password: "123456"
