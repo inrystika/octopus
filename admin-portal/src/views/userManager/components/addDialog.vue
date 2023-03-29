@@ -33,7 +33,7 @@
                     <el-input v-model.trim="ruleForm.fullname" />
                 </el-form-item>
                 <el-form-item label="备注" prop="desc" v-if="user" :label-width="formLabelWidth">
-                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit="true"></el-input>
+                    <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" :show-word-limit="true"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -55,9 +55,7 @@
                     const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap');
                     SELECTWRAP_DOM.addEventListener('scroll', function () {
                         const CONDITION = this.scrollHeight - this.scrollTop <= this.clientHeight;
-                        if (CONDITION) {
-                            binding.value();
-                        }
+                        binding.value();
                     })
                 }
             }
@@ -296,6 +294,7 @@
                 this.$emit('close', false)
             },
             loadUser() {
+                console.log("OPPO")
                 this.userCount = this.userCount + 1
                 if (this.userOptions.length < this.total) {
                     this.getUserList()
