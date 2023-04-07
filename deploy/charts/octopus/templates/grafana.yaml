@@ -2716,7 +2716,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "avg(enflame_gcu_usage)",
+              "expr": "count(enflame_gcu_usage{pod_name=~\".+\"} / sum(enflame_gcu_count) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2725,7 +2725,7 @@ data:
           "thresholds": "65,90",
           "timeFrom": null,
           "timeShift": null,
-          "title": "GCU Avg Usage",
+          "title": "GCU Usage",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -3134,7 +3134,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "avg(enflame_vgcu_usage)",
+              "expr": "count(enflame_vgcu_usage{pod_name=~\".+\"} / sum(enflame_vgcu_count) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3143,7 +3143,7 @@ data:
           "thresholds": "65,90",
           "timeFrom": null,
           "timeShift": null,
-          "title": "VGCU Avg Usage",
+          "title": "VGCU Usage",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -3552,7 +3552,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "avg(mlu_usage)",
+              "expr": "sum(mlu_allocated) / count(mlu_usage)  * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3561,7 +3561,7 @@ data:
           "thresholds": "65,90",
           "timeFrom": null,
           "timeShift": null,
-          "title": "MLU Avg Usage",
+          "title": "MLU Usage",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
