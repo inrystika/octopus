@@ -180,6 +180,8 @@ message NotebookEventListRequest {
   int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lt:100}];
   //副本序号，从0开始
   int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lt:100}];
+  //Notebook ID
+  string notebookId = 6[(validate.rules).string = {min_len: 1}];
 }
 
 message NotebookEventListReply {

@@ -40,7 +40,7 @@ ingress:
   openaiserverPath: /openaiserver
   adminportalPath: /admin
   openaiportalPath: /openai
-  loggerHttpdPath: /log
+  loggerHttpdPath: /log/user/trainjob/*/*/*/*.log
   ambassadorPath: /seldon
   minioPath:
     web: /minio
