@@ -2716,7 +2716,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(enflame_gcu_usage{pod_name=~\".+\"} / sum(enflame_gcu_count) * 100 or vector(0)",
+              "expr": "count(enflame_gcu_usage{pod_name=~\".+\"}) / sum(enflame_gcu_count) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3134,7 +3134,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(enflame_vgcu_usage{pod_name=~\".+\"} / sum(enflame_vgcu_count) * 100 or vector(0)",
+              "expr": "count(enflame_vgcu_usage{pod_name=~\".+\"}) / sum(enflame_vgcu_count) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
