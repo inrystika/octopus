@@ -965,7 +965,11 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 		return nil, err
 	}
 
-	if query.Id == "" && req.NotebookId != "" {
+	if query.Id == "" {
+		if req.NotebookId == "" {
+			s.log.Errorf(ctx, "job id and notebook id empty")
+			return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		}
 		nbIds := make([]string, 0)
 		nbIds = append(nbIds, req.NotebookId)
 		nbIds = set.NewStrings(nbIds...).Values()
