@@ -462,14 +462,8 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 //提交任务并将算法名称、数据集名称等字段赋值
 func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, startJobInfo *startJobInfo) (closeFunc, error) {
-	//获取pv和pvc
-	datasetVersion, err := s.data.DatasetDao.GetDatasetVersion(ctx, job.DataSetId, job.DataSetVersion)
-	var datasetCache bool
-	if datasetVersion.Cache != nil {
-		datasetCache = true
-	} else {
-		datasetCache = false
-	}
+	var err error
+
 	//var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
@@ -533,16 +527,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 
 		}
 
-		if startJobInfo.datasetPath != "" {
-			volumeMounts = append(volumeMounts,
-				v1.VolumeMount{
-					Name:      volume,
-					MountPath: s.conf.Service.DockerDatasetPath,
-					SubPath:   startJobInfo.datasetPath,
-					ReadOnly:  true,
-				})
-		}
-
 		volumes := []v1.Volume{
 			{
 				Name: volume,
@@ -565,16 +549,39 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 					EmptyDir: &v1.EmptyDirVolumeSource{}},
 			},
 		}
-		if datasetCache {
-			volume := v1.Volume{
-				Name: "dataset",
-				VolumeSource: v1.VolumeSource{
-					PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-						ClaimName: fmt.Sprintf("%s%s%s", "cache", job.DataSetId[0:10], strings.ToLower(job.DataSetVersion)),
-					},
-				},
+
+		if startJobInfo.datasetPath != "" {
+			//获取pv和pvc
+			datasetVersion, err := s.data.DatasetDao.GetDatasetVersion(ctx, job.DataSetId, job.DataSetVersion)
+			if err != nil {
+				return nil, err
 			}
-			volumes = append(volumes, volume)
+			if datasetVersion.Cache != nil {
+				volume := v1.Volume{
+					Name: "dataset",
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: fmt.Sprintf("%s%s%s", "cache", job.DataSetId[0:10], strings.ToLower(job.DataSetVersion)),
+						},
+					},
+				}
+				volumes = append(volumes, volume)
+
+				volumeMounts = append(volumeMounts,
+					v1.VolumeMount{
+						Name:      "dataset",
+						MountPath: s.conf.Service.DockerDatasetPath,
+						ReadOnly:  true,
+					})
+			} else {
+				volumeMounts = append(volumeMounts,
+					v1.VolumeMount{
+						Name:      volume,
+						MountPath: s.conf.Service.DockerDatasetPath,
+						SubPath:   startJobInfo.datasetPath,
+						ReadOnly:  true,
+					})
+			}
 		}
 
 		vs, vms := common.GetVolumes(job.Mounts, volume)
