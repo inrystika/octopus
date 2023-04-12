@@ -59,18 +59,15 @@
     <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset v-if="myDatasetVisible" :data="data" :version-data="versionData" @close="close" @cancel="cancel"
       @confirm="confirm" />
-    <el-dialog title="加速设置" :visible.sync="dialogCache">
+    <el-dialog title="加速设置" :visible.sync="dialogCache" width="20%">
       <el-alert title="如需要改变缓存配置请先关闭缓存等待几分钟再进行" type="warning" :closable="false">
       </el-alert>
-      <el-form :model="cache">
+      <el-form :model="cache" label-width="80px">
         <el-form-item label="是否启动">
           <el-switch v-model="open" @change="switchshow"></el-switch>
         </el-form-item>
         <el-form-item label="缓存大小" v-if="show">
-          <el-select v-model="cache.quota" placeholder="请选择缓存大小">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
+          <el-input v-model="cache.quota"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -117,16 +114,6 @@
         open: false,
         show: false,
         disabled: true,
-        options: [{
-          value: '500M',
-          label: '500M'
-        }, {
-          value: '1G',
-          label: '1G'
-        }, {
-          value: '2G',
-          label: '2G'
-        }]
       }
     },
     created() {
