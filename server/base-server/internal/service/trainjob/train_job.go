@@ -251,6 +251,7 @@ type startJobInfo struct {
 	algorithmPath string
 	datasetPath   string
 	specs         map[string]*startJobInfoSpec
+	cacheName     string
 }
 
 func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJob) (*startJobInfo, error) {
@@ -323,6 +324,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 	}
 
 	datasetPath := ""
+	cacheName := ""
 	if job.DataSetId != "" { //判空，允许通过API调用不传此参数
 		//dataSet
 		dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
@@ -334,6 +336,10 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 		job.DatasetName = dataSetVersion.Dataset.Name
 		datasetPath = dataSetVersion.Version.Path
+
+		if dataSetVersion.Version.Cache != nil {
+			cacheName = dataSetVersion.Version.Cache.Name
+		}
 	}
 
 	//resource spec info
@@ -457,6 +463,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		algorithmPath: algorithmPath,
 		datasetPath:   datasetPath,
 		specs:         startJobSpecs,
+		cacheName:     cacheName,
 	}, nil
 }
 
@@ -551,17 +558,13 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		}
 
 		if startJobInfo.datasetPath != "" {
-			//获取pv和pvc
-			datasetVersion, err := s.data.DatasetDao.GetDatasetVersion(ctx, job.DataSetId, job.DataSetVersion)
-			if err != nil {
-				return nil, err
-			}
-			if datasetVersion.Cache != nil {
+
+			if startJobInfo.cacheName != "" {
 				volume := v1.Volume{
 					Name: "dataset",
 					VolumeSource: v1.VolumeSource{
 						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: fmt.Sprintf("%s%s%s", "cache", job.DataSetId[0:10], strings.ToLower(job.DataSetVersion)),
+							ClaimName: startJobInfo.cacheName,
 						},
 					},
 				}
@@ -653,6 +656,24 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				{Event: vcBus.TaskCompletedEvent, Action: vcBus.CompleteJobAction},
 			}
 		}
+
+		if startJobInfo.cacheName != "" {
+			task.Template.Spec.Affinity = &v1.Affinity{NodeAffinity: &v1.NodeAffinity{
+				PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
+					{
+						Weight: 1,
+						Preference: v1.NodeSelectorTerm{MatchExpressions: []v1.NodeSelectorRequirement{
+							{
+								Key:      fmt.Sprintf("fluid.io/f-%s-%s", job.UserId, startJobInfo.cacheName),
+								Values:   []string{"true"},
+								Operator: v1.NodeSelectorOpIn,
+							},
+						}},
+					},
+				},
+			}}
+		}
+
 		//根据资源类型任务区别挂载与配置
 		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
 			if strings.HasPrefix(string(k), common.RdmaPrefix) {

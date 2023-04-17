@@ -122,6 +122,7 @@ type TrainJobListQuery struct {
 	WorkspaceId  string
 	Ids          []string
 	PayStatus    api.BillingPayRecordStatus
+	Statuses     []string
 }
 
 //任务模板表

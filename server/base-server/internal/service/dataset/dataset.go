@@ -3,25 +3,26 @@ package dataset
 import (
 	"context"
 	"fmt"
-	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
-	Common "github.com/fluid-cloudnative/fluid/pkg/common"
-	"github.com/jinzhu/copier"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"path/filepath"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
+	"server/common/constant"
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/graceful"
 	"server/common/log"
 	"server/common/utils"
-	"strings"
 	"time"
+
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
+	Common "github.com/fluid-cloudnative/fluid/pkg/common"
+	"github.com/jinzhu/copier"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -395,19 +396,13 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 	versions := make([]*api.DatasetVersion, 0)
 	for _, n := range versionsTbl {
 		version := &api.DatasetVersion{}
-		err := copier.Copy(version, n)
+		err := copier.CopyWithOption(version, n, copier.Option{DeepCopy: true})
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorStructCopy)
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
 		versions = append(versions, version)
-		if n.Cache != nil {
-			version.Cache.Quota = n.Cache.Quota
-		} else {
-
-			n.Cache = nil
-		}
 	}
 	return &api.ListDatasetVersionReply{
 		TotalSize: totalSize,
@@ -851,32 +846,27 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	if err != nil {
 		return nil, err
 	}
-	Name, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
 
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
 	if err != nil {
 		return nil, err
 	}
-	name := fmt.Sprintf("%s%s%s", "cache", version.DatasetId[0:10], strings.ToLower(version.Version))
-	namespace := ""
-	if Name.UserId != "" {
-		namespace = Name.UserId
 
-	} else {
-		return nil, err
+	if dataset.UserId == "" {
+		return nil, errors.Errorf(nil, errors.OnlySupportCacheUserDataset)
 	}
+	namespace := dataset.UserId
+	cacheName := common.GetCacheName()
 
 	if version.Cache != nil {
-		innerReq := &api.DeleteCacheRequest{
-			DatasetId: req.DatasetId,
-			Version:   req.Version,
-			Cache:     nil,
-		}
-		_, err = s.DeleteCache(ctx, innerReq)
-		if err != nil {
-			return nil, err
-		}
+		return nil, errors.Errorf(nil, errors.ErrorDatasetCacheExist)
 	}
-	quantity := resource.MustParse(req.Cache.Quota)
+
+	quantity, err := resource.ParseQuantity(req.Cache.Quota)
+	if err != nil {
+		return nil, errors.Errorf(nil, errors.ErrorFormatParseFailed)
+	}
+
 	option := s.conf.Service.Dataset.Cache
 	alluxioRuntime := fluidv1.AlluxioRuntime{
 		TypeMeta: metav1.TypeMeta{
@@ -884,7 +874,7 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 			Kind:       "AlluxioRuntime",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      cacheName,
 			Namespace: namespace,
 		},
 		Spec: fluidv1.AlluxioRuntimeSpec{
@@ -900,30 +890,23 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	}
 	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
 	if err != nil {
-		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
-			DatasetId: req.DatasetId,
-			Version:   req.Version,
-			Cache:     nil,
-		})
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	Dataset := fluidv1.Dataset{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "data.fluid.io/v1alpha1",
 			Kind:       "Dataset",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      cacheName,
 			Namespace: namespace,
 		},
 		Spec: fluidv1.DatasetSpec{
 			Mounts: []fluidv1.Mount{
 				{
 					MountPoint: fmt.Sprintf("s3://%s", version.Path),
-					Name:       name,
+					Name:       cacheName,
 					Options: map[string]string{
 						"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
 						"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
@@ -937,18 +920,12 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	}
 	err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
 	if err != nil {
-		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
-			DatasetId: req.DatasetId,
-			Version:   req.Version,
-			Cache:     nil,
-		})
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	cache := &model.Cache{
 		Quota: req.Cache.Quota,
+		Name:  cacheName,
 	}
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 		DatasetId: req.DatasetId,
@@ -964,49 +941,47 @@ func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRe
 	if err != nil {
 		return nil, err
 	}
-	query := &model.TrainJobListQuery{Status: "running", UserId: dataset.UserId}
-	jobList, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
-	query = &model.TrainJobListQuery{Status: "pending", UserId: dataset.UserId}
-	jobList2, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
-	for _, job := range jobList2 {
-		jobList = append(jobList, job)
-	}
-	//判断是否正在被运行中或者等待中的任务使用
-	isUsed := true
-	for _, job := range jobList {
-		if fmt.Sprintf("%s-%s", job.DataSetId, job.DataSetVersion) == fmt.Sprintf("%s-%s", req.DatasetId, req.Version) {
-			err := errors.Errorf(nil, errors.ErrorDatasetisBeingUsing)
-			isUsed = false
-			return nil, err
-		}
-	}
-	if !isUsed {
+
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
 		return nil, err
-	} else {
-		version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
-		if err != nil {
-			return nil, err
-		}
-		name := fmt.Sprintf("%s%s%s", "cache", version.DatasetId[0:10], strings.ToLower(version.Version))
-		namespace := ""
-		if dataset.UserId != "" {
-			namespace = dataset.UserId
-		} else {
-			return nil, err
-		}
-		if err != nil {
-			return nil, err
-		}
-		err = s.data.Cluster.DeleteFluidDataset(ctx, namespace, name)
-		err = s.data.Cluster.DeleteAlluxioRuntime(ctx, namespace, name)
-		err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
-			DatasetId: req.DatasetId,
-			Version:   req.Version,
-			Cache:     nil,
-		})
-		if err != nil {
-			return nil, err
-		}
-		return &api.CacheReply{}, nil
 	}
+
+	if version.Cache == nil {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetCacheNotExist)
+	}
+
+	query := &model.TrainJobListQuery{Statuses: []string{constant.RUNNING, constant.PENDING}, UserId: dataset.UserId}
+	jobList, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	//判断是否正在被运行中或者等待中的任务使用
+	for _, job := range jobList {
+		if req.DatasetId == job.DataSetId && req.Version == job.DataSetVersion {
+			return nil, errors.Errorf(nil, errors.ErrorDatasetisBeingUsing)
+		}
+	}
+
+	namespace := dataset.UserId
+	cacheName := version.Cache.Name
+
+	err = s.data.Cluster.DeleteFluidDataset(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteAlluxioRuntime(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &api.CacheReply{}, nil
 }

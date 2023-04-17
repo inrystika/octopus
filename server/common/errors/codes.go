@@ -197,6 +197,9 @@ const (
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
 	ErrorDatasetisBeingUsing    = 19006 //数据集正在被使用
+	ErrorDatasetCacheExist      = 19007 //缓存已存在
+	OnlySupportCacheUserDataset = 19008 //只支持缓存用户数据集
+	ErrorDatasetCacheNotExist   = 19009 //缓存不存在
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered   = 19501 // 标签被引用，不能删除
@@ -424,6 +427,9 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
 	ErrorDatasetisBeingUsing:    {codeType: PermissionDenied, msg: "dataset is being used"},
+	ErrorDatasetCacheExist:      {codeType: AlreadyExists, msg: "dataset cache exist"},
+	OnlySupportCacheUserDataset: {codeType: OutOfRange, msg: "only support cache user dataset "},
+	ErrorDatasetCacheNotExist:   {codeType: OutOfRange, msg: "dataset cache not exist "},
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered:   {codeType: Unimplemented, msg: "lable refered"},
