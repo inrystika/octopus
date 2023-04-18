@@ -886,6 +886,8 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 					High:  "0.95",
 					Low:   "0.7"},
 			}},
+			// minio域名解析
+			Properties: map[string]string{"alluxio.underfs.s3.disable.dns.buckets": "true"},
 		},
 	}
 	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
