@@ -337,7 +337,7 @@ message DeleteCacheRequest {
 message Cache {
   string quota = 1;
   string name = 2;
-
+  int32 replicas = 3;
 }
 message CacheReply {
 }

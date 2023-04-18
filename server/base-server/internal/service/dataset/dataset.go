@@ -867,6 +867,9 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 		return nil, errors.Errorf(nil, errors.ErrorFormatParseFailed)
 	}
 
+	if req.Cache.Replicas == 0 {
+		req.Cache.Replicas = 1
+	}
 	option := s.conf.Service.Dataset.Cache
 	alluxioRuntime := fluidv1.AlluxioRuntime{
 		TypeMeta: metav1.TypeMeta{
@@ -878,7 +881,7 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 			Namespace: namespace,
 		},
 		Spec: fluidv1.AlluxioRuntimeSpec{
-			Replicas: 2,
+			Replicas: req.Cache.Replicas,
 			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
 				{MediumType: Common.MediumType(option.Mediumtype),
 					Path:  fmt.Sprintf("%s", option.Path),
@@ -952,8 +955,9 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	}
 
 	cache := &model.Cache{
-		Quota: req.Cache.Quota,
-		Name:  cacheName,
+		Quota:    req.Cache.Quota,
+		Name:     cacheName,
+		Replicas: req.Cache.Replicas,
 	}
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 		DatasetId: req.DatasetId,
