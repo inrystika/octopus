@@ -416,7 +416,7 @@ message DeleteCacheRequest {
 }
 message Cache {
   string quota = 1;
-
+  string name = 2;
 }
 message CacheReply {
 

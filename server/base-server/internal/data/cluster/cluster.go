@@ -72,4 +72,6 @@ type Cluster interface {
 	DeleteFluidDataset(ctx context.Context, namespace string, name string) error
 	CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error
 	DeleteAlluxioRuntime(ctx context.Context, namespace string, name string) error
+	CreateDataLoad(ctx context.Context, dataLoad *fluidv1.DataLoad) error
+	DeleteDataLoad(ctx context.Context, namespace string, name string) error
 }

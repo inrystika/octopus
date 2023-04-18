@@ -878,7 +878,7 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 			Namespace: namespace,
 		},
 		Spec: fluidv1.AlluxioRuntimeSpec{
-			Replicas: 1,
+			Replicas: 2,
 			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
 				{MediumType: Common.MediumType(option.Mediumtype),
 					Path:  fmt.Sprintf("%s", option.Path),
@@ -934,6 +934,23 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 		return nil, err
 	}
 
+	datasetLoad := &fluidv1.DataLoad{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cacheName,
+			Namespace: namespace,
+		},
+		Spec: fluidv1.DataLoadSpec{
+			Dataset: fluidv1.TargetDataset{
+				Name:      cacheName,
+				Namespace: namespace,
+			},
+		},
+	}
+	err = s.data.Cluster.CreateDataLoad(ctx, datasetLoad)
+	if err != nil {
+		return nil, err
+	}
+
 	cache := &model.Cache{
 		Quota: req.Cache.Quota,
 		Name:  cacheName,
@@ -983,6 +1000,10 @@ func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRe
 		return nil, err
 	}
 	err = s.data.Cluster.DeleteAlluxioRuntime(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteDataLoad(ctx, namespace, cacheName)
 	if err != nil {
 		return nil, err
 	}

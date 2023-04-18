@@ -706,3 +706,24 @@ func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace
 	}
 	return nil
 }
+
+func (kc *kubernetesCluster) CreateDataLoad(ctx context.Context, dataLoad *fluidv1.DataLoad) error {
+	err := kc.rtClient.Create(ctx, dataLoad)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteDataLoad(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.DataLoad{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}

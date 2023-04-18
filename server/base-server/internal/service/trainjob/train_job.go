@@ -575,6 +575,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						Name:      "dataset",
 						MountPath: s.conf.Service.DockerDatasetPath,
 						ReadOnly:  true,
+						SubPath:   startJobInfo.cacheName,
 					})
 			} else {
 				volumeMounts = append(volumeMounts,
