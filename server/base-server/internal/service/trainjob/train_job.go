@@ -664,7 +664,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						Weight: 1,
 						Preference: v1.NodeSelectorTerm{MatchExpressions: []v1.NodeSelectorRequirement{
 							{
-								Key:      fmt.Sprintf("fluid.io/f-%s-%s", job.UserId, startJobInfo.cacheName),
+								Key:      fmt.Sprintf("fluid.io/s-%s-%s", job.UserId, startJobInfo.cacheName),
 								Values:   []string{"true"},
 								Operator: v1.NodeSelectorOpIn,
 							},

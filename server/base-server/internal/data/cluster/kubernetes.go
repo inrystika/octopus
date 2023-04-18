@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -680,7 +681,6 @@ func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace s
 			Name:      name,
 		},
 	})
-	fmt.Print(err, "删除数据集")
 	if err != nil {
 		return err
 	}
@@ -688,7 +688,6 @@ func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace s
 }
 func (kc *kubernetesCluster) CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error {
 	err := kc.rtClient.Create(ctx, alluxio)
-	fmt.Print(err, "创建runtime")
 	if err != nil {
 		return err
 	}
@@ -702,7 +701,6 @@ func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace
 			Name:      name,
 		},
 	})
-	fmt.Print(err, "删除runtime")
 	if err != nil {
 		return err
 	}

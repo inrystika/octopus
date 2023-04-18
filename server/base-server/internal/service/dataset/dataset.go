@@ -916,6 +916,15 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 			},
 			PlacementMode: "Shared",
 			AccessModes:   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			NodeAffinity: &fluidv1.CacheableNodeAffinity{Required: &v1.NodeSelector{NodeSelectorTerms: []v1.NodeSelectorTerm{
+				{MatchExpressions: []v1.NodeSelectorRequirement{
+					{
+						Key:      fmt.Sprintf("octopus.pcl.ac.cn/cache"), //不是每个节点空间都足够，数据集缓存的节点需要打此label
+						Values:   []string{"true"},
+						Operator: v1.NodeSelectorOpIn,
+					},
+				}},
+			}}},
 		},
 	}
 	err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
