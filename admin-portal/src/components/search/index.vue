@@ -151,6 +151,9 @@
     .el-select {
         width: 188px;
     }
+    .el-input {
+      width: 260px !important;
+    }
 
     .el-select>.el-input {
         max-width: 185px !important;
