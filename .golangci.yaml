@@ -76,3 +76,4 @@ run:
     - train_job.go
     - api/v1/configkey.go
     - base-server/internal/data/dao/model_deploy.go
+    - admin-server/internal/service/billing.go
