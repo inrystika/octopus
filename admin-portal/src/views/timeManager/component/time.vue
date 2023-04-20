@@ -3,8 +3,8 @@
         <div>
             <el-select v-model="userId" filterable :filter-method="getUserOptions" v-loadmore="loadUserName"
                 @focus='userClick' v-if="type=='user'" placeholder="用户 搜索">
-                <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
-                    :value="op.id" />
+                  <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
+                      :value="op.id" :title="op.bind.length ? op.bind[0].userName : ''" />
             </el-select>
             <el-select v-model="spaceId" v-loadmore="loadGroupName"
             @focus='groupClick' v-if="type=='group'" placeholder="群组 搜索">
