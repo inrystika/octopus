@@ -22,3 +22,9 @@ message Mount {
 message UserPermission {
   bool mountExternalStorage = 1;
 }
+
+message Bind {
+  string platform = 1;
+  string userId = 2;
+  string userName = 3;
+}
