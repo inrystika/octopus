@@ -1,6 +1,6 @@
 <template>
     <div>
-        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户/邮箱 搜索':'群组 搜索'"
+        <searchForm :search-form="searchForm" class="searchForm" :blur-name="user?'用户/邮箱/第三方账号/备注 搜索':'群组 搜索'"
             @searchData="getSearchData" />
         <div class="create">
             <el-button v-if="user" type="primary" @click="create">创建用户</el-button>
@@ -16,6 +16,11 @@
             <el-table-column v-if="user" label="用户邮箱" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.email }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="第三方账号" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.bind.length ? scope.row.bind[0].userName : ""  }}</span>
                 </template>
             </el-table-column>
             <el-table-column v-if="user" label="电话" align="center">
@@ -41,11 +46,6 @@
             <el-table-column v-if="user" label="备注" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.desc }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column label="第三方账号" align="center">
-                <template slot-scope="scope">
-                    <span>{{ scope.row.bind.length ? scope.row.bind[0].userName : ""  }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="修改时间" align="center">
