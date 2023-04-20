@@ -84,11 +84,12 @@ func (s *billingService) assignUser(ctx context.Context, billingUsers []*api.Bil
 			if v, ok := userMap[i.UserId]; ok {
 				if v.Bind != nil {
 					for _, b := range v.Bind {
-						i.Bind = append(i.Bind, &commapi.Bind{
+						bind := &commapi.Bind{
 							Platform: b.Platform,
 							UserId:   b.UserId,
 							UserName: b.UserName,
-						})
+						}
+						i.Bind = append(i.Bind, bind)
 					}
 				}
 				i.UserName = v.FullName
