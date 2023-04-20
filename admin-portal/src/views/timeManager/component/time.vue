@@ -23,9 +23,9 @@
                     <span v-if="type==='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="当前机时剩余(小时)" align="center">
+            <el-table-column label="用户邮箱" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.amount }}</span>
+                    <span>{{ scope.row.userEmail}}</span>
                 </template>
             </el-table-column>
             <el-table-column label="第三方账号" align="center">
@@ -33,9 +33,9 @@
                     <span style="margin-left: 10px">{{ scope.row.bind ? scope.row.bind[0].userName : "" }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="邮箱" align="center">
+            <el-table-column label="当前机时剩余(小时)" align="center">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.userEmail}}</span>
+                    <span style="margin-left: 10px">{{ scope.row.amount }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作" align="center">
