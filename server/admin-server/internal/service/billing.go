@@ -2,14 +2,16 @@ package service
 
 import (
 	"context"
-	"github.com/jinzhu/copier"
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
 	innerapi "server/base-server/api/v1"
+	commapi "server/common/api/v1"
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils/collections/set"
+
+	"github.com/jinzhu/copier"
 )
 
 type billingService struct {
@@ -80,6 +82,15 @@ func (s *billingService) assignUser(ctx context.Context, billingUsers []*api.Bil
 		for _, i := range billingUsers {
 
 			if v, ok := userMap[i.UserId]; ok {
+				if v.Bind != nil {
+					for _, b := range v.Bind {
+						i.Bind = append(i.Bind, &commapi.Bind{
+							Platform: b.Platform,
+							UserId:   b.UserId,
+							UserName: b.UserName,
+						})
+					}
+				}
 				i.UserName = v.FullName
 				i.UserEmail = v.Email
 			}

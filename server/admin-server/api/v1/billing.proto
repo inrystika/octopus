@@ -8,6 +8,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "server/common/api/v1/common.proto";
 
 service BillingService {
   // 计费用户列表
@@ -78,6 +79,7 @@ message BillingUser {
   string userId = 4;
   string userName = 5;
   string userEmail = 6;
+  repeated common.api.v1.Bind bind = 7;
 }
 
 message ListBillingUserReply {
