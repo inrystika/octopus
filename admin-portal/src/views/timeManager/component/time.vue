@@ -23,12 +23,12 @@
                     <span v-if="type==='group'">{{ scope.row.spaceName }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="用户邮箱" align="center">
+            <el-table-column v-if="type==='user'" label="用户邮箱" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.userEmail}}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="第三方账号" align="center">
+            <el-table-column v-if="type==='user'" label="第三方账号" align="center">
                 <template slot-scope="scope">
                     <span style="margin-left: 10px">{{ scope.row.bind ? scope.row.bind[0].userName : "" }}</span>
                 </template>
