@@ -40,7 +40,7 @@ ingress:
   openaiserverPath: /openaiserver
   adminportalPath: /admin
   openaiportalPath: /openai
-  loggerHttpdPath: /log
+  loggerHttpdPath: /log/user/trainjob/*/*/*/*.log
   ambassadorPath: /seldon
   minioPath:
     web: /minio
@@ -521,3 +521,8 @@ nvidia:
 ascend:
   # ascend节点需要打标签hardware-type=ASCENDNPU
   enabled: false
+
+xilinx:
+  # xilinx节点需要打标签hardware-type=XILINXFPGA
+  enabled: false
+  fpgaDevicePluginImage: public.ecr.aws/xilinx_dcg/k8s-device-plugin:1.1.0

@@ -95,6 +95,7 @@ message UserItem {
   common.api.v1.UserPermission permission = 11;
   repeated string buckets = 12;
   string minioUserName = 13;
+  repeated common.api.v1.Bind bind = 14;
 }
 
 message ListUserRequest {

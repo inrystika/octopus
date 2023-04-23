@@ -2,12 +2,8 @@
     <div>
         <div class="index">
             <el-button type="primary" class="add" @click="add">添加</el-button>
-            <el-table
-                :data="tableData"
-                style="width: 100%"
-                :header-cell-style="{'text-align':'left','color':'black'}"
-                :cell-style="{'text-align':'left'}"
-            >
+            <el-table :data="tableData" style="width: 100%" :header-cell-style="{'text-align':'left','color':'black'}"
+                :cell-style="{'text-align':'left'}">
                 <el-table-column prop="name" label="任务名称" align="center" />
                 <el-table-column label="是否是主任务" align="center">
                     <template slot-scope="scope">
@@ -37,17 +33,9 @@
             </el-table>
         </div>
         <!-- 分布式任务对话框 -->
-        <distributedTask
-            v-if="FormVisible"
-            :row="row"
-            :flag="flag"
-            :resourcePool="resourcePool"
-            :disResourceOptions="resourceOptions"
-            @cancel="cancel"
-            @confirm="confirm"
-            @close="close"
-            @subTasks="getsubTasksList"
-        />
+        <distributedTask v-if="FormVisible" :row="row" :flag="flag" :resourcePool="resourcePool"
+            :disResourceOptions="resourceOptions" @cancel="cancel" @confirm="confirm" @close="close"
+            @subTasks="getsubTasksList" />
     </div>
 </template>
 
@@ -65,8 +53,8 @@
                 default: () => []
             },
             resourcePool: {
-              type: String,
-              default: () => ""
+                type: String,
+                default: () => ""
             }
         },
         data() {
@@ -84,7 +72,7 @@
                 this.$emit('tableData', this.tableData)
             },
             resourcePool() {
-              this.getResourceList()
+                this.getResourceList()
             }
         },
         created() {
@@ -97,7 +85,7 @@
                 this.flag = true
                 this.row = { parameters: [] }
             },
-            handleEdit(index,row) {
+            handleEdit(index, row) {
                 this.currentIndex = index
                 this.FormVisible = true
                 this.row = row
@@ -120,11 +108,12 @@
                 val.taskNumber = parseInt(val.taskNumber)
                 val.minFailedTaskCount = parseInt(val.minFailedTaskCount)
                 val.minSucceededTaskCount = parseInt(val.minSucceededTaskCount)
-                this.tableData[this.currentIndex] = val
+
                 // flag为true新增
                 // flag为false编辑
 
                 if (this.flag) { this.tableData.push(val); }
+                else { this.tableData[this.currentIndex] = val }
             },
             showResource(row) {
                 let name = ''
@@ -152,7 +141,7 @@
                     }
                 })
             },
-            command: function(data) {
+            command: function (data) {
                 let command = data.command
                 if (data.parameters != null && data.parameters.length != 0) {
                     data.parameters.forEach(

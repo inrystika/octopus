@@ -248,6 +248,14 @@ cambricon_mlu_label() {
     echo -e "---------------------\033[31m cambricon mlu label success \033[0m---------------------"
 }
 
+# xilinx fpga节点打标签
+xilinx_fpga_label() {
+    set -e
+    echo -e "---------------------\033[31m xilinx fpga label \033[0m---------------------"
+    kubectl label nodes `hostname` hardware-type=XILINXFPGA
+    echo -e "---------------------\033[31m xilinx fpga label success \033[0m---------------------"
+}
+
 # huawei a910节点打标签
 huawei_a910_label() {
     kubectl label nodes `hostname` hardware-type=ASCENDNPU

@@ -25,7 +25,7 @@ router.beforeEach(async (to, from, next) => {
   if (hasToken) {
     try {
       // eslint-disable-next-line eqeqeq
-      if (store.getters.name === '') { await store.dispatch('user/getInfo') }
+      await store.dispatch('user/getInfo')
       if (store.getters.workspaces.length === 0) { await store.dispatch('user/getSpace') }
     } catch (error) {
       await store.dispatch('user/resetToken')
