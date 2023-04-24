@@ -18,7 +18,7 @@
                     <span>{{ scope.row.email }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="第三方账号" align="center">
+            <el-table-column v-if="user" label="第三方账号" align="center">
                 <template slot-scope="scope">
                     <span>{{ scope.row.bind.length ? scope.row.bind[0].userName : ""  }}</span>
                 </template>
