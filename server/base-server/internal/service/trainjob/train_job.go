@@ -1335,6 +1335,10 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	memUsagePercent, err := s.getMemUsagePercent(ctx, req, memUsage)
 	if err == nil { //忽略err
 		res.MemUsagePercent = memUsagePercent
+	} else {
+		for range memUsage {
+			res.MemUsagePercent = append(res.MemUsagePercent, -1)
+		}
 	}
 
 	return res, nil
