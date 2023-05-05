@@ -329,9 +329,9 @@
             search() {
                 let data = {}
                 if (this.type == 'user') {
-                    data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, userId: this.userId }
+                    data = { pageIndex: 1, pageSize: this.searchData.pageSize, userId: this.userId }
                 }
-                else { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
+                else { data = { pageIndex: 1, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
                 this.getTime(data)
             },
             reset() {
