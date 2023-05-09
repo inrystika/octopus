@@ -2088,7 +2088,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(npu_chip_info_hbm_used_memory) / sum(npu_chip_info_hbm_total_memory) or vector(0)",
+              "expr": "sum(npu_chip_info_hbm_used_memory) / sum(npu_chip_info_hbm_total_memory) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster NPU memory utilization(avg)",
@@ -5262,7 +5262,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(npu_chip_info_hbm_used_memory{name=\"$Node\"}) / sum(npu_chip_info_hbm_total_memory{name=\"$Node\"})",
+              "expr": "sum(npu_chip_info_hbm_used_memory{name=\"$Node\"}) / sum(npu_chip_info_hbm_total_memory{name=\"$Node\"}) * 100",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node NPU hbm memory utilization(avg)",
