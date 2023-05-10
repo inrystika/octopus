@@ -3202,7 +3202,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode="idle"})) * 100",
+              "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\"})) * 100",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3530,7 +3530,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(count without(cpu, mode) (node_cpu_seconds_total{mode="idle"}))",
+              "expr": "sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\"}))",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -5717,7 +5717,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode="idle",name=~"^$Node$"})) * 100",
+              "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\",name=~\"^$Node$\"})) * 100",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -6052,7 +6052,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(count without(cpu, mode) (node_cpu_seconds_total{mode="idle",name=~"^$Node$"}))",
+              "expr": "sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\",name=~\"^$Node$\"}))",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
