@@ -954,9 +954,12 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	}
 
 	cache := &model.Cache{
-		Quota:    req.Cache.Quota,
-		Name:     cacheName,
-		Replicas: req.Cache.Replicas,
+		Quota:          req.Cache.Quota,
+		Name:           cacheName,
+		Replicas:       req.Cache.Replicas,
+		Path:           req.Cache.Path,
+		NodeLabelKey:   req.Cache.NodeLabelKey,
+		NodeLabelValue: req.Cache.NodeLabelValue,
 	}
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 		DatasetId: req.DatasetId,
