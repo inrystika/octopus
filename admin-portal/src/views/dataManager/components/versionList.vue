@@ -59,15 +59,27 @@
     <preview v-if="preVisible" :row="versionData" @close="close" />
     <reuploadDataset v-if="myDatasetVisible" :data="data" :version-data="versionData" @close="close" @cancel="cancel"
       @confirm="confirm" />
-    <el-dialog title="加速设置" :visible.sync="dialogCache" width="20%">
+    <el-dialog title="加速设置" :visible.sync="dialogCache" width="30%">
       <el-alert title="如需要改变缓存配置请先关闭缓存等待几分钟再进行" type="warning" :closable="false">
       </el-alert>
-      <el-form :model="cache" label-width="80px">
+      <el-form :model="cache" label-width="120px">
         <el-form-item label="是否启动">
           <el-switch v-model="open" @change="switchshow"></el-switch>
         </el-form-item>
         <el-form-item label="缓存大小" v-if="show">
           <el-input v-model="cache.quota"></el-input>
+        </el-form-item>
+        <el-form-item label="缓存副本数" v-if="show">
+          <el-input-number v-model="cache.relicas" :min="0"></el-input-number>
+        </el-form-item>
+        <el-form-item label="缓存目录" v-if="show">
+          <el-input v-model="cache.path"></el-input>
+        </el-form-item>
+        <el-form-item label="节点标签key" v-if="show">
+          <el-input v-model="cache.nodeLableKey"></el-input>
+        </el-form-item>
+        <el-form-item label="节点标签label" v-if="show">
+          <el-input v-model="cache.nodeLableValue"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -110,7 +122,7 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { quota: "", datasetId: undefined, version: undefined },
+        cache: { quota: "", datasetId: undefined, version: undefined, relicas: 0, path: '', nodeLableKey: 'octopus.pcl.ac.cn/cache', nodeLableValue: 'true' },
         open: false,
         show: false,
         disabled: true,
@@ -230,6 +242,10 @@
           this.open = true
           this.show = true
           this.cache.quota = val.cache.quota
+          this.cache.relicas = val.cache.relicas
+          this.cache.path = val.cache.path
+          this.cache.nodeLableKey = val.cache.nodeLableKey
+          this.cache.nodeLableValue = val.cache.nodeLableValue
 
         }
         else { this.open = false; this.show = false; }
@@ -244,7 +260,7 @@
       },
       confirm() {
         if (this.open) {
-          createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota } }).then(response => {
+          createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota, replicas: this.cache.replicas, path: this.cache.path, nodeLableKey: this.cache.nodeLableKey, nodeLableValue: this.cache.nodeLableValue } }).then(response => {
             if (response.success) {
               this.$message.success("开启成功");
               this.getVersionList()
