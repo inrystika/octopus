@@ -70,7 +70,7 @@
           <el-input v-model="cache.quota"></el-input>
         </el-form-item>
         <el-form-item label="缓存副本数" v-if="show">
-          <el-input-number v-model="cache.relicas" :min="0"></el-input-number>
+          <el-input-number v-model="cache.replicas" :min="0"></el-input-number>
         </el-form-item>
         <el-form-item label="缓存目录" v-if="show">
           <el-input v-model="cache.path"></el-input>
@@ -122,7 +122,7 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { quota: "", datasetId: undefined, version: undefined, relicas: 0, path: '', nodeLabelKey: 'octopus.pcl.ac.cn/cache', nodeLabelValue: 'true' },
+        cache: { quota: "", datasetId: undefined, version: undefined, replicas: 0, path: '', nodeLabelKey: 'octopus.pcl.ac.cn/cache', nodeLabelValue: 'true' },
         open: false,
         show: false,
         disabled: true,
@@ -242,7 +242,7 @@
           this.open = true
           this.show = true
           this.cache.quota = val.cache.quota
-          this.cache.relicas = val.cache.replicas
+          this.cache.replicas = val.cache.replicas
           this.cache.path = val.cache.path
           this.cache.nodeLabelKey = val.cache.nodeLabelKey
           this.cache.nodeLabelValue = val.cache.nodeLabelValue
