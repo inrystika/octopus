@@ -870,7 +870,6 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	if req.Cache.Replicas == 0 {
 		req.Cache.Replicas = 1
 	}
-	option := s.conf.Service.Dataset.Cache
 	alluxioRuntime := fluidv1.AlluxioRuntime{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "data.fluid.io/v1alpha1",
@@ -883,8 +882,8 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 		Spec: fluidv1.AlluxioRuntimeSpec{
 			Replicas: req.Cache.Replicas,
 			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
-				{MediumType: Common.MediumType(option.Mediumtype),
-					Path:  fmt.Sprintf("%s", option.Path),
+				{MediumType: Common.MediumType("HDD"),
+					Path:  req.Cache.Path,
 					Quota: &quantity,
 					High:  "0.95",
 					Low:   "0.7"},
@@ -924,8 +923,8 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 			NodeAffinity: &fluidv1.CacheableNodeAffinity{Required: &v1.NodeSelector{NodeSelectorTerms: []v1.NodeSelectorTerm{
 				{MatchExpressions: []v1.NodeSelectorRequirement{
 					{
-						Key:      fmt.Sprintf("octopus.pcl.ac.cn/cache"), //不是每个节点空间都足够，数据集缓存的节点需要打此label
-						Values:   []string{"true"},
+						Key:      req.Cache.NodeLabelKey, //不是每个节点空间都足够，数据集缓存的节点需要打此label
+						Values:   []string{req.Cache.NodeLabelValue},
 						Operator: v1.NodeSelectorOpIn,
 					},
 				}},
@@ -955,9 +954,12 @@ func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest)
 	}
 
 	cache := &model.Cache{
-		Quota:    req.Cache.Quota,
-		Name:     cacheName,
-		Replicas: req.Cache.Replicas,
+		Quota:          req.Cache.Quota,
+		Name:           cacheName,
+		Replicas:       req.Cache.Replicas,
+		Path:           req.Cache.Path,
+		NodeLabelKey:   req.Cache.NodeLabelKey,
+		NodeLabelValue: req.Cache.NodeLabelValue,
 	}
 	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
 		DatasetId: req.DatasetId,

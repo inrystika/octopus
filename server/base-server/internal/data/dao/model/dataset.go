@@ -51,9 +51,12 @@ type DatasetVersion struct {
 	Cache        *Cache                `gorm:"column:cache;type:json"`
 }
 type Cache struct {
-	Quota    string `json:"quota"`
-	Name     string `json:"name"`
-	Replicas int32  `json:"replicas"`
+	Quota          string `json:"quota"`
+	Name           string `json:"name"`
+	Replicas       int32  `json:"replicas"`
+	Path           string `json:"path"`
+	NodeLabelKey   string `json:"nodeLabelKey"`
+	NodeLabelValue string `json:"nodeLabelValue"`
 }
 
 func (DatasetVersion) TableName() string {

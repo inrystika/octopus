@@ -87,10 +87,6 @@ service:
     discoveryLeaderLeaseLockName: resourcediscovery
     discoveryDuration: 15s
     ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
-  dataset:
-    cache:
-      mediumtype: HDD
-      path: /tmp/datasetcache
 administrator:
   username: "admin"
   password: "123456"
