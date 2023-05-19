@@ -145,6 +145,7 @@
             },
             getSearchData(val) {
                 let data = {}
+                this.searchData.pageIndex = 1
                 data = Object.assign(val, { pageIndex: 1, pageSize: this.searchData.pageSize })
                 this.getPay(data)
                 if (val.searchKey) {
