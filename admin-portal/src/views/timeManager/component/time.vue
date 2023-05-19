@@ -328,6 +328,7 @@
             userClick() {this.getUserOptions() },
             search() {
                 let data = {}
+                this.searchData.pageIndex = 1
                 if (this.type == 'user') {
                     data = { pageIndex: 1, pageSize: this.searchData.pageSize, userId: this.userId }
                 }
