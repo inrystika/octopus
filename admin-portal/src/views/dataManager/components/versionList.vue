@@ -76,10 +76,10 @@
           <el-input v-model="cache.path"></el-input>
         </el-form-item>
         <el-form-item label="节点标签key" v-if="show">
-          <el-input v-model="cache.nodeLableKey"></el-input>
+          <el-input v-model="cache.nodeLabelKey"></el-input>
         </el-form-item>
         <el-form-item label="节点标签label" v-if="show">
-          <el-input v-model="cache.nodeLableValue"></el-input>
+          <el-input v-model="cache.nodeLabelValue"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -122,7 +122,7 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { quota: "", datasetId: undefined, version: undefined, relicas: 0, path: '', nodeLableKey: 'octopus.pcl.ac.cn/cache', nodeLableValue: 'true' },
+        cache: { quota: "", datasetId: undefined, version: undefined, relicas: 0, path: '', nodeLabelKey: 'octopus.pcl.ac.cn/cache', nodeLabelValue: 'true' },
         open: false,
         show: false,
         disabled: true,
@@ -242,10 +242,10 @@
           this.open = true
           this.show = true
           this.cache.quota = val.cache.quota
-          this.cache.relicas = val.cache.relicas
+          this.cache.relicas = val.cache.replicas
           this.cache.path = val.cache.path
-          this.cache.nodeLableKey = val.cache.nodeLableKey
-          this.cache.nodeLableValue = val.cache.nodeLableValue
+          this.cache.nodeLabelKey = val.cache.nodeLabelKey
+          this.cache.nodeLabelValue = val.cache.nodeLabelValue
 
         }
         else { this.open = false; this.show = false; }
@@ -260,7 +260,7 @@
       },
       confirm() {
         if (this.open) {
-          createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota, replicas: this.cache.replicas, path: this.cache.path, nodeLableKey: this.cache.nodeLableKey, nodeLableValue: this.cache.nodeLableValue } }).then(response => {
+          createDatasetVersionCache({ datasetId: this.cache.datasetId, version: this.cache.version, cache: { quota: this.cache.quota, replicas: this.cache.replicas, path: this.cache.path, nodeLabelKey: this.cache.nodeLabelKey, nodeLabelValue: this.cache.nodeLabelValue } }).then(response => {
             if (response.success) {
               this.$message.success("开启成功");
               this.getVersionList()
