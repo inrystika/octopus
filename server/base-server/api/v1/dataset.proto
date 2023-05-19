@@ -331,13 +331,15 @@ message CacheRequest {
 message DeleteCacheRequest {
   string datasetId = 1[(validate.rules).string = {min_len: 1}];
   string version = 2[(validate.rules).string = {min_len: 1}];
-  Cache cache = 3;
 
 }
 message Cache {
   string quota = 1;
   string name = 2;
   int32 replicas = 3;
+  string path = 4;
+  string nodeLabelKey = 5;
+  string nodeLabelValue = 6;
 }
 message CacheReply {
 }

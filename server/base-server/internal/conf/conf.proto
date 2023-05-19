@@ -163,7 +163,6 @@ message Service {
   bool   isUseMultusCNI = 12;
   string networksConf = 13;
   int32 routineNum = 14;
-  Dataset dataset = 15;
 }
 
 message Administrator {
@@ -171,12 +170,4 @@ message Administrator {
   string password = 2;
   string email = 3;
   string phone = 4;
-}
-
-message Dataset {
-    Cache cache = 1;
-    message  Cache {
-    string mediumtype = 1;
-    string path = 2;
-    }
 }
