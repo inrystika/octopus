@@ -116,9 +116,9 @@
                 let data = {}
                 data = Object.assign(val, { pageIndex: 1, pageSize: this.searchData.pageSize })
                 this.Recharge(data)
-                if (val.searchKey) {
+                // if (val.searchKey) {
                     this.searchKey = val.searchKey
-                }
+                // }
 
             },
         }
