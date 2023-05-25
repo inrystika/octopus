@@ -145,11 +145,12 @@
             },
             getSearchData(val) {
                 let data = {}
-                data = Object.assign(val, { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize })
+                this.searchData.pageIndex = 1
+                data = Object.assign(val, { pageIndex: 1, pageSize: this.searchData.pageSize })
                 this.getPay(data)
-                if (val.searchKey) {
+                // if (val.searchKey) {
                     this.searchKey = val.searchKey
-                }
+                // }
             },
         }
     }

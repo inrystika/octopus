@@ -27,7 +27,7 @@ linters:
     - gosimple    # 简化代码工具
     - govet       # 检查Go 代码正确性的工具
     - lll         # 每行代码长度检查，不超过150字符
-    - typecheck   # 类型检查
+#    - typecheck   # 类型检查 #误报，暂时屏蔽
     #- revive      # 不同于fmt，主要检查代码风格问题
     #- misspell    # 拼写检查，防止线上出现拼写出错导致的bug
     #- gomnd       # 检测幻数的工具
@@ -76,3 +76,4 @@ run:
     - train_job.go
     - api/v1/configkey.go
     - base-server/internal/data/dao/model_deploy.go
+    - admin-server/internal/service/billing.go

@@ -11,6 +11,8 @@ import (
 	"server/common/log"
 	"time"
 
+	commapi "server/common/api/v1"
+
 	"github.com/jinzhu/copier"
 )
 
@@ -48,6 +50,16 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 
 	users := make([]*pb.UserItem, len(listUserReply.Users))
 	for idx, user := range listUserReply.Users {
+		bind := make([]*commapi.Bind, 0)
+		if user.Bind != nil {
+			for _, b := range user.Bind {
+				bind = append(bind, &commapi.Bind{
+					Platform: b.Platform,
+					UserId:   b.UserId,
+					UserName: b.UserName,
+				})
+			}
+		}
 		users[idx] = &pb.UserItem{
 			Id:            user.Id,
 			FullName:      user.FullName,
@@ -62,6 +74,7 @@ func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*p
 			Permission:    user.Permission,
 			MinioUserName: user.MinioUserName,
 			Buckets:       user.Buckets,
+			Bind:          bind,
 		}
 	}
 

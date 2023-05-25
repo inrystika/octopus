@@ -12,6 +12,7 @@ import (
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/utils"
+	"server/common/utils/collections/set"
 	"strconv"
 	"strings"
 	"time"
@@ -962,6 +963,29 @@ func (s *developService) GetNotebookEventList(ctx context.Context, req *api.Note
 	err := copier.Copy(query, req)
 	if err != nil {
 		return nil, err
+	}
+
+	if query.Id == "" {
+		if req.NotebookId == "" {
+			s.log.Errorf(ctx, "job id and notebook id empty")
+			return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+		}
+		nbIds := make([]string, 0)
+		nbIds = append(nbIds, req.NotebookId)
+		nbIds = set.NewStrings(nbIds...).Values()
+		nbs, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: nbIds})
+		if err != nil {
+			s.log.Errorf(ctx, "ListNotebook err: %s", err)
+			return nil, err
+		}
+		if len(nbs) > 0 {
+			for _, nb := range nbs {
+				query.Id = nb.NotebookJobId
+			}
+		} else {
+			s.log.Errorf(ctx, "no notebook job found")
+			return nil, fmt.Errorf("no notebook job found")
+		}
 	}
 
 	events, totalSize, err := s.data.DevelopDao.GetNotebookEvents(query)

@@ -143,11 +143,13 @@ message NotebookEventListRequest {
   // 页大小，最小1条，最大100条
   int64 pageSize = 2[(validate.rules).int64 = {gte:1,lte:100}];
   //任务ID
-  string id = 3[(validate.rules).string = {min_len: 1}];
+  string id = 3[(validate.rules).string = {min_len: 0}];
   //子任务序号，从0开始
   int64 taskIndex = 4[(validate.rules).int64 = {gte:0,lte:100}];
   //副本序号，从0开始
   int64 replicaIndex = 5[(validate.rules).int64 = {gte:0,lte:100}];
+  //Notebook ID
+  string NotebookId = 6[(validate.rules).string = {min_len: 0}];
 }
 
 message NotebookEventListReply {

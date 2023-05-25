@@ -1372,10 +1372,48 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
-	return &api.GetJobMetricReply{
+
+	res := &api.GetJobMetricReply{
 		CpuUsage:    cpuUsage,
 		MemUsage:    memUsage,
 		GpuUtil:     gpuUtil,
 		GpuMemUsage: gpuMemUtil,
-	}, nil
+	}
+	memUsagePercent, err := s.getMemUsagePercent(ctx, req, memUsage)
+	if err == nil { //忽略err
+		res.MemUsagePercent = memUsagePercent
+	} else {
+		for range memUsage {
+			res.MemUsagePercent = append(res.MemUsagePercent, -1)
+		}
+	}
+
+	return res, nil
+}
+
+func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJobMetricRequest, memUsage []float64) ([]float64, error) {
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["memory"])
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]float64, 0)
+	for _, v := range memUsage {
+		if v == -1 {
+			res = append(res, v)
+		} else {
+			res = append(res, float64(int64(v)*100/quantity.Value()))
+		}
+	}
+
+	return res, nil
 }

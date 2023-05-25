@@ -3,8 +3,8 @@
         <div>
             <el-select v-model="userId" filterable :filter-method="getUserOptions" v-loadmore="loadUserName"
                 @focus='userClick' v-if="type=='user'" placeholder="用户 搜索">
-                <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
-                    :value="op.id" />
+                  <el-option v-for="op in userOptions" :key="op.id" :label="op.fullName+'('+op.email+')'"
+                      :value="op.id" :title="op.bind.length ? op.bind[0].userName : ''" />
             </el-select>
             <el-select v-model="spaceId" v-loadmore="loadGroupName"
             @focus='groupClick' v-if="type=='group'" placeholder="群组 搜索">
@@ -18,9 +18,19 @@
             <el-table-column :label="type==='user'?'用户名称':'群组名称'" align="center">
                 <template slot-scope="scope">
                     <el-tooltip trigger="hover" :content="scope.row.userEmail" placement="top">
-                        <span v-if="type==='user'" style="margin-left: 10px">{{ scope.row.userName }}</span>
+                        <span v-if="type==='user'">{{ scope.row.userName }}</span>
                     </el-tooltip>
-                    <span v-if="type==='group'" style="margin-left: 10px">{{ scope.row.spaceName }}</span>
+                    <span v-if="type==='group'">{{ scope.row.spaceName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="type==='user'" label="用户邮箱" align="center">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.userEmail}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if="type==='user'" label="第三方账号" align="center">
+                <template slot-scope="scope">
+                    <span style="margin-left: 10px">{{ scope.row.bind ? scope.row.bind[0].userName : "" }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="当前机时剩余(小时)" align="center">
@@ -318,10 +328,11 @@
             userClick() {this.getUserOptions() },
             search() {
                 let data = {}
+                this.searchData.pageIndex = 1
                 if (this.type == 'user') {
-                    data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, userId: this.userId }
+                    data = { pageIndex: 1, pageSize: this.searchData.pageSize, userId: this.userId }
                 }
-                else { data = { pageIndex: this.searchData.pageIndex, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
+                else { data = { pageIndex: 1, pageSize: this.searchData.pageSize, spaceId: this.spaceId } }
                 this.getTime(data)
             },
             reset() {

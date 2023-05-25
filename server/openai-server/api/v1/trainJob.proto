@@ -453,4 +453,6 @@ message GetJobMetricReply {
   repeated double gpuUtil = 3;
   //百分比
   repeated double gpuMemUsage = 4;
+  //百分比
+  repeated double memUsagePercent = 5;
 }

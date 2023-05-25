@@ -128,7 +128,7 @@ func (u UserList) Where(db *gorm.DB) *gorm.DB {
 func (u UserList) Or(db *gorm.DB) *gorm.DB {
 	if u.SearchKey != "" {
 		searchKeyLike := "%" + u.SearchKey + "%"
-		db = db.Where("full_name like ? or email like ?", searchKeyLike, searchKeyLike)
+		db = db.Where("full_name like ? or email like ? or bind->'$[*].userName' like ? or `desc` like ?", searchKeyLike, searchKeyLike, searchKeyLike, searchKeyLike)
 	}
 	return db
 }
