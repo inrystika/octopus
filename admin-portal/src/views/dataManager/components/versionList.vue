@@ -69,7 +69,7 @@
         <el-form-item label="缓存大小" v-if="show" prop="quota">
           <el-input v-model="cache.quota" style="width:40%" oninput="value=value.replace(/[^0-9.]/g,'')"
             :disabled="enable"></el-input>
-          <span class="unit">G</span>
+          <span class="unit">Gi</span>
         </el-form-item>
         <el-form-item label="缓存副本数" v-if="show" prop="replicas">
           <el-input-number v-model="cache.replicas" :min="0" :step="1" step-strictly :disabled="enable">
@@ -125,7 +125,7 @@
         versionList: [],
         timer: null,
         dialogCache: false,
-        cache: { quota: "", datasetId: undefined, version: undefined, replicas: 0, path: '/datasetcache', nodeLabelKey: 'octopus.pcl.ac.cn/cache', nodeLabelValue: 'true' },
+        cache: { quota: "", datasetId: undefined, version: undefined, replicas: undefined, path: '/datasetcache', nodeLabelKey: 'octopus.pcl.ac.cn/cache', nodeLabelValue: 'true' },
         rules: {
           quota: [
             { required: true, message: '请输入缓存大小', trigger: 'blur' },
