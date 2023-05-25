@@ -1389,8 +1389,8 @@ data:
           "gridPos": {
             "h": 4,
             "w": 8,
-            "x": 8,
-            "y": 0
+            "x": 16,
+            "y": 4
           },
           "id": 2,
           "interval": null,
@@ -1471,9 +1471,9 @@ data:
           },
           "gridPos": {
             "h": 2,
-            "w": 8,
+            "w": 4,
             "x": 16,
-            "y": 0
+            "y": 4
           },
           "id": 3,
           "interval": null,
@@ -1552,9 +1552,9 @@ data:
           },
           "gridPos": {
             "h": 2,
-            "w": 8,
-            "x": 16,
-            "y": 2
+            "w": 4,
+            "x": 20,
+            "y": 4
           },
           "id": 4,
           "interval": null,
@@ -1621,18 +1621,18 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 8,
-            "x": 0,
-            "y": 4
+            "x": 8,
+            "y": 0
           },
-          "id": 5,
+          "id": 0,
           "legend": {
             "avg": false,
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1655,15 +1655,94 @@ data:
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
-              "legendFormat": "Received",
+              "legendFormat": "Cluster Network Received",
               "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Cluster Network Received",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "bytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
             },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 0
+          },
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
             {
               "expr": "- sum (rate (container_network_transmit_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m]))",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
-              "legendFormat": "Sent",
+              "legendFormat": "Cluster Network Sent",
               "refId": "B"
             }
           ],
@@ -1671,7 +1750,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Cluster Network I/O pressure",
+          "title": "Cluster Network Sent",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1718,7 +1797,7 @@ data:
           "gridPos": {
             "h": 6,
             "w": 8,
-            "x": 8,
+            "x": 0,
             "y": 4
           },
           "id": 6,
@@ -1804,7 +1883,7 @@ data:
           "gridPos": {
             "h": 6,
             "w": 8,
-            "x": 16,
+            "x": 8,
             "y": 4
           },
           "id": 7,
@@ -2281,7 +2360,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(machine_npu_nums) ",
+              "expr": "sum(machine_npu_nums) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2703,7 +2782,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(enflame_gcu_count)",
+              "expr": "sum(enflame_gcu_count) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3040,7 +3119,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(mlu_allocated)",
+              "expr": "sum(mlu_allocated) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3121,7 +3200,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(mlu_usage)",
+              "expr": "count(mlu_usage) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
