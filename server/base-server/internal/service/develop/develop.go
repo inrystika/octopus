@@ -460,12 +460,12 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 			return err
 		}
 
-		err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		err1 := s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
 			Time:       time.Now(),
 			NotebookId: nb.Id,
 			Type:       commapi.NotebookEventRecordType_CREATE,
 		})
-		if err != nil { // 插入事件记录出错只打印
+		if err1 != nil { // 插入事件记录出错只打印
 			s.log.Error(ctx, "create notebook event record error:", err)
 		}
 
