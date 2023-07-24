@@ -20,3 +20,5 @@ dependencies:
   - name: sftpgo
     version: 4.10.0
     repository: https://charts.sagikazarmark.dev/
+  - name: metax-gpu-extensions
+    version: 0.6.1
