@@ -73,4 +73,7 @@ kubectl delete -f nvidia-device-plugin.yml
 ## v4.3.2
 
 升级前
-1. 执行kubectl create ns fluid-system
+1. 执行
+```
+kubectl create ns fluid-system
+```
