@@ -529,3 +529,6 @@ xilinx:
 
 metax:
   enabled: false
+
+metax-gpu-extensions:
+  registry: swr.cn-south-1.myhuaweicloud.com/openioctopus
