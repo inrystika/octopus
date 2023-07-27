@@ -1,0 +1,38 @@
+{{- if .Values.iluvatar.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: iluvatar-device-plugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: iluvatar-device-plugin-ds
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        name: iluvatar-device-plugin-ds
+    spec:
+      nodeSelector:
+        hardware-type: ILUVATARGPU
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+      priorityClassName: "system-node-critical"
+      containers:
+        - image: iluvatarcorex/k8s-device-plugin:3.1.1
+          name: iluvatar-device-plugin-ctr
+          securityContext:
+            privileged: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+{{- end }}
