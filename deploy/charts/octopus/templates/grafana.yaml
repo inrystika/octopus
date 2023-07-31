@@ -3437,7 +3437,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(ix_gpu_utilization) / count(ix_gpu_utilization)) or vector(0))",
+              "expr": "sum(ix_gpu_utilization) / count(ix_gpu_utilization) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster iluvatar GPU utilization (avg)",
@@ -3523,7 +3523,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(ix_mem_utilization) / count(ix_mem_utilization)) or vector(0))",
+              "expr": "sum(ix_mem_utilization) / count(ix_mem_utilization) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster iluvatar GPU memory utilization(avg)",
@@ -5165,7 +5165,7 @@ data:
             "h": 4,
             "w": 8,
             "x": 16,
-            "y": 24
+            "y": 18
           },
           "id": 23,
           "interval": null,
@@ -5248,7 +5248,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 16,
-            "y": 28
+            "y": 22
           },
           "id": 24,
           "interval": null,
@@ -5332,7 +5332,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 20,
-            "y": 28
+            "y": 22
           },
           "id": 25,
           "interval": null,
@@ -6171,7 +6171,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 0,
-            "y": 24
+            "y": 18
           },
           "id": 21,
           "legend": {
@@ -6257,7 +6257,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 8,
-            "y": 24
+            "y": 18
           },
           "id": 22,
           "legend": {
