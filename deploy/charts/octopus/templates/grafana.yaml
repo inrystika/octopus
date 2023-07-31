@@ -3634,7 +3634,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(ix_gpu_utilization{pod_name=~\".+\"}) / count(ix_gpu_utilization) * 100 or vector(0)",
+              "expr": "count(ix_gpu_utilization{pod=~\".+\"}) / count(ix_gpu_utilization) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3717,7 +3717,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(ix_gpu_utilization{pod_name=~\".+\"}) or vector(0)",
+              "expr": "count(ix_gpu_utilization{pod=~\".+\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
