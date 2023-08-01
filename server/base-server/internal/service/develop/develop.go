@@ -311,7 +311,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		if nb.AlgorithmId != "" {
 			command = buildCommand(s.conf.Service.DockerCodePath)
 		} else {
-			command = buildCommand(s.conf.Service.DockerUserHomePath)
+			command = buildCommand("/")
 		}
 	}
 
@@ -553,16 +553,20 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob, startJobInfo *startJobInfo) error {
 	volume := "data"
 	volumeMounts := []v1.VolumeMount{
-		{
-			Name:      volume,
-			MountPath: s.conf.Service.DockerUserHomePath,
-			SubPath:   common.GetUserHomePath(nb.UserId),
-			ReadOnly:  false,
-		},
+
 		{
 			Name:      "localtime",
 			MountPath: "/etc/localtime",
 		},
+	}
+
+	if !nb.DisableMountUserHome {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      volume,
+			MountPath: s.conf.Service.DockerUserHomePath,
+			SubPath:   common.GetUserHomePath(nb.UserId),
+			ReadOnly:  false,
+		})
 	}
 
 	if startJobInfo.algorithmPath != "" {

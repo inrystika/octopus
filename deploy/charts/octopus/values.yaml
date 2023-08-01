@@ -373,6 +373,8 @@ influxdb:
     - name: influxdb-initdb
       mountPath: /docker-entrypoint-initdb.d
       readOnly: true
+  service:
+    type: NodePort
   nodeSelector:
     <<: *nodeSelector
   affinity:

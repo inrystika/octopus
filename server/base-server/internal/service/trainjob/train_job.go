@@ -501,21 +501,27 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		//挂载卷
 		volumeMounts := []v1.VolumeMount{
 			{
+				Name:      "localtime",
+				MountPath: "/etc/localtime",
+			},
+		}
+
+		if !job.DisableMountModel {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
 				Name:      volume,
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
-			},
-			{
+			})
+		}
+
+		if !job.DisableMountUserHome {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
 				Name:      volume,
 				MountPath: s.conf.Service.DockerUserHomePath,
 				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
-			},
-			{
-				Name:      "localtime",
-				MountPath: "/etc/localtime",
-			},
+			})
 		}
 
 		if startJobInfo.algorithmPath != "" {
@@ -1133,19 +1139,20 @@ func (s *trainJobService) ListJobTemplate(ctx context.Context, req *api.TrainJob
 }
 
 func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
-	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
-	fileInfos, _ := ioutil.ReadDir(filePath)
-	if len(fileInfos) > 0 {
-		_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-			SpaceId:          trainJob.WorkspaceId,
-			UserId:           trainJob.UserId,
-			AlgorithmId:      trainJob.AlgorithmId,
-			AlgorithmVersion: trainJob.AlgorithmVersion,
-			FilePath:         filePath,
-		})
-		return err
+	if !trainJob.DisableMountModel {
+		filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
+		fileInfos, _ := ioutil.ReadDir(filePath)
+		if len(fileInfos) > 0 {
+			_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+				SpaceId:          trainJob.WorkspaceId,
+				UserId:           trainJob.UserId,
+				AlgorithmId:      trainJob.AlgorithmId,
+				AlgorithmVersion: trainJob.AlgorithmVersion,
+				FilePath:         filePath,
+			})
+			return err
+		}
 	}
-
 	return nil
 }
 

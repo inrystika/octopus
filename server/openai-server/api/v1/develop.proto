@@ -85,6 +85,7 @@ message CreateNotebookRequest {
   string imageUrl = 12;
   map<string, string> envs = 13;
   string command = 14;
+  bool disableMountUserHome = 15;
 }
 
 message CreateNotebookReply {

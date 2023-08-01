@@ -13,31 +13,32 @@ import (
 
 type Notebook struct {
 	dao.Model
-	Id               string                `gorm:"primaryKey;type:varchar(100);not null;comment:Id"`
-	UserId           string                `gorm:"type:varchar(100);not null;index;uniqueIndex:name_userId_spaceId,priority:2;comment:用户Id"`
-	WorkspaceId      string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:3;comment:群组Id"`
-	Name             string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:名称"`
-	Desc             string                `gorm:"type:varchar(1024);not null;default:'';comment:描述"`
-	ImageId          string                `gorm:"type:varchar(100);not null;default:'';comment:镜像Id"`
-	ImageName        string                `gorm:"type:varchar(100);not null;default:'';comment:镜像名称"`
-	ImageVersion     string                `gorm:"type:varchar(100);not null;default:'';comment:镜像版本"`
-	ImageUrl         string                `gorm:"type:varchar(300);not null;default:'';comment:'镜像Url'"`
-	AlgorithmId      string                `gorm:"type:varchar(100);not null;default:'';comment:算法Id"`
-	AlgorithmVersion string                `gorm:"type:varchar(100);not null;default:'';comment:算法版本"`
-	AlgorithmName    string                `gorm:"type:varchar(100);not null;default:'';comment:算法名称"`
-	DatasetId        string                `gorm:"type:varchar(100);not null;default:'';comment:数据集Id"`
-	DatasetVersion   string                `gorm:"type:varchar(100);not null;default:'';comment:数据集版本"`
-	DatasetName      string                `gorm:"type:varchar(100);not null;default:'';comment:数据集名称"`
-	ResourceSpecId   string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格Id"`
-	ResourceSpecName string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格名称"`
-	NotebookJobId    string                `gorm:"type:varchar(100);not null;index;comment:JobId"`
-	Status           string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
-	TaskNumber       int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
-	ResourcePool     string                `gorm:"type:varchar(300);default:'';comment:资源池"`
-	Mounts           common.Mounts         `gorm:"type:json;comment:挂载存储"`
-	Envs             sql.Map               `gorm:"type:json;comment:环境变量"`
-	Command          string                `gorm:"type:text;comment:启动命令"`
-	DeletedAt        soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
+	Id                   string                `gorm:"primaryKey;type:varchar(100);not null;comment:Id"`
+	UserId               string                `gorm:"type:varchar(100);not null;index;uniqueIndex:name_userId_spaceId,priority:2;comment:用户Id"`
+	WorkspaceId          string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:3;comment:群组Id"`
+	Name                 string                `gorm:"type:varchar(100);not null;default:'';uniqueIndex:name_userId_spaceId,priority:1;comment:名称"`
+	Desc                 string                `gorm:"type:varchar(1024);not null;default:'';comment:描述"`
+	ImageId              string                `gorm:"type:varchar(100);not null;default:'';comment:镜像Id"`
+	ImageName            string                `gorm:"type:varchar(100);not null;default:'';comment:镜像名称"`
+	ImageVersion         string                `gorm:"type:varchar(100);not null;default:'';comment:镜像版本"`
+	ImageUrl             string                `gorm:"type:varchar(300);not null;default:'';comment:'镜像Url'"`
+	AlgorithmId          string                `gorm:"type:varchar(100);not null;default:'';comment:算法Id"`
+	AlgorithmVersion     string                `gorm:"type:varchar(100);not null;default:'';comment:算法版本"`
+	AlgorithmName        string                `gorm:"type:varchar(100);not null;default:'';comment:算法名称"`
+	DatasetId            string                `gorm:"type:varchar(100);not null;default:'';comment:数据集Id"`
+	DatasetVersion       string                `gorm:"type:varchar(100);not null;default:'';comment:数据集版本"`
+	DatasetName          string                `gorm:"type:varchar(100);not null;default:'';comment:数据集名称"`
+	ResourceSpecId       string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格Id"`
+	ResourceSpecName     string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格名称"`
+	NotebookJobId        string                `gorm:"type:varchar(100);not null;index;comment:JobId"`
+	Status               string                `gorm:"type:varchar(50);not null;default:'';comment:preparing/pending/running/stopped"`
+	TaskNumber           int                   `gorm:"type:int;not null;default:1;comment:任务个数"`
+	ResourcePool         string                `gorm:"type:varchar(300);default:'';comment:资源池"`
+	Mounts               common.Mounts         `gorm:"type:json;comment:挂载存储"`
+	Envs                 sql.Map               `gorm:"type:json;comment:环境变量"`
+	Command              string                `gorm:"type:text;comment:启动命令"`
+	DisableMountUserHome bool                  `gorm:"default:false;comment:是否不挂载userhome目录"`
+	DeletedAt            soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
 func (Notebook) TableName() string {
@@ -58,6 +59,7 @@ type NotebookJob struct {
 	ResourceSpecPrice float64                    `gorm:"type:decimal(10,2);not null;default:0;comment:资源规格价格"`
 	Detail            string                     `gorm:"column:detail;type:json" json:"detail"`
 }
+
 func (NotebookJob) TableName() string {
 	return "notebook_job"
 }
