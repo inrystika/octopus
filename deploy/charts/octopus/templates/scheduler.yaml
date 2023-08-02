@@ -43,6 +43,14 @@ data:
           binpack.memory: 1
           binpack.resources: nvidia.com/gpu
           binpack.resources.nvidia.com/gpu: 50
+      - name: nodeorder
+        arguments:
+          leastrequested.weight: 0
+          mostrequested.weight: 0
+          nodeaffinity.weight: 10
+          podaffinity.weight: 0
+          balancedresource.weight: 0
+          tainttoleration.weight: 0
 ---
 
 apiVersion: apps/v1

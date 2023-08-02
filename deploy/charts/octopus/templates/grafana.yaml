@@ -976,6 +976,183 @@ data:
           "steppedLine": false,
           "targets": [
             {
+              "expr": "ix_gpu_utilization{pod=\"$pod\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "iluvatar GPU utilization",
+              "metric": "iluvatar_gpu_utilization",
+              "refId": "A",
+              "step": 2
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "iluvatar GPU utilization",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 44
+          },
+          "id": 15,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "ix_mem_utilization{pod=\"$pod\"}",
+              "format": "time_series",
+              "intervalFactor": 2,
+              "legendFormat": "iluvatar GPU memory utilization",
+              "metric": "iluvatar_gpu_mem_utilization",
+              "refId": "A",
+              "step": 2
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "iluvatar GPU memory utilization",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 51
+          },
+          "id": 16,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
               "expr": "sum (container_fs_usage_bytes{device=~\"^/dev/.*$\",pod_name=\"$pod_name\"} or container_fs_usage_bytes{device=~\"^/dev/.*$\",pod=\"$pod\"})",
               "format": "time_series",
               "intervalFactor": 2,
@@ -1037,9 +1214,9 @@ data:
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 44
+            "y": 51
           },
-          "id": 15,
+          "id": 17,
           "legend": {
             "avg": false,
             "current": false,
@@ -1389,8 +1566,8 @@ data:
           "gridPos": {
             "h": 4,
             "w": 8,
-            "x": 8,
-            "y": 0
+            "x": 16,
+            "y": 4
           },
           "id": 2,
           "interval": null,
@@ -1471,9 +1648,9 @@ data:
           },
           "gridPos": {
             "h": 2,
-            "w": 8,
+            "w": 4,
             "x": 16,
-            "y": 0
+            "y": 4
           },
           "id": 3,
           "interval": null,
@@ -1552,9 +1729,9 @@ data:
           },
           "gridPos": {
             "h": 2,
-            "w": 8,
-            "x": 16,
-            "y": 2
+            "w": 4,
+            "x": 20,
+            "y": 4
           },
           "id": 4,
           "interval": null,
@@ -1621,18 +1798,18 @@ data:
           "datasource": "Prometheus",
           "fill": 1,
           "gridPos": {
-            "h": 6,
+            "h": 4,
             "w": 8,
-            "x": 0,
-            "y": 4
+            "x": 8,
+            "y": 0
           },
-          "id": 5,
+          "id": 0,
           "legend": {
             "avg": false,
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1655,15 +1832,94 @@ data:
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
-              "legendFormat": "Received",
+              "legendFormat": "Cluster Network Received",
               "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Cluster Network Received",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "bytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
             },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 0
+          },
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
             {
               "expr": "- sum (rate (container_network_transmit_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m]))",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
-              "legendFormat": "Sent",
+              "legendFormat": "Cluster Network Sent",
               "refId": "B"
             }
           ],
@@ -1671,7 +1927,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Cluster Network I/O pressure",
+          "title": "Cluster Network Sent",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1718,7 +1974,7 @@ data:
           "gridPos": {
             "h": 6,
             "w": 8,
-            "x": 8,
+            "x": 0,
             "y": 4
           },
           "id": 6,
@@ -1804,7 +2060,7 @@ data:
           "gridPos": {
             "h": 6,
             "w": 8,
-            "x": 16,
+            "x": 8,
             "y": 4
           },
           "id": 7,
@@ -2281,7 +2537,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(machine_npu_nums) ",
+              "expr": "sum(machine_npu_nums) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2703,7 +2959,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(enflame_gcu_count)",
+              "expr": "sum(enflame_gcu_count) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -2722,6 +2978,8 @@ data:
           ],
           "valueName": "current"
         },
+
+
         {
           "aliasColors": {},
           "bars": false,
@@ -2733,7 +2991,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 0,
-            "y": 28
+            "y": 22
           },
           "id": 25,
           "legend": {
@@ -2819,7 +3077,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 8,
-            "y": 28
+            "y": 22
           },
           "id": 26,
           "legend": {
@@ -2916,7 +3174,7 @@ data:
             "h": 4,
             "w": 8,
             "x": 16,
-            "y": 30
+            "y": 22
           },
           "id": 27,
           "interval": null,
@@ -3000,7 +3258,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 16,
-            "y": 32
+            "y": 26
           },
           "id": 28,
           "interval": null,
@@ -3040,7 +3298,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(mlu_allocated)",
+              "expr": "sum(mlu_allocated) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3081,7 +3339,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 20,
-            "y": 32
+            "y": 26
           },
           "id": 29,
           "interval": null,
@@ -3121,7 +3379,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(mlu_usage)",
+              "expr": "count(mlu_usage) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -3129,6 +3387,425 @@ data:
           ],
           "thresholds": "100000000000000",
           "title": "MLU Count",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 22
+          },
+          "id": 30,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(ix_gpu_utilization) / count(ix_gpu_utilization) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Cluster iluvatar GPU utilization (avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Cluster iluvatar GPU utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 22
+          },
+          "id": 31,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(ix_mem_utilization) / count(ix_mem_utilization) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Cluster iluvatar GPU memory utilization(avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Cluster iluvatar GPU memory utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "percent",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": true,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 28
+          },
+          "id": 32,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "pluginVersion": "6.2.0",
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization{pod=~\".+\"}) / count(ix_gpu_utilization) * 100 or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "65,90",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "iluvatar GPU Usage",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 32
+          },
+          "id": 33,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization{pod=~\".+\"}) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "100000000000000",
+          "title": "Used iluvatar GPUs",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 32
+          },
+          "id": 34,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "100000000000000",
+          "title": "iluvatar GPU Count",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -3164,7 +3841,7 @@ data:
             "x": 0,
             "y": 36
           },
-          "id": 30,
+          "id": 35,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3246,7 +3923,7 @@ data:
             "x": 8,
             "y": 36
           },
-          "id": 31,
+          "id": 36,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3328,7 +4005,7 @@ data:
             "x": 16,
             "y": 36
           },
-          "id": 32,
+          "id": 37,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3410,7 +4087,7 @@ data:
             "x": 0,
             "y": 40
           },
-          "id": 33,
+          "id": 38,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3492,7 +4169,7 @@ data:
             "x": 4,
             "y": 40
           },
-          "id": 34,
+          "id": 39,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3574,7 +4251,7 @@ data:
             "x": 8,
             "y": 40
           },
-          "id": 35,
+          "id": 40,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3656,7 +4333,7 @@ data:
             "x": 12,
             "y": 40
           },
-          "id": 36,
+          "id": 41,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3738,7 +4415,7 @@ data:
             "x": 16,
             "y": 40
           },
-          "id": 37,
+          "id": 42,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -3820,7 +4497,7 @@ data:
             "x": 20,
             "y": 40
           },
-          "id": 38,
+          "id": 43,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -4488,7 +5165,7 @@ data:
             "h": 4,
             "w": 8,
             "x": 16,
-            "y": 24
+            "y": 18
           },
           "id": 23,
           "interval": null,
@@ -4571,7 +5248,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 16,
-            "y": 28
+            "y": 22
           },
           "id": 24,
           "interval": null,
@@ -4655,7 +5332,7 @@ data:
             "h": 2,
             "w": 4,
             "x": 20,
-            "y": 28
+            "y": 22
           },
           "id": 25,
           "interval": null,
@@ -5494,7 +6171,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 0,
-            "y": 24
+            "y": 18
           },
           "id": 21,
           "legend": {
@@ -5580,7 +6257,7 @@ data:
             "h": 6,
             "w": 8,
             "x": 8,
-            "y": 24
+            "y": 18
           },
           "id": 22,
           "legend": {
@@ -5656,6 +6333,430 @@ data:
           }
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 24
+          },
+          "id": 26,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(ix_gpu_utilization{name=~\"^$Node$\"}) / count(ix_gpu_utilization{name=~\"^$Node$\"}) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Node iluvatar GPU  utilization (avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Node iluvatar GPU  utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 24
+          },
+          "id": 27,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "options": {},
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(ix_mem_utilization{name=~\"^$Node$\"}) / count(ix_mem_utilization{name=~\"^$Node$\"}) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Node iluvatar GPU  memory utilization(avg)",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Node iluvatar GPU  memory utilization (avg)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "percent",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": true,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 24
+          },
+          "id": 28,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization{pod=~\".+\",name=~\"^$Node$\"})/ count(ix_gpu_utilization{name=~\"^$Node$\"}) * 100 or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "65,90",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Node iluvatar GPU usage",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 16,
+            "y": 28
+          },
+          "id": 29,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization{pod=~\".+\",name=~\"^$Node$\"}) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Used iluvatar GPUs",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+        {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": true,
+          "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+          ],
+          "datasource": "Prometheus",
+          "decimals": null,
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 2,
+            "w": 4,
+            "x": 20,
+            "y": 28
+          },
+          "id": 30,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "options": {},
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "count(ix_gpu_utilization{name=~\"^$Node$\"}) or vector(0)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "100000000000",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Total iluvatar GPU",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "current"
+        },
+
+
+        {
           "cacheTimeout": null,
           "colorBackground": false,
           "colorValue": true,
@@ -5679,7 +6780,7 @@ data:
             "x": 0,
             "y": 30
           },
-          "id": 26,
+          "id": 31,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5763,7 +6864,7 @@ data:
             "x": 8,
             "y": 30
           },
-          "id": 29,
+          "id": 32,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5846,7 +6947,7 @@ data:
             "x": 16,
             "y": 30
           },
-          "id": 32,
+          "id": 33,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -5930,7 +7031,7 @@ data:
             "x": 0,
             "y": 34
           },
-          "id": 27,
+          "id": 34,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6014,7 +7115,7 @@ data:
             "x": 4,
             "y": 34
           },
-          "id": 28,
+          "id": 35,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6098,7 +7199,7 @@ data:
             "x": 8,
             "y": 34
           },
-          "id": 30,
+          "id": 36,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6181,7 +7282,7 @@ data:
             "x": 12,
             "y": 34
           },
-          "id": 31,
+          "id": 37,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6265,7 +7366,7 @@ data:
             "x": 16,
             "y": 34
           },
-          "id": 33,
+          "id": 38,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6349,7 +7450,7 @@ data:
             "x": 20,
             "y": 34
           },
-          "id": 34,
+          "id": 39,
           "interval": null,
           "links": [],
           "mappingType": 1,
@@ -6421,7 +7522,7 @@ data:
             "x": 0,
             "y": 36
           },
-          "id": 35,
+          "id": 40,
           "legend": {
             "avg": false,
             "current": false,

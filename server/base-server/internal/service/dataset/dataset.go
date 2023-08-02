@@ -9,15 +9,20 @@ import (
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
+	"server/common/constant"
 	commctx "server/common/context"
 	"server/common/errors"
 	"server/common/graceful"
+	"server/common/log"
 	"server/common/utils"
 	"time"
 
-	"server/common/log"
-
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
+	Common "github.com/fluid-cloudnative/fluid/pkg/common"
 	"github.com/jinzhu/copier"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -30,6 +35,7 @@ type datasetService struct {
 	log          *log.Helper
 	data         *data.Data
 	lableService api.LableServiceServer
+	tieredStore  fluidv1.TieredStore
 }
 
 func NewDatasetService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, lableService api.LableServiceServer) api.DatasetServiceServer {
@@ -129,8 +135,8 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 	for _, d := range datasetsTbl {
 		ids = append(ids, d.Id)
 	}
-
 	idsV, err := s.data.DatasetDao.ListDatasetVersionLatestVersion(ctx, ids)
+
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +151,6 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 		dataset.CreatedAt = n.CreatedAt.Unix()
 		dataset.UpdatedAt = n.UpdatedAt.Unix()
 		dataset.LatestVersion = common.VersionStrBuild(idsV[n.Id])
-
 		datasetType, err := s.lableService.GetLable(ctx, &api.GetLableRequest{Id: n.TypeId})
 		if err != nil {
 			dataset.TypeDesc = ""
@@ -155,6 +160,7 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 
 		if len(n.ApplyIds) > 0 {
 			datasetApply, err := s.lableService.ListLable(ctx, &api.ListLableRequest{PageIndex: 1, PageSize: int64(len(n.ApplyIds)), Ids: n.ApplyIds})
+
 			if err != nil {
 				return nil, err
 			}
@@ -168,7 +174,6 @@ func (s *datasetService) ListDataset(ctx context.Context, req *api.ListDatasetRe
 
 		datasets = append(datasets, dataset)
 	}
-
 	return &api.ListDatasetReply{
 		TotalSize: totalSize,
 		Datasets:  datasets,
@@ -299,11 +304,13 @@ func (s *datasetService) CreateDatasetVersion(ctx context.Context, req *api.Crea
 
 func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *api.ConfirmUploadDatasetVersionRequest) (*api.ConfirmUploadDatasetVersionReply, error) {
 	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+
 	if err != nil {
 		return nil, err
 	}
 
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
 	if err != nil {
 		return nil, err
 	}
@@ -314,6 +321,7 @@ func (s *datasetService) ConfirmUploadDatasetVersion(ctx context.Context, req *a
 
 	fromBucket, fromObject := getTempMinioPath(dataset, req.Version, req.FileName)
 	isExist, err := s.data.Minio.ObjectExist(fromBucket, fromObject)
+
 	if err != nil {
 		return nil, err
 	}
@@ -385,11 +393,10 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 	if err != nil {
 		return nil, err
 	}
-
 	versions := make([]*api.DatasetVersion, 0)
 	for _, n := range versionsTbl {
 		version := &api.DatasetVersion{}
-		err := copier.Copy(version, n)
+		err := copier.CopyWithOption(version, n, copier.Option{DeepCopy: true})
 		if err != nil {
 			return nil, errors.Errorf(err, errors.ErrorStructCopy)
 		}
@@ -397,7 +404,6 @@ func (s *datasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 		version.UpdatedAt = n.UpdatedAt.Unix()
 		versions = append(versions, version)
 	}
-
 	return &api.ListDatasetVersionReply{
 		TotalSize: totalSize,
 		Versions:  versions,
@@ -425,6 +431,11 @@ func (s *datasetService) ListCommDatasetVersion(ctx context.Context, req *api.Li
 		}
 		version.CreatedAt = n.CreatedAt.Unix()
 		version.UpdatedAt = n.UpdatedAt.Unix()
+		if n.Cache == nil {
+			version.Cache = nil
+		} else {
+			version.Cache.Quota = n.Cache.Quota
+		}
 		versions = append(versions, version)
 	}
 
@@ -670,11 +681,13 @@ func (s *datasetService) UpdateDataset(ctx context.Context, req *api.UpdateDatas
 
 func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.UploadDatasetVersionRequest) (*api.UploadDatasetVersionReply, error) {
 	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+
 	if err != nil {
 		return nil, err
 	}
 
 	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+
 	if err != nil {
 		return nil, err
 	}
@@ -682,12 +695,11 @@ func (s *datasetService) UploadDatasetVersion(ctx context.Context, req *api.Uplo
 	if !utils.IntInSlice(version.Status, statusForUpload) {
 		return nil, errors.Errorf(nil, errors.ErrorDatasetStatusForbidden)
 	}
-
 	uploadUrl, err := s.getUploadUrl(dataset, req.Version, req.FileName, req.Domain)
+
 	if err != nil {
 		return nil, err
 	}
-
 	return &api.UploadDatasetVersionReply{
 		UploadUrl: uploadUrl,
 	}, nil
@@ -724,7 +736,6 @@ func (s *datasetService) GetDatasetVersion(ctx context.Context, req *api.GetData
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-
 	return reply, nil
 }
 
@@ -829,4 +840,186 @@ func (s *datasetService) getPath(dataset *model.Dataset, newV string) string {
 	toBucket, toObject := getMinioPath(dataset, newV)
 	toPath := fmt.Sprintf("%s/%s", toBucket, toObject)
 	return toPath
+}
+func (s *datasetService) CreateCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error) {
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+
+	if dataset.UserId == "" {
+		return nil, errors.Errorf(nil, errors.OnlySupportCacheUserDataset)
+	}
+	namespace := dataset.UserId
+	cacheName := common.GetCacheName()
+
+	if version.Cache != nil {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetCacheExist)
+	}
+
+	quantity, err := resource.ParseQuantity(req.Cache.Quota)
+	if err != nil {
+		return nil, errors.Errorf(nil, errors.ErrorFormatParseFailed)
+	}
+
+	if req.Cache.Replicas == 0 {
+		req.Cache.Replicas = 1
+	}
+	alluxioRuntime := fluidv1.AlluxioRuntime{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "AlluxioRuntime",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cacheName,
+			Namespace: namespace,
+		},
+		Spec: fluidv1.AlluxioRuntimeSpec{
+			Replicas: req.Cache.Replicas,
+			TieredStore: fluidv1.TieredStore{Levels: []fluidv1.Level{
+				{MediumType: Common.MediumType("HDD"),
+					Path:  req.Cache.Path,
+					Quota: &quantity,
+					High:  "0.95",
+					Low:   "0.7"},
+			}},
+			// minio域名解析
+			Properties: map[string]string{"alluxio.underfs.s3.disable.dns.buckets": "true"},
+		},
+	}
+	err = s.data.Cluster.CreateAlluxioRuntime(ctx, &alluxioRuntime)
+	if err != nil {
+		return nil, err
+	}
+
+	Dataset := fluidv1.Dataset{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "data.fluid.io/v1alpha1",
+			Kind:       "Dataset",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cacheName,
+			Namespace: namespace,
+		},
+		Spec: fluidv1.DatasetSpec{
+			Mounts: []fluidv1.Mount{
+				{
+					MountPoint: fmt.Sprintf("s3://%s", version.Path),
+					Name:       cacheName,
+					Options: map[string]string{
+						"aws.accessKeyId":             s.conf.Data.Minio.Base.AccessKeyID,
+						"aws.secretKey":               s.conf.Data.Minio.Base.SecretAccessKey,
+						"alluxio.underfs.s3.endpoint": fmt.Sprintf("%s%s", "http://", s.conf.Data.Minio.Base.EndPoint),
+					},
+				},
+			},
+			PlacementMode: "Shared",
+			AccessModes:   []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			NodeAffinity: &fluidv1.CacheableNodeAffinity{Required: &v1.NodeSelector{NodeSelectorTerms: []v1.NodeSelectorTerm{
+				{MatchExpressions: []v1.NodeSelectorRequirement{
+					{
+						Key:      req.Cache.NodeLabelKey, //不是每个节点空间都足够，数据集缓存的节点需要打此label
+						Values:   []string{req.Cache.NodeLabelValue},
+						Operator: v1.NodeSelectorOpIn,
+					},
+				}},
+			}}},
+		},
+	}
+	err = s.data.Cluster.CreateFluidDataset(ctx, &Dataset)
+	if err != nil {
+		return nil, err
+	}
+
+	datasetLoad := &fluidv1.DataLoad{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cacheName,
+			Namespace: namespace,
+		},
+		Spec: fluidv1.DataLoadSpec{
+			Dataset: fluidv1.TargetDataset{
+				Name:      cacheName,
+				Namespace: namespace,
+			},
+		},
+	}
+	err = s.data.Cluster.CreateDataLoad(ctx, datasetLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	cache := &model.Cache{
+		Quota:          req.Cache.Quota,
+		Name:           cacheName,
+		Replicas:       req.Cache.Replicas,
+		Path:           req.Cache.Path,
+		NodeLabelKey:   req.Cache.NodeLabelKey,
+		NodeLabelValue: req.Cache.NodeLabelValue,
+	}
+	err = s.data.DatasetDao.UpdateDatasetVersionSelective(ctx, &model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     cache,
+	})
+
+	return &api.CacheReply{}, nil
+
+}
+func (s *datasetService) DeleteCache(ctx context.Context, req *api.DeleteCacheRequest) (*api.CacheReply, error) {
+	dataset, err := s.data.DatasetDao.GetDataset(ctx, req.DatasetId)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := s.data.DatasetDao.GetDatasetVersion(ctx, req.DatasetId, req.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	if version.Cache == nil {
+		return nil, errors.Errorf(nil, errors.ErrorDatasetCacheNotExist)
+	}
+
+	query := &model.TrainJobListQuery{Statuses: []string{constant.RUNNING, constant.PENDING}, UserId: dataset.UserId}
+	jobList, _, err := s.data.TrainJobDao.GetTrainJobList(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	//判断是否正在被运行中或者等待中的任务使用
+	for _, job := range jobList {
+		if req.DatasetId == job.DataSetId && req.Version == job.DataSetVersion {
+			return nil, errors.Errorf(nil, errors.ErrorDatasetisBeingUsing)
+		}
+	}
+
+	namespace := dataset.UserId
+	cacheName := version.Cache.Name
+
+	err = s.data.Cluster.DeleteFluidDataset(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteAlluxioRuntime(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.Cluster.DeleteDataLoad(ctx, namespace, cacheName)
+	if err != nil {
+		return nil, err
+	}
+	err = s.data.DatasetDao.UpdateDatasetVersionCache(ctx, &model.DatasetVersion{
+		DatasetId: req.DatasetId,
+		Version:   req.Version,
+		Cache:     nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &api.CacheReply{}, nil
 }

@@ -4,9 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
-
 	"server/common/third_party/kratos/config"
+	"strings"
 )
 
 var _ config.Source = (*file)(nil)

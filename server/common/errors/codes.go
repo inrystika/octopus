@@ -60,6 +60,7 @@ const (
 	ErrorK8sDeletePVFailed      = 10074 // k8s删除PV失败
 	ErrorK8sDeletePVCFailed     = 10075 // k8s删除PVC失败
 	ErrorK8sDeleteSecretFailed  = 10076 // k8s删除Secret失败
+	ErrorFluidInitFailed        = 10077 // Fluid初始化失败
 	// Harbor操作相关错误
 	ErrorHarborProjectExists       = 10080 // harbor项目已存在
 	ErrorHarborCreateProjectFailed = 10081 // harbor创建项目失败
@@ -195,6 +196,10 @@ const (
 	ErrorDatasetNoPermission    = 19003 // 没有权限操作
 	ErrorDatasetRepeat          = 19004 // 数据集重复
 	ErrorDatasetStatusForbidden = 19005 // 状态不允许操作
+	ErrorDatasetisBeingUsing    = 19006 //数据集正在被使用
+	ErrorDatasetCacheExist      = 19007 //缓存已存在
+	OnlySupportCacheUserDataset = 19008 //只支持缓存用户数据集
+	ErrorDatasetCacheNotExist   = 19009 //缓存不存在
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered   = 19501 // 标签被引用，不能删除
@@ -421,6 +426,10 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorDatasetNoPermission:    {codeType: PermissionDenied, msg: "no permission"},
 	ErrorDatasetRepeat:          {codeType: AlreadyExists, msg: "dataset repeat"},
 	ErrorDatasetStatusForbidden: {codeType: OutOfRange, msg: "status forbidden"},
+	ErrorDatasetisBeingUsing:    {codeType: PermissionDenied, msg: "dataset is being used"},
+	ErrorDatasetCacheExist:      {codeType: AlreadyExists, msg: "dataset cache exist"},
+	OnlySupportCacheUserDataset: {codeType: OutOfRange, msg: "only support cache user dataset "},
+	ErrorDatasetCacheNotExist:   {codeType: OutOfRange, msg: "dataset cache not exist "},
 
 	/* 19501~20000 标签管理错误*/
 	ErrorLableRefered:   {codeType: Unimplemented, msg: "lable refered"},

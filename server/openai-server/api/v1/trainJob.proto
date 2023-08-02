@@ -120,6 +120,8 @@ message TrainJobRequest {
   string imageUrl = 11[(validate.rules).string = {min_len: 0}];
   string resourcePool = 12[(validate.rules).string = {min_len: 1}];
   repeated common.api.v1.Mount mounts = 13;
+  bool disableMountUserHome = 14;
+  bool disableMountModel = 15;
 }
 
 message Config {

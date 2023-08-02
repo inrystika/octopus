@@ -68,7 +68,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 	d.Redis = redis
-	cluster, clusterCancel := cluster.NewCluster(confData, logger)
+	cluster, clusterCancel ,err:= cluster.NewCluster(confData, logger)
 	d.Cluster = cluster
 	prometheus := prometheus.NewPrometheus(confData.Prometheus.BaseUrl)
 	d.Prometheus = prometheus

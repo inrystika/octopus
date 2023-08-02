@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	innerapi "server/base-server/api/v1"
 	commctx "server/common/context"
 	"server/common/errors"
@@ -10,8 +11,6 @@ import (
 	api "server/openai-server/api/v1"
 	"server/openai-server/internal/conf"
 	"server/openai-server/internal/data"
-
-	"github.com/jinzhu/copier"
 )
 
 type TrainJobService struct {
@@ -32,7 +31,6 @@ func NewTrainJobService(conf *conf.Bootstrap, logger log.Logger, data *data.Data
 //创建训练任务
 func (s *TrainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest) (*api.TrainJobReply, error) {
 	userId, spaceId := commctx.UserIdAndSpaceIdFromContext(ctx)
-
 	innerReq := &innerapi.TrainJobRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {

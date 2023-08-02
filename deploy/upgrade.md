@@ -69,3 +69,11 @@ alter table model_deploy modify res_spec_price decimal(10,2) null comment '资�
 wget https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.9.0/nvidia-device-plugin.yml
 kubectl delete -f nvidia-device-plugin.yml
 ```
+
+## v4.3.2
+
+升级前
+1. 执行
+```
+kubectl create ns fluid-system
+```

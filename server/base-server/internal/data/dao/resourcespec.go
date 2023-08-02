@@ -1,13 +1,11 @@
 package dao
 
 import (
+	"gorm.io/gorm"
 	"server/base-server/internal/data/dao/model/resources"
 	"server/common/errors"
-	"server/common/utils"
-
 	"server/common/log"
-
-	"gorm.io/gorm"
+	"server/common/utils"
 )
 
 type ResourceSpecDao interface {
@@ -35,6 +33,7 @@ func (d *resourceSepcDao) ListResourceSpec(pageIndex int32, pageSize int32) ([]*
 	if pageIndex < 0 || pageSize < 0 {
 		return nil, errors.Errorf(nil, errors.ErrorDBFindFailed)
 	} else if pageIndex == 0 && pageSize == 0 {
+
 		if err := db.Find(&resourceSpec).Error; err != nil {
 			return nil, err
 		}

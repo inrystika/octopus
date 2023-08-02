@@ -251,6 +251,7 @@ type startJobInfo struct {
 	algorithmPath string
 	datasetPath   string
 	specs         map[string]*startJobInfoSpec
+	cacheName     string
 }
 
 func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJob) (*startJobInfo, error) {
@@ -323,6 +324,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 	}
 
 	datasetPath := ""
+	cacheName := ""
 	if job.DataSetId != "" { //判空，允许通过API调用不传此参数
 		//dataSet
 		dataSetVersion, err := s.getDatasetAndCheckPerm(ctx, job.UserId, job.WorkspaceId, job.DataSetId, job.DataSetVersion)
@@ -334,6 +336,10 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		}
 		job.DatasetName = dataSetVersion.Dataset.Name
 		datasetPath = dataSetVersion.Version.Path
+
+		if dataSetVersion.Version.Cache != nil {
+			cacheName = dataSetVersion.Version.Cache.Name
+		}
 	}
 
 	//resource spec info
@@ -457,12 +463,15 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		algorithmPath: algorithmPath,
 		datasetPath:   datasetPath,
 		specs:         startJobSpecs,
+		cacheName:     cacheName,
 	}, nil
 }
 
 //提交任务并将算法名称、数据集名称等字段赋值
 func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, startJobInfo *startJobInfo) (closeFunc, error) {
 	var err error
+
+	//var err error
 	closes := make([]closeFunc, 0)
 	resFunc := func(ctx context.Context) error {
 		var err2 error
@@ -486,28 +495,33 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	volume := "data"
 	minAvailable := 0
 	tasks := make([]typeJob.TaskSpec, 0)
-
 	for idx, i := range job.Config {
 		taskName := fmt.Sprintf("%s%d", k8sTaskNamePrefix, idx)
 		minAvailable += i.TaskNumber
 		//挂载卷
 		volumeMounts := []v1.VolumeMount{
 			{
+				Name:      "localtime",
+				MountPath: "/etc/localtime",
+			},
+		}
+
+		if !job.DisableMountModel {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
 				Name:      volume,
 				MountPath: s.conf.Service.DockerModelPath,
 				SubPath:   s.getModelSubPath(job),
 				ReadOnly:  false,
-			},
-			{
+			})
+		}
+
+		if !job.DisableMountUserHome {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
 				Name:      volume,
 				MountPath: s.conf.Service.DockerUserHomePath,
 				SubPath:   common.GetUserHomePath(job.UserId),
 				ReadOnly:  false,
-			},
-			{
-				Name:      "localtime",
-				MountPath: "/etc/localtime",
-			},
+			})
 		}
 
 		if startJobInfo.algorithmPath != "" {
@@ -524,16 +538,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 					ReadOnly:  false,
 				})
 
-		}
-
-		if startJobInfo.datasetPath != "" {
-			volumeMounts = append(volumeMounts,
-				v1.VolumeMount{
-					Name:      volume,
-					MountPath: s.conf.Service.DockerDatasetPath,
-					SubPath:   startJobInfo.datasetPath,
-					ReadOnly:  true,
-				})
 		}
 
 		volumes := []v1.Volume{
@@ -557,6 +561,37 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				VolumeSource: v1.VolumeSource{
 					EmptyDir: &v1.EmptyDirVolumeSource{}},
 			},
+		}
+
+		if startJobInfo.datasetPath != "" {
+
+			if startJobInfo.cacheName != "" {
+				volume := v1.Volume{
+					Name: "dataset",
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: startJobInfo.cacheName,
+						},
+					},
+				}
+				volumes = append(volumes, volume)
+
+				volumeMounts = append(volumeMounts,
+					v1.VolumeMount{
+						Name:      "dataset",
+						MountPath: s.conf.Service.DockerDatasetPath,
+						ReadOnly:  true,
+						SubPath:   startJobInfo.cacheName,
+					})
+			} else {
+				volumeMounts = append(volumeMounts,
+					v1.VolumeMount{
+						Name:      volume,
+						MountPath: s.conf.Service.DockerDatasetPath,
+						SubPath:   startJobInfo.datasetPath,
+						ReadOnly:  true,
+					})
+			}
 		}
 
 		vs, vms := common.GetVolumes(job.Mounts, volume)
@@ -628,6 +663,24 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 				{Event: vcBus.TaskCompletedEvent, Action: vcBus.CompleteJobAction},
 			}
 		}
+
+		if startJobInfo.cacheName != "" {
+			task.Template.Spec.Affinity = &v1.Affinity{NodeAffinity: &v1.NodeAffinity{
+				PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
+					{
+						Weight: 50,
+						Preference: v1.NodeSelectorTerm{MatchExpressions: []v1.NodeSelectorRequirement{
+							{
+								Key:      fmt.Sprintf("fluid.io/s-%s-%s", job.UserId, startJobInfo.cacheName),
+								Values:   []string{"true"},
+								Operator: v1.NodeSelectorOpIn,
+							},
+						}},
+					},
+				},
+			}}
+		}
+
 		//根据资源类型任务区别挂载与配置
 		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
 			if strings.HasPrefix(string(k), common.RdmaPrefix) {
@@ -1086,19 +1139,20 @@ func (s *trainJobService) ListJobTemplate(ctx context.Context, req *api.TrainJob
 }
 
 func (s *trainJobService) addModel(ctx context.Context, trainJob *model.TrainJob) error {
-	filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
-	fileInfos, _ := ioutil.ReadDir(filePath)
-	if len(fileInfos) > 0 {
-		_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
-			SpaceId:          trainJob.WorkspaceId,
-			UserId:           trainJob.UserId,
-			AlgorithmId:      trainJob.AlgorithmId,
-			AlgorithmVersion: trainJob.AlgorithmVersion,
-			FilePath:         filePath,
-		})
-		return err
+	if !trainJob.DisableMountModel {
+		filePath := fmt.Sprintf("%s/%s", s.conf.Data.Minio.Base.MountPath, s.getModelSubPath(trainJob))
+		fileInfos, _ := ioutil.ReadDir(filePath)
+		if len(fileInfos) > 0 {
+			_, err := s.modelService.AddMyModel(ctx, &api.AddMyModelRequest{
+				SpaceId:          trainJob.WorkspaceId,
+				UserId:           trainJob.UserId,
+				AlgorithmId:      trainJob.AlgorithmId,
+				AlgorithmVersion: trainJob.AlgorithmVersion,
+				FilePath:         filePath,
+			})
+			return err
+		}
 	}
-
 	return nil
 }
 

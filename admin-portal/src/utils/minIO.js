@@ -2,6 +2,7 @@ import requestMinIO from '@/utils/requestMinIO'
 import { Message } from 'element-ui'
 // import store from '@/store'
 export async function minIO(payload) {
+  console.log(payload.uploadUrl)
   const res = await requestMinIO({
     url: payload.uploadUrl,
     method: "put",

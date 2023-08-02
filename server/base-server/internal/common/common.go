@@ -7,6 +7,8 @@ import (
 	"path"
 	commapi "server/common/api/v1"
 
+	"k8s.io/apimachinery/pkg/util/rand"
+
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -58,4 +60,9 @@ func GetVolumes(mounts Mounts, octopusVolume string) ([]v1.Volume, []v1.VolumeMo
 	}
 
 	return volumes, volumeMounts
+}
+
+func GetCacheName() string {
+	return "cache" + rand.String(10)
+
 }

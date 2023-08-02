@@ -45,6 +45,10 @@ service DatasetService {
   rpc UploadDatasetVersion (UploadDatasetVersionRequest) returns (UploadDatasetVersionReply);
   // 确认上传成功
   rpc ConfirmUploadDatasetVersion (ConfirmUploadDatasetVersionRequest) returns (ConfirmUploadDatasetVersionReply);
+  //开启缓存加速
+  rpc createCache (CacheRequest) returns (CacheReply);
+  //关闭缓存加速
+  rpc deleteCache (DeleteCacheRequest) returns (CacheReply);
 }
 
 enum DatasetSourceType {
@@ -160,6 +164,7 @@ message DatasetVersion {
   string desc = 5;
   string path = 6;
   int32 status = 7;
+  Cache cache = 8;
 }
 
 message ListDatasetVersionReply {
@@ -315,4 +320,26 @@ message UploadDatasetVersionRequest {
 
 message UploadDatasetVersionReply {
   string uploadUrl = 1;
+}
+
+message CacheRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+  Cache cache = 3;
+
+}
+message DeleteCacheRequest {
+  string datasetId = 1[(validate.rules).string = {min_len: 1}];
+  string version = 2[(validate.rules).string = {min_len: 1}];
+
+}
+message Cache {
+  string quota = 1;
+  string name = 2;
+  int32 replicas = 3;
+  string path = 4;
+  string nodeLabelKey = 5;
+  string nodeLabelValue = 6;
+}
+message CacheReply {
 }

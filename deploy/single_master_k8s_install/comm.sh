@@ -220,10 +220,6 @@ install_k8s() {
 	docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2
 	docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2 k8s.gcr.io/coredns:1.6.2
 	docker rmi registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2
-	docker pull calico/cni:v3.9.0
-	docker pull calico/node:v3.9.0
-	docker pull calico/pod2daemon-flexvol:v3.9.0
-	docker pull calico/kube-controllers:v3.9.0
     echo -e "---------------------\033[31m pull images success \033[0m---------------------"
 }
 

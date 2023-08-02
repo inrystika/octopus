@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	seldonv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
@@ -34,6 +35,7 @@ import (
 
 	typejob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
+	fluidv1 "github.com/fluid-cloudnative/fluid/api/v1alpha1"
 	seldonclient "github.com/seldonio/seldon-core/operator/client/machinelearning.seldon.io/v1/clientset/versioned"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -51,6 +53,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	schedulingv1beta1 "volcano.sh/apis/pkg/apis/scheduling/v1beta1"
 )
 
@@ -72,7 +75,6 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	if err1 == nil {
 		return cfg, nil
 	}
-
 	cfg, err2 := buildConfigWithDefaultPath(configPath)
 	if err2 == nil {
 		return cfg, nil
@@ -80,7 +82,7 @@ func buildConfigFromFlagsOrCluster(configPath string) (*rest.Config, error) {
 	return nil, fmt.Errorf("load kubernetes config failed %v %v", err1, err2)
 }
 
-func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc) {
+func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.CancelFunc, error) {
 	restConfig, err := buildConfigFromFlagsOrCluster(confData.Kubernetes.ConfigPath)
 	restConfig.QPS = float32(confData.Kubernetes.Qps)
 	if err != nil {
@@ -89,7 +91,7 @@ func NewCluster(confData *conf.Data, logger log.Logger) (Cluster, context.Cancel
 	return newKubernetesCluster(restConfig, logger)
 }
 
-func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc) {
+func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, context.CancelFunc, error) {
 	c, cancel := context.WithCancel(context.Background())
 	kc := &kubernetesCluster{
 		ctx:          c,
@@ -101,7 +103,16 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 		log:          log.NewHelper("Cluster", logger),
 		config:       config,
 	}
-
+	scheme := runtime.NewScheme()
+	err := fluidv1.AddToScheme(scheme)
+	if err != nil {
+		return nil, nil, errors.Errorf(err, errors.ErrorFluidInitFailed)
+	}
+	rtClient, err := client.New(config, client.Options{Scheme: scheme})
+	if err != nil {
+		return nil, nil, errors.Errorf(err, errors.ErrorFluidInitFailed)
+	}
+	kc.rtClient = rtClient
 	informerFactory := informers.NewSharedInformerFactory(kc.kubeclient, 0)
 	naInformerFactory := nainformer.NewSharedInformerFactory(kc.naClient, 0)
 
@@ -127,10 +138,9 @@ func newKubernetesCluster(config *rest.Config, logger log.Logger) (Cluster, cont
 	vcjobInformer := jobInformerFactory.Batch().V1alpha1().Jobs()
 	kc.vcjobInformer = vcjobInformer
 	kc.vcjobLister = vcjobInformer.Lister()
-
 	kc.Run()
 	kc.WaitForCacheSync()
-	return kc, cancel
+	return kc, cancel, nil
 }
 
 type kubernetesCluster struct {
@@ -147,8 +157,9 @@ type kubernetesCluster struct {
 	nodeInformer       infov1.NodeInformer
 	nodeActionInformer nainformerv1.NodeActionInformer
 
-	nodes  map[string]*v1.Node
-	config *rest.Config
+	nodes    map[string]*v1.Node
+	config   *rest.Config
+	rtClient client.Client
 }
 
 func (kc *kubernetesCluster) Run() {
@@ -648,11 +659,71 @@ func (kc *kubernetesCluster) CreateJob(ctx context.Context, job *typejob.Job) er
 }
 
 func (kc *kubernetesCluster) DeleteJob(ctx context.Context, namespace, name string) error {
-	err := kc.vcClient.BatchV1alpha1().Jobs(namespace).
-		Delete(ctx, name, metav1.DeleteOptions{})
-
+	err := kc.vcClient.BatchV1alpha1().Jobs(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if nil != err && kubeerrors.IsNotFound(err) {
 		return nil
 	}
 	return err
+}
+func (kc *kubernetesCluster) CreateFluidDataset(ctx context.Context, dataset *fluidv1.Dataset) error {
+	err := kc.rtClient.Create(ctx, dataset)
+	fmt.Print(err, "创建数据集")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteFluidDataset(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.Dataset{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (kc *kubernetesCluster) CreateAlluxioRuntime(ctx context.Context, alluxio *fluidv1.AlluxioRuntime) error {
+	err := kc.rtClient.Create(ctx, alluxio)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteAlluxioRuntime(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.AlluxioRuntime{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) CreateDataLoad(ctx context.Context, dataLoad *fluidv1.DataLoad) error {
+	err := kc.rtClient.Create(ctx, dataLoad)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kc *kubernetesCluster) DeleteDataLoad(ctx context.Context, namespace string, name string) error {
+	err := kc.rtClient.Delete(ctx, &fluidv1.DataLoad{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

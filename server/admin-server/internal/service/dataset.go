@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
@@ -9,8 +10,6 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
-
-	"github.com/jinzhu/copier"
 )
 
 type DatasetService struct {
@@ -225,13 +224,16 @@ func (s *DatasetService) ListPreDataset(ctx context.Context, req *api.ListPreDat
 }
 
 func (s *DatasetService) ListDatasetVersion(ctx context.Context, req *api.ListDatasetVersionRequest) (*api.ListDatasetVersionReply, error) {
+
 	innerReq := &innerapi.ListDatasetVersionRequest{}
 	err := copier.Copy(innerReq, req)
+
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
 
 	innerReply, err := s.data.DatasetClient.ListDatasetVersion(ctx, innerReq)
+
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +243,6 @@ func (s *DatasetService) ListDatasetVersion(ctx context.Context, req *api.ListDa
 	if err != nil {
 		return nil, err
 	}
-
 	return reply, nil
 }
 
@@ -425,6 +426,7 @@ func (s *DatasetService) assignValue(ctx context.Context, datasets []*api.Datase
 			}
 			for _, i := range spaces.Workspaces {
 				spaceMap[i.Id] = i
+
 			}
 
 		}
@@ -442,4 +444,24 @@ func (s *DatasetService) assignValue(ctx context.Context, datasets []*api.Datase
 	}
 
 	return nil
+}
+func (s *DatasetService) CreateDatasetVersionCache(ctx context.Context, req *api.CacheRequest) (*api.CacheReply, error) {
+	innerReq := &innerapi.CacheRequest{}
+	err := copier.Copy(innerReq, req)
+	_, err = s.data.DatasetClient.CreateCache(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CacheReply{}, nil
+}
+func (s *DatasetService) DeleteDatasetVersionCache(ctx context.Context, req *api.DeleteCacheRequest) (*api.CacheReply, error) {
+	innerReq := &innerapi.DeleteCacheRequest{}
+	err := copier.Copy(innerReq, req)
+	_, err = s.data.DatasetClient.DeleteCache(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.CacheReply{}, nil
 }

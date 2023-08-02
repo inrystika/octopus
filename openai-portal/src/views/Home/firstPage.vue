@@ -44,7 +44,7 @@
                                 </el-row>
                             </el-form-item>
                         </el-form>
-                        <div v-if="this.GLOBAL.THEME_ORG_NAME" class="pku-footer">&copy;北大人工智能研究院</div>
+                        <div v-if="this.GLOBAL.THEME_ORG_NAME" class="pku-footer">&copy;{{this.GLOBAL.THEME_ORG_NAME}}</div>
                     </div>
                 </div>
             </div>

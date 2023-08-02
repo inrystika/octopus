@@ -135,6 +135,11 @@ func (d *trainJobDao) GetTrainJobList(ctx context.Context, query *model.TrainJob
 		params = append(params, query.Ids)
 	}
 
+	if len(query.Statuses) != 0 {
+		querySql += " and id in ? "
+		params = append(params, query.Statuses)
+	}
+
 	if query.UserNameLike != "" {
 		joinSql := "INNER JOIN user ON train_job.user_id = user.id"
 		querySql += " and user.full_name like ?"
