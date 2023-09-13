@@ -289,7 +289,7 @@ spec:
       {{- end }}
       containers:
         - name: logstash
-          image: docker.elastic.co/logstash/logstash:7.13.0
+          image: docker.elastic.co/logstash/logstash:7.17.13
           args: [
             "bin/logstash","-f", "/usr/share/logstash/pipeline/logstash.conf",
           ]
