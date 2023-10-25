@@ -1,6 +1,6 @@
 from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
 WORKDIR /app
-COPY ./server/controller/nodeagent/go.mod ./server/controller/nodeagent/go.sum ./
+COPY ./controller/nodeagent/go.mod ./controller/nodeagent/go.sum ./
 RUN go mod download
 COPY ./server/apis/go.mod ./server/apis/go.sum ./
 RUN go mod download
