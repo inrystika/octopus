@@ -925,8 +925,10 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		return nil, err
 	}
 	priceMap := make(map[string]float64)
+	jobMap := make(map[string]*model.NotebookJob)
 	for _, j := range notebookJobs {
 		priceMap[j.Id] = j.ResourceSpecPrice
+		jobMap[j.Id] = j
 	}
 
 	notebooks := make([]*api.Notebook, 0)
@@ -942,9 +944,20 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		for i := 0; i < n.TaskNumber; i++ {
 			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.NotebookJobId, i)})
 		}
+		notebook.ExitMsg = s.getExitMsg(ctx, jobMap[n.NotebookJobId])
 		notebooks = append(notebooks, notebook)
 	}
 	return notebooks, nil
+}
+
+func (s *developService) getExitMsg(ctx context.Context, job *model.NotebookJob) string {
+	detail := &typeJob.JobStatusDetail{}
+	err := json.Unmarshal([]byte(job.Detail), detail)
+	if err != nil || detail.Job == nil {
+		return ""
+	}
+
+	return detail.Job.ExitDiagnostics
 }
 
 func (s *developService) GetNotebook(ctx context.Context, req *api.GetNotebookRequest) (*api.GetNotebookReply, error) {

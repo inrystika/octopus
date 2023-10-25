@@ -123,6 +123,7 @@ message Notebook {
   repeated Task tasks = 23;
   string resourcePool=24;
   string imageUrl = 25;
+  string exitMsg = 26;
 }
 
 message ListNotebookReply {
