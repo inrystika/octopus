@@ -1,7 +1,12 @@
 from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
 WORKDIR /app
+COPY ./server/controller/nodeagent/go.mod ./server/controller/nodeagent/go.sum ./
+RUN go mod download
+COPY ./server/apis/go.mod ./server/apis/go.sum ./
+RUN go mod download
 COPY ./server/go.mod ./server/go.sum ./
 RUN go mod download
+
 COPY ./ ./
 
 RUN make admin-server_build binary_dir="/app/server/bin"

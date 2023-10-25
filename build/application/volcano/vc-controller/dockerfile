@@ -1,5 +1,7 @@
 from swr.cn-south-1.myhuaweicloud.com/openioctopus/kratos:v2 as builder
 WORKDIR /app
+COPY ./server/apis/go.mod ./server/apis/go.sum ./
+RUN go mod download
 COPY ./server/volcano/go.mod ./server/volcano/go.sum ./
 RUN go mod download
 COPY ./ ./
