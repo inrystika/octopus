@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"path"
 	"server/base-server/internal/conf"
 	"server/common/errors"
 	"strconv"
@@ -138,6 +139,17 @@ func (h *v1Registry) CreateProject(projectReq *ProjectReq) error {
 	}
 }
 
+func (h *v1Registry) DeleteArtifact(projectName string, repositoryName string, reference string) error {
+	if projectName == "" || repositoryName == "" || reference == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	_, err := h.client.ProductsApi.RepositoriesRepoNameTagsTagDelete(h.GetAuth(nil), path.Join(projectName, repositoryName), reference)
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorHarborDeleteArtifactFailed)
+	}
+	return nil
+}
+
 func (h *v1Registry) GetAuth(ctx context.Context) context.Context {
 	if ctx == nil {
 		ctx = context.TODO()
@@ -171,4 +183,15 @@ func (h *v2Registry) CreateProject(projectReq *ProjectReq) error {
 	default:
 		return errors.Errorf(err1, errors.ErrorHarborCheckProjectFailed)
 	}
+}
+
+func (h *v2Registry) DeleteArtifact(projectName string, repositoryName string, reference string) error {
+	if projectName == "" || repositoryName == "" || reference == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	_, err := h.client.ArtifactApi.DeleteArtifact(h.GetAuth(nil), projectName, url.PathEscape(url.PathEscape(repositoryName)), reference, nil)
+	if err != nil {
+		return errors.Errorf(err, errors.ErrorHarborDeleteArtifactFailed)
+	}
+	return nil
 }

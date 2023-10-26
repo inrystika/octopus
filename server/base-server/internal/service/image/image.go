@@ -345,7 +345,21 @@ func (s *ImageService) DeleteImage(ctx context.Context, req *pb.DeleteImageReque
 		}
 	}
 
-	_, err := s.data.ImageDao.Delete(ctx, &model.ImageDel{
+	image, err := s.data.ImageDao.Find(ctx, &model.ImageQuery{Id: req.ImageId})
+	if err != nil {
+		return nil, err
+	}
+
+	if (image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_UPLOADED) || image.SourceType == int32(pb.ImageSourceType_IMAGE_SOURCE_TYPE_SAVED)) &&
+		image.Status == int32(pb.ImageStatus_IMAGE_STATUS_MADE) {
+		index := strings.Index(image.ImageAddr, "/")
+		err := s.data.Registry.DeleteArtifact(image.ImageAddr[:index], image.ImageAddr[index+1:], image.ImageVersion)
+		if err != nil {
+			log.Error(ctx, err)
+		}
+	}
+
+	_, err = s.data.ImageDao.Delete(ctx, &model.ImageDel{
 		Id: req.ImageId,
 	})
 	if err != nil {

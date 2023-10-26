@@ -62,9 +62,11 @@ const (
 	ErrorK8sDeleteSecretFailed  = 10076 // k8s删除Secret失败
 	ErrorFluidInitFailed        = 10077 // Fluid初始化失败
 	// Harbor操作相关错误
-	ErrorHarborProjectExists       = 10080 // harbor项目已存在
-	ErrorHarborCreateProjectFailed = 10081 // harbor创建项目失败
-	ErrorHarborCheckProjectFailed  = 10082 // harbor查询项目失败
+	ErrorHarborProjectExists        = 10080 // harbor项目已存在
+	ErrorHarborCreateProjectFailed  = 10081 // harbor创建项目失败
+	ErrorHarborCheckProjectFailed   = 10082 // harbor查询项目失败
+	ErrorHarborDeleteArtifactFailed = 10083 // harbor删除镜像失败
+
 	// redis操作相关错误
 	ErroRedisParseUrlFailed    = 10100 // redis解析url失败
 	ErroRedisHSetFailed        = 10101 // redisHSet失败
@@ -298,9 +300,10 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorK8sCreateIngressFailed: {codeType: Internal, msg: "create k8s ingress failed"},
 	ErrorK8sDeleteIngressFailed: {codeType: Internal, msg: "delete k8s ingress failed"},
 	// Harbor操作相关错误
-	ErrorHarborProjectExists:       {codeType: AlreadyExists, msg: "harbor project exists"},
-	ErrorHarborCreateProjectFailed: {codeType: Internal, msg: "create harbor project failed"},
-	ErrorHarborCheckProjectFailed:  {codeType: Internal, msg: "check harbor project failed"},
+	ErrorHarborProjectExists:        {codeType: AlreadyExists, msg: "harbor project exists"},
+	ErrorHarborCreateProjectFailed:  {codeType: Internal, msg: "create harbor project failed"},
+	ErrorHarborCheckProjectFailed:   {codeType: Internal, msg: "check harbor project failed"},
+	ErrorHarborDeleteArtifactFailed: {codeType: Internal, msg: "delete harbor image failed"},
 	// redis操作相关错误
 	ErroRedisParseUrlFailed:    {codeType: Internal, msg: "redis parse url failed"},
 	ErroRedisHSetFailed:        {codeType: Internal, msg: "redis HSet failed"},
