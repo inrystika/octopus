@@ -19,6 +19,9 @@ v<template>
         <el-tab-pane label="事件记录">
           <notebookEventRecord :notebook-data="notebookData" />
         </el-tab-pane>
+        <el-tab-pane label="退出信息">
+          <notebookExit :notebook-data="notebookData" />
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
   </div>
@@ -27,6 +30,7 @@ v<template>
 import notebookInfo from "./notebookInfo.vue"
 import notebookProfile from "./notebookProfile.vue"
 import notebookEventRecord from "./notebookEventRecord.vue"
+  import notebookExit from "./notebookExit.vue"
 export default {
   name: "DetailDialog",
   props: {
@@ -38,7 +42,8 @@ export default {
   components: {
     notebookInfo,
     notebookProfile,
-    notebookEventRecord
+    notebookEventRecord,
+    notebookExit
   },
   data() {
     return {
