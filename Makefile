@@ -48,17 +48,17 @@ init:
 	mkdir -p ${SERVER_BINARY_DIR}
 
 base-server_build: init
-	cd ./server && go mod download && go generate
+	cd ./server && go generate
 
 	cd ./server/base-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
 admin-server_build: init
-	cd ./server && go mod download && go generate
+	cd ./server && go generate
 
 	cd ./server/admin-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
 openai-server_build: init
-	cd ./server && go mod download && go generate
+	cd ./server && go generate
 
 	cd ./server/openai-server && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./...
 
@@ -71,7 +71,7 @@ scheduler_build: init
 	cd ./server/volcano && go build -ldflags ${LD_FLAGS} -o ${SERVER_BINARY_DIR} ./cmd/scheduler
 
 api-doc_build: init
-	cd ./server && go mod download && go generate
+	cd ./server && go generate
 # 运行
 all_run: server_run
 
@@ -139,7 +139,7 @@ lint_init:
 	golangci-lint version
 
 lint: lint_init
-	cd ./server && go mod download && golangci-lint run ./...
+	cd ./server && golangci-lint run ./...
 
 common_lint: lint_init
 	cd ./server/common && golangci-lint run ./...
@@ -160,33 +160,33 @@ volcano_lint: lint_init
 images: base-server_image admin-server_image openai-server_image volcano_image admin-portal_image openai-portal_image api-doc_image node-agent_image
 
 base-server_image:
-	docker build --no-cache -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
+	docker build -t base-server:${RELEASE_VER} -f ./build/application/base-server/dockerfile .
 
 admin-server_image:
-	docker build --no-cache -t admin-server:${RELEASE_VER} -f ./build/application/admin-server/dockerfile .
+	docker build -t admin-server:${RELEASE_VER} -f ./build/application/admin-server/dockerfile .
 
 openai-server_image:
-	docker build --no-cache -t openai-server:${RELEASE_VER} -f ./build/application/openai-server/dockerfile .
+	docker build -t openai-server:${RELEASE_VER} -f ./build/application/openai-server/dockerfile .
 
 volcano_image: vc-controller_image scheduler_image
 
 vc-controller_image:
-	docker build --no-cache -t vc-controller:${RELEASE_VER} -f ./build/application/volcano/vc-controller/dockerfile .
+	docker build -t vc-controller:${RELEASE_VER} -f ./build/application/volcano/vc-controller/dockerfile .
 
 scheduler_image:
-	docker build --no-cache -t scheduler:${RELEASE_VER} -f ./build/application/volcano/scheduler/dockerfile .
+	docker build -t scheduler:${RELEASE_VER} -f ./build/application/volcano/scheduler/dockerfile .
 
 admin-portal_image:
-	docker build --no-cache -t admin-portal:${RELEASE_VER} -f ./build/application/admin-portal/dockerfile .
+	docker build -t admin-portal:${RELEASE_VER} -f ./build/application/admin-portal/dockerfile .
 
 openai-portal_image:
-	docker build --no-cache -t openai-portal:${RELEASE_VER} -f ./build/application/openai-portal/dockerfile .
+	docker build -t openai-portal:${RELEASE_VER} -f ./build/application/openai-portal/dockerfile .
 
 api-doc_image:
-	docker build --no-cache -t api-doc:${RELEASE_VER} -f ./build/application/api-doc/dockerfile .
+	docker build -t api-doc:${RELEASE_VER} -f ./build/application/api-doc/dockerfile .
 
 node-agent_image:
-	docker build --no-cache -t node-agent:${RELEASE_VER} -f ./build/application/nodeagent/dockerfile ./controller/nodeagent
+	docker build -t node-agent:${RELEASE_VER} -f ./build/application/nodeagent/dockerfile ./controller/nodeagent
 
 # 镜像推送
 images_push: base-server_image_push admin-server_image_push openai-server_image_push volcano_image_push admin-portal_image_push openai-portal_image_push api-doc_image_push node-agent_image_push

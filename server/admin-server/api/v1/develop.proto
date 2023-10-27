@@ -91,6 +91,7 @@ message Notebook {
   repeated Task tasks = 25;
   string userEmail = 26;
   string  resourcePool=27;
+  string exitMsg = 28;
 }
 
 message ListNotebookReply {
