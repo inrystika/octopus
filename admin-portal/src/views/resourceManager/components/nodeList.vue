@@ -60,7 +60,7 @@
             </el-table-column>
         </el-table>
 
-       <div style="float:right">
+       <div class="block">
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -96,34 +96,6 @@
             this.getNodeList()
         },
         methods: {
-            tool() {
-              
-              for(let i = 0;i<1000;i++) {
-                let param = {
-                  "name": "amax"+i,
-                  "ip": "192.168.202.76",
-                  "status": "NotReady",
-                  "resourcePools": null,
-                  "capacity": {
-                      "cpu": "80",
-                      "memory": "98637700Ki"
-                  },
-                  "allocated": {
-                      "cpu": "550m",
-                      "memory": "600Mi"
-                  },
-                  "children":
-                    [
-                      {childName:'cpu',id:'1',perentage:0.59,total:"80",use:"550m"},
-                      {childName:'cpu',id:'1',perentage:0.59,total:"80",use:"550m"}
-                    ]
-                  
-              }
-                this.tooldata.push(param)
-              }
-                  this.totalSize = this.tooldata.length
-                  this.totalData = this.handleTableData(this.tooldata)
-            },
             handleSizeChange(val) {
                 this.pageSize = val
                 this.showCurrentdata()
@@ -179,8 +151,6 @@
                                     else { item.children = [] }
                                 }
                             )
-                            // this.tool()
-
                             this.totalSize = response.data.nodes.length
                             this.totalData = this.handleTableData(response.data.nodes)
                             this.showCurrentdata()
@@ -265,5 +235,10 @@
 
     .el-progress-circle__track {
         stroke: #409EFF;
+    }
+
+    .block {
+        float: right;
+        margin: 20px;
     }
 </style>
