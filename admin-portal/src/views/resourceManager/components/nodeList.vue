@@ -60,6 +60,17 @@
             </el-table-column>
         </el-table>
 
+       <div style="float:right">
+            <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="currentPage"
+                :page-sizes="[20, 50, 100]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalSize">
+            </el-pagination>
+       </div>
     </div>
 </template>
 <script>
@@ -73,15 +84,59 @@
         data() {
             return {
                 input: '',
+                totalData: [],               
                 tableData: [],
-
-
+                currentPage: 1,
+                pageSize: 20,
+                totalSize: 0,
+                tooldata: []
             }
         },
         created() {
             this.getNodeList()
         },
         methods: {
+            tool() {
+              
+              for(let i = 0;i<1000;i++) {
+                let param = {
+                  "name": "amax"+i,
+                  "ip": "192.168.202.76",
+                  "status": "NotReady",
+                  "resourcePools": null,
+                  "capacity": {
+                      "cpu": "80",
+                      "memory": "98637700Ki"
+                  },
+                  "allocated": {
+                      "cpu": "550m",
+                      "memory": "600Mi"
+                  },
+                  "children":
+                    [
+                      {childName:'cpu',id:'1',perentage:0.59,total:"80",use:"550m"},
+                      {childName:'cpu',id:'1',perentage:0.59,total:"80",use:"550m"}
+                    ]
+                  
+              }
+                this.tooldata.push(param)
+              }
+                  this.totalSize = this.tooldata.length
+                  this.totalData = this.handleTableData(this.tooldata)
+            },
+            handleSizeChange(val) {
+                this.pageSize = val
+                this.showCurrentdata()
+            },
+            handleCurrentChange(val) {
+                this.currentPage = val
+                this.showCurrentdata()
+            },
+            showCurrentdata() {
+                let start = (this.currentPage-1)*this.pageSize*2
+                let end = this.currentPage*this.pageSize*2-1
+                this.tableData = this.totalData.slice(start,end)
+            },
             getDetail(val) {
                 let data = []
                 for (const key1 in val.allocated) {
@@ -124,7 +179,11 @@
                                     else { item.children = [] }
                                 }
                             )
-                            this.tableData = this.handleTableData(response.data.nodes)
+                            // this.tool()
+
+                            this.totalSize = response.data.nodes.length
+                            this.totalData = this.handleTableData(response.data.nodes)
+                            this.showCurrentdata()
                         }
                     } else {
                         this.$message({
