@@ -1321,14 +1321,7 @@ func (s *trainJobService) getCompany(ctx context.Context, notebook *model.Notebo
 	if err != nil {
 		return nil, err
 	}
-	items := make([]string) {
-			"nvidia",
-			"huawei",
-			"cambricon",
-			"enflame",
-			"iluvatar",
-			"metax-tech"
-	}
+	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
 		if strings.Contains(resourceSpec, v) {
 			return v, nil
