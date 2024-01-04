@@ -1487,8 +1487,11 @@ func (s *trainJobService) getCompany(ctx context.Context, req *api.GetJobMetricR
 	}
 	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
-		if strings.Contains(resourceSpec, v):
-			return v, nil
+		for k, _ := range resourceSpec.ResourceSpec.ResourceQuantity {
+			if strings.Contains(k, v) {
+				return v, nil
+			}
+		}
 	}
 
 	return nil, nil

@@ -1323,8 +1323,10 @@ func (s *developService) getCompany(ctx context.Context, notebook *model.Noteboo
 	}
 	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
-		if strings.Contains(resourceSpec, v) {
-			return v, nil
+		for k, _ := range resourceSpec.ResourceSpec.ResourceQuantity {
+			if strings.Contains(k, v) {
+				return v, nil
+			}
 		}
 	}
 
