@@ -304,4 +304,7 @@ message GetJobMetricReply {
   repeated double gpuUtil = 3;
   repeated double gpuMemUsage = 4;
   repeated double memUsagePercent = 5;
+  repeated double accCardUtil = 6;
+  repeated double accCardMemUsage = 7;
+  string company = 8;
 }
