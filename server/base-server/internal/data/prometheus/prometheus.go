@@ -89,10 +89,9 @@ func (p *prometheus) QueryAccCardMemUtil(ctx context.Context, podName, company s
 		"iluvatar":   "ix_mem_utilization",                                          // iluvatar GPU memory utilization
 		"metax-tech": "",                                                            //
 	}
+	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
 	if company == "huawei" {
-		query := fmt.Sprintf(`100 * container_npu_used_memory{pod_name="%s"} / container_npu_total_memory{pod_name="%s"}`, podName, podName)
-	} else {
-		query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
+		query = fmt.Sprintf(`100 * container_npu_used_memory{pod_name="%s"} / container_npu_total_memory{pod_name="%s"}`, podName, podName)
 	}
 	return p.query(query, start, size, step)
 }
