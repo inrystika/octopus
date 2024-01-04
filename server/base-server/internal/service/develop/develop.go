@@ -1240,7 +1240,7 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 		return nil, err
 	}
 
-	res := &api.GetJobMetricReply{
+	res := &api.GetNotebookMetricReply{
 		MemUsage:        memUsage,
 		GpuUtil:         gpuUtil,
 		GpuMemUsage:     gpuMemUtil,

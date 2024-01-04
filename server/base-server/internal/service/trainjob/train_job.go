@@ -1363,6 +1363,10 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
 	podName := fmt.Sprintf("%s-task%d-%d", req.Id, req.TaskIndex, req.ReplicaIndex)
+	company, err := s.getCompany(ctx, req)
+	if err == nil {
+		return nil, err
+	}
 	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
 	if err != nil {
 		return nil, err
@@ -1393,7 +1397,8 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 		GpuUtil:         gpuUtil,
 		GpuMemUsage:     gpuMemUtil,
 		AccCardUtil:     accCardUtil,
-		AccCardMemUsage: accCardMemUsage,
+		AccCardMemUsage: accCardMemUtil,
+		Company:         company,
 	}
 
 	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, req, cpuUsage)
@@ -1412,11 +1417,6 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 		for range memUsage {
 			res.MemUsagePercent = append(res.MemUsagePercent, -1)
 		}
-	}
-
-	company, err := s.getCompany(ctx, req)
-	if err == nil {
-		res.Company = company
 	}
 
 	return res, nil
@@ -1479,11 +1479,11 @@ func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJo
 func (s *trainJobService) getCompany(ctx context.Context, req *api.GetJobMetricRequest) (string, error) {
 	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
@@ -1494,5 +1494,5 @@ func (s *trainJobService) getCompany(ctx context.Context, req *api.GetJobMetricR
 		}
 	}
 
-	return nil, nil
+	return "", nil
 }
