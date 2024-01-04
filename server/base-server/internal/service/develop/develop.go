@@ -1205,8 +1205,12 @@ func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDe
 	}
 }
 
-func (s *trainJobService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
+func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
 	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	if err != nil {
+		return nil, err
+	}
+	company, err := s.getCompany(ctx, notebook)
 	if err != nil {
 		return nil, err
 	}
@@ -1241,7 +1245,8 @@ func (s *trainJobService) GetNotebookMetric(ctx context.Context, req *api.GetNot
 		GpuUtil:         gpuUtil,
 		GpuMemUsage:     gpuMemUtil,
 		AccCardUtil:     accCardUtil,
-		AccCardMemUsage: accCardMemUsage,
+		AccCardMemUsage: accCardMemUtil,
+		Company:         company,
 	}
 
 	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, notebook, cpuUsage)
@@ -1262,15 +1267,10 @@ func (s *trainJobService) GetNotebookMetric(ctx context.Context, req *api.GetNot
 		}
 	}
 
-	company, err := s.getCompany(ctx, notebook)
-	if err == nil {
-		res.Company = company
-	}
-
 	return res, nil
 }
 
-func (s *trainJobService) getCpuAverageUsage(ctx context.Context, notebook *model.Notebook, cpuUsage []float64) ([]float64, error) {
+func (s *developService) getCpuAverageUsage(ctx context.Context, notebook *model.Notebook, cpuUsage []float64) ([]float64, error) {
 	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
 	if err != nil {
 		return nil, err
@@ -1293,7 +1293,7 @@ func (s *trainJobService) getCpuAverageUsage(ctx context.Context, notebook *mode
 	return res, nil
 }
 
-func (s *trainJobService) getMemUsagePercent(ctx context.Context, notebook *model.Notebook, memUsage []float64) ([]float64, error) {
+func (s *developService) getMemUsagePercent(ctx context.Context, notebook *model.Notebook, memUsage []float64) ([]float64, error) {
 	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
 	if err != nil {
 		return nil, err
@@ -1316,10 +1316,10 @@ func (s *trainJobService) getMemUsagePercent(ctx context.Context, notebook *mode
 	return res, nil
 }
 
-func (s *trainJobService) getCompany(ctx context.Context, notebook *model.Notebook) (string, error) {
+func (s *developService) getCompany(ctx context.Context, notebook *model.Notebook) (string, error) {
 	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
@@ -1328,5 +1328,5 @@ func (s *trainJobService) getCompany(ctx context.Context, notebook *model.Notebo
 		}
 	}
 
-	return nil, nil
+	return "", nil
 }
