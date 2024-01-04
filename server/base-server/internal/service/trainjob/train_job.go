@@ -1379,19 +1379,70 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
+	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardMemUtil, err := s.data.Prometheus.QueryAccCardMemUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
 
 	res := &api.GetJobMetricReply{
-		CpuUsage:    cpuUsage,
-		MemUsage:    memUsage,
-		GpuUtil:     gpuUtil,
-		GpuMemUsage: gpuMemUtil,
+		MemUsage:        memUsage,
+		GpuUtil:         gpuUtil,
+		GpuMemUsage:     gpuMemUtil,
+		AccCardUtil:     accCardUtil,
+		AccCardMemUsage: accCardMemUsage,
 	}
+
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, req, cpuUsage)
+	if err == nil { //忽略err
+		res.CpuUsage = cpuAverageUsage
+	} else {
+		for range cpuUsage {
+			res.CpuUsage = append(res.CpuUsage, -1)
+		}
+	}
+
 	memUsagePercent, err := s.getMemUsagePercent(ctx, req, memUsage)
 	if err == nil { //忽略err
 		res.MemUsagePercent = memUsagePercent
 	} else {
 		for range memUsage {
 			res.MemUsagePercent = append(res.MemUsagePercent, -1)
+		}
+	}
+
+	company, err := s.getCompany(ctx, req)
+	if err == nil {
+		res.Company = company
+	}
+
+	return res, nil
+}
+
+func (s *trainJobService) getCpuAverageUsage(ctx context.Context, req *api.GetJobMetricRequest, cpuUsage []float64) ([]float64, error) {
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["cpu"])
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]float64, 0)
+	for _, v := range cpuUsage {
+		if v == -1 {
+			res = append(res, v)
+		} else {
+			res = append(res, float64(int64(v)/quantity.Value()))
 		}
 	}
 
@@ -1423,4 +1474,29 @@ func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJo
 	}
 
 	return res, nil
+}
+
+func (s *trainJobService) getCompany(ctx context.Context, req *api.GetJobMetricRequest) (string, error) {
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	items := make([]string) {
+		"nvidia",
+		"huawei",
+		"cambricon",
+		"enflame",
+		"iluvatar",
+		"metax-tech",
+	}
+	for _, v := range items {
+		if strings.Contains(resourceSpec, v):
+			return v, nil
+	}
+
+	return nil, nil
 }

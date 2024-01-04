@@ -1204,3 +1204,135 @@ func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDe
 		},
 	}
 }
+
+func (s *trainJobService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	if err != nil {
+		return nil, err
+	}
+	podName := s.GetPodNameFromNoteBookTask(notebook, req.TaskName)
+	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	memUsage, err := s.data.Prometheus.QueryMemUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuUtil, err := s.data.Prometheus.QueryGpuUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuMemUtil, err := s.data.Prometheus.QueryGpuMemUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardMemUtil, err := s.data.Prometheus.QueryAccCardMemUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+
+	res := &api.GetJobMetricReply{
+		MemUsage:        memUsage,
+		GpuUtil:         gpuUtil,
+		GpuMemUsage:     gpuMemUtil,
+		AccCardUtil:     accCardUtil,
+		AccCardMemUsage: accCardMemUsage,
+	}
+
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, notebook, cpuUsage)
+	if err == nil { //忽略err
+		res.CpuUsage = cpuAverageUsage
+	} else {
+		for range cpuUsage {
+			res.CpuUsage = append(res.CpuUsage, -1)
+		}
+	}
+
+	memUsagePercent, err := s.getMemUsagePercent(ctx, notebook, memUsage)
+	if err == nil { //忽略err
+		res.MemUsagePercent = memUsagePercent
+	} else {
+		for range memUsage {
+			res.MemUsagePercent = append(res.MemUsagePercent, -1)
+		}
+	}
+
+	company, err := s.getCompany(ctx, notebook)
+	if err == nil {
+		res.Company = company
+	}
+
+	return res, nil
+}
+
+func (s *trainJobService) getCpuAverageUsage(ctx context.Context, notebook *model.Notebook, cpuUsage []float64) ([]float64, error) {
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["cpu"])
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]float64, 0)
+	for _, v := range cpuUsage {
+		if v == -1 {
+			res = append(res, v)
+		} else {
+			res = append(res, float64(int64(v)/quantity.Value()))
+		}
+	}
+
+	return res, nil
+}
+
+func (s *trainJobService) getMemUsagePercent(ctx context.Context, notebook *model.Notebook, memUsage []float64) ([]float64, error) {
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["memory"])
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]float64, 0)
+	for _, v := range memUsage {
+		if v == -1 {
+			res = append(res, v)
+		} else {
+			res = append(res, float64(int64(v)*100/quantity.Value()))
+		}
+	}
+
+	return res, nil
+}
+
+func (s *trainJobService) getCompany(ctx context.Context, notebook *model.Notebook) (string, error) {
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	items := make([]string) {
+			"nvidia",
+			"huawei",
+			"cambricon",
+			"enflame",
+			"iluvatar",
+			"metax-tech",
+	}
+	for _, v := range items {
+		if strings.Contains(resourceSpec, v):
+		return v, nil
+	}
+
+	return nil, nil
+}

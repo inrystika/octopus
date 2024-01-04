@@ -26,8 +26,12 @@ type Reply struct {
 type Prometheus interface {
 	QueryCpuUsage(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
 	QueryMemUsage(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
+
 	QueryGpuUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
 	QueryGpuMemUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
+
+	QueryAccCardUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error)
+	QueryAccCardMemUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error)
 }
 
 func NewPrometheus(baseUrl string) Prometheus {
@@ -60,6 +64,36 @@ func (p *prometheus) QueryGpuUtil(ctx context.Context, podName string, start int
 
 func (p *prometheus) QueryGpuMemUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
 	query := fmt.Sprintf(`dcgm_mem_copy_utilization{pod_name="%s"}`, podName)
+	return p.query(query, start, size, step)
+}
+
+func (p *prometheus) QueryAccCardUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+	items := map[string]string{
+		"nvidia":     "dcgm_gpu_utilization",                                 // GPU utilization
+		"huawei":     "container_npu_utilization",                            // NPU utilization
+		"cambricon":  "mlu_utilization * on(uuid) group_right mlu_container", // MLU utilization
+		"enflame":    "enflame_gcu_usage",                                    // GCU utilization
+		"iluvatar":   "ix_gpu_utilization",                                   // iluvatar GPU utilization
+		"metax-tech": "",                                                     //
+	}
+	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
+	return p.query(query, start, size, step)
+}
+
+func (p *prometheus) QueryAccCardMemUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+	items := map[string]string{
+		"nvidia": "dcgm_mem_copy_utilization", // GPU memory utilization
+		// "huawei":     "container_npu_used_memory / container_npu_total_memory",      // NPU utilization
+		"cambricon":  "mlu_memory_utilization * on(uuid) group_right mlu_container", // MLU memory utilization
+		"enflame":    "100 * enflame_gcu_memory_usage",                              // GCU memory utilization
+		"iluvatar":   "ix_mem_utilization",                                          // iluvatar GPU memory utilization
+		"metax-tech": "",                                                            //
+	}
+	if company == "huawei" {
+		query := fmt.Sprintf(`100 * container_npu_used_memory{pod_name="%s"} / container_npu_total_memory{pod_name="%s"}`, podName, podName)
+	} else {
+		query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
+	}
 	return p.query(query, start, size, step)
 }
 

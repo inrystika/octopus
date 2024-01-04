@@ -60,11 +60,17 @@ service Develop {
     option (google.api.http) = {
       post: "/v1/developmanage/notebook/{notebookId}/save"
     };
-  }
+  };
   // 查询事件记录列表
   rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply) {
     option (google.api.http) = {
       get: "/v1/developmanage/notebook/{notebookId}/eventrecord"
+    };
+  };
+  // 获取调试任务监控数据
+  rpc GetNotebookMetric (GetNotebookMetricRequest) returns (GetNotebookMetricReply) {
+    option (google.api.http) = {
+      get: "/v1/developmanage/notebookmetric"
     };
   };
 }
@@ -233,4 +239,37 @@ message ListNotebookEventRecordRequest {
 message ListNotebookEventRecordReply {
   int64  totalSize = 1;
   repeated NotebookEventRecord records = 2;
+}
+
+message GetNotebookMetricRequest {
+  //Notebook ID
+  string notebookId = 1[(validate.rules).string = {min_len: 1}];
+  //
+  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  //开始时间
+  int64 start = 3;
+  //数量, 最大1000
+  int32 size = 4[(validate.rules).int32 = {gte:0,lte:1000}];
+  //间隔（秒）
+  int32 step = 5;
+}
+
+//值为-1表示该时间点没有数据
+message GetNotebookMetricReply {
+  //百分比
+  repeated double cpuUsage = 1;
+  //字节
+  repeated double memUsage = 2;
+  //百分比
+  repeated double gpuUtil = 3;
+  //百分比
+  repeated double gpuMemUsage = 4;
+  //百分比
+  repeated double memUsagePercent = 5;
+  //百分比
+  repeated double accCardUtil = 6;
+  //百分比
+  repeated double accCardMemUsage = 7;
+  //厂商
+  string company = 8;
 }

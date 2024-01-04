@@ -457,4 +457,10 @@ message GetJobMetricReply {
   repeated double gpuMemUsage = 4;
   //百分比
   repeated double memUsagePercent = 5;
+  //百分比
+  repeated double accCardUtil = 6;
+  //百分比
+  repeated double accCardMemUsage = 7;
+  //厂商
+  string company = 8;
 }
