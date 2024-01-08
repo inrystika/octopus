@@ -1363,8 +1363,16 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
 	podName := fmt.Sprintf("%s-task%d-%d", req.Id, req.TaskIndex, req.ReplicaIndex)
-	company, err := s.getCompany(ctx, req)
-	if err == nil {
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	company, err := s.getCompany(ctx, resourceSpec.ResourceSpec)
+	if err != nil {
 		return nil, err
 	}
 	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
@@ -1401,7 +1409,7 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 		Company:         company,
 	}
 
-	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, req, cpuUsage)
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, resourceSpec.ResourceSpec, cpuUsage)
 	if err == nil { //忽略err
 		res.CpuUsage = cpuAverageUsage
 	} else {
@@ -1410,7 +1418,7 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 		}
 	}
 
-	memUsagePercent, err := s.getMemUsagePercent(ctx, req, memUsage)
+	memUsagePercent, err := s.getMemUsagePercent(ctx, resourceSpec.ResourceSpec, memUsage)
 	if err == nil { //忽略err
 		res.MemUsagePercent = memUsagePercent
 	} else {
@@ -1422,17 +1430,8 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	return res, nil
 }
 
-func (s *trainJobService) getCpuAverageUsage(ctx context.Context, req *api.GetJobMetricRequest, cpuUsage []float64) ([]float64, error) {
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
-	if err != nil {
-		return nil, err
-	}
-
-	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["cpu"])
+func (s *trainJobService) getCpuAverageUsage(ctx context.Context, resourceSpec *api.ResourceSpec, cpuUsage []float64) ([]float64, error) {
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceQuantity["cpu"])
 	if err != nil {
 		return nil, err
 	}
@@ -1441,25 +1440,18 @@ func (s *trainJobService) getCpuAverageUsage(ctx context.Context, req *api.GetJo
 	for _, v := range cpuUsage {
 		if v == -1 {
 			res = append(res, v)
+		} else if quantity.Value() <= 0 {
+			res = append(res, -1)
 		} else {
-			res = append(res, float64(int64(v)/quantity.Value()))
+			res = append(res, float64(v)/float64(quantity.Value()))
 		}
 	}
 
 	return res, nil
 }
 
-func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJobMetricRequest, memUsage []float64) ([]float64, error) {
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
-	if err != nil {
-		return nil, err
-	}
-
-	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["memory"])
+func (s *trainJobService) getMemUsagePercent(ctx context.Context, resourceSpec *api.ResourceSpec, memUsage []float64) ([]float64, error) {
+	quantity, err := resource.ParseQuantity(resourceSpec.ResourceQuantity["memory"])
 	if err != nil {
 		return nil, err
 	}
@@ -1468,26 +1460,20 @@ func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJo
 	for _, v := range memUsage {
 		if v == -1 {
 			res = append(res, v)
+		} else if quantity.Value() <= 0 {
+			res = append(res, -1)
 		} else {
-			res = append(res, float64(int64(v)*100/quantity.Value()))
+			res = append(res, float64(v)*100/float64(quantity.Value()))
 		}
 	}
 
 	return res, nil
 }
 
-func (s *trainJobService) getCompany(ctx context.Context, req *api.GetJobMetricRequest) (string, error) {
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
-	if err != nil {
-		return "", err
-	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
-	if err != nil {
-		return "", err
-	}
+func (s *trainJobService) getCompany(ctx context.Context, resourceSpec *api.ResourceSpec) (string, error) {
 	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
 	for _, v := range items {
-		for k, _ := range resourceSpec.ResourceSpec.ResourceQuantity {
+		for k, _ := range resourceSpec.ResourceQuantity {
 			if strings.Contains(k, v) {
 				return v, nil
 			}

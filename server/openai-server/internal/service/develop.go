@@ -218,7 +218,7 @@ func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.L
 	return reply, nil
 }
 
-func (s *DevelopService) GetJobMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
+func (s *DevelopService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
 	innerReq := &innerapi.GetNotebookMetricRequest{}
 	err := copier.Copy(innerReq, req)
 	if err != nil {
