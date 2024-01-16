@@ -84,7 +84,7 @@ func (d *resourceDao) DeleteResource(id string) (string, error) {
 	db := d.db
 	resource := &resources.Resource{Id: id}
 
-	if err := db.Unscoped().Delete(resource).Error; err != nil {
+	if err := db.Delete(resource).Error; err != nil {
 		return "", err
 	}
 
@@ -99,7 +99,7 @@ func (d *resourceDao) DeleteResourceByName(name string) (string, error) {
 		return "", err
 	}
 
-	if err := db.Unscoped().Delete(resource).Error; err != nil {
+	if err := db.Delete(resource).Error; err != nil {
 		return "", err
 	}
 

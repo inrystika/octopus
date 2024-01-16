@@ -72,7 +72,7 @@ func (d *resourceSepcDao) CreateResourceSpec(request *resources.CreateResourceSp
 func (d *resourceSepcDao) DeleteResourceSpec(id string) (string, error) {
 	db := d.db
 
-	if err := db.Unscoped().Delete(&resources.ResourceSpec{Id: id}).Error; err != nil {
+	if err := db.Delete(&resources.ResourceSpec{Id: id}).Error; err != nil {
 		return "", errors.Errorf(err, errors.ErrorDBDeleteFailed)
 	}
 

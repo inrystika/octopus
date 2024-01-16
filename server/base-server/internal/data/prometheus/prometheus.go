@@ -32,6 +32,10 @@ type Prometheus interface {
 
 	QueryAccCardUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error)
 	QueryAccCardMemUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error)
+
+	QueryNetworkReceiveBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
+	QueryNetworkTransmitBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
+	QueryFSUsageBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error)
 }
 
 func NewPrometheus(baseUrl string) Prometheus {
@@ -67,32 +71,57 @@ func (p *prometheus) QueryGpuMemUtil(ctx context.Context, podName string, start 
 	return p.query(query, start, size, step)
 }
 
-func (p *prometheus) QueryAccCardUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+func (p *prometheus) QueryAccCardUtil(
+	ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+
 	items := map[string]string{
-		"nvidia":     "dcgm_gpu_utilization",                                 // GPU utilization
-		"huawei":     "container_npu_utilization",                            // NPU utilization
-		"cambricon":  "mlu_utilization * on(uuid) group_right mlu_container", // MLU utilization
-		"enflame":    "enflame_gcu_usage",                                    // GCU utilization
-		"iluvatar":   "ix_gpu_utilization",                                   // iluvatar GPU utilization
-		"metax-tech": "",                                                     //
+		"nvidia":     "dcgm_gpu_utilization",      // GPU utilization
+		"huawei":     "container_npu_utilization", // NPU utilization
+		"enflame":    "enflame_gcu_usage",         // GCU utilization
+		"iluvatar":   "ix_gpu_utilization",        // iluvatar GPU utilization
+		"metax-tech": "",                          //
 	}
 	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
+	if company == "cambricon" {
+		query = fmt.Sprintf(`mlu_utilization * on(uuid) group_right mlu_container{pod="%s"}`, podName) // MLU utilization
+	}
 	return p.query(query, start, size, step)
 }
 
-func (p *prometheus) QueryAccCardMemUtil(ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+func (p *prometheus) QueryAccCardMemUtil(
+	ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
+
 	items := map[string]string{
-		"nvidia": "dcgm_mem_copy_utilization", // GPU memory utilization
-		// "huawei":     "container_npu_used_memory / container_npu_total_memory",      // NPU utilization
-		"cambricon":  "mlu_memory_utilization * on(uuid) group_right mlu_container", // MLU memory utilization
-		"enflame":    "100 * enflame_gcu_memory_usage",                              // GCU memory utilization
-		"iluvatar":   "ix_mem_utilization",                                          // iluvatar GPU memory utilization
-		"metax-tech": "",                                                            //
+		"nvidia":     "dcgm_mem_copy_utilization",      // GPU memory utilization
+		"enflame":    "100 * enflame_gcu_memory_usage", // GCU memory utilization
+		"iluvatar":   "ix_mem_utilization",             // iluvatar GPU memory utilization
+		"metax-tech": "",                               //
 	}
 	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
 	if company == "huawei" {
-		query = fmt.Sprintf(`100 * container_npu_used_memory{pod_name="%s"} / container_npu_total_memory{pod_name="%s"}`, podName, podName)
+		query = fmt.Sprintf(
+			`100 * container_npu_used_memory{pod_name="%s"} / container_npu_total_memory{pod_name="%s"}`, // NPU hbm memory utilization
+			podName, podName)
 	}
+	if company == "cambricon" {
+		query = fmt.Sprintf(
+			`mlu_memory_utilization * on(uuid) group_right mlu_container{pod="%s"}`, podName) // MLU memory utilization
+	}
+	return p.query(query, start, size, step)
+}
+
+func (p *prometheus) QueryNetworkReceiveBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
+	query := fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{pod_name="%s"}[1m]) or rate(container_network_receive_bytes_total{pod="%s"}[1m]))`, podName, podName)
+	return p.query(query, start, size, step)
+}
+
+func (p *prometheus) QueryNetworkTransmitBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
+	query := fmt.Sprintf(`sum(rate (container_network_transmit_bytes_total{pod_name="%s"}[1m]) or rate(container_network_receive_bytes_total{pod="%s"}[1m]))`, podName, podName)
+	return p.query(query, start, size, step)
+}
+
+func (p *prometheus) QueryFSUsageBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
+	query := fmt.Sprintf(`sum(container_fs_usage_bytes{device=~"^/dev/.*$",pod_name="%s"} or container_fs_usage_bytes{device=~"^/dev/.*$",pod="%s"})`, podName, podName)
 	return p.query(query, start, size, step)
 }
 

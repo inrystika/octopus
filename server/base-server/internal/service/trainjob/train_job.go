@@ -39,6 +39,8 @@ const (
 	k8sTaskNamePrefix   = "task"
 	NoDistributedJobNum = 1
 	shmResource         = "shm"
+	cpuResource         = "cpu"
+	memResource         = "memory"
 	readonlyCodeDir     = "/readonlycode"
 )
 
@@ -1367,11 +1369,15 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
+	resources, err := s.resourceService.ListResource(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
 	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
 	if err != nil {
 		return nil, err
 	}
-	company, err := s.getCompany(ctx, resourceSpec.ResourceSpec)
+	company, err := s.getCompany(ctx, resources, resourceSpec.ResourceSpec)
 	if err != nil {
 		return nil, err
 	}
@@ -1399,17 +1405,32 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
-
-	res := &api.GetJobMetricReply{
-		MemUsage:        memUsage,
-		GpuUtil:         gpuUtil,
-		GpuMemUsage:     gpuMemUtil,
-		AccCardUtil:     accCardUtil,
-		AccCardMemUsage: accCardMemUtil,
-		Company:         company,
+	networkReceiveBytes, err := s.data.Prometheus.QueryNetworkReceiveBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	networkTransmitBytes, err := s.data.Prometheus.QueryNetworkTransmitBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	fsUsageBytes, err := s.data.Prometheus.QueryFSUsageBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
 	}
 
-	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, resourceSpec.ResourceSpec, cpuUsage)
+	res := &api.GetJobMetricReply{
+		MemUsage:             memUsage,
+		GpuUtil:              gpuUtil,
+		GpuMemUsage:          gpuMemUtil,
+		AccCardUtil:          accCardUtil,
+		AccCardMemUsage:      accCardMemUtil,
+		NetworkReceiveBytes:  networkReceiveBytes,
+		NetworkTransmitBytes: networkTransmitBytes,
+		FsUsageBytes:         fsUsageBytes,
+		Company:              company,
+	}
+
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, resources, resourceSpec.ResourceSpec, cpuUsage)
 	if err == nil { //忽略err
 		res.CpuUsage = cpuAverageUsage
 	} else {
@@ -1418,7 +1439,7 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 		}
 	}
 
-	memUsagePercent, err := s.getMemUsagePercent(ctx, resourceSpec.ResourceSpec, memUsage)
+	memUsagePercent, err := s.getMemUsagePercent(ctx, resources, resourceSpec.ResourceSpec, memUsage)
 	if err == nil { //忽略err
 		res.MemUsagePercent = memUsagePercent
 	} else {
@@ -1430,55 +1451,86 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	return res, nil
 }
 
-func (s *trainJobService) getCpuAverageUsage(ctx context.Context, resourceSpec *api.ResourceSpec, cpuUsage []float64) ([]float64, error) {
-	quantity, err := resource.ParseQuantity(resourceSpec.ResourceQuantity["cpu"])
-	if err != nil {
-		return nil, err
-	}
+func (s *trainJobService) getCpuAverageUsage(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	cpuUsage []float64) ([]float64, error) {
 
-	res := make([]float64, 0)
-	for _, v := range cpuUsage {
-		if v == -1 {
-			res = append(res, v)
-		} else if quantity.Value() <= 0 {
-			res = append(res, -1)
-		} else {
-			res = append(res, float64(v)/float64(quantity.Value()))
-		}
-	}
-
-	return res, nil
-}
-
-func (s *trainJobService) getMemUsagePercent(ctx context.Context, resourceSpec *api.ResourceSpec, memUsage []float64) ([]float64, error) {
-	quantity, err := resource.ParseQuantity(resourceSpec.ResourceQuantity["memory"])
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]float64, 0)
-	for _, v := range memUsage {
-		if v == -1 {
-			res = append(res, v)
-		} else if quantity.Value() <= 0 {
-			res = append(res, -1)
-		} else {
-			res = append(res, float64(v)*100/float64(quantity.Value()))
-		}
-	}
-
-	return res, nil
-}
-
-func (s *trainJobService) getCompany(ctx context.Context, resourceSpec *api.ResourceSpec) (string, error) {
-	items := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
-	for _, v := range items {
-		for k, _ := range resourceSpec.ResourceQuantity {
-			if strings.Contains(k, v) {
-				return v, nil
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == cpuResource || r.Name == cpuResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range cpuUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
 			}
 		}
 	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
 
+func (s *trainJobService) getMemUsagePercent(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	memUsage []float64) ([]float64, error) {
+
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == memResource || r.Name == memResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range memUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)*100/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
+			}
+		}
+	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
+
+func (s *trainJobService) getCompany(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec) (string, error) {
+
+	companyResource := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
+	for _, v := range companyResource {
+		for _, r := range resources.Resources {
+			for k, _ := range resourceSpec.ResourceQuantity {
+				if r.Name == k {
+					if strings.Contains(r.ResourceRef, v) || strings.Contains(r.Name, v) {
+						return v, nil
+					}
+				}
+			}
+		}
+	}
 	return "", nil
 }
