@@ -167,3 +167,70 @@ func (rsvc *ResourceSpecService) GetResourceSpec(ctx context.Context, req *api.G
 
 	return &api.GetResourceSpecReply{ResourceSpec: rspec}, nil
 }
+
+func (rsvc *ResourceSpecService) UpdateResourceSpec(
+	ctx context.Context,
+	req *api.UpdateResourceSpecRequest) (*api.UpdateResourceSpecReply, error) {
+
+	allResources, err := rsvc.data.ResourceDao.ListResource()
+	if err != nil {
+		return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+	}
+
+	resourceMap := make(map[string]*resources.Resource)
+
+	for _, r := range allResources {
+		resourceMap[r.Name] = r
+	}
+
+	for rName := range req.ResourceQuantity {
+		if _, ok := resourceMap[rName]; !ok {
+			return &api.UpdateResourceSpecReply{}, errors.Errorf(nil, errors.ErrorUpdateResourceSpec)
+		}
+	}
+
+	for resName, quantity := range req.ResourceQuantity {
+		resQuant, err := resource.ParseQuantity(quantity)
+		if err != nil {
+			return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+		}
+
+		if resName == "shm" {
+			if _, ok := req.ResourceQuantity["memory"]; !ok {
+				return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+			}
+
+			memQuant, err := resource.ParseQuantity(req.ResourceQuantity["memory"])
+			if err != nil {
+				return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+			}
+			resQuant.Add(resQuant.DeepCopy())
+			if memQuant.Cmp(resQuant.DeepCopy()) < 0 {
+				//shm > 1/2 memory is a error
+				return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+			}
+		}
+	}
+
+	resQuantityBytes, err := json.Marshal(req.ResourceQuantity)
+
+	if err != nil {
+		return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+	}
+
+	resQuantityStr := string(resQuantityBytes)
+
+	cRq := &resources.UpdateResourceSpecRequest{
+		Name:             req.Name,
+		Price:            req.Price,
+		ResourceQuantity: resQuantityStr,
+	}
+
+	id, err := rsvc.data.ResourceSpecDao.UpdateResourceSpec(cRq)
+
+	if err != nil {
+		return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+	}
+
+	return &api.UpdateResourceSpecReply{Id: id}, nil
+}

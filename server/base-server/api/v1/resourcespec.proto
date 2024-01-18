@@ -11,6 +11,7 @@ service ResourceSpecService {
   rpc CreateResourceSpec(CreateResourceSpecRequest) returns (CreateResourceSpecReply);
   rpc DeleteResourceSpec(DeleteResourceSpecRequest) returns (DeleteResourceSpecReply);
   rpc GetResourceSpec(GetResourceSpecRequest) returns (GetResourceSpecReply);
+  rpc UpdateResourceSpec(UpdateResourceSpecRequest) returns (UpdateResourceSpecReply);
 }
 
 message ListResourceSpecRequest {
@@ -52,5 +53,16 @@ message DeleteResourceSpecRequest {
 }
 
 message DeleteResourceSpecReply {
+  string id = 1;
+}
+
+message UpdateResourceSpecRequest {
+  string id = 1;
+  string name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  double price = 3;
+  map<string,string> resourceQuantity = 4;
+}
+
+message UpdateResourceSpecReply {
   string id = 1;
 }
