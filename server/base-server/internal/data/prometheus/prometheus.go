@@ -78,12 +78,14 @@ func (p *prometheus) QueryAccCardUtil(
 		"nvidia":     "dcgm_gpu_utilization",      // GPU utilization
 		"huawei":     "container_npu_utilization", // NPU utilization
 		"enflame":    "enflame_gcu_usage",         // GCU utilization
-		"iluvatar":   "ix_gpu_utilization",        // iluvatar GPU utilization
-		"metax-tech": "",                          //
+		"metax-tech": "",                          // "gopkg.in/resty.v1"
 	}
 	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
 	if company == "cambricon" {
 		query = fmt.Sprintf(`mlu_utilization * on(uuid) group_right mlu_container{pod="%s"}`, podName) // MLU utilization
+	}
+	if company == "iluvatar" {
+		query = fmt.Sprintf(`ix_gpu_utilization{pod="%s"}`, podName) // iluvatar GPU utilization
 	}
 	return p.query(query, start, size, step)
 }
@@ -94,7 +96,6 @@ func (p *prometheus) QueryAccCardMemUtil(
 	items := map[string]string{
 		"nvidia":     "dcgm_mem_copy_utilization",      // GPU memory utilization
 		"enflame":    "100 * enflame_gcu_memory_usage", // GCU memory utilization
-		"iluvatar":   "ix_mem_utilization",             // iluvatar GPU memory utilization
 		"metax-tech": "",                               //
 	}
 	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
@@ -106,6 +107,9 @@ func (p *prometheus) QueryAccCardMemUtil(
 	if company == "cambricon" {
 		query = fmt.Sprintf(
 			`mlu_memory_utilization * on(uuid) group_right mlu_container{pod="%s"}`, podName) // MLU memory utilization
+	}
+	if company == "iluvatar" {
+		query = fmt.Sprintf(`ix_mem_utilization{pod="%s"}`, podName) // iluvatar GPU memory utilization
 	}
 	return p.query(query, start, size, step)
 }
