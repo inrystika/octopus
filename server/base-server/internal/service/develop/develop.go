@@ -1109,6 +1109,10 @@ func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, ta
 	return fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
 }
 
+func (s *developService) GetPodNameFromNoteBookTaskByIndex(notebook *model.Notebook, taskIndex int32) string {
+	return fmt.Sprintf("%s-task%d-0", notebook.NotebookJobId, taskIndex)
+}
+
 func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, string, error) {
 	pod, err := s.data.Cluster.GetPod(ctx, notebook.UserId, s.GetPodNameFromNoteBookTask(notebook, taskName))
 	if err != nil {
@@ -1208,15 +1212,15 @@ func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDe
 }
 
 func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
-	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.NotebookId)
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	resources, err := s.resourceService.ListResource(ctx, &emptypb.Empty{})
+	resources, err := s.resourceService.ListResourceAll(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
+	resourceSpec, err := s.resourceSpecService.GetResourceSpecIgnore(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
 	if err != nil {
 		return nil, err
 	}
@@ -1224,7 +1228,7 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 	if err != nil {
 		return nil, err
 	}
-	podName := s.GetPodNameFromNoteBookTask(notebook, req.TaskName)
+	podName := s.GetPodNameFromNoteBookTaskByIndex(notebook, req.TaskIndex)
 	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
 	if err != nil {
 		return nil, err

@@ -206,8 +206,8 @@ message ListNotebookEventRecordReply {
 }
 
 message GetNotebookMetricRequest {
-  string notebookId = 1[(validate.rules).string = {min_len: 1}];
-  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  int32 taskIndex = 2;
   int64 start = 3;
   int32 size = 4[(validate.rules).int32 = {gte:0,lte:1000}];
   int32 step = 5;

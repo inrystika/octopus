@@ -256,6 +256,74 @@ func (rsvc *ResourceService) ListResource(ctx context.Context, req *empty.Empty)
 	return resourceList, err
 }
 
+func (rsvc *ResourceService) ListResourceAll(ctx context.Context, req *empty.Empty) (*api.ResourceList, error) {
+	resourceList := &api.ResourceList{
+		Resources: make([]*api.Resource, 0),
+	}
+
+	allResources, err := rsvc.data.ResourceDao.ListResourceAll()
+
+	if err != nil {
+		return &api.ResourceList{}, err
+	}
+
+	allNodes, err := rsvc.data.Cluster.GetAllNodes(ctx)
+
+	if err != nil {
+		return &api.ResourceList{}, err
+	}
+
+	systemResourceNodesMap := collectSystemResourceNodesInfo(rsvc.conf.Service.Resource.IgnoreSystemResources, allNodes)
+	customizedResourceNodesMap := rsvc.collectCustomizedResourceNodesInfo(allResources, allNodes)
+
+	cResourceBindingNodeLabelKeyFormat := rsvc.conf.Service.Resource.CustomizedResourceBindingNodeLabelKeyFormat
+
+	for _, dbr := range allResources {
+
+		var tempResourceNodes []string
+		var cResourceBindingNodeLabelKey string
+		var cResourceBindingNodeLabelValue string
+
+		if dbr.ResourceRef == "" {
+
+			if nodes, ok := systemResourceNodesMap[dbr.Name]; ok {
+				tempResourceNodes = nodes
+				sort.Strings(tempResourceNodes)
+			}
+
+			//let 'shm' resource bingdingNode as memory
+			if dbr.Name == "shm" {
+				if nodes, ok := systemResourceNodesMap["memory"]; ok {
+					tempResourceNodes = nodes
+					sort.Strings(tempResourceNodes)
+				}
+			}
+		} else {
+			if nodes, ok := customizedResourceNodesMap[dbr.Name]; ok {
+				tempResourceNodes = nodes
+				sort.Strings(tempResourceNodes)
+			}
+
+			cResourceBindingNodeLabelValue = rsvc.conf.Service.Resource.CustomizedResourceBindingNodeLabelValue
+			cResourceBindingNodeLabelKey = fmt.Sprintf(cResourceBindingNodeLabelKeyFormat, dbr.Name)
+		}
+
+		rmr := &api.Resource{
+			Id:                    dbr.Id,
+			Name:                  dbr.Name,
+			Desc:                  dbr.Desc,
+			ResourceRef:           dbr.ResourceRef,
+			BindingNodes:          tempResourceNodes,
+			BindingNodeLabelKey:   cResourceBindingNodeLabelKey,
+			BindingNodeLabelValue: cResourceBindingNodeLabelValue,
+		}
+
+		resourceList.Resources = append(resourceList.Resources, rmr)
+	}
+
+	return resourceList, err
+}
+
 //Do not save resource nodes info to db!!!
 //Because when list resources, if delete resouce label in cluster node labels, it will occurs data consistence problem between db and k8s cluster
 func (rsvc *ResourceService) CreateCustomizedResource(ctx context.Context, req *api.CreateCustomizedResourceRequest) (*api.CreateCustomizedResourceReply, error) {
