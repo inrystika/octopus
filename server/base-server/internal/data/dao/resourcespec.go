@@ -14,6 +14,7 @@ type ResourceSpecDao interface {
 	DeleteResourceSpec(id string) (string, error)
 	GetResourceSpec(id string) (*resources.ResourceSpec, error)
 	UpdateResourceSpec(request *resources.UpdateResourceSpecRequest) (string, error)
+	GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error)
 }
 
 type resourceSepcDao struct {
@@ -108,4 +109,16 @@ func (d *resourceSepcDao) UpdateResourceSpec(request *resources.UpdateResourceSp
 	}
 
 	return id, nil
+}
+
+func (d *resourceSepcDao) GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error) {
+	db := d.db
+
+	resourceSpec := &resources.ResourceSpec{Id: id}
+
+	if err := db.Unscoped().Find(&resourceSpec).Error; err != nil {
+		return nil, err
+	}
+
+	return resourceSpec, nil
 }

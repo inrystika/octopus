@@ -1369,11 +1369,11 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
-	resources, err := s.resourceService.ListResource(ctx, &emptypb.Empty{})
+	resources, err := s.resourceService.ListResourceAll(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	resourceSpec, err := s.resourceSpecService.GetResourceSpecIgnore(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
 	if err != nil {
 		return nil, err
 	}

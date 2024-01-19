@@ -12,6 +12,7 @@ import (
 
 type ResourceDao interface {
 	ListResource() ([]*resources.Resource, error)
+	ListResourceAll() ([]*resources.Resource, error)
 	CreateResource(request *resources.CreateResourceRequest) (string, error)
 	GetResource(id string) (*resources.Resource, error)
 	UpdateResource(resource *resources.Resource) (string, error)
@@ -36,6 +37,17 @@ func (d *resourceDao) ListResource() ([]*resources.Resource, error) {
 	resources := make([]*resources.Resource, 0)
 
 	if err := db.Find(&resources).Error; err != nil {
+		return nil, err
+	}
+
+	return resources, nil
+}
+
+func (d *resourceDao) ListResourceAll() ([]*resources.Resource, error) {
+	db := d.db
+	resources := make([]*resources.Resource, 0)
+
+	if err := db.Unscoped().Find(&resources).Error; err != nil {
 		return nil, err
 	}
 

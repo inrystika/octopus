@@ -12,6 +12,7 @@ service ResourceSpecService {
   rpc DeleteResourceSpec(DeleteResourceSpecRequest) returns (DeleteResourceSpecReply);
   rpc GetResourceSpec(GetResourceSpecRequest) returns (GetResourceSpecReply);
   rpc UpdateResourceSpec(UpdateResourceSpecRequest) returns (UpdateResourceSpecReply);
+  rpc GetResourceSpecIgnore(GetResourceSpecRequest) returns (GetResourceSpecReply);
 }
 
 message ListResourceSpecRequest {

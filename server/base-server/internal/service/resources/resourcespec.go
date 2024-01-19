@@ -234,3 +234,28 @@ func (rsvc *ResourceSpecService) UpdateResourceSpec(
 
 	return &api.UpdateResourceSpecReply{Id: id}, nil
 }
+
+func (rsvc *ResourceSpecService) GetResourceSpecIgnore(ctx context.Context, req *api.GetResourceSpecRequest) (*api.GetResourceSpecReply, error) {
+	dbr, err := rsvc.data.ResourceSpecDao.GetResourceSpecIgnore(req.Id)
+
+	if err != nil {
+		return &api.GetResourceSpecReply{}, errors.Errorf(err, errors.ErrorGetResourceSpec)
+	}
+
+	var tempResourceQuantity map[string]string
+
+	err = json.Unmarshal([]byte(dbr.ResourceQuantity), &tempResourceQuantity)
+
+	if err != nil {
+		return &api.GetResourceSpecReply{}, errors.Errorf(err, errors.ErrorGetResourceSpec)
+	}
+
+	rspec := &api.ResourceSpec{
+		Id:               dbr.Id,
+		Name:             dbr.Name,
+		Price:            dbr.Price,
+		ResourceQuantity: tempResourceQuantity,
+	}
+
+	return &api.GetResourceSpecReply{ResourceSpec: rspec}, nil
+}

@@ -243,9 +243,9 @@ message ListNotebookEventRecordReply {
 
 message GetNotebookMetricRequest {
   //Notebook ID
-  string notebookId = 1[(validate.rules).string = {min_len: 1}];
-  //
-  string taskName = 2[(validate.rules).string = {min_len: 1}];
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  //子任务序号，从0开始
+  int32 taskIndex = 2;
   //开始时间
   int64 start = 3;
   //数量, 最大1000
