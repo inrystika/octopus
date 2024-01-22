@@ -16,8 +16,7 @@ message CreateOrUpdateFtpAccountRequest {
   string username = 1;
   string email = 2;
   string password = 3;
-  string homeS3Bucket = 4;
-  string homeS3Object = 5;
+  string homeDir = 4;
 }
 
 message CreateOrUpdateFtpAccountReply {
