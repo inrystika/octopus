@@ -299,7 +299,7 @@ spec:
           - name: device-metrics
             readOnly: true
             mountPath: /run/prometheus
-      - image: nvidia/dcgm-exporter:1.4.6
+      - image: ybh1998/dcgm-exporter:0.1
         name: nvidia-dcgm-exporter
         securityContext:
           runAsNonRoot: false

@@ -67,6 +67,8 @@ const (
 	k8sTaskNamePrefix            = "task"
 	servicePort                  = 8888
 	shmResource                  = "shm"
+	cpuResource                  = "cpu"
+	memResource                  = "memory"
 	nodeActionLabelNotebookId    = "nodebook.octopus.dev/id"
 	nodeActionLabelImageId       = "image.octopus.dev/id"
 	kubeAnnotationsProxyBodySize = "nginx.ingress.kubernetes.io/proxy-body-size"
@@ -1107,6 +1109,10 @@ func (s *developService) GetPodNameFromNoteBookTask(notebook *model.Notebook, ta
 	return fmt.Sprintf("%s-%s-0", notebook.NotebookJobId, taskName)
 }
 
+func (s *developService) GetPodNameFromNoteBookTaskByIndex(notebook *model.Notebook, taskIndex int32) string {
+	return fmt.Sprintf("%s-task%d-0", notebook.NotebookJobId, taskIndex)
+}
+
 func (s *developService) getNotebookTaskContainer(ctx context.Context, notebook *model.Notebook, taskName string) (string, string, error) {
 	pod, err := s.data.Cluster.GetPod(ctx, notebook.UserId, s.GetPodNameFromNoteBookTask(notebook, taskName))
 	if err != nil {
@@ -1203,4 +1209,176 @@ func defaultDetail(userID string, nbJob *model.NotebookJob) *typeJob.JobStatusDe
 			State:  status,
 		},
 	}
+}
+
+func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
+	notebook, err := s.data.DevelopDao.GetNotebook(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resources, err := s.resourceService.ListResourceAll(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpecIgnore(ctx, &api.GetResourceSpecRequest{Id: notebook.ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	company, err := s.getCompany(ctx, resources, resourceSpec.ResourceSpec)
+	if err != nil {
+		return nil, err
+	}
+	podName := s.GetPodNameFromNoteBookTaskByIndex(notebook, req.TaskIndex)
+	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	memUsage, err := s.data.Prometheus.QueryMemUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuUtil, err := s.data.Prometheus.QueryGpuUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	gpuMemUtil, err := s.data.Prometheus.QueryGpuMemUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardMemUtil, err := s.data.Prometheus.QueryAccCardMemUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	networkReceiveBytes, err := s.data.Prometheus.QueryNetworkReceiveBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	networkTransmitBytes, err := s.data.Prometheus.QueryNetworkTransmitBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	fsUsageBytes, err := s.data.Prometheus.QueryFSUsageBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+
+	res := &api.GetNotebookMetricReply{
+		MemUsage:             memUsage,
+		GpuUtil:              gpuUtil,
+		GpuMemUsage:          gpuMemUtil,
+		AccCardUtil:          accCardUtil,
+		AccCardMemUsage:      accCardMemUtil,
+		NetworkReceiveBytes:  networkReceiveBytes,
+		NetworkTransmitBytes: networkTransmitBytes,
+		FsUsageBytes:         fsUsageBytes,
+		Company:              company,
+	}
+
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, resources, resourceSpec.ResourceSpec, cpuUsage)
+	if err == nil { //忽略err
+		res.CpuUsage = cpuAverageUsage
+	} else {
+		for range cpuUsage {
+			res.CpuUsage = append(res.CpuUsage, -1)
+		}
+	}
+
+	memUsagePercent, err := s.getMemUsagePercent(ctx, resources, resourceSpec.ResourceSpec, memUsage)
+	if err == nil { //忽略err
+		res.MemUsagePercent = memUsagePercent
+	} else {
+		for range memUsage {
+			res.MemUsagePercent = append(res.MemUsagePercent, -1)
+		}
+	}
+
+	return res, nil
+}
+
+func (s *developService) getCpuAverageUsage(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	cpuUsage []float64) ([]float64, error) {
+
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == cpuResource || r.Name == cpuResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range cpuUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
+			}
+		}
+	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
+
+func (s *developService) getMemUsagePercent(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	memUsage []float64) ([]float64, error) {
+
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == memResource || r.Name == memResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range memUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)*100/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
+			}
+		}
+	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
+
+func (s *developService) getCompany(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec) (string, error) {
+
+	companyResource := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
+	for _, v := range companyResource {
+		for _, r := range resources.Resources {
+			for k, _ := range resourceSpec.ResourceQuantity {
+				if r.Name == k {
+					if strings.Contains(r.ResourceRef, v) || strings.Contains(r.Name, v) {
+						return v, nil
+					}
+				}
+			}
+		}
+	}
+	return "", nil
 }

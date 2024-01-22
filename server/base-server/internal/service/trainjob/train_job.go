@@ -39,6 +39,8 @@ const (
 	k8sTaskNamePrefix   = "task"
 	NoDistributedJobNum = 1
 	shmResource         = "shm"
+	cpuResource         = "cpu"
+	memResource         = "memory"
 	readonlyCodeDir     = "/readonlycode"
 )
 
@@ -1363,6 +1365,22 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 
 func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
 	podName := fmt.Sprintf("%s-task%d-%d", req.Id, req.TaskIndex, req.ReplicaIndex)
+	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	resources, err := s.resourceService.ListResourceAll(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	resourceSpec, err := s.resourceSpecService.GetResourceSpecIgnore(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
+	if err != nil {
+		return nil, err
+	}
+	company, err := s.getCompany(ctx, resources, resourceSpec.ResourceSpec)
+	if err != nil {
+		return nil, err
+	}
 	cpuUsage, err := s.data.Prometheus.QueryCpuUsage(ctx, podName, req.Start, int(req.Size), int(req.Step))
 	if err != nil {
 		return nil, err
@@ -1379,14 +1397,49 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	if err != nil {
 		return nil, err
 	}
+	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	accCardMemUtil, err := s.data.Prometheus.QueryAccCardMemUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	networkReceiveBytes, err := s.data.Prometheus.QueryNetworkReceiveBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	networkTransmitBytes, err := s.data.Prometheus.QueryNetworkTransmitBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
+	fsUsageBytes, err := s.data.Prometheus.QueryFSUsageBytes(ctx, podName, req.Start, int(req.Size), int(req.Step))
+	if err != nil {
+		return nil, err
+	}
 
 	res := &api.GetJobMetricReply{
-		CpuUsage:    cpuUsage,
-		MemUsage:    memUsage,
-		GpuUtil:     gpuUtil,
-		GpuMemUsage: gpuMemUtil,
+		MemUsage:             memUsage,
+		GpuUtil:              gpuUtil,
+		GpuMemUsage:          gpuMemUtil,
+		AccCardUtil:          accCardUtil,
+		AccCardMemUsage:      accCardMemUtil,
+		NetworkReceiveBytes:  networkReceiveBytes,
+		NetworkTransmitBytes: networkTransmitBytes,
+		FsUsageBytes:         fsUsageBytes,
+		Company:              company,
 	}
-	memUsagePercent, err := s.getMemUsagePercent(ctx, req, memUsage)
+
+	cpuAverageUsage, err := s.getCpuAverageUsage(ctx, resources, resourceSpec.ResourceSpec, cpuUsage)
+	if err == nil { //忽略err
+		res.CpuUsage = cpuAverageUsage
+	} else {
+		for range cpuUsage {
+			res.CpuUsage = append(res.CpuUsage, -1)
+		}
+	}
+
+	memUsagePercent, err := s.getMemUsagePercent(ctx, resources, resourceSpec.ResourceSpec, memUsage)
 	if err == nil { //忽略err
 		res.MemUsagePercent = memUsagePercent
 	} else {
@@ -1398,29 +1451,86 @@ func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetri
 	return res, nil
 }
 
-func (s *trainJobService) getMemUsagePercent(ctx context.Context, req *api.GetJobMetricRequest, memUsage []float64) ([]float64, error) {
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	resourceSpec, err := s.resourceSpecService.GetResourceSpec(ctx, &api.GetResourceSpecRequest{Id: trainJob.Config[req.TaskIndex].ResourceSpecId})
-	if err != nil {
-		return nil, err
-	}
+func (s *trainJobService) getCpuAverageUsage(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	cpuUsage []float64) ([]float64, error) {
 
-	quantity, err := resource.ParseQuantity(resourceSpec.ResourceSpec.ResourceQuantity["memory"])
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]float64, 0)
-	for _, v := range memUsage {
-		if v == -1 {
-			res = append(res, v)
-		} else {
-			res = append(res, float64(int64(v)*100/quantity.Value()))
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == cpuResource || r.Name == cpuResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range cpuUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
+			}
 		}
 	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
 
-	return res, nil
+func (s *trainJobService) getMemUsagePercent(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec,
+	memUsage []float64) ([]float64, error) {
+
+	for _, r := range resources.Resources {
+		for k, v := range resourceSpec.ResourceQuantity {
+			if r.Name == k {
+				if r.ResourceRef == memResource || r.Name == memResource {
+					quantity, err := resource.ParseQuantity(v)
+					if err != nil {
+						return nil, err
+					}
+					res := make([]float64, 0)
+					for _, v := range memUsage {
+						if v == -1 {
+							res = append(res, v)
+						} else if quantity.Value() <= 0 {
+							res = append(res, -1)
+						} else {
+							res = append(res, float64(v)*100/float64(quantity.Value()))
+						}
+					}
+					return res, nil
+				}
+			}
+		}
+	}
+	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
+}
+
+func (s *trainJobService) getCompany(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec) (string, error) {
+
+	companyResource := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
+	for _, v := range companyResource {
+		for _, r := range resources.Resources {
+			for k, _ := range resourceSpec.ResourceQuantity {
+				if r.Name == k {
+					if strings.Contains(r.ResourceRef, v) || strings.Contains(r.Name, v) {
+						return v, nil
+					}
+				}
+			}
+		}
+	}
+	return "", nil
 }

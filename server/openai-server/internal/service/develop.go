@@ -217,3 +217,23 @@ func (s *DevelopService) ListNotebookEventRecord(ctx context.Context, req *api.L
 
 	return reply, nil
 }
+
+func (s *DevelopService) GetNotebookMetric(ctx context.Context, req *api.GetNotebookMetricRequest) (*api.GetNotebookMetricReply, error) {
+	innerReq := &innerapi.GetNotebookMetricRequest{}
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorStructCopy)
+	}
+
+	innerReply, err := s.data.DevelopClient.GetNotebookMetric(ctx, innerReq)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &api.GetNotebookMetricReply{}
+	err = copier.Copy(reply, innerReply)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

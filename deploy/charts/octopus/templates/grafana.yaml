@@ -443,7 +443,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "npu_chip_info_utilization{id=~\"$npu_id\", name=\"$npu_hostname\"}",
+              "expr": "container_npu_utilization{pod_name=\"$pod_name\"}",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -532,7 +532,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "npu_chip_info_hbm_used_memory{id=~\"$npu_id\", name=\"$npu_hostname\"} / npu_chip_info_hbm_total_memory{id=~\"$npu_id\", name=\"$npu_hostname\"} * 100",
+              "expr": "100 * container_npu_used_memory{pod_name=\"$pod_name\"} / container_npu_total_memory{pod_name=\"$pod_name\"}",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "NPU hbm memory utilization",

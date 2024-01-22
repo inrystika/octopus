@@ -13,6 +13,7 @@ type ResourceSpecDao interface {
 	CreateResourceSpec(request *resources.CreateResourceSpecRequest) (string, error)
 	DeleteResourceSpec(id string) (string, error)
 	GetResourceSpec(id string) (*resources.ResourceSpec, error)
+	GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error)
 }
 
 type resourceSepcDao struct {
@@ -72,7 +73,7 @@ func (d *resourceSepcDao) CreateResourceSpec(request *resources.CreateResourceSp
 func (d *resourceSepcDao) DeleteResourceSpec(id string) (string, error) {
 	db := d.db
 
-	if err := db.Unscoped().Delete(&resources.ResourceSpec{Id: id}).Error; err != nil {
+	if err := db.Delete(&resources.ResourceSpec{Id: id}).Error; err != nil {
 		return "", errors.Errorf(err, errors.ErrorDBDeleteFailed)
 	}
 
@@ -85,6 +86,18 @@ func (d *resourceSepcDao) GetResourceSpec(id string) (*resources.ResourceSpec, e
 	resourceSpec := &resources.ResourceSpec{Id: id}
 
 	if err := db.Find(&resourceSpec).Error; err != nil {
+		return nil, err
+	}
+
+	return resourceSpec, nil
+}
+
+func (d *resourceSepcDao) GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error) {
+	db := d.db
+
+	resourceSpec := &resources.ResourceSpec{Id: id}
+
+	if err := db.Unscoped().Find(&resourceSpec).Error; err != nil {
 		return nil, err
 	}
 
