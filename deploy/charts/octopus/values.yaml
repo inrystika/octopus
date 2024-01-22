@@ -475,6 +475,9 @@ sftpgo:
     - name: "data"
       persistentVolumeClaim:
         claimName: "octopus-sftpgo-pvc"
+    - name: "minio"
+      persistentVolumeClaim:
+        claimName: "octopus-minio-pvc"
   volumeMounts:
     - name: "data"
       mountPath: "/var/lib/sftpgo"
@@ -482,6 +485,8 @@ sftpgo:
     - name: "data"
       mountPath: "/srv/sftpgo"
       subPath: "data"
+    - name: "minio"
+      mountPath: "/minio"
   envVars:
     - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
       value: "admin"
@@ -490,6 +495,8 @@ sftpgo:
   config:
     data_provider:
       create_default_admin: true
+  securityContext:
+    runAsUser: 0
   nodeSelector:
     <<: *nodeSelector
 
