@@ -13,7 +13,7 @@ type ResourceSpecDao interface {
 	CreateResourceSpec(request *resources.CreateResourceSpecRequest) (string, error)
 	DeleteResourceSpec(id string) (string, error)
 	GetResourceSpec(id string) (*resources.ResourceSpec, error)
-	UpdateResourceSpec(request *resources.UpdateResourceSpecRequest) (string, error)
+	UpdateResourceSpec(resource *resources.ResourceSpec) (string, error)
 	GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error)
 }
 
@@ -93,22 +93,14 @@ func (d *resourceSepcDao) GetResourceSpec(id string) (*resources.ResourceSpec, e
 	return resourceSpec, nil
 }
 
-func (d *resourceSepcDao) UpdateResourceSpec(request *resources.UpdateResourceSpecRequest) (string, error) {
+func (d *resourceSepcDao) UpdateResourceSpec(resource *resources.ResourceSpec) (string, error) {
 	db := d.db
-	id := utils.GetUUIDWithoutSeparator()
 
-	resourceSpec := &resources.ResourceSpec{
-		Id:               id,
-		Name:             request.Name,
-		Price:            request.Price,
-		ResourceQuantity: request.ResourceQuantity,
+	if err := db.Save(resource).Error; err != nil {
+		return "", err
 	}
 
-	if err := db.Create(&resourceSpec).Error; err != nil {
-		return "", errors.Errorf(err, errors.ErrorDBCreateFailed)
-	}
-
-	return id, nil
+	return resource.Id, nil
 }
 
 func (d *resourceSepcDao) GetResourceSpecIgnore(id string) (*resources.ResourceSpec, error) {

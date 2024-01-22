@@ -23,6 +23,7 @@ type CreateResourceSpecRequest struct {
 }
 
 type UpdateResourceSpecRequest struct {
+	Id               string
 	Name             string
 	Price            float64
 	ResourceQuantity string

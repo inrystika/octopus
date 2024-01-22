@@ -220,7 +220,8 @@ func (rsvc *ResourceSpecService) UpdateResourceSpec(
 
 	resQuantityStr := string(resQuantityBytes)
 
-	cRq := &resources.UpdateResourceSpecRequest{
+	cRq := &resources.ResourceSpec{
+		Id:               req.Id,
 		Name:             req.Name,
 		Price:            req.Price,
 		ResourceQuantity: resQuantityStr,
