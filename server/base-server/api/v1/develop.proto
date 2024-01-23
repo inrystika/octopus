@@ -126,6 +126,7 @@ message Notebook {
   string resourcePool=24;
   string imageUrl = 25;
   string exitMsg = 26;
+  string command = 27;
 }
 
 message ListNotebookReply {
