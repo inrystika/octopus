@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -428,17 +429,20 @@ func (s *UserService) UpdateUserConfig(ctx context.Context, req *api.UpdateUserC
 	return &api.UpdateUserConfigReply{}, nil
 }
 
+func (s *UserService) buildFtpHomeDir(ctx context.Context, userId string) string {
+	return fmt.Sprintf("/minio/%s/%s", userId, common.USERHOME)
+}
+
 func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateUserFtpAccountRequest) (*api.UpdateUserFtpAccountReply, error) {
 	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: req.UserId})
 	if err != nil {
 		return nil, err
 	}
 	_, err = s.ftpProxyService.CreateOrUpdateFtpAccount(ctx, &api.CreateOrUpdateFtpAccountRequest{
-		Username:     req.FtpUserName,
-		Email:        user.Email,
-		Password:     req.FtpPassword,
-		HomeS3Bucket: common.GetUserBucket(req.UserId),
-		HomeS3Object: common.GetUserHomeObject(),
+		Username: req.FtpUserName,
+		Email:    user.Email,
+		Password: req.FtpPassword,
+		HomeDir:  s.buildFtpHomeDir(ctx, req.UserId),
 	})
 	if err != nil {
 		return nil, err

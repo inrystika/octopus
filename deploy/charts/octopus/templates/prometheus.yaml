@@ -525,7 +525,7 @@ spec:
         - name: log-npu-exporter
           hostPath:
             path: /var/log/mindx-dl/npu-exporter
-            type: Directory
+            type: DirectoryOrCreate
         - name: localtime
           hostPath:
             path: /etc/localtime
