@@ -2088,7 +2088,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".+\"}) / count(dcgm_gpu_utilization{pod_name=~\".+\"})) or vector(0))",
+              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".*\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\"})) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster GPU memory utilization(avg)",
@@ -5767,7 +5767,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".+\",name=~\"^$Node$\"}) / count(dcgm_gpu_utilization{pod_name=~\".+\",name=~\"^$Node$\"})) or vector(0))",
+              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".*\",name=~\"^$Node$\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\",name=~\"^$Node$\"})) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node GPU memory utilization(avg)",
