@@ -81,6 +81,39 @@ func (rsvc *ResourceSpecService) CreateResourceSpec(ctx context.Context, req *ap
 	return apiReply, nil
 }
 
+func (rsvc *ResourceSpecService) UpdateResourceSpec(
+	ctx context.Context,
+	req *api.UpdateResourceSpecRequest) (*api.UpdateResourceSpecReply, error) {
+
+	reply, err := rsvc.data.ResourceSpecClient.UpdateResourceSpec(
+		ctx,
+		&innerapi.UpdateResourceSpecRequest{
+			Id:               req.Id,
+			Name:             req.Name,
+			Price:            req.Price,
+			ResourceQuantity: req.ResourceQuantity,
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	replyBytes, err := json.Marshal(reply)
+
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+	}
+
+	apiReply := &api.UpdateResourceSpecReply{}
+	err = json.Unmarshal(replyBytes, apiReply)
+
+	if err != nil {
+		return nil, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
+	}
+
+	return apiReply, nil
+}
+
 func (rsvc *ResourceSpecService) DeleteResourceSpec(ctx context.Context, req *api.DeleteResourceSpecRequest) (*api.DeleteResourceSpecReply, error) {
 
 	reply, err := rsvc.data.ResourceSpecClient.DeleteResourceSpec(ctx, &innerapi.DeleteResourceSpecRequest{

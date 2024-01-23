@@ -5,7 +5,8 @@ ENV NODE_ENV production
 
 WORKDIR /openai-portal
 COPY ./openai-portal/package.json ./
-RUN npm config set registry https://registry.npm.taobao.org && \
+RUN npm config set strict-ssl false && \
+    npm config set registry https://registry.npm.taobao.org && \
     npm install --dev
 COPY ./openai-portal ./
 RUN npm run build:prod
