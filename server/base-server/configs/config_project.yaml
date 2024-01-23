@@ -1,0 +1,101 @@
+app:
+  name: baseserver
+  version: v1.0
+  isDev: true #是否本地调试
+  logLevel: info
+server:
+  http:
+    addr: 0.0.0.0:8001
+    timeout: 60s
+  grpc:
+    addr: 0.0.0.0:9001
+    timeout: 60s
+data:
+  database:
+    driver: mysql
+    source: root:root@tcp(192.168.202.73:30336)/octopus?charset=utf8&parseTime=True&loc=Local
+  kubernetes:
+    masterUrl: https://192.168.202.73:6443/
+    configPath: ./kubeconfig
+    qps: 20
+  minio:
+    base:
+      endPoint: 192.168.202.73:31311
+      accessKeyID: minioadmin
+      secretAccessKey: minioadmin
+      useSSL: false
+      mountPath: /nfsdata/octopus-242-41/minio
+      pvcName: octopus-minio-pvc
+      proxyPath: /oss
+    business:
+      downloadExpiry: 86400
+      uploadExpiry: 86400
+  harbor:
+    host: 192.168.202.74:5000
+    username: openi
+    password: OpenI2018
+    apiVersion: v1.0
+    useSSL: false
+  redis:
+    addr: 192.168.202.73:30667
+    username:
+    password: abcde
+  influxdb:
+    addr: 192.168.202.73:30086
+    username: octopus
+    password: octopus
+    database: octopus
+  jointCloud:
+    baseUrl: http://192.168.207.141:8709
+    username: test
+    password: 7ee15bc8fee766cad1bd70ccf5f4dc14
+    sessionExpirySec: 540 #实际有效期为600
+  ambassador:
+    baseUrl: 192.168.202.73
+  pytorchServer:
+    imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
+    version: 2.0.2
+  sftpgo:
+    baseUrl: 192.168.202.73:30022
+    username: admin
+    password: abcde
+  prometheus:
+    baseUrl: http://192.168.202.73:30003
+service:
+  baseServerAddr: http://127.0.0.1:8001
+  dockerDatasetPath: /dataset
+  dockerCodePath: /code
+  dockerModelPath: /model
+  dockerUserHomePath: /userhome
+  resourceLabelKey: octopus.pcl.ac.cn/type
+  billingPeriodSec: 60
+  isUseMultusCNI: false
+  networksConf: default/macvlan-cx5-bond-conf
+  routineNum: 10
+  develop:
+    autoStopIntervalSec: 7200
+    isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制
+  resource:
+    customizedResourceBindingNodeLabelKeyFormat: openi.octopus.resource.%s
+    customizedResourceBindingNodeLabelValue: bound
+    defaultPoolName: common-pool
+    poolInfoStoreKey: ResourcePoolInfo
+    poolBindingNodeLabelKeyFormat: openi.octopus.resourcepool.%s
+    poolBindingNodeLabelValue: bound
+    poolSelectLabelKey: platform
+    poolSelectLabelValue: openi.octopus
+    discoveryLeaderLeaseLockName: resourcediscovery
+    discoveryDuration: 15s
+    ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+administrator:
+  username: "admin"
+  password: "123456"
+  email: ""
+  phone: ""
+module:
+  storage:
+    source:
+      capacity: "100Gi"
+      nfs:
+        server: 192.168.203.72
+        path: "/data/datasets/data/octopus-dev-minio"

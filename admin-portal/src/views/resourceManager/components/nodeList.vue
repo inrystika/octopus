@@ -60,6 +60,17 @@
             </el-table-column>
         </el-table>
 
+       <div class="block">
+            <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="currentPage"
+                :page-sizes="[20, 50, 100]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalSize">
+            </el-pagination>
+       </div>
     </div>
 </template>
 <script>
@@ -73,15 +84,31 @@
         data() {
             return {
                 input: '',
+                totalData: [],               
                 tableData: [],
-
-
+                currentPage: 1,
+                pageSize: 20,
+                totalSize: 0,
+                tooldata: []
             }
         },
         created() {
             this.getNodeList()
         },
         methods: {
+            handleSizeChange(val) {
+                this.pageSize = val
+                this.showCurrentdata()
+            },
+            handleCurrentChange(val) {
+                this.currentPage = val
+                this.showCurrentdata()
+            },
+            showCurrentdata() {
+                let start = (this.currentPage-1)*this.pageSize*2
+                let end = this.currentPage*this.pageSize*2-1
+                this.tableData = this.totalData.slice(start,end)
+            },
             getDetail(val) {
                 let data = []
                 for (const key1 in val.allocated) {
@@ -124,7 +151,9 @@
                                     else { item.children = [] }
                                 }
                             )
-                            this.tableData = this.handleTableData(response.data.nodes)
+                            this.totalSize = response.data.nodes.length
+                            this.totalData = this.handleTableData(response.data.nodes)
+                            this.showCurrentdata()
                         }
                     } else {
                         this.$message({
@@ -206,5 +235,10 @@
 
     .el-progress-circle__track {
         stroke: #409EFF;
+    }
+
+    .block {
+        float: right;
+        margin: 20px;
     }
 </style>

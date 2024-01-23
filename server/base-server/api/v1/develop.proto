@@ -29,6 +29,8 @@ service Develop {
   rpc SaveNotebook (SaveNotebookRequest) returns (SaveNotebookReply);
   // 查询事件记录列表
   rpc ListNotebookEventRecord (ListNotebookEventRecordRequest) returns (ListNotebookEventRecordReply);
+  // 获取调试任务监控数据
+  rpc GetNotebookMetric (GetNotebookMetricRequest) returns (GetNotebookMetricReply);
 }
 
 message CreateNotebookRequest {
@@ -124,6 +126,7 @@ message Notebook {
   string resourcePool=24;
   string imageUrl = 25;
   string exitMsg = 26;
+  string command = 27;
 }
 
 message ListNotebookReply {
@@ -201,4 +204,27 @@ message ListNotebookEventRecordRequest {
 message ListNotebookEventRecordReply {
   int64  totalSize = 1;
   repeated NotebookEventRecord records = 2;
+}
+
+message GetNotebookMetricRequest {
+  string id = 1[(validate.rules).string = {min_len: 1}];
+  int32 taskIndex = 2;
+  int64 start = 3;
+  int32 size = 4[(validate.rules).int32 = {gte:0,lte:1000}];
+  int32 step = 5;
+}
+
+//值为-1表示该时间点没有数据
+message GetNotebookMetricReply {
+  repeated double cpuUsage = 1;
+  repeated double memUsage = 2;
+  repeated double gpuUtil = 3;
+  repeated double gpuMemUsage = 4;
+  repeated double memUsagePercent = 5;
+  repeated double accCardUtil = 6;
+  repeated double accCardMemUsage = 7;
+  repeated double networkReceiveBytes = 8;
+  repeated double networkTransmitBytes = 9;
+  repeated double fsUsageBytes = 10;
+  string company = 11;
 }

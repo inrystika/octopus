@@ -299,7 +299,7 @@ spec:
           - name: device-metrics
             readOnly: true
             mountPath: /run/prometheus
-      - image: nvidia/dcgm-exporter:1.4.6
+      - image: ybh1998/dcgm-exporter:0.1
         name: nvidia-dcgm-exporter
         securityContext:
           runAsNonRoot: false
@@ -361,6 +361,14 @@ spec:
               mountPath: /run/prometheus
             - name: syspath
               mountPath: /sys
+            - name: localtime
+              mountPath: /etc/localtime
+            - name: varlock
+              mountPath: /var/lock
+            - name: libefml
+              mountPath: /usr/lib/libefml.so
+            - name: libefml-real
+              mountPath: /usr/local/efsmi
       volumes:
         - name: pod-gcu-resources
           hostPath:
@@ -371,6 +379,18 @@ spec:
         - name: syspath
           hostPath:
             path: /sys
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: varlock
+          hostPath:
+            path: /var/lock
+        - name: libefml
+          hostPath:
+            path: /usr/lib/libefml.so
+        - name: libefml-real
+          hostPath:
+            path: /usr/local/efsmi
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -505,7 +525,7 @@ spec:
         - name: log-npu-exporter
           hostPath:
             path: /var/log/mindx-dl/npu-exporter
-            type: Directory
+            type: DirectoryOrCreate
         - name: localtime
           hostPath:
             path: /etc/localtime

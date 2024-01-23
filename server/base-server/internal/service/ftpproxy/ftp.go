@@ -114,7 +114,8 @@ func (s *FtpProxyService) CreateOrUpdateFtpAccount(ctx context.Context, req *pb.
 
 	if fuser == nil {
 		fuser = sftpgov2.NewUser()
-		fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
+		//去掉minio中转
+		//fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
 		permissions := map[string][]sftpgov2.Permission{
 			"/": {sftpgov2.PERMISSION_STAR},
 		}
@@ -127,7 +128,8 @@ func (s *FtpProxyService) CreateOrUpdateFtpAccount(ctx context.Context, req *pb.
 		fuser.SetQuotaFiles(UNLIMITED)
 		fuser.SetExpirationDate(UNLIMITED)
 		fuser.SetPermissions(permissions)
-		fuser.SetFilesystem(*fileSystemConfig)
+		//fuser.SetFilesystem(*fileSystemConfig)
+		fuser.SetHomeDir(req.HomeDir)
 		fuser.SetUploadBandwidth(UNLIMITED)
 		fuser.SetDownloadBandwidth(UNLIMITED)
 
@@ -148,6 +150,12 @@ func (s *FtpProxyService) CreateOrUpdateFtpAccount(ctx context.Context, req *pb.
 		}
 		if req.Password != "" {
 			fuser.SetPassword(password)
+		}
+		if req.HomeDir != "" {
+			fileSystemConfig := sftpgov2.NewFilesystemConfig()
+			fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__0)
+			fuser.SetFilesystem(*fileSystemConfig)
+			fuser.SetHomeDir(req.HomeDir)
 		}
 		err := s.updateFtpUser(ctx, *fuser, 1)
 		if err != nil {

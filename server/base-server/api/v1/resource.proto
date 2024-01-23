@@ -9,6 +9,7 @@ option go_package = "server/base-server/api/v1;v1";
 
 service ResourceService {
   rpc ListResource(google.protobuf.Empty) returns (ResourceList);
+  rpc ListResourceAll(google.protobuf.Empty) returns (ResourceList);
   rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceReply);
   rpc CreateCustomizedResource(CreateCustomizedResourceRequest) returns (CreateCustomizedResourceReply);
   rpc DeleteCustomizedResource(DeleteCustomizedResourceRequest) returns (DeleteCustomizedResourceReply);
