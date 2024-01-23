@@ -82,6 +82,18 @@ export function deleteSpecification(params) {
 
     })
 }
+// 更新资源规格
+export function updateSpecification(params) {
+    return request({
+        url: `/v1/resourcemanage/resourcespec/${params.id}`,
+        method: 'put',
+        data: {
+            name: params.name,
+            price: params.price,
+            resourceQuantity: params.resourceQuantity
+        }
+    })
+}
 // 获取资源列表
 export function getResourceList() {
     return request({

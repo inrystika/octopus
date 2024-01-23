@@ -28,11 +28,12 @@
             <el-table-column label="操作" align="center">
                 <template slot-scope="scope">
                     <el-button type="text" @click="open(scope.row)">删除</el-button>
+                    <el-button type="text" @click="edit(scope.row)">编辑</el-button>
                 </template>
             </el-table-column>
         </el-table>
         <!-- 操作对话框 -->
-        <el-dialog title="添加规格" :visible.sync="addDialog" :close-on-click-modal="false">
+        <el-dialog title="添加规格" :visible.sync="addDialog" @close="closeDialog">
             <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="规格名称" prop="name">
                     <el-input v-model="ruleForm.name" />
@@ -54,10 +55,10 @@
                             </el-select>
                             <span style="margin:0 10px 0 10px">=</span>
                             <el-input v-model="item.value" style="width: 20%;" />
-                            <i class="el-icon-delete" @click="deleteItem(item, index)"></i>
+                            <i class="el-icon-delete" @click="deleteItem(item, index, 'add')"></i>
                         </el-form-item>
                     </div>
-                    <el-button type="primary" @click="addItem">增加</el-button>
+                    <el-button type="primary" @click="addItem('add')">增加</el-button>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -66,19 +67,61 @@
             </div>
         </el-dialog>
 
+        <!-- 编辑对话框 -->
+        <el-dialog title="编辑规格" :visible.sync="editDialog" @close="closeDialog">
+            <el-form ref="eidtRuleForm" :model="eidtRuleForm" :rules="rules" label-width="100px" class="demo-ruleForm">
+                <el-form-item label="规格名称" prop="name">
+                    <el-input v-model="eidtRuleForm.name" />
+                </el-form-item>
+                <el-form-item label="机时价格" prop="price">
+                    <el-input-number v-model="eidtRuleForm.price" :min="0" label="描述文字" :precision="2" :step="0.01"/>
+                    <span class="red">支持两位小数</span>
+                </el-form-item>
+                <el-form-item label="资源信息" prop="resourceQuantity">
+                    <div v-for="(item, index) in eidtRuleForm.resourceQuantity" :key="index">
+                        <el-form-item style="margin-bottom:10px">
+                            <el-select v-model="item.name" style="width: 20%;">
+                                <el-option
+                                    v-for="item in options"
+                                    :key="item.name"
+                                    :label="item.name"
+                                    :value="item.name"
+                                />
+                            </el-select>
+                            <span style="margin:0 10px 0 10px">=</span>
+                            <el-input v-model="item.value" style="width: 20%;" />
+                            <i class="el-icon-delete" @click="deleteItem(item, index, 'edit')"></i>
+                        </el-form-item>
+                    </div>
+                    <el-button type="primary" @click="addItem('edit')">增加</el-button>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="update" v-preventReClick>确认</el-button>
+                <el-button @click="cancel">取消</el-button>
+            </div>
+        </el-dialog>
+
     </div>
 </template>
 
 <script>
-    import { getResource, deleteSpecification, createResource, getResourceList } from '@/api/resourceManager.js'
+    import { getResource, deleteSpecification, createResource, getResourceList, updateSpecification } from '@/api/resourceManager.js'
     export default {
         name: "Resource",
         components: {},
         data() {
             return {
                 addDialog: false,
+                editDialog: false,
                 tableData: [],
                 msg: '',
+                eidtRuleForm: {
+                    id: '',
+                    name: '',
+                    price: undefined,
+                    resourceQuantity: []
+                },
                 ruleForm: {
                     name: '',
                     price: undefined,
@@ -119,14 +162,25 @@
                     }
                 })
             },
-            addItem() {
-                this.ruleForm.resourceQuantity.push({
+            addItem(name) {
+                if(name == 'add') {
+                    this.ruleForm.resourceQuantity.push({
+                        key: '',
+                        value: ''
+                    })
+                    return
+                }
+                this.eidtRuleForm.resourceQuantity.push({
                     key: '',
                     value: ''
                 })
             },
-            deleteItem(item, index) {
-                this.ruleForm.resourceQuantity.splice(index, 1)
+            deleteItem(item, index, name) {
+                if(name == 'add') {
+                    this.ruleForm.resourceQuantity.splice(index, 1)
+                    return 
+                }
+                this.eidtRuleForm.resourceQuantity.splice(index, 1)
             },
             confirm() {
                 this.$refs['ruleForm'].validate((valid) => {
@@ -179,7 +233,21 @@
                     }
                 });
             },
-            cancel() { this.addDialog = false },
+            cancel() { 
+                this.addDialog = false
+                this.editDialog = false
+                this.eidtRuleForm = {
+                    id: '',
+                    name: '',
+                    price: undefined,
+                    resourceQuantity: []
+                }
+                this.ruleForm = {
+                    name: '',
+                    price: undefined,
+                    resourceQuantity: []
+                }
+            },
             getResource() {
                 getResource().then(response => {
                     if (response.success) {
@@ -237,6 +305,76 @@
                         message: '已取消删除'
                     });
                 });
+            },
+            update() {
+                this.$refs['eidtRuleForm'].validate((valid) => {                 
+                    if (valid) {
+                        let obj = {}
+                        let param = {}
+                        obj.name = this.eidtRuleForm.name
+                        obj.id = this.eidtRuleForm.id
+                        obj.price = this.eidtRuleForm.price
+                        this.eidtRuleForm.resourceQuantity.forEach(
+                            item => {
+                                param[item.name] = item.value
+                            }
+                        )
+                        obj.resourceQuantity = param
+                        updateSpecification(obj).then(response => {
+                            if (response.success) {
+                                this.$message({
+                                    message: '更新规格成功',
+                                    type: 'success'
+                                })
+                                this.eidtRuleForm = {
+                                    id: '',
+                                    name: '',
+                                    price: undefined,
+                                    resourceQuantity: []
+                                }
+                                this.getResource()
+                                this.editDialog = false
+                            } else {
+                                this.$message({
+                                    message: this.getErrorMsg(response.error.subcode),
+                                    type: 'warning'
+                                });
+                            }
+                        })                            
+                    } else {
+                      console.log("update error")
+                      return false;
+                    }
+                })
+            },
+            edit(val) {
+                let tempArr = val.resourceQuantity.split(",")
+                tempArr.forEach((item) => {
+                    let arr = item.split(":")
+                    let obj = {}
+                    obj.name = arr[0]
+                    obj.value = arr[1]
+                    this.eidtRuleForm.resourceQuantity.push(obj)
+                })
+                this.editDialog = true
+                this.eidtRuleForm.id = val.id
+                this.eidtRuleForm.name = val.name
+                this.eidtRuleForm.price = val.price
+            },
+            closeDialog() {
+                this.addDialog = false
+                this.editDialog = false
+                this.eidtRuleForm = {
+                    name: '',
+                    price: undefined,
+                    resourceQuantity: []
+                }
+                this.ruleForm = {
+                    name: '',
+                    price: undefined,
+                    resourceQuantity: []
+                }
+
             }
 
         }
