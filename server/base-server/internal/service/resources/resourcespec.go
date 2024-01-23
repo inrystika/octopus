@@ -220,14 +220,15 @@ func (rsvc *ResourceSpecService) UpdateResourceSpec(
 
 	resQuantityStr := string(resQuantityBytes)
 
-	cRq := &resources.ResourceSpec{
-		Id:               req.Id,
-		Name:             req.Name,
-		Price:            req.Price,
-		ResourceQuantity: resQuantityStr,
+	resourceSpec, err := rsvc.data.ResourceSpecDao.GetResourceSpec(req.Id)
+	resourceSpec.Name = req.Name
+	resourceSpec.Price = req.Price
+	resourceSpec.ResourceQuantity = resQuantityStr
+	if err != nil {
+		return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
 	}
 
-	id, err := rsvc.data.ResourceSpecDao.UpdateResourceSpec(cRq)
+	id, err := rsvc.data.ResourceSpecDao.UpdateResourceSpec(resourceSpec)
 
 	if err != nil {
 		return &api.UpdateResourceSpecReply{}, errors.Errorf(err, errors.ErrorUpdateResourceSpec)
