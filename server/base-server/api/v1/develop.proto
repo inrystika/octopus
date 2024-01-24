@@ -52,6 +52,7 @@ message CreateNotebookRequest {
   map<string, string> envs = 15;
   string command = 16;
   bool disableMountUserHome = 17;
+  int64 autoStopDuration = 18;
 }
 
 message CreateNotebookReply {
@@ -127,6 +128,7 @@ message Notebook {
   string imageUrl = 25;
   string exitMsg = 26;
   string command = 27;
+  int64 autoStopDuration = 28;
 }
 
 message ListNotebookReply {
