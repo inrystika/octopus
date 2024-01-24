@@ -10,7 +10,6 @@
                 <div class="tip"><i
                         class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中
                 </div>
-                </el-alert>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input v-model="ruleForm.desc" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请输入NoteBook描述"
                         maxlength="300" show-word-limit />
@@ -102,12 +101,20 @@
                 <el-form-item>
                     <el-button type="text" @click="showMultitask">高级设置</el-button>
                 </el-form-item>
-                <el-form-item v-if="isShowMultitask" label="任务数" prop="taskNumber">
-                    <el-select v-model.number="ruleForm.taskNumber" placeholder="请选择">
-                        <el-option label="1" value="1" />
-                        <el-option label="2" value="2" />
-                    </el-select>
-                </el-form-item>
+                <div v-if="isShowMultitask">
+                  <el-form-item label="任务数" prop="taskNumber">
+                      <el-select v-model.number="ruleForm.taskNumber" placeholder="请选择">
+                          <el-option label="1" value="1" />
+                          <el-option label="2" value="2" />
+                      </el-select>
+                  </el-form-item>
+                  <el-form-item label="自定义启动命令" prop="command">
+                    <el-input v-model="ruleForm.command"></el-input>
+                  </el-form-item>
+                    <div class="tip"><i
+                          class="el-alert__icon el-icon-warning"></i>服务端口环境变量为<span>OCTOPUS_NOTEBOOK_PORT</span>，基础URL环境变量为<span>OCTOPUS_NOTEBOOK_BASE_URL</span>
+                  </div>
+                </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
@@ -163,7 +170,8 @@
                     dataSetVersion: "",
                     taskNumber: 1,
                     resourcePool: "",
-                    specification: ""
+                    specification: "",
+                    command: ""
                 },
                 rules: {
                     name: [
@@ -349,7 +357,8 @@
                             datasetId: this.ruleForm.dataSetId || "",
                             datasetVersion: this.ruleForm.dataSetVersion || "",
                             taskNumber: this.ruleForm.taskNumber,
-                            resourcePool: this.ruleForm.resourcePool
+                            resourcePool: this.ruleForm.resourcePool,
+                            command: this.ruleForm.command
                         };
                         const confirmInfo = this.$createElement
                         this.$confirm(

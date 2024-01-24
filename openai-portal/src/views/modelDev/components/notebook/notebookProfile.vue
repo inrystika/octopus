@@ -56,6 +56,14 @@
         </div>
       </el-col>
     </el-row>
+    <el-row>
+      <el-col :span="12">
+        <div>
+          自定义启动命令:
+          <span>{{ profileInfo.command }}</span>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 <script>

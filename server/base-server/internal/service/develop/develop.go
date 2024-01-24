@@ -93,8 +93,8 @@ func buildIngressName(jobId string, idx int) string {
 	return fmt.Sprintf("%s-%s", jobId, buildTaskName(idx))
 }
 
-func buildNotebookUrl(jobId string, idx int) string {
-	return fmt.Sprintf("/notebook_%s_%s", jobId, buildTaskName(idx))
+func buildNotebookUrl(id string, idx int) string {
+	return fmt.Sprintf("/notebook_%s_%s", id, buildTaskName(idx))
 }
 
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
@@ -637,7 +637,7 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		task.Replicas = 1
 		envs := []v1.EnvVar{{
 			Name:  envNotebookBaseUrl,
-			Value: buildNotebookUrl(nbJob.Id, i),
+			Value: buildNotebookUrl(nb.Id, i),
 		}, {
 			Name:  envNotebookPort,
 			Value: strconv.Itoa(servicePort),
@@ -838,7 +838,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 							HTTP: &v1beta1.HTTPIngressRuleValue{
 								Paths: []v1beta1.HTTPIngressPath{
 									{
-										Path: buildNotebookUrl(nbJob.Id, i),
+										Path: buildNotebookUrl(nb.Id, i),
 										Backend: v1beta1.IngressBackend{
 											ServiceName: buildServiceName(nbJob.Id, i),
 											ServicePort: intstr.FromInt(servicePort),
@@ -944,7 +944,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
 		for i := 0; i < n.TaskNumber; i++ {
-			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.NotebookJobId, i)})
+			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.Id, i)})
 		}
 		notebook.ExitMsg = s.getExitMsg(ctx, jobMap[n.NotebookJobId])
 		notebooks = append(notebooks, notebook)

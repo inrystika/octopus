@@ -98,6 +98,7 @@ const (
 	ErrorResourceSpecNotExist = 11017 // 资源规格不存在
 	ErrorResourceExist        = 11018 // 资源名已存在(创建自定义资源)
 	ErrorListNode             = 11019 // 获取节点列表失败
+	ErrorUpdateResourceSpec   = 11020 // 更新资源规格失败
 
 	/* 12001~13000 算法管理错误*/
 	ErrorFindAlgorithmVersionAccessMaxIdFailed = 12001 // 查找最新公共算法版本失败
