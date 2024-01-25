@@ -109,7 +109,7 @@
                       </el-select>
                   </el-form-item>
                   <el-form-item label="自定义启动命令" prop="command">
-                    <el-input v-model="ruleForm.command"></el-input>
+                    <el-input v-model="ruleForm.command" type="textarea"></el-input>
                   </el-form-item>
                     <div class="tip"><i
                           class="el-alert__icon el-icon-warning"></i>服务端口环境变量为<span>OCTOPUS_NOTEBOOK_PORT</span>，基础URL环境变量为<span>OCTOPUS_NOTEBOOK_BASE_URL</span>
