@@ -66,7 +66,7 @@
       <el-col :span="12">
         <div>
           自动停止:
-          <span>{{profileInfo.autoStopDuration == -1 ? '任务不会自动停止' : profileInfo.autoStopDuration/3600 + '小时后自动停止'}}</span>
+          <span>{{profileInfo.autoStopDuration == -1 ? '任务不会自动停止' : profileInfo.autoStopDuration/3600 + '小时'}}</span>
         </div>
       </el-col>
     </el-row>
