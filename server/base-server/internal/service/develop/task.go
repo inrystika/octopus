@@ -59,10 +59,10 @@ func (s *developService) startNotebookTask() {
 				utils.HandlePanic(ctx, func(i ...interface{}) {
 					for pageIndex := 1; ; pageIndex++ {
 						notebookJobs, err := s.data.DevelopDao.ListNotebookJob(ctx, &model.NotebookJobQuery{
-							PageIndex:   pageIndex,
-							PageSize:    taskPageSize,
-							StartedAtLt: time.Now().Add(-time.Second * time.Duration(s.conf.Service.Develop.AutoStopIntervalSec)).Unix(),
-							StatusList:  utils.NonCompletedStates(),
+							PageIndex: pageIndex,
+							PageSize:  taskPageSize,
+							//StartedAtLt: time.Now().Add(-time.Second * time.Duration(s.conf.Service.Develop.AutoStopIntervalSec)).Unix(),
+							StatusList: utils.NonCompletedStates(),
 						})
 
 						if err != nil {
@@ -74,12 +74,33 @@ func (s *developService) startNotebookTask() {
 							break
 						}
 
+						nbs := make(map[string]*model.Notebook)
+						nbIds := make([]string, 0)
 						for _, j := range notebookJobs {
-							_, err := s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId})
-							if err != nil {
-								s.log.Errorf(ctx, "StopNotebook err: %s", err)
-								continue
+							nbIds = append(nbIds, j.NotebookId)
+						}
+
+						notebooks, _, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{Ids: nbIds})
+						for _, n := range notebooks {
+							nbs[n.Id] = n
+						}
+
+						for _, j := range notebookJobs {
+							duration := int64(0)
+							if nbs[j.NotebookId].AutoStopDuration == 0 {
+								duration = s.conf.Service.Develop.AutoStopIntervalSec
+							} else {
+								duration = nbs[j.NotebookId].AutoStopDuration
 							}
+
+							if duration > 0 && j.StartedAt != nil && time.Now().Sub(*j.StartedAt).Seconds() >= float64(duration) {
+								_, err := s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId})
+								if err != nil {
+									s.log.Errorf(ctx, "StopNotebook err: %s", err)
+									continue
+								}
+							}
+
 						}
 					}
 				})()

@@ -38,6 +38,7 @@ type Notebook struct {
 	Envs                 sql.Map               `gorm:"type:json;comment:环境变量"`
 	Command              string                `gorm:"type:text;comment:启动命令"`
 	DisableMountUserHome bool                  `gorm:"default:false;comment:是否不挂载userhome目录"`
+	AutoStopDuration     int64                 `gorm:"type:int;not null;default:0;comment:自动停止时间（秒）"`
 	DeletedAt            soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 

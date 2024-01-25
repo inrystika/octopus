@@ -98,6 +98,17 @@
                         </el-select>
                     </el-form-item>
                 </div>
+                <el-form-item label="自动停止" prop="autoStopDuration">
+                    <el-switch
+                      v-model="isAutoStop"
+                      active-color="#3296fa"
+                      inactive-color="gray">
+                    </el-switch>
+                    <span v-if="isAutoStop" style="margin-left: 10px">
+                      <el-input-number v-model="ruleForm.autoStopDuration" :precision="1" :step="1" :min="1"></el-input-number>
+                      <span style="color: #B3B3B3;margin-left: 10px">小时</span>                    
+                    </span>
+                  </el-form-item>
                 <el-form-item>
                     <el-button type="text" @click="showMultitask">高级设置</el-button>
                 </el-form-item>
@@ -109,11 +120,11 @@
                       </el-select>
                   </el-form-item>
                   <el-form-item label="自定义启动命令" prop="command">
-                    <el-input v-model="ruleForm.command"></el-input>
+                    <el-input v-model="ruleForm.command" type="textarea"></el-input>
                   </el-form-item>
-                    <div class="tip"><i
-                          class="el-alert__icon el-icon-warning"></i>服务端口环境变量为<span>OCTOPUS_NOTEBOOK_PORT</span>，基础URL环境变量为<span>OCTOPUS_NOTEBOOK_BASE_URL</span>
-                  </div>
+                    <div class="tip">
+                      <i class="el-alert__icon el-icon-warning"></i>服务端口环境变量为<span>OCTOPUS_NOTEBOOK_PORT</span>，基础URL环境变量为<span>OCTOPUS_NOTEBOOK_BASE_URL</span>
+                  </div>                
                 </div>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -155,6 +166,7 @@
                 return callback();
             };
             return {
+                isAutoStop: true,
                 specificationVisible: false,
                 poolList: [],
                 ruleForm: {
@@ -171,7 +183,8 @@
                     taskNumber: 1,
                     resourcePool: "",
                     specification: "",
-                    command: ""
+                    command: "",
+                    autoStopDuration: 4
                 },
                 rules: {
                     name: [
@@ -358,8 +371,12 @@
                             datasetVersion: this.ruleForm.dataSetVersion || "",
                             taskNumber: this.ruleForm.taskNumber,
                             resourcePool: this.ruleForm.resourcePool,
-                            command: this.ruleForm.command
+                            command: this.ruleForm.command,
+                            autoStopDuration: this.ruleForm.autoStopDuration * 3600
                         };
+                        if(!this.isAutoStop) {
+                          param.autoStopDuration = -1
+                        }
                         const confirmInfo = this.$createElement
                         this.$confirm(
                             '温馨提示', {

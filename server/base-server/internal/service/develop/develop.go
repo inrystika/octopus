@@ -417,6 +417,9 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 		nb.Status = constant.PREPARING
 		nb.NotebookJobId = jobId
 		nb.TaskNumber = int(req.TaskNumber)
+		if req.AutoStopDuration == 0 {
+			nb.AutoStopDuration = s.conf.Service.Develop.AutoStopIntervalSec
+		}
 
 		nbJob := &model.NotebookJob{
 			Id:         jobId,

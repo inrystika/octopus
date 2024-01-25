@@ -93,6 +93,7 @@ message Notebook {
   string  resourcePool=27;
   string exitMsg = 28;
   string command = 29;
+  int64 autoStopDuration = 30;
 }
 
 message ListNotebookReply {
