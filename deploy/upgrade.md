@@ -72,8 +72,16 @@ kubectl delete -f nvidia-device-plugin.yml
 
 ## v4.3.2
 
-升级前
+升级前：
 1. 执行
 ```
 kubectl create ns fluid-system
+```
+
+## v4.3.4：
+
+升级后
+1. 执行以下sql语句，其中auto_stop_duration为当前默认的notebook自动停止时间（秒），可替换为当前部署配置文件autoStopIntervalSec配置项的值
+```
+update notebook set auto_stop_duration = 14400 where auto_stop_duration = 0
 ```
