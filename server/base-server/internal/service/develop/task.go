@@ -228,6 +228,22 @@ func (s *developService) startNotebookTask() {
 									s.log.Errorf(ctx, "UpdateNotebookJobSelective err: %s", err)
 									return
 								}
+
+								owner, err := s.billingService.GetBillingOwner(ctx, &api.GetBillingOwnerRequest{
+									OwnerId:   ownerId,
+									OwnerType: ownerType,
+								})
+								if err != nil {
+									s.log.Errorf(ctx, "GetBillingOwner err: %s", err)
+									return
+								}
+								if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
+									_, err = s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId})
+									if err != nil {
+										s.log.Errorf(ctx, "StopNotebook err: %s", err)
+										return
+									}
+								}
 							})()
 						}
 					}

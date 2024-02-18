@@ -167,6 +167,22 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 								s.log.Errorf(ctx, "Update seldon service  selective err: %s", err)
 								continue
 							}
+
+							owner, err := s.billingService.GetBillingOwner(ctx, &api.GetBillingOwnerRequest{
+								OwnerId:   ownerId,
+								OwnerType: ownerType,
+							})
+							if err != nil {
+								s.log.Errorf(ctx, "GetBillingOwner err: %s", err)
+								continue
+							}
+							if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
+								_, err = s.StopDepModel(ctx, &api.StopDepRequest{Id: j.Id})
+								if err != nil {
+									s.log.Errorf(ctx, "StopDepModel err: %s", err)
+									continue
+								}
+							}
 						}
 					}
 				})()

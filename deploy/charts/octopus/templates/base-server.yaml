@@ -162,6 +162,7 @@ data:
       isUseMultusCNI: {{ .Values.baseserver.service.isUseMultusCNI }}
       networksConf: {{ .Values.baseserver.service.networksConf }}
       routineNum: {{ .Values.baseserver.service.routineNum }}
+      stopWhenArrears:  {{ .Values.baseserver.service.stopWhenArrears }}
       develop:
         autoStopIntervalSec: {{ .Values.baseserver.service.develop.autoStopIntervalSec }}
         isSetUploadFileSize: {{ .Values.baseserver.service.develop.isSetUploadFileSize }}
