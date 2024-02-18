@@ -765,6 +765,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		Id:        nbJob.Id,
 		Status:    constant.STOPPED,
 		StoppedAt: &now,
+		Operation: req.Operation,
 	})
 	if err != nil {
 		return nil, err

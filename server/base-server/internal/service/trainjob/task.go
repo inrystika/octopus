@@ -246,11 +246,12 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 								continue
 							}
 							if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
-								_, err = s.StopJob(ctx, &api.StopJobRequest{Id: j.Id})
+								_, err = s.StopJob(ctx, &api.StopJobRequest{Id: j.Id, Operation: "system stop job due to arrears"})
 								if err != nil {
 									s.log.Errorf(ctx, "StopJob err: %s", err)
 									continue
 								}
+								s.log.Info(ctx, "StopJob due to arrears, jobId: %s", j.Id)
 							}
 						}
 					}

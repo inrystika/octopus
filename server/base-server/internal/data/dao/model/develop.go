@@ -59,6 +59,7 @@ type NotebookJob struct {
 	PayStatus         api.BillingPayRecordStatus `gorm:"type:tinyint;not null;default:1;comment:计费状态 1计费中 2计费完成"`
 	ResourceSpecPrice float64                    `gorm:"type:decimal(10,2);not null;default:0;comment:资源规格价格"`
 	Detail            string                     `gorm:"column:detail;type:json" json:"detail"`
+	Operation         string                     `gorm:"type:varchar(100);not null;default:'任务停止说明'"`
 }
 
 func (NotebookJob) TableName() string {

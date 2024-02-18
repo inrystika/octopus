@@ -238,11 +238,12 @@ func (s *developService) startNotebookTask() {
 									return
 								}
 								if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
-									_, err = s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId})
+									_, err = s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId, Operation: "system stop job due to arrears"})
 									if err != nil {
 										s.log.Errorf(ctx, "StopNotebook err: %s", err)
 										return
 									}
+									s.log.Info(ctx, "StopNotebook due to arrears, jobId: %s", j.Id)
 								}
 							})()
 						}

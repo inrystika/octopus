@@ -23,7 +23,7 @@ type ModelDeploy struct {
 	ModelVersion   string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型版本'"`
 	ModelFrame     string                     `gorm:"type:varchar(100);not null;default:'';comment:'模型框架名称''"`
 	ServiceUrl     string                     `gorm:"type:varchar(256);not null;default:'';comment:'服务url路径''"`
-	Operation      string                     `gorm:"type:varchar(100);not null;default:''"`
+	Operation      string                     `gorm:"type:varchar(100);not null;default:'任务停止说明'"`
 	Status         string                     `gorm:"type:varchar(100);not null;comment:'preparing/pending/running/stopped/succeeded/failed'"`
 	CompletedAt    *time.Time                 `gorm:"type:datetime(3);comment:'结束运行时间'"`
 	StartedAt      *time.Time                 `gorm:"type:datetime(3);comment:'开始运行时间'"`

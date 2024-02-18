@@ -177,11 +177,12 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 								continue
 							}
 							if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
-								_, err = s.StopDepModel(ctx, &api.StopDepRequest{Id: j.Id})
+								_, err = s.StopDepModel(ctx, &api.StopDepRequest{Id: j.Id, Operation: "system stop job due to arrears"})
 								if err != nil {
 									s.log.Errorf(ctx, "StopDepModel err: %s", err)
 									continue
 								}
+								s.log.Info(ctx, "StopDepModel because arrears, jobId: %s", j.Id)
 							}
 						}
 					}

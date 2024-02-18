@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/jinzhu/copier"
 	api "server/admin-server/api/v1"
 	"server/admin-server/internal/conf"
 	"server/admin-server/internal/data"
@@ -11,6 +10,8 @@ import (
 	"server/common/errors"
 	"server/common/log"
 	"server/common/utils"
+
+	"github.com/jinzhu/copier"
 )
 
 type DevelopService struct {
@@ -29,7 +30,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data)
 }
 
 func (s *DevelopService) StopNotebook(ctx context.Context, req *api.StopNotebookRequest) (*api.StopNotebookReply, error) {
-	reply, err := s.data.DevelopClient.StopNotebook(ctx, &innerapi.StopNotebookRequest{Id: req.Id})
+	reply, err := s.data.DevelopClient.StopNotebook(ctx, &innerapi.StopNotebookRequest{Id: req.Id, Operation: "admin stop job"})
 	if err != nil {
 		return nil, err
 	}
