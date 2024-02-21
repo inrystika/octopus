@@ -258,7 +258,7 @@ func (d *developDao) UpdateNotebookJobOnNotCompleted(ctx context.Context, notebo
 	if notebookJob.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("id = ? and status not in ?", notebookJob.Id, utils.NonCompletedStates()).Updates(notebookJob)
+	res := db.Where("id = ? and status not in ?", notebookJob.Id, utils.CompletedStates).Updates(notebookJob)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
