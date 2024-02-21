@@ -163,6 +163,7 @@ message Service {
   bool   isUseMultusCNI = 12;
   string networksConf = 13;
   int32 routineNum = 14;
+  bool stopWhenArrears = 15;
 }
 
 message Administrator {

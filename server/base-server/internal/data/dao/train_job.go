@@ -25,8 +25,6 @@ type TrainJobDao interface {
 	GetTrainJobByName(ctx context.Context, jobName string, userId string, workspaceId string) (*model.TrainJob, error)
 	//网关层查询任务列表
 	GetTrainJobList(ctx context.Context, query *model.TrainJobListQuery) ([]*model.TrainJob, int64, error)
-	//网关层更新user对任务的操作记录
-	UpdateTrainJobOperation(jobId string, operation string) error
 	//网关层更新来自k8s的任务状态信息
 	UpdateTrainJob(ctx context.Context, trainJob *model.TrainJob) error
 	//网关层删除任务（软删除）
@@ -184,15 +182,6 @@ func (d *trainJobDao) CreateTrainJob(ctx context.Context, trainJob *model.TrainJ
 	res := d.db.Create(trainJob)
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
-	}
-	return nil
-}
-
-func (d *trainJobDao) UpdateTrainJobOperation(jobId string, operation string) error {
-	var trainJob model.TrainJob
-	trainJob.Operation = operation
-	if err := d.db.Model(trainJob).Where("id = ? ", jobId).Updates(trainJob).Error; err != nil {
-		return errors.Errorf(err, errors.ErrorDBUpdateFailed)
 	}
 	return nil
 }

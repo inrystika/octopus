@@ -36,7 +36,7 @@ type TrainJob struct {
 	DatasetName          string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集名称''"`
 	IsDistributed        bool                       `gorm:"default:false;comment:'是否是分布式'"`
 	Config               Configs                    `gorm:"type:json;comment:'task信息'"`
-	Operation            string                     `gorm:"type:varchar(100);not null;default:''"`
+	Operation            string                     `gorm:"type:varchar(100);not null;default:'';comment:任务停止说明"`
 	Status               string                     `gorm:"type:varchar(100);not null;comment:'preparing/pending/running/stopped/succeeded/failed'"`
 	CompletedAt          *time.Time                 `gorm:"type:datetime(3);comment:'结束运行时间'"`
 	StartedAt            *time.Time                 `gorm:"type:datetime(3);comment:'开始运行时间'"`

@@ -83,7 +83,7 @@ func (s *DevelopService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		return nil, err
 	}
 
-	reply, err := s.data.DevelopClient.StopNotebook(ctx, &innerapi.StopNotebookRequest{Id: req.Id})
+	reply, err := s.data.DevelopClient.StopNotebook(ctx, &innerapi.StopNotebookRequest{Id: req.Id, Operation: "user stop job"})
 	if err != nil {
 		return nil, err
 	}

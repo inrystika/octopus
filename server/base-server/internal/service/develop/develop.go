@@ -765,6 +765,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 		Id:        nbJob.Id,
 		Status:    constant.STOPPED,
 		StoppedAt: &now,
+		Operation: req.Operation,
 	})
 	if err != nil {
 		return nil, err
@@ -950,6 +951,7 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.Id, i)})
 		}
 		notebook.ExitMsg = s.getExitMsg(ctx, jobMap[n.NotebookJobId])
+		notebook.Operation = jobMap[n.NotebookJobId].Operation
 		notebooks = append(notebooks, notebook)
 	}
 	return notebooks, nil

@@ -24,12 +24,14 @@ type DevelopDao interface {
 	GetNotebook(ctx context.Context, id string) (*model.Notebook, error)
 	UpdateNotebookSelective(ctx context.Context, notebook *model.Notebook) error
 	UpdateNotebookSelectiveByJobId(ctx context.Context, notebook *model.Notebook) error
+	UpdateNotebookByJobIdOnNotCompleted(ctx context.Context, notebook *model.Notebook) error
 	DeleteNotebook(ctx context.Context, id string) error
 	ListNotebook(ctx context.Context, query *model.NotebookQuery) ([]*model.Notebook, int64, error)
 
 	CreateNotebookJob(ctx context.Context, notebookJob *model.NotebookJob) error
 	GetNotebookJob(ctx context.Context, id string) (*model.NotebookJob, error)
 	UpdateNotebookJobSelective(ctx context.Context, notebookJob *model.NotebookJob) error
+	UpdateNotebookJobOnNotCompleted(ctx context.Context, notebookJob *model.NotebookJob) error
 	DeleteNotebookJobByNbId(ctx context.Context, notebookId string) error
 	ListNotebookJob(ctx context.Context, query *model.NotebookJobQuery) ([]*model.NotebookJob, error)
 	//获取Notebook事件
@@ -102,6 +104,19 @@ func (d *developDao) UpdateNotebookSelectiveByJobId(ctx context.Context, noteboo
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 	res := db.Where("notebook_job_id = ?", notebook.NotebookJobId).Updates(notebook)
+
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
+}
+
+func (d *developDao) UpdateNotebookByJobIdOnNotCompleted(ctx context.Context, notebook *model.Notebook) error {
+	db := d.db(ctx)
+	if notebook.NotebookJobId == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := db.Where("notebook_job_id = ? and status not in ?", notebook.NotebookJobId, utils.CompletedStates).Updates(notebook)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -231,6 +246,19 @@ func (d *developDao) UpdateNotebookJobSelective(ctx context.Context, notebookJob
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 	res := db.Where("id = ?", notebookJob.Id).Updates(notebookJob)
+
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
+	}
+	return nil
+}
+
+func (d *developDao) UpdateNotebookJobOnNotCompleted(ctx context.Context, notebookJob *model.NotebookJob) error {
+	db := d.db(ctx)
+	if notebookJob.Id == "" {
+		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+	res := db.Where("id = ? and status not in ?", notebookJob.Id, utils.CompletedStates).Updates(notebookJob)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)

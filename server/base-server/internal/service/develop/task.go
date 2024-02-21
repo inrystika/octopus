@@ -228,6 +228,23 @@ func (s *developService) startNotebookTask() {
 									s.log.Errorf(ctx, "UpdateNotebookJobSelective err: %s", err)
 									return
 								}
+
+								owner, err := s.billingService.GetBillingOwner(ctx, &api.GetBillingOwnerRequest{
+									OwnerId:   ownerId,
+									OwnerType: ownerType,
+								})
+								if err != nil {
+									s.log.Errorf(ctx, "GetBillingOwner err: %s", err)
+									return
+								}
+								if s.conf.Service.StopWhenArrears && owner.BillingOwner.Amount < 0 {
+									_, err = s.StopNotebook(ctx, &api.StopNotebookRequest{Id: j.NotebookId, Operation: "system stop job due to arrears"})
+									if err != nil {
+										s.log.Errorf(ctx, "StopNotebook err: %s", err)
+										return
+									}
+									s.log.Infof(ctx, "StopNotebook due to arrears, jobId: %s", j.Id)
+								}
 							})()
 						}
 					}
@@ -305,12 +322,13 @@ func (s *developService) startNotebookTask() {
 							record.Type = commapi.NotebookEventRecordType_STOP
 						}
 
-						err = s.data.DevelopDao.UpdateNotebookSelectiveByJobId(ctx, nbUp)
+						// 解决启动后马上停止偶现的停止不成功并发问题
+						err = s.data.DevelopDao.UpdateNotebookByJobIdOnNotCompleted(ctx, nbUp)
 						if err != nil {
 							s.log.Error(ctx, "UpdateNotebookSelectiveByJobId err when onJobUpdate:"+job.Name, err)
 						}
 
-						err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, nbJobUp)
+						err = s.data.DevelopDao.UpdateNotebookJobOnNotCompleted(ctx, nbJobUp)
 						if err != nil {
 							s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+job.Name, err)
 						}
