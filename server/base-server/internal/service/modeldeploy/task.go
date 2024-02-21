@@ -182,7 +182,7 @@ func (s *modelDeployService) modelServiceBilling(ctx context.Context) {
 									s.log.Errorf(ctx, "StopDepModel err: %s", err)
 									continue
 								}
-								s.log.Info(ctx, "StopDepModel because arrears, jobId: %s", j.Id)
+								s.log.Infof(ctx, "StopDepModel because arrears, jobId: %s", j.Id)
 							}
 						}
 					}

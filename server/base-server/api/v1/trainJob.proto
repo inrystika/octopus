@@ -241,6 +241,7 @@ message TrainJob{
   int64  startedAt = 22;
   string imageUrl = 23;
   string resourcePool=24;
+  string operation = 25;
 }
 
 

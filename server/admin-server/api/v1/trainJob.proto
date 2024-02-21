@@ -142,6 +142,7 @@ message TrainJob {
   string userEmail = 25;
   //资源池
   string resourcePool=26;
+  string operation = 27;
 }
 
 message TrainJobListRequest {

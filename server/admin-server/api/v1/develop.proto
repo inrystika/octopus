@@ -94,6 +94,7 @@ message Notebook {
   string exitMsg = 28;
   string command = 29;
   int64 autoStopDuration = 30;
+  string operation = 31;
 }
 
 message ListNotebookReply {

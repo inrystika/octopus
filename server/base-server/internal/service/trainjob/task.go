@@ -251,7 +251,7 @@ func (s *trainJobService) trainJobBilling(ctx context.Context) {
 									s.log.Errorf(ctx, "StopJob err: %s", err)
 									continue
 								}
-								s.log.Info(ctx, "StopJob due to arrears, jobId: %s", j.Id)
+								s.log.Infof(ctx, "StopJob due to arrears, jobId: %s", j.Id)
 							}
 						}
 					}

@@ -74,6 +74,7 @@ message DepInfo {
   int64 runSec = 14;
   int64 createdAt = 15;
   int64 updatedAt = 16;
+  string operation = 17;
 }
 
 

@@ -63,6 +63,7 @@ message DepInfo {
   string userName = 17;
   //工作空间名
   string workspaceName = 18;
+  string operation = 19;
 }
 
 message ResSpecPrice {
