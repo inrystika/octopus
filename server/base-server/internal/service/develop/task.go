@@ -155,18 +155,15 @@ func (s *developService) startNotebookTask() {
 						}
 
 						details := make([]*typeJob.JobStatusDetail, 0)
+						detailMap := map[string]*typeJob.JobStatusDetail{}
 						for _, id := range jobIds {
 							info, err := s.getJobDetail(ctx, nbjNs[id], id)
 							if err != nil {
 								s.log.Errorf(ctx, "GetJob err: %s", err)
 							} else {
 								details = append(details, info)
+								detailMap[id] = info
 							}
-						}
-
-						detailMap := map[string]*typeJob.JobStatusDetail{}
-						for _, d := range details {
-							detailMap[d.Job.ID] = d
 						}
 
 						for _, j := range nbJobs {
