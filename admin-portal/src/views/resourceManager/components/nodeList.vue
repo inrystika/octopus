@@ -105,8 +105,8 @@
                 this.showCurrentdata()
             },
             showCurrentdata() {
-                let start = (this.currentPage-1)*this.pageSize*2
-                let end = this.currentPage*this.pageSize*2-1
+                let start = (this.currentPage-1)*this.pageSize*3
+                let end = this.currentPage*this.pageSize*3
                 this.tableData = this.totalData.slice(start,end)
             },
             getDetail(val) {
