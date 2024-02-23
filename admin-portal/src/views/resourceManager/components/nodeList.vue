@@ -89,7 +89,6 @@
                 currentPage: 1,
                 pageSize: 20,
                 totalSize: 0,
-                tooldata: []
             }
         },
         created() {
@@ -105,9 +104,14 @@
                 this.showCurrentdata()
             },
             showCurrentdata() {
-                let start = (this.currentPage-1)*this.pageSize*3
-                let end = this.currentPage*this.pageSize*3
-                this.tableData = this.totalData.slice(start,end)
+                let start = (this.currentPage-1)*this.pageSize
+                let end = this.currentPage*this.pageSize-1
+                this.tableData = []
+                for(let i = 0; i < this.totalData.length; i++) {
+                  if(this.totalData[i].index >= start && this.totalData[i].index <= end) {
+                    this.tableData.push(this.totalData[i])
+                  }
+                }
             },
             getDetail(val) {
                 let data = []
@@ -182,7 +186,8 @@
                             name: data[i].name,
                             ip: data[i].ip,
                             status: data[i].status,
-                            resourcePools: data[i].resourcePools
+                            resourcePools: data[i].resourcePools,
+                            index: i
                         }
                         arr.push(info)
                     }
