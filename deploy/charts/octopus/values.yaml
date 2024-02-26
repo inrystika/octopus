@@ -519,8 +519,8 @@ metax-gpu-extensions:
 
 enflame:
   enabled: false
-  gcuDevicePluginImage: 192.168.202.110:5000/octopus/enflame-gcu-k8s-device-plugin:v1.0.0-dev
-  gcuExporterImage: 192.168.202.110:5000/octopus/enflame-gcu-exporter:v1.0.1-dev
+  gcuDevicePluginImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/enflame-gcu-k8s-device-plugin:1.3.20231214
+  gcuExporterImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/enflame-gcu-exporter:1.3.20231214
 
 cambricon:
   enabled: false
