@@ -512,10 +512,15 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			return err
 		}
 
+		if req.AutoStopDuration > 0 {
+			nb.AutoStopDuration = req.AutoStopDuration
+		}
+
 		err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
-			Id:            nb.Id,
-			NotebookJobId: jobId,
-			Status:        constant.PREPARING,
+			Id:               nb.Id,
+			NotebookJobId:    jobId,
+			Status:           constant.PREPARING,
+			AutoStopDuration: nb.AutoStopDuration,
 		})
 		if err != nil {
 			return err
@@ -952,6 +957,11 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		}
 		notebook.ExitMsg = s.getExitMsg(ctx, jobMap[n.NotebookJobId])
 		notebook.Operation = jobMap[n.NotebookJobId].Operation
+		if jobMap[n.NotebookJobId].StartedAt != nil {
+			notebook.StartedAt = jobMap[n.NotebookJobId].StartedAt.Unix()
+		} else {
+			notebook.StartedAt = 0
+		}
 		notebooks = append(notebooks, notebook)
 	}
 	return notebooks, nil
