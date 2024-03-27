@@ -512,7 +512,7 @@ func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebo
 			return err
 		}
 
-		if req.AutoStopDuration > 0 {
+		if req.AutoStopDuration != 0 {
 			nb.AutoStopDuration = req.AutoStopDuration
 		}
 
