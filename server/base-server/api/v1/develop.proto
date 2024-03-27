@@ -61,6 +61,7 @@ message CreateNotebookReply {
 
 message StartNotebookRequest {
   string id = 1[(validate.rules).string = {min_len: 1}];
+  int64 autoStopDuration = 2;
 }
 
 message StartNotebookReply {
@@ -131,6 +132,8 @@ message Notebook {
   string command = 27;
   int64 autoStopDuration = 28;
   string operation = 29;
+  int64 startedAt = 30;
+  int64 stoppedAt = 31;
 }
 
 message ListNotebookReply {
