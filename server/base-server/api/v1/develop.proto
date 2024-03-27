@@ -133,6 +133,7 @@ message Notebook {
   int64 autoStopDuration = 28;
   string operation = 29;
   int64 startedAt = 30;
+  int64 stoppedAt = 31;
 }
 
 message ListNotebookReply {

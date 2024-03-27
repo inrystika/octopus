@@ -962,6 +962,11 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		} else {
 			notebook.StartedAt = 0
 		}
+		if jobMap[n.NotebookJobId].StoppedAt != nil {
+			notebook.StoppedAt = jobMap[n.NotebookJobId].StoppedAt.Unix()
+		} else {
+			notebook.StoppedAt = 0
+		}
 		notebooks = append(notebooks, notebook)
 	}
 	return notebooks, nil
