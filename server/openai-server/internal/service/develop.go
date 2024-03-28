@@ -67,7 +67,13 @@ func (s *DevelopService) StartNotebook(ctx context.Context, req *api.StartNotebo
 		return nil, err
 	}
 
-	reply, err := s.data.DevelopClient.StartNotebook(ctx, &innerapi.StartNotebookRequest{Id: req.Id})
+	innerReq := &innerapi.StartNotebookRequest{}
+	err = copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := s.data.DevelopClient.StartNotebook(ctx, innerReq)
 	if err != nil {
 		return nil, err
 	}
