@@ -115,12 +115,12 @@ func (p *prometheus) QueryAccCardMemUtil(
 }
 
 func (p *prometheus) QueryNetworkReceiveBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
-	query := fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{pod_name="%s"}[1m]) or rate(container_network_receive_bytes_total{pod="%s"}[1m]))`, podName, podName)
+	query := fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{pod="%s"}[1m]))`, podName)
 	return p.query(query, start, size, step)
 }
 
 func (p *prometheus) QueryNetworkTransmitBytes(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
-	query := fmt.Sprintf(`sum(rate (container_network_transmit_bytes_total{pod_name="%s"}[1m]) or rate(container_network_receive_bytes_total{pod="%s"}[1m]))`, podName, podName)
+	query := fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{pod="%s"}[1m]))`, podName)
 	return p.query(query, start, size, step)
 }
 
