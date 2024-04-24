@@ -56,6 +56,7 @@ message UserItem {
   common.api.v1.UserPermission permission = 14;
   repeated string buckets = 15;
   string minioUserName = 16;
+  optional bool emailNotify = 17;
 }
 
 message Bind {
@@ -127,7 +128,7 @@ message UpdateUserRequest {
   repeated string resourcePools = 9;
   string desc=10;
   common.api.v1.UserPermission permission = 11;
-
+  optional bool emailNotify = 12;
 }
 
 message UpdateUserReply {

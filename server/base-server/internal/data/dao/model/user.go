@@ -70,6 +70,7 @@ type User struct {
 	Permission    *Permission   `gorm:"type:json;comment:权限"`
 	MinioUserName string        `gorm:"type:varchar(100);uniqueIndex:minioUserName;comment:'minio用户名'"`
 	Buckets       sql.Strings   `gorm:"type:json;comment:'允许访问的buckets'"`
+	EmailNotify   *bool         `gorm:"not null;default:false;comment:'是否开启邮件通知'"`
 }
 
 func (User) TableName() string {
@@ -202,6 +203,7 @@ type UserUpdate struct {
 	Permission    *Permission
 	MinioUserName string
 	Buckets       []string
+	EmailNotify   *bool
 }
 
 type UserUpdateCond struct {
