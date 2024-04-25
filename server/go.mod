@@ -19,6 +19,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/influxdata/influxdb v1.9.4
 	github.com/jinzhu/copier v0.2.5
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/minio/madmin-go v1.3.8
 	github.com/minio/minio-go/v7 v7.0.23
 	github.com/seldonio/seldon-core/operator v1.11.2

@@ -149,6 +149,13 @@ message sftpgo {
   string password = 3;
 }
 
+message AdminEmail {
+  string smtpHost = 1;
+  int32 smtpPort = 2;
+  string username = 3;
+  string password = 4;
+}
+
 message Service {
   string baseServerAddr = 2;
   string dockerDatasetPath = 3;
@@ -164,6 +171,7 @@ message Service {
   string networksConf = 13;
   int32 routineNum = 14;
   bool stopWhenArrears = 15;
+  AdminEmail adminEmail = 16;
 }
 
 message Administrator {

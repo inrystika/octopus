@@ -764,6 +764,7 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 	if err != nil {
 		return nil, err
 	}
+	s.sendEmail(nb.UserId, fmt.Sprintf("Notebook %s %s", nb.Name, constant.STOPPED))
 
 	now := time.Now()
 	err = s.data.DevelopDao.UpdateNotebookJobSelective(ctx, &model.NotebookJob{
@@ -878,6 +879,20 @@ func (s *developService) deleteIngress(ctx context.Context, nb *model.Notebook, 
 	}
 
 	return nil
+}
+
+func (s *developService) sendEmail(userId string, subject string) {
+	ctx := context.TODO()
+	utils.HandlePanic(ctx, func(i ...interface{}) {
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: userId})
+		if err != nil {
+			log.Errorf(ctx, "FindUser err when sendEmail:"+userId, err)
+			return
+		}
+		if *user.User.EmailNotify {
+			common.SendEmail(s.conf.Service.AdminEmail, user.User.Email, subject)
+		}
+	})()
 }
 
 func (s *developService) DeleteNotebook(ctx context.Context, req *api.DeleteNotebookRequest) (*api.DeleteNotebookReply, error) {

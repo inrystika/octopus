@@ -3,6 +3,7 @@ package develop
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"server/base-server/internal/data/dao/model"
 	"server/common/constant"
 	"server/common/utils"
@@ -34,6 +35,12 @@ func (s *developService) onJobDelete(obj interface{}) {
 		s.log.Error(context.TODO(), "GetNotebookJob err when onJobDelete: "+job.Name, err)
 		return
 	}
+	nb, err := s.data.DevelopDao.GetNotebook(context.TODO(), nbJob.NotebookId)
+	if err != nil {
+		s.log.Error(context.TODO(), "GetNotebook err when onJobDelete: "+job.Name, err)
+		return
+	}
+
 	detail := jobUtil.GetStopDetail(nbJob.Detail)
 	detailBuf, err := json.Marshal(detail)
 	if err != nil {
@@ -52,6 +59,7 @@ func (s *developService) onJobDelete(obj interface{}) {
 		if err != nil {
 			s.log.Error(context.TODO(), "UpdateNotebookSelective err when onJobDelete:"+job.Name, err)
 		}
+		s.sendEmail(nb.UserId, fmt.Sprintf("Notebook %s %s", nb.Name, newJob.Status))
 	}
 	err = s.data.DevelopDao.UpdateNotebookJobSelective(context.TODO(), newJob)
 	if err != nil {

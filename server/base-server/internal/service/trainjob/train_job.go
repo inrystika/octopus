@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/utils/strings/slices"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	jobUtil "server/base-server/internal/common"
@@ -18,8 +19,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"k8s.io/utils/strings/slices"
 
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
@@ -793,6 +792,7 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	if err != nil {
 		return nil, err
 	}
+	s.sendEmail(job.UserId, fmt.Sprintf("训练任务 %s %s", job.Name, constant.STOPPED))
 
 	err = s.addModel(ctx, job)
 	if err != nil {
@@ -1280,6 +1280,21 @@ func (s *trainJobService) onJobDelete(obj interface{}) {
 	if err != nil {
 		s.log.Error(context.TODO(), "UpdateTrainJob err when onJobDelete:"+job.Name, err)
 	}
+	s.sendEmail(trainJob.UserId, fmt.Sprintf("训练任务 %s %s", trainJob.Name, newJob.Status))
+}
+
+func (s *trainJobService) sendEmail(userId string, subject string) {
+	ctx := context.TODO()
+	utils.HandlePanic(ctx, func(i ...interface{}) {
+		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: userId})
+		if err != nil {
+			log.Errorf(ctx, "FindUser err when sendEmail:"+userId, err)
+			return
+		}
+		if *user.User.EmailNotify {
+			common.SendEmail(s.conf.Service.AdminEmail, user.User.Email, subject)
+		}
+	})()
 }
 
 func (s *trainJobService) onJobUpdate(old, obj interface{}) {
@@ -1314,53 +1329,53 @@ func (s *trainJobService) onJobUpdate(old, obj interface{}) {
 	jobCopy := newjob.DeepCopy()
 	s.updatedJob <- jobCopy
 
-	trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
-	if err != nil {
-		s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:"+newjob.Name, err)
-		return
-	}
-
-	if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) {
-		return
-	}
-
-	update := &model.TrainJob{
-		Id:     newjob.Name,
-		Status: newState,
-	}
-
-	now := time.Now()
-	if strings.EqualFold(newState, constant.RUNNING) {
-		update.StartedAt = &now
-	} else if utils.IsCompletedState(newState) {
-		update.CompletedAt = &now
-	}
-
-	status := utils.Format(newjob.Name, "trainJob", newjob.Namespace, "", "", newjob)
-	if nil != status {
-		buf, err := json.Marshal(status)
-		if err != nil {
-			s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
-		}
-		update.Detail = string(buf)
-	}
-
-	err = s.data.TrainJobDao.UpdateTrainJob(context.TODO(), update)
-	if err != nil {
-		s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
-		return
-	}
-
-	if utils.IsCompletedState(newState) {
-		err = s.addModel(context.TODO(), trainJob)
-		if err != nil {
-			s.log.Error(context.TODO(), err)
-		}
-		err = s.data.Cluster.DeleteJob(context.TODO(), newjob.Namespace, newjob.Name)
-		if err != nil {
-			s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate:"+newjob.Name, err)
-		}
-	}
+	//trainJob, err := s.data.TrainJobDao.GetTrainJob(context.TODO(), newjob.Name)
+	//if err != nil {
+	//	s.log.Error(context.TODO(), "GetTrainJob err when onJobUpdate:"+newjob.Name, err)
+	//	return
+	//}
+	//
+	//if utils.IsCompletedState(trainJob.Status) || strings.EqualFold(trainJob.Status, newState) {
+	//	return
+	//}
+	//
+	//update := &model.TrainJob{
+	//	Id:     newjob.Name,
+	//	Status: newState,
+	//}
+	//
+	//now := time.Now()
+	//if strings.EqualFold(newState, constant.RUNNING) {
+	//	update.StartedAt = &now
+	//} else if utils.IsCompletedState(newState) {
+	//	update.CompletedAt = &now
+	//}
+	//
+	//status := utils.Format(newjob.Name, "trainJob", newjob.Namespace, "", "", newjob)
+	//if nil != status {
+	//	buf, err := json.Marshal(status)
+	//	if err != nil {
+	//		s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
+	//	}
+	//	update.Detail = string(buf)
+	//}
+	//
+	//err = s.data.TrainJobDao.UpdateTrainJob(context.TODO(), update)
+	//if err != nil {
+	//	s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+newjob.Name, err)
+	//	return
+	//}
+	//
+	//if utils.IsCompletedState(newState) {
+	//	err = s.addModel(context.TODO(), trainJob)
+	//	if err != nil {
+	//		s.log.Error(context.TODO(), err)
+	//	}
+	//	err = s.data.Cluster.DeleteJob(context.TODO(), newjob.Namespace, newjob.Name)
+	//	if err != nil {
+	//		s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate:"+newjob.Name, err)
+	//	}
+	//}
 }
 
 func (s *trainJobService) GetJobMetric(ctx context.Context, req *api.GetJobMetricRequest) (*api.GetJobMetricReply, error) {
