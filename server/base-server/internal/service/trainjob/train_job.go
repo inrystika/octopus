@@ -792,7 +792,8 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	if err != nil {
 		return nil, err
 	}
-	s.sendEmail(job.UserId, fmt.Sprintf("训练任务 %s %s", job.Name, constant.STOPPED))
+
+	s.sendEmail(job.UserId, job.Name, job.Status, constant.STOPPED)
 
 	err = s.addModel(ctx, job)
 	if err != nil {
@@ -1280,10 +1281,10 @@ func (s *trainJobService) onJobDelete(obj interface{}) {
 	if err != nil {
 		s.log.Error(context.TODO(), "UpdateTrainJob err when onJobDelete:"+job.Name, err)
 	}
-	s.sendEmail(trainJob.UserId, fmt.Sprintf("训练任务 %s %s", trainJob.Name, newJob.Status))
+	s.sendEmail(trainJob.UserId, trainJob.Name, trainJob.Status, newJob.Status)
 }
 
-func (s *trainJobService) sendEmail(userId string, subject string) {
+func (s *trainJobService) sendEmail(userId string, jobName string, oldStatus string, newStatus string) {
 	ctx := context.TODO()
 	utils.HandlePanic(ctx, func(i ...interface{}) {
 		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: userId})
@@ -1291,8 +1292,8 @@ func (s *trainJobService) sendEmail(userId string, subject string) {
 			log.Errorf(ctx, "FindUser err when sendEmail:"+userId, err)
 			return
 		}
-		if *user.User.EmailNotify {
-			common.SendEmail(s.conf.Service.AdminEmail, user.User.Email, subject)
+		if *user.User.EmailNotify && !strings.EqualFold(oldStatus, newStatus) && utils.IsNotifyState(newStatus) {
+			common.SendEmail(s.conf.Service.AdminEmail, user.User.Email, fmt.Sprintf("训练任务 %s %s", jobName, newStatus))
 		}
 	})()
 }

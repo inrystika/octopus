@@ -40,6 +40,15 @@ func IsCompletedState(state string) bool {
 	return false
 }
 
+func IsNotifyState(state string) bool {
+	if strings.EqualFold(state, constant.STOPPED) ||
+		strings.EqualFold(state, constant.SUCCEEDED) ||
+		strings.EqualFold(state, constant.FAILED) || strings.EqualFold(state, constant.RUNNING) {
+		return true
+	}
+	return false
+}
+
 var (
 	CompletedStates = []string{constant.STOPPED, constant.SUCCEEDED, constant.FAILED}
 )

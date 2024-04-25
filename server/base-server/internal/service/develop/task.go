@@ -330,9 +330,7 @@ func (s *developService) startNotebookTask() {
 							s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+job.Name, err)
 						}
 
-						if !strings.EqualFold(nb.Status, nbUp.Status) {
-							s.sendEmail(nb.UserId, fmt.Sprintf("Notebook %s %s", nb.Name, nbUp.Status))
-						}
+						s.sendEmail(nb.UserId, nb.Name, nb.Status, nbUp.Status)
 
 						if utils.IsCompletedState(state) || pendingToRunning {
 							err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)

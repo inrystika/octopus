@@ -3,7 +3,6 @@ package trainjob
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/data/dao/model"
@@ -305,9 +304,8 @@ func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
 						s.log.Error(context.TODO(), "UpdateTrainJob err when onJobUpdate:"+job.Name, err)
 						continue
 					}
-					if !strings.EqualFold(trainJob.Status, update.Status) {
-						s.sendEmail(trainJob.UserId, fmt.Sprintf("训练任务 %s %s", trainJob.Name, update.Status))
-					}
+
+					s.sendEmail(trainJob.UserId, trainJob.Name, trainJob.Status, update.Status)
 
 					if utils.IsCompletedState(state) {
 						err = s.addModel(context.TODO(), trainJob)
