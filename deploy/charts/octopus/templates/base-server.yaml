@@ -178,6 +178,11 @@ data:
         discoveryLeaderLeaseLockName: resourcediscovery
         discoveryDuration: 15s
         ignoreSystemResources: hugepages-1Gi,pods,hugepages-2Mi,ephemeral-storage
+      adminEmail:
+        smtpHost: {{ .Values.baseserver.service.adminEmail.smtpHost }}
+        smtpPort: {{ .Values.baseserver.service.adminEmail.smtpPort }}
+        username: {{ .Values.baseserver.service.adminEmail.username }}
+        password: {{ .Values.baseserver.service.adminEmail.password }}
     administrator:
       username: {{ .Values.baseserver.administrator.username }}
       password:  "{{ .Values.baseserver.administrator.password }}"
