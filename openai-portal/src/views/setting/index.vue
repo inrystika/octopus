@@ -24,7 +24,7 @@
                   <el-input v-model="ftpForm.ftpPassword" show-password placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit>
                   </el-input>
                 </el-form-item>
-                <el-button style="float: right;" type="primary" @click="submit">创建</el-button>
+                <el-button style="float: right;" type="primary" @click="submit">保存</el-button>
               </el-form>
             </el-col>
           </el-row>
