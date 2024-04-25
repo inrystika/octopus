@@ -884,7 +884,7 @@ func (s *developService) deleteIngress(ctx context.Context, nb *model.Notebook, 
 
 func (s *developService) sendEmail(userId string, jobName string, oldStatus string, newStatus string) {
 	ctx := context.TODO()
-	utils.HandlePanic(ctx, func(i ...interface{}) {
+	go utils.HandlePanic(ctx, func(i ...interface{}) {
 		user, err := s.userService.FindUser(ctx, &api.FindUserRequest{Id: userId})
 		if err != nil {
 			log.Errorf(ctx, "FindUser err when sendEmail:"+userId, err)
