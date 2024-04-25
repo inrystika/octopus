@@ -305,6 +305,8 @@ func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
 						continue
 					}
 
+					s.sendEmail(trainJob.UserId, trainJob.Name, trainJob.Status, update.Status)
+
 					if utils.IsCompletedState(state) {
 						err = s.addModel(context.TODO(), trainJob)
 						if err != nil {
