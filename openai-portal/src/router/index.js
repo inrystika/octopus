@@ -153,14 +153,12 @@ export const constantRoutes = [
   {
     path: '/setting',
     component: Layout,
-    meta: { title: '设置', icon: 'setting' },
-    alwaysShow: true,
     children: [
       {
-        path: 'ftp',
-        name: 'ftp',
-        component: () => import('@/views/setting/ftp'),
-        meta: { title: 'ftp', icon: 'dot' }
+        path: 'index',
+        name: 'setting',
+        component: () => import('@/views/setting/index'),
+        meta: { title: '设置', icon: 'setting' }
       }
     ]
   },
