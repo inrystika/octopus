@@ -17,10 +17,10 @@
           <el-row :gutter="20">
             <el-col >
               <el-form ref="ftpForm" :rules="ftpRules" :model="ftpForm" >
-                <el-form-item label="ftp账号:" prop="ftpUserName">
+                <el-form-item label="sftp账号:" prop="ftpUserName">
                   <el-input v-model="ftpForm.ftpUserName" placeholder="请填写账号" :disabled="isShow" minlength="4" maxlength="30" show-word-limit/>
                 </el-form-item>
-                <el-form-item label="ftp密码:" prop="ftpPassword">
+                <el-form-item label="sftp密码:" prop="ftpPassword">
                   <el-input v-model="ftpForm.ftpPassword" show-password placeholder="请输入密码" minlength="8" maxlength="30" show-word-limit>
                   </el-input>
                 </el-form-item>
