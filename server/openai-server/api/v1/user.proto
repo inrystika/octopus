@@ -33,6 +33,13 @@ service User {
         body: "*"
       };
     };
+
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply) {
+    option (google.api.http) = {
+      put: "/v1/usermanage/user"
+      body: "*"
+    };
+  };
 }
 
 message UserItem {
@@ -46,6 +53,7 @@ message UserItem {
   int32 status = 9;
   string ftpUserName = 10;
   repeated string resourcePools = 12;
+  optional bool emailNotify = 13;
 }
 
 message GetUserInfoRequest {
@@ -92,4 +100,11 @@ message UpdateUserFtpAccountRequest {
 
 message UpdateUserFtpAccountReply {
     UserItem ftpUserName = 1;
+}
+
+message UpdateUserRequest {
+  optional bool emailNotify = 1;
+}
+
+message UpdateUserReply {
 }

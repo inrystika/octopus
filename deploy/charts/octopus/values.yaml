@@ -69,37 +69,37 @@ pv:
     storageType:
       nfs:
         server:  192.168.203.72
-        path:  /data/datasets/data/minio
+        path:  /data/minio
   mysql:
     requests: 100Gi
     storageType:
       nfs:
         server:  192.168.203.72
-        path:  /data/datasets/data/mysql
+        path:  /data/mysql
   redis:
     requests: 100Gi
     storageType:
       nfs:
         server:  192.168.203.72
-        path:  /data/datasets/data/redis
+        path:  /data/redis
   influxdb:
     requests: 100Gi
     storageType:
       nfs:
         server:  192.168.203.72
-        path:  /data/datasets/data/influxdb
+        path:  /data/influxdb
   logger:
     requests: 100Gi
     storageType:
       nfs:
         server:  192.168.203.72
-        path:  /data/datasets/data/logger
+        path:  /data/logger
   sftpgo:
     requests: 100Gi
     storageType:
       nfs:
         server: 192.168.203.72
-        path: /data/datasets/data/sftpgo
+        path: /data/sftpgo
 
 # base-server
 baseserver:
@@ -151,6 +151,11 @@ baseserver:
     develop:
       autoStopIntervalSec: 7200
       isSetUploadFileSize: true  #值为false时，上传文件大小不能超过1M；为true时，不限制
+    adminEmail:
+      smtpHost: smtp.163.com
+      smtpPort: 25
+      username: openioctopus@163.com
+      password:
   administrator:
     username: "admin"
     password: "123456"

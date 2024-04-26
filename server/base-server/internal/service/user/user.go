@@ -97,6 +97,7 @@ func (s *UserService) ListUser(ctx context.Context, req *api.ListUserRequest) (*
 			Permission:    (*v1.UserPermission)(user.Permission),
 			MinioUserName: user.MinioUserName,
 			Buckets:       user.Buckets,
+			EmailNotify:   user.EmailNotify,
 		}
 		users[idx] = item
 	}
@@ -166,6 +167,7 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 			Permission:    (*v1.UserPermission)(user.Permission),
 			MinioUserName: user.MinioUserName,
 			Buckets:       user.Buckets,
+			EmailNotify:   user.EmailNotify,
 		},
 	}
 
@@ -308,6 +310,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest
 		ResourcePools: req.ResourcePools,
 		Desc:          req.Desc,
 		Permission:    (*model.Permission)(req.Permission),
+		EmailNotify:   req.EmailNotify,
 	}
 	if len(bindInfo) > 0 {
 		user.Bind = bindInfo
@@ -369,16 +372,17 @@ func (s *UserService) ListUserInCond(ctx context.Context, req *api.ListUserInCon
 			}
 		}
 		item := &api.UserItem{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Phone:     user.Phone,
-			Gender:    api.GenderType(user.Gender),
-			Status:    api.UserStatus(user.Status),
-			Password:  user.Password,
-			CreatedAt: user.CreatedAt.Unix(),
-			UpdatedAt: user.UpdatedAt.Unix(),
-			Bind:      bindInfo,
+			Id:          user.Id,
+			FullName:    user.FullName,
+			Email:       user.Email,
+			Phone:       user.Phone,
+			Gender:      api.GenderType(user.Gender),
+			Status:      api.UserStatus(user.Status),
+			Password:    user.Password,
+			CreatedAt:   user.CreatedAt.Unix(),
+			UpdatedAt:   user.UpdatedAt.Unix(),
+			Bind:        bindInfo,
+			EmailNotify: user.EmailNotify,
 		}
 		userItems[idx] = item
 	}

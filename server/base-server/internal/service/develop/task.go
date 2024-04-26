@@ -330,6 +330,8 @@ func (s *developService) startNotebookTask() {
 							s.log.Error(ctx, "UpdateNotebookJobSelective err when onJobUpdate:"+job.Name, err)
 						}
 
+						s.sendEmail(nb.UserId, nb.Name, nb.Status, nbUp.Status)
+
 						if utils.IsCompletedState(state) || pendingToRunning {
 							err = s.data.DevelopDao.CreateNotebookEventRecord(ctx, record)
 							if err != nil { // 插入事件记录出错只打印

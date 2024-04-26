@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	innterapi "server/base-server/api/v1"
 	"server/common/constant"
 	commctx "server/common/context"
@@ -54,6 +55,7 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *api.GetUserInfoReque
 			Status:        int32(reply.User.Status),
 			FtpUserName:   reply.User.FtpUserName,
 			ResourcePools: reply.User.ResourcePools,
+			EmailNotify:   reply.User.EmailNotify,
 		},
 	}, nil
 }
@@ -125,4 +127,24 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 	}
 
 	return &api.UpdateUserFtpAccountReply{}, nil
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, req *api.UpdateUserRequest) (*api.UpdateUserReply, error) {
+	userId := commctx.UserIdFromContext(ctx)
+	if userId == "" {
+		return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
+	}
+
+	innerReq := &innterapi.UpdateUserRequest{}
+	innerReq.Id = userId
+	err := copier.Copy(innerReq, req)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.data.UserClient.UpdateUser(ctx, innerReq)
+	if err != nil {
+		return nil, err
+
+	}
+	return &api.UpdateUserReply{}, nil
 }

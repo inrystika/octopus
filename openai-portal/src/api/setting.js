@@ -6,3 +6,10 @@ export function updateUserFtpAccount(data) {
     data
   })
 }
+export function updateEmailNotify(data) {
+  return request({
+    url: '/v1/usermanage/user',
+    method: 'put',
+    data
+  })
+}
