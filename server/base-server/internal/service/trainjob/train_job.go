@@ -618,6 +618,21 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			})
 		}
 
+		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
+			if strings.HasPrefix(string(k), common.DCUResourceName) {
+				volumeMounts = append(volumeMounts, v1.VolumeMount{
+					Name:      "hyhal",
+					MountPath: "/opt/hyhal",
+				})
+				volumes = append(volumes, v1.Volume{
+					Name: "hyhal",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{Path: "/opt/hyhal"},
+					},
+				})
+			}
+		}
+
 		envs := make([]v1.EnvVar, 0)
 		for k, v := range i.Envs {
 			envs = append(envs, v1.EnvVar{Name: k, Value: v})
@@ -690,19 +705,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						Add: []v1.Capability{"IPC_LOCK"},
 					},
 				}
-			}
-
-			if strings.HasPrefix(string(k), common.DCUResourceName) {
-				volumeMounts = append(volumeMounts, v1.VolumeMount{
-					Name:      "hyhal",
-					MountPath: "/opt/hyhal",
-				})
-				volumes = append(volumes, v1.Volume{
-					Name: "hyhal",
-					VolumeSource: v1.VolumeSource{
-						HostPath: &v1.HostPathVolumeSource{Path: "/opt/hyhal"},
-					},
-				})
 			}
 		}
 		tasks = append(tasks, task)
