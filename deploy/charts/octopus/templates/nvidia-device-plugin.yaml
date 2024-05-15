@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{- if .Values.nvidia.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -67,4 +66,3 @@ spec:
         - name: device-plugin
           hostPath:
             path: /var/lib/kubelet/device-plugins
-{{- end }}
