@@ -689,6 +689,19 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 					},
 				}
 			}
+
+			if strings.HasPrefix(string(k), common.DCUResourceName) {
+				volumeMounts = append(volumeMounts, v1.VolumeMount{
+					Name:      "hyhal",
+					MountPath: "/opt/hyhal",
+				})
+				volumes = append(volumes, v1.Volume{
+					Name: "hyhal",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{Path: "/opt/hyhal"},
+					},
+				})
+			}
 		}
 		tasks = append(tasks, task)
 	}
