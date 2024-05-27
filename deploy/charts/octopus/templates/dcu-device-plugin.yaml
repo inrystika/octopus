@@ -1,36 +1,45 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: iluvatar-device-plugin
+  name: dcu-device-plugin-ds
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      name: iluvatar-device-plugin-ds
+      name: dcu-dp-ds
   template:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        name: iluvatar-device-plugin-ds
+        name: dcu-dp-ds
     spec:
-      nodeSelector:
-        hardware-type: ILUVATARGPU
       tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
-      priorityClassName: "system-node-critical"
+      nodeSelector:
+        hardware-type: HYGONDCU
       containers:
-        - image: iluvatarcorex/k8s-device-plugin:3.1.1
-          name: iluvatar-device-plugin-ctr
+        - image: swr.cn-south-1.myhuaweicloud.com/openioctopus/dcu-plugin:v1.7.0
+          name: dcu-dp-cntr
           securityContext:
-            privileged: true
+            allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
           volumeMounts:
-            - name: device-plugin
+            - name: dp
               mountPath: /var/lib/kubelet/device-plugins
+            - name: sys
+              mountPath: /sys
+            - name: dev
+              mountPath: /dev
       volumes:
-        - name: device-plugin
+        - name: dp
           hostPath:
             path: /var/lib/kubelet/device-plugins
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: dev
+          hostPath:
+            path: /dev

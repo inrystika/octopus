@@ -618,6 +618,21 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 			})
 		}
 
+		for k, _ := range startJobInfo.specs[i.ResourceSpecId].resources {
+			if strings.HasPrefix(string(k), common.DCUResourceName) {
+				volumeMounts = append(volumeMounts, v1.VolumeMount{
+					Name:      "hyhal",
+					MountPath: "/opt/hyhal",
+				})
+				volumes = append(volumes, v1.Volume{
+					Name: "hyhal",
+					VolumeSource: v1.VolumeSource{
+						HostPath: &v1.HostPathVolumeSource{Path: "/opt/hyhal"},
+					},
+				})
+			}
+		}
+
 		envs := make([]v1.EnvVar, 0)
 		for k, v := range i.Envs {
 			envs = append(envs, v1.EnvVar{Name: k, Value: v})
@@ -690,44 +705,6 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 						Add: []v1.Capability{"IPC_LOCK"},
 					},
 				}
-			}
-
-			//NPU挂载与权限
-			if string(k) == common.NPUResourceName {
-				//1. privileged
-				//处理空情况
-				if task.Template.Spec.Containers[0].SecurityContext == nil {
-					task.Template.Spec.Containers[0].SecurityContext = &v1.SecurityContext{}
-				}
-				privileged := true
-				task.Template.Spec.Containers[0].SecurityContext.Privileged = &privileged
-				//2.挂载/usr/local/Ascend/driver驱动与/etc/ascend_install.info驱动信息
-				task.Template.Spec.Volumes = append(task.Template.Spec.Volumes, v1.Volume{
-					Name: "ascend-driver-volume",
-					VolumeSource: v1.VolumeSource{
-						HostPath: &v1.HostPathVolumeSource{
-							Path: "/usr/local/Ascend/driver",
-						},
-					},
-				}, v1.Volume{
-					Name: "ascend-driver-info",
-					VolumeSource: v1.VolumeSource{
-						HostPath: &v1.HostPathVolumeSource{
-							Path: "/etc/ascend_install.info",
-						},
-					},
-				})
-
-				task.Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts,
-					v1.VolumeMount{
-						Name:      "ascend-driver-volume",
-						MountPath: "/usr/local/Ascend/driver",
-					},
-					v1.VolumeMount{
-						Name:      "ascend-driver-info",
-						MountPath: "/etc/ascend_install.info",
-					})
-
 			}
 		}
 		tasks = append(tasks, task)

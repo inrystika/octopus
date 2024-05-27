@@ -523,33 +523,14 @@ metax-gpu-extensions:
   registry: swr.cn-south-1.myhuaweicloud.com/openioctopus
 
 enflame:
-  enabled: false
   gcuDevicePluginImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/enflame-gcu-k8s-device-plugin:1.3.20231214
   gcuExporterImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/enflame-gcu-exporter:1.3.20231214
 
 cambricon:
-  enabled: false
   mluDevicePluginImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-k8s-device-plugin:v1.3.6
   mluExporterImage: swr.cn-south-1.myhuaweicloud.com/openioctopus/cambricon-mlu-exporter:v1.6.7
 
-nvidia:
-  # nvidia节点需要打标签hardware-type=NVIDIAGPU
-  enabled: true
-
-ascend:
-  # ascend节点需要打标签hardware-type=ASCENDNPU
-  enabled: false
 
 xilinx:
-  # xilinx节点需要打标签hardware-type=XILINXFPGA
-  enabled: false
   fpgaDevicePluginImage: public.ecr.aws/xilinx_dcg/k8s-device-plugin:1.1.0
-
-iluvatar:
-  # iluvatar节点需要打标签hardware-type=ILUVATARGPU
-  enabled: false
-
-metax:
-  enabled: false
-
 
