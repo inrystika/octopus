@@ -126,18 +126,18 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/deployManager',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'modelDeploy',
-        component: () => import('@/views/deployManager/index'),
-        meta: { title: '部署服务', icon: 'deploy' }
-      }
-    ]
-  },
+  // {
+  //   path: '/deployManager',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'modelDeploy',
+  //       component: () => import('@/views/deployManager/index'),
+  //       meta: { title: '部署服务', icon: 'deploy' }
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/cloudInterconnection',
   //   component: Layout,

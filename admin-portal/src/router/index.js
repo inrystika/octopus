@@ -200,18 +200,18 @@ export const constantRoutes = [
       }
     ]
   },
-  {
-    path: '/deployManager',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'deployManager',
-        component: () => import('@/views/deployManager/index'),
-        meta: { title: '服务管理', icon: 'deploy' }
-      }
-    ]
-  },
+  // {
+  //   path: '/deployManager',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'deployManager',
+  //       component: () => import('@/views/deployManager/index'),
+  //       meta: { title: '服务管理', icon: 'deploy' }
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/platformManager',
   //   component: Layout,
