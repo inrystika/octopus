@@ -1,6 +1,9 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	v1 "server/common/api/v1"
@@ -39,11 +42,32 @@ type Notebook struct {
 	Command              string                `gorm:"type:text;comment:启动命令"`
 	DisableMountUserHome bool                  `gorm:"default:false;comment:是否不挂载userhome目录"`
 	AutoStopDuration     int64                 `gorm:"type:int;not null;default:0;comment:自动停止时间（秒）"`
+	UserEndpoints        UEndpoints            `gorm:"type:json;comment:用户Endpoint"`
 	DeletedAt            soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
 func (Notebook) TableName() string {
 	return "notebook"
+}
+
+type UEndpoint struct {
+	Endpoint string `json:"endpoint"`
+	Port     uint   `json:"port"`
+}
+
+type UEndpoints []*UEndpoint
+
+func (r UEndpoints) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *UEndpoints) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }
 
 type NotebookJob struct {

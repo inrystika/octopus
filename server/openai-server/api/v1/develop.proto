@@ -75,6 +75,11 @@ service Develop {
   };
 }
 
+message UserEndpoint {
+  string endpoint = 1;
+  uint32 port = 2;
+}
+
 message CreateNotebookRequest {
   string name = 1[(validate.rules).string = {min_len: 1, max_len: 30}];
   string desc = 2[(validate.rules).string = {max_len: 300}];
@@ -93,6 +98,7 @@ message CreateNotebookRequest {
   string command = 14;
   bool disableMountUserHome = 15;
   int64 autoStopDuration = 16;
+  repeated UserEndpoint userEndpoints = 17;
 }
 
 message CreateNotebookReply {

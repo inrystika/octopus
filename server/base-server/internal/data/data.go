@@ -41,6 +41,7 @@ type Data struct {
 	Influxdb              influxdb.Influxdb
 	ModelDeployDao        dao.ModelDeployDao
 	PlatformStatisticsDao dao.PlatformStatisticsDao
+	UserEndpointDao       dao.UserEndpointDao
 	Prometheus            prometheus.Prometheus
 }
 
@@ -68,7 +69,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, err
 	}
 	d.Redis = redis
-	cluster, clusterCancel ,err:= cluster.NewCluster(confData, logger)
+	cluster, clusterCancel, err := cluster.NewCluster(confData, logger)
 	d.Cluster = cluster
 	prometheus := prometheus.NewPrometheus(confData.Prometheus.BaseUrl)
 	d.Prometheus = prometheus
@@ -88,6 +89,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.BillingDao = dao.NewBillingDao(db, logger)
 	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformStatisticsDao = dao.NewPlatformStatisticsDao(db)
+	d.UserEndpointDao = dao.NewUserEndpointDao(db)
 
 	return d, func() {
 		clusterCancel()
@@ -249,6 +251,11 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(&model.UserConfig{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&model.UserEndpoint{})
 	if err != nil {
 		return nil, err
 	}
