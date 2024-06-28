@@ -55,7 +55,7 @@ type UEndpoint struct {
 	Port     uint   `json:"port"`
 }
 
-type UEndpoints []*UEndpoint
+type UEndpoints [][]*UEndpoint
 
 func (r UEndpoints) Value() (driver.Value, error) {
 	return json.Marshal(r)

@@ -97,6 +97,19 @@ func buildNotebookUrl(id string, idx int) string {
 	return fmt.Sprintf("/notebook_%s_%s", id, buildTaskName(idx))
 }
 
+func buildUserEndpoint(endpoint string) string {
+
+	if !strings.HasPrefix(endpoint, "/") {
+		endpoint = "/" + endpoint
+	}
+
+	if !strings.HasSuffix(endpoint, "/") {
+		endpoint = endpoint + "/"
+	}
+
+	return "/userendpoint" + endpoint
+}
+
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
@@ -780,6 +793,16 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 
 func (s *developService) createService(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
+		ports := []v1.ServicePort{{
+			Port:       servicePort,
+			TargetPort: intstr.FromInt(servicePort),
+		}}
+		for _, ue := range nb.UserEndpoints {
+			ports = append(ports, v1.ServicePort{
+				Port:       int32(ue[i].Port),
+				TargetPort: intstr.FromInt(int(ue[i].Port)),
+			})
+		}
 		err := s.data.Cluster.CreateService(ctx, &v1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildServiceName(nbJob.Id, i),
@@ -790,10 +813,7 @@ func (s *developService) createService(ctx context.Context, nb *model.Notebook, 
 					"volcano.sh/task-spec": buildTaskName(i),
 					"volcano.sh/job-name":  nbJob.Id,
 				},
-				Ports: []v1.ServicePort{{
-					Port:       servicePort,
-					TargetPort: intstr.FromInt(servicePort),
-				}},
+				Ports: ports,
 			},
 		})
 		if err != nil {
@@ -822,6 +842,40 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 		if s.conf.Service.Develop.IsSetUploadFileSize {
 			upLoadFileSize = "1000m" // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
 		}
+		rules := []v1beta1.IngressRule{
+			{
+				IngressRuleValue: v1beta1.IngressRuleValue{
+					HTTP: &v1beta1.HTTPIngressRuleValue{
+						Paths: []v1beta1.HTTPIngressPath{
+							{
+								Path: buildNotebookUrl(nb.Id, i),
+								Backend: v1beta1.IngressBackend{
+									ServiceName: buildServiceName(nbJob.Id, i),
+									ServicePort: intstr.FromInt(servicePort),
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		for _, ue := range nb.UserEndpoints {
+			rules = append(rules, v1beta1.IngressRule{
+				IngressRuleValue: v1beta1.IngressRuleValue{
+					HTTP: &v1beta1.HTTPIngressRuleValue{
+						Paths: []v1beta1.HTTPIngressPath{
+							{
+								Path: buildUserEndpoint(ue[i].Endpoint),
+								Backend: v1beta1.IngressBackend{
+									ServiceName: buildServiceName(nbJob.Id, i),
+									ServicePort: intstr.FromInt(int(ue[i].Port)),
+								},
+							},
+						},
+					},
+				},
+			})
+		}
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
@@ -831,23 +885,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 				},
 			},
 			Spec: v1beta1.IngressSpec{
-				Rules: []v1beta1.IngressRule{
-					{
-						IngressRuleValue: v1beta1.IngressRuleValue{
-							HTTP: &v1beta1.HTTPIngressRuleValue{
-								Paths: []v1beta1.HTTPIngressPath{
-									{
-										Path: buildNotebookUrl(nb.Id, i),
-										Backend: v1beta1.IngressBackend{
-											ServiceName: buildServiceName(nbJob.Id, i),
-											ServicePort: intstr.FromInt(servicePort),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+				Rules: rules,
 			},
 		})
 		if err != nil {
