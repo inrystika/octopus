@@ -64,6 +64,8 @@ message CreateNotebookRequest {
   bool disableMountUserHome = 17;
   int64 autoStopDuration = 18;
   repeated TaskConfig taskConfigs = 19;
+  string preTrainModelId = 20;
+  string preTrainModelVersion = 21;
 }
 
 message CreateNotebookReply {

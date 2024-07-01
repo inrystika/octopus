@@ -247,12 +247,13 @@ type startJobInfoSpec struct {
 }
 
 type startJobInfo struct {
-	queue         string
-	imageAddr     string
-	algorithmPath string
-	datasetPath   string
-	specs         map[string]*startJobInfoSpec
-	cacheName     string
+	queue             string
+	imageAddr         string
+	algorithmPath     string
+	datasetPath       string
+	preTrainModelPath string
+	specs             map[string]*startJobInfoSpec
+	cacheName         string
 }
 
 func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJob) (*startJobInfo, error) {
@@ -341,6 +342,20 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 		if dataSetVersion.Version.Cache != nil {
 			cacheName = dataSetVersion.Version.Cache.Name
 		}
+	}
+
+	preTrainModelPath := ""
+	if job.PreTrainModelId != "" {
+		modelVersion, err := s.modelService.QueryModelVersion(ctx, &api.QueryModelVersionRequest{
+			ModelId: job.PreTrainModelId,
+			Version: job.PreTrainModelVersion,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		job.PreTrainModelName = modelVersion.Model.ModelName
+		preTrainModelPath = modelVersion.ModelVersion.Path
 	}
 
 	//resource spec info
@@ -448,7 +463,7 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 
 	for _, m := range job.Mounts {
 		if m.Octopus != nil {
-			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) && m.Octopus.Bucket != job.UserId {
 				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 			}
 		}
@@ -459,12 +474,13 @@ func (s *trainJobService) checkPermForJob(ctx context.Context, job *model.TrainJ
 	}
 
 	return &startJobInfo{
-		queue:         queue,
-		imageAddr:     imageAddr,
-		algorithmPath: algorithmPath,
-		datasetPath:   datasetPath,
-		specs:         startJobSpecs,
-		cacheName:     cacheName,
+		queue:             queue,
+		imageAddr:         imageAddr,
+		algorithmPath:     algorithmPath,
+		datasetPath:       datasetPath,
+		preTrainModelPath: preTrainModelPath,
+		specs:             startJobSpecs,
+		cacheName:         cacheName,
 	}, nil
 }
 
@@ -539,6 +555,15 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 					ReadOnly:  false,
 				})
 
+		}
+
+		if startJobInfo.preTrainModelPath != "" {
+			volumeMounts = append(volumeMounts, v1.VolumeMount{
+				Name:      volume,
+				MountPath: common.DockerPreTrainModePath,
+				SubPath:   startJobInfo.preTrainModelPath,
+				ReadOnly:  true,
+			})
 		}
 
 		volumes := []v1.Volume{

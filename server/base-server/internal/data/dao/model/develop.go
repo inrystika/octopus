@@ -31,6 +31,9 @@ type Notebook struct {
 	DatasetId            string                `gorm:"type:varchar(100);not null;default:'';comment:数据集Id"`
 	DatasetVersion       string                `gorm:"type:varchar(100);not null;default:'';comment:数据集版本"`
 	DatasetName          string                `gorm:"type:varchar(100);not null;default:'';comment:数据集名称"`
+	PreTrainModelId      string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Id"`
+	PreTrainModelVersion string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Version"`
+	PreTrainModelName    string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型名称"`
 	ResourceSpecId       string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格Id"`
 	ResourceSpecName     string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格名称"`
 	NotebookJobId        string                `gorm:"type:varchar(100);not null;index;comment:JobId"`

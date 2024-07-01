@@ -57,6 +57,7 @@ type developService struct {
 	billingService      api.BillingServiceServer
 	userService         api.UserServiceServer
 	updatedJob          chan *vcBatch.Job
+	modelService        api.ModelServiceServer
 }
 
 type DevelopService interface {
@@ -114,7 +115,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
-	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
+	billingService api.BillingServiceServer, userService api.UserServiceServer, modelService api.ModelServiceServer) (DevelopService, error) {
 
 	log := log.NewHelper("DevelopService", logger)
 
@@ -131,6 +132,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
 		userService:         userService,
+		modelService:        modelService,
 		updatedJob:          make(chan *vcBatch.Job, 1000),
 	}
 
@@ -224,6 +226,20 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		algorithmPath = algorithmVersion.Algorithm.Path
 	}
 
+	preTrainModelPath := ""
+	if nb.PreTrainModelId != "" {
+		modelVersion, err := s.modelService.QueryModelVersion(ctx, &api.QueryModelVersionRequest{
+			ModelId: nb.PreTrainModelId,
+			Version: nb.PreTrainModelVersion,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		nb.PreTrainModelName = modelVersion.Model.ModelName
+		preTrainModelPath = modelVersion.ModelVersion.Path
+	}
+
 	datasetPath := ""
 	if nb.DatasetId != "" && nb.DatasetVersion != "" {
 		datasetVersion, err := s.datasetService.GetDatasetVersion(ctx, &api.GetDatasetVersionRequest{DatasetId: nb.DatasetId, Version: nb.DatasetVersion})
@@ -309,7 +325,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 
 	for _, m := range nb.Mounts {
 		if m.Octopus != nil {
-			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) && m.Octopus.Bucket != nb.UserId {
 				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 			}
 		}
@@ -331,14 +347,15 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 	}
 
 	return &startJobInfo{
-		queue:         queue,
-		imageAddr:     imageAddr,
-		algorithmPath: algorithmPath,
-		datasetPath:   datasetPath,
-		resources:     k8sResources,
-		nodeSelectors: nodeSelectors,
-		shm:           shm,
-		command:       command,
+		queue:             queue,
+		imageAddr:         imageAddr,
+		algorithmPath:     algorithmPath,
+		datasetPath:       datasetPath,
+		preTrainModelPath: preTrainModelPath,
+		resources:         k8sResources,
+		nodeSelectors:     nodeSelectors,
+		shm:               shm,
+		command:           command,
 	}, nil
 }
 
@@ -397,14 +414,15 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 }
 
 type startJobInfo struct {
-	queue         string
-	imageAddr     string
-	algorithmPath string
-	datasetPath   string
-	command       string
-	resources     map[v1.ResourceName]resource.Quantity
-	nodeSelectors map[string]string
-	shm           *resource.Quantity
+	queue             string
+	imageAddr         string
+	algorithmPath     string
+	datasetPath       string
+	preTrainModelPath string
+	command           string
+	resources         map[v1.ResourceName]resource.Quantity
+	nodeSelectors     map[string]string
+	shm               *resource.Quantity
 }
 
 func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *model.Notebook) error {
@@ -633,6 +651,15 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      volume,
 			MountPath: s.conf.Service.DockerDatasetPath,
 			SubPath:   startJobInfo.datasetPath,
+			ReadOnly:  true,
+		})
+	}
+
+	if startJobInfo.preTrainModelPath != "" {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      volume,
+			MountPath: common.DockerPreTrainModePath,
+			SubPath:   startJobInfo.preTrainModelPath,
 			ReadOnly:  true,
 		})
 	}

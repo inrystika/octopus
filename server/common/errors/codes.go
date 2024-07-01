@@ -142,6 +142,7 @@ const (
 	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
 	ErrorNotebookResourcePoolForbidden    = 14013 // notebook使用资源池不允许操作
 	ErrorNotebookMountExternalForbidden   = 14014 // 用户不允许外部挂载
+	ErrorNotebookModelNoPermission        = 14015 // notebook使用模型不在权限范围内
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -377,6 +378,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorNotebookNoFoundRuntimeContainer:  {codeType: NotFound, msg: "no found runtime container"},
 	ErrorNotebookResourcePoolForbidden:    {codeType: OutOfRange, msg: "resource pool forbidden"},
 	ErrorNotebookMountExternalForbidden:   {codeType: OutOfRange, msg: "mount external forbidden"},
+	ErrorNotebookModelNoPermission:        {codeType: OutOfRange, msg: "model no permission"},
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden:         {codeType: PermissionDenied, msg: "image Auth forbidden"},

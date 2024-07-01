@@ -84,6 +84,7 @@ message VersionDetail {
   string descript = 3;
   int32 fileStatus = 4; // 0:初始态,1:文件上传中,2:文件已上传,3:文件上传失败
   int64 createdAt = 5;
+  string path = 6;
 }
 
 message ListPreModelRequest {

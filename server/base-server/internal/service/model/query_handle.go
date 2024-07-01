@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"fmt"
 	api "server/base-server/api/v1"
+	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
@@ -52,13 +54,13 @@ func NewModelQueryHandle(conf *conf.Bootstrap, logger log.Logger, data *data.Dat
 func (h *modelQueryHandle) ListPreModelHandle(ctx context.Context, req *api.ListPreModelRequest) (*api.ListPreModelReply, error) {
 	modelDao := h.data.ModelDao
 	totalSize, modelList, err := modelDao.ListModel(ctx, &model.ModelList{
-		IsPrefab:       true,
-		PageIndex:      int(req.PageIndex),
-		PageSize:       int(req.PageSize),
-		SearchKey:      req.SearchKey,
-		FrameWorkId:    req.FrameWorkId,
-		CreatedAtGte:   req.CreatedAtGte,
-		CreatedAtLt:    req.CreatedAtLt,
+		IsPrefab:     true,
+		PageIndex:    int(req.PageIndex),
+		PageSize:     int(req.PageSize),
+		SearchKey:    req.SearchKey,
+		FrameWorkId:  req.FrameWorkId,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -84,15 +86,15 @@ func (h *modelQueryHandle) ListPreModelHandle(ctx context.Context, req *api.List
 func (h *modelQueryHandle) ListMyModelHandle(ctx context.Context, req *api.ListMyModelRequest) (*api.ListMyModelReply, error) {
 	modelDao := h.data.ModelDao
 	totalSize, modelList, err := modelDao.ListModel(ctx, &model.ModelList{
-		IsPrefab:       false,
-		SpaceId:        req.SpaceId,
-		UserId:         req.UserId,
-		PageIndex:      int(req.PageIndex),
-		PageSize:       int(req.PageSize),
-		SearchKey:      req.SearchKey,
-		FrameWorkId:    req.FrameWorkId,
-		CreatedAtGte:   req.CreatedAtGte,
-		CreatedAtLt:    req.CreatedAtLt,
+		IsPrefab:     false,
+		SpaceId:      req.SpaceId,
+		UserId:       req.UserId,
+		PageIndex:    int(req.PageIndex),
+		PageSize:     int(req.PageSize),
+		SearchKey:    req.SearchKey,
+		FrameWorkId:  req.FrameWorkId,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -126,12 +128,12 @@ func (h *modelQueryHandle) ListCommModelHandle(ctx context.Context, req *api.Lis
 	}
 
 	totalSize, modelAccessList, err := modelDao.ListModelAccess(ctx, &model.ModelAccessList{
-		SpaceIds:       []string{req.SpaceId},
-		PageIndex:      pageIndex,
-		PageSize:       pageSize,
-		CreatedAtGte:   req.CreatedAtGte,
-		CreatedAtLt:    req.CreatedAtLt,
-		FrameWorkId:    req.FrameWorkId,
+		SpaceIds:     []string{req.SpaceId},
+		PageIndex:    pageIndex,
+		PageSize:     pageSize,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
+		FrameWorkId:  req.FrameWorkId,
 	})
 	if err != nil {
 		return nil, err
@@ -181,14 +183,14 @@ func (h *modelQueryHandle) ListCommModelHandle(ctx context.Context, req *api.Lis
 func (h *modelQueryHandle) ListAllUserModelHandle(ctx context.Context, req *api.ListAllUserModelRequest) (*api.ListAllUserModelReply, error) {
 	modelDao := h.data.ModelDao
 	totalSize, modelList, err := modelDao.ListModel(ctx, &model.ModelList{
-		IsPrefab:       false,
-		PageIndex:      int(req.PageIndex),
-		PageSize:       int(req.PageSize),
-		SearchKey:      req.SearchKey,
-		UserId:         req.UserId,
-		SpaceId:        req.SpaceId,
-		CreatedAtGte:   req.CreatedAtGte,
-		CreatedAtLt:    req.CreatedAtLt,
+		IsPrefab:     false,
+		PageIndex:    int(req.PageIndex),
+		PageSize:     int(req.PageSize),
+		SearchKey:    req.SearchKey,
+		UserId:       req.UserId,
+		SpaceId:      req.SpaceId,
+		CreatedAtGte: req.CreatedAtGte,
+		CreatedAtLt:  req.CreatedAtLt,
 	})
 	if err != nil {
 		return nil, err
@@ -356,6 +358,17 @@ func (h *modelQueryHandle) QueryModelVersionHandle(ctx context.Context, req *api
 	if err != nil {
 		return nil, err
 	}
+
+	bucketName := ""
+	objectName := ""
+	if modelDetail.IsPrefab {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioPreModelObject(versionDetail.ModelId, versionDetail.Version)
+	} else {
+		bucketName = common.GetMinioBucket()
+		objectName = common.GetMinioModelObject(modelDetail.SpaceId, modelDetail.UserId, versionDetail.ModelId, versionDetail.Version)
+	}
+	versionDetail.Path = fmt.Sprintf("%s/%s", bucketName, objectName)
 
 	return &api.QueryModelVersionReply{
 		Model:        modelDetail,
