@@ -10,6 +10,7 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 import "server/common/api/v1/develop.proto";
 import "server/common/api/v1/common.proto";
+import "google/protobuf/struct.proto";
 
 service Develop {
   // 创建notebook
@@ -75,9 +76,13 @@ service Develop {
   };
 }
 
-message UserEndpoint {
+message Endpoint {
   string endpoint = 1;
   uint32 port = 2;
+}
+
+message TaskConfig {
+  repeated Endpoint endpoints = 1;
 }
 
 message CreateNotebookRequest {
@@ -98,7 +103,7 @@ message CreateNotebookRequest {
   string command = 14;
   bool disableMountUserHome = 15;
   int64 autoStopDuration = 16;
-  repeated UserEndpoint userEndpoints = 17;
+  repeated TaskConfig taskConfigs = 17;
 }
 
 message CreateNotebookReply {

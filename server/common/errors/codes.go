@@ -18,6 +18,9 @@ const (
 	ErrorFormatParseFailed         = 10014 // 格式解析失败
 	ErrorInternal                  = 10015 // 内部错误
 	ErrorSendEmailFailed           = 10016
+	ErrorUserEndpointExisted       = 10017
+	ErrorUserEndpointRepeat        = 10018
+
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -263,6 +266,8 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorFormatParseFailed:         {codeType: Internal, msg: "format parse failed"},
 	ErrorInternal:                  {codeType: Internal, msg: "internal error"},
 	ErrorSendEmailFailed:           {codeType: Internal, msg: "send email failed"},
+	ErrorUserEndpointExisted:       {codeType: InvalidArgument, msg: "user endpoint existed"},
+	ErrorUserEndpointRepeat:        {codeType: InvalidArgument, msg: "user endpoint repeat"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},

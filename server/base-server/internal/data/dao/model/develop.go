@@ -42,7 +42,7 @@ type Notebook struct {
 	Command              string                `gorm:"type:text;comment:启动命令"`
 	DisableMountUserHome bool                  `gorm:"default:false;comment:是否不挂载userhome目录"`
 	AutoStopDuration     int64                 `gorm:"type:int;not null;default:0;comment:自动停止时间（秒）"`
-	UserEndpoints        UEndpoints            `gorm:"type:json;comment:用户Endpoint"`
+	TaskConfigs          TaskConfigs           `gorm:"type:json;comment:任务配置"`
 	DeletedAt            soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
@@ -50,18 +50,22 @@ func (Notebook) TableName() string {
 	return "notebook"
 }
 
-type UEndpoint struct {
+type Endpoint struct {
 	Endpoint string `json:"endpoint"`
 	Port     uint   `json:"port"`
 }
 
-type UEndpoints [][]*UEndpoint
+type TaskConfig struct {
+	Endpoints []*Endpoint `json:"endpoints"`
+}
 
-func (r UEndpoints) Value() (driver.Value, error) {
+type TaskConfigs []TaskConfig
+
+func (r TaskConfigs) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-func (r *UEndpoints) Scan(input interface{}) error {
+func (r *TaskConfigs) Scan(input interface{}) error {
 	switch v := input.(type) {
 	case []byte:
 		return json.Unmarshal(input.([]byte), r)

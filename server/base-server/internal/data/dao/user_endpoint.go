@@ -13,8 +13,9 @@ type userEndpointDao struct {
 
 type UserEndpointDao interface {
 	CreateUserEndpoint(ctx context.Context, userEndpoint *model.UserEndpoint) error
-	IsUserEndpointExist(ctx context.Context, endpoint string) (bool, error)
-	DeleteUserEndpoint(ctx context.Context, endpoint string) error
+	CreateUserEndpoints(ctx context.Context, userEndpoints []*model.UserEndpoint) error
+	IsUserEndpointsNotExist(ctx context.Context, endpoints []string) (bool, error)
+	DeleteUserEndpoints(ctx context.Context, endpoints []string) error
 }
 
 func NewUserEndpointDao(db *gorm.DB) UserEndpointDao {
@@ -31,22 +32,30 @@ func (d *userEndpointDao) CreateUserEndpoint(ctx context.Context, userEndpoint *
 	return nil
 }
 
-func (d *userEndpointDao) IsUserEndpointExist(ctx context.Context, endpoint string) (bool, error) {
+func (d *userEndpointDao) CreateUserEndpoints(ctx context.Context, userEndpoints []*model.UserEndpoint) error {
+	res := d.db.CreateInBatches(userEndpoints, 100)
+	if res.Error != nil {
+		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
+	}
+	return nil
+}
+
+func (d *userEndpointDao) IsUserEndpointsNotExist(ctx context.Context, endpoints []string) (bool, error) {
 	var count int64
-	res := d.db.Where("endpoint = ?", endpoint).Count(&count)
+	res := d.db.Where("endpoint in ?", endpoints).Count(&count)
 
 	if res.Error != nil {
 		return false, errors.Errorf(res.Error, errors.ErrorDBCountFailed)
 	}
-	return count > 0, nil
+	return count == 0, nil
 }
 
-func (d *userEndpointDao) DeleteUserEndpoint(ctx context.Context, endpoint string) error {
-	if endpoint == "" {
+func (d *userEndpointDao) DeleteUserEndpoints(ctx context.Context, endpoints []string) error {
+	if len(endpoints) == 0 {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	res := d.db.Where("endpoint = ?", endpoint).Delete(&model.UserEndpoint{})
+	res := d.db.Where("endpoint in ?", endpoints).Delete(&model.UserEndpoint{})
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 	}

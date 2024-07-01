@@ -407,6 +407,55 @@ type startJobInfo struct {
 	shm           *resource.Quantity
 }
 
+func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *model.Notebook) error {
+	endpoints := set.NewStrings()
+	endpointsTb := make([]*model.UserEndpoint, 0)
+	for _, taskConfigs := range nb.TaskConfigs {
+		for _, endpoint := range taskConfigs.Endpoints {
+			ue := buildUserEndpoint(endpoint.Endpoint)
+			if endpoints.Contains(ue) {
+				return errors.Errorf(nil, errors.ErrorUserEndpointRepeat)
+			}
+			endpoints.Add(ue)
+			endpointsTb = append(endpointsTb, &model.UserEndpoint{
+				Endpoint: ue,
+			})
+		}
+	}
+
+	notExist, err := s.data.UserEndpointDao.IsUserEndpointsNotExist(ctx, endpoints.Values())
+	if err != nil {
+		return err
+	}
+
+	if !notExist {
+		return errors.Errorf(nil, errors.ErrorUserEndpointExisted)
+	}
+
+	err = s.data.UserEndpointDao.CreateUserEndpoints(ctx, endpointsTb)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Notebook) error {
+	endpoints := make([]string, 0)
+	for _, taskEndpoints := range nb.TaskConfigs {
+		for _, endpoint := range taskEndpoints.Endpoints {
+			endpoints = append(endpoints, buildUserEndpoint(endpoint.Endpoint))
+		}
+	}
+
+	err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNotebookRequest) (*api.CreateNotebookReply, error) {
 	nbId := utils.GetUUIDStartWithAlphabetic() //k8s service首字母不允许数字 为方便 uuid处理一下
 	_, size, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{
@@ -441,6 +490,11 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 	}
 
 	startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.checkAndCreateUserEndpoint(ctx, nb)
 	if err != nil {
 		return nil, err
 	}
@@ -797,12 +851,15 @@ func (s *developService) createService(ctx context.Context, nb *model.Notebook, 
 			Port:       servicePort,
 			TargetPort: intstr.FromInt(servicePort),
 		}}
-		for _, ue := range nb.UserEndpoints {
-			ports = append(ports, v1.ServicePort{
-				Port:       int32(ue[i].Port),
-				TargetPort: intstr.FromInt(int(ue[i].Port)),
-			})
+		if len(nb.TaskConfigs) > i {
+			for _, endpoint := range nb.TaskConfigs[i].Endpoints {
+				ports = append(ports, v1.ServicePort{
+					Port:       int32(endpoint.Port),
+					TargetPort: intstr.FromInt(int(endpoint.Port)),
+				})
+			}
 		}
+
 		err := s.data.Cluster.CreateService(ctx, &v1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildServiceName(nbJob.Id, i),
@@ -859,23 +916,26 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 				},
 			},
 		}
-		for _, ue := range nb.UserEndpoints {
-			rules = append(rules, v1beta1.IngressRule{
-				IngressRuleValue: v1beta1.IngressRuleValue{
-					HTTP: &v1beta1.HTTPIngressRuleValue{
-						Paths: []v1beta1.HTTPIngressPath{
-							{
-								Path: buildUserEndpoint(ue[i].Endpoint),
-								Backend: v1beta1.IngressBackend{
-									ServiceName: buildServiceName(nbJob.Id, i),
-									ServicePort: intstr.FromInt(int(ue[i].Port)),
+		if len(nb.TaskConfigs) > i {
+			for _, taskConfig := range nb.TaskConfigs {
+				rules = append(rules, v1beta1.IngressRule{
+					IngressRuleValue: v1beta1.IngressRuleValue{
+						HTTP: &v1beta1.HTTPIngressRuleValue{
+							Paths: []v1beta1.HTTPIngressPath{
+								{
+									Path: buildUserEndpoint(taskConfig.Endpoints[i].Endpoint),
+									Backend: v1beta1.IngressBackend{
+										ServiceName: buildServiceName(nbJob.Id, i),
+										ServicePort: intstr.FromInt(int(taskConfig.Endpoints[i].Port)),
+									},
 								},
 							},
 						},
 					},
-				},
-			})
+				})
+			}
 		}
+
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
@@ -942,6 +1002,10 @@ func (s *developService) DeleteNotebook(ctx context.Context, req *api.DeleteNote
 		return nil, err
 	}
 
+	err = s.deleteUserEndpoint(ctx, nb)
+	if err != nil {
+		return nil, err
+	}
 	return &api.DeleteNotebookReply{Id: req.Id}, nil
 }
 
