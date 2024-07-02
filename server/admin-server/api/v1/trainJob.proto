@@ -143,6 +143,9 @@ message TrainJob {
   //资源池
   string resourcePool=26;
   string operation = 27;
+  string preTrainModelId = 28;
+  string preTrainModelVersion = 29;
+  string preTrainModelName = 30;
 }
 
 message TrainJobListRequest {

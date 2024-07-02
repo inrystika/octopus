@@ -76,6 +76,7 @@ service Develop {
 }
 
 message Endpoint {
+  // 完整的路径为/userendpoint/{endpoint}/
   string endpoint = 1;
   uint32 port = 2;
 }
