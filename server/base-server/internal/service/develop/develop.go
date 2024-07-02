@@ -425,9 +425,9 @@ type startJobInfo struct {
 	shm               *resource.Quantity
 }
 
-func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *model.Notebook) error {
+func (s *developService) checkEndpoint(ctx context.Context, nb *model.Notebook) ([]*model.UserEndpoint, error) {
 	if len(nb.TaskConfigs) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	endpoints := set.NewStrings()
@@ -436,7 +436,10 @@ func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *mod
 		for _, endpoint := range taskConfigs.Endpoints {
 			ue := buildUserEndpoint(endpoint.Endpoint)
 			if endpoints.Contains(ue) {
-				return errors.Errorf(nil, errors.ErrorUserEndpointRepeat)
+				return nil, errors.Errorf(nil, errors.ErrorUserEndpointRepeat)
+			}
+			if endpoint.Port == servicePort {
+				return nil, errors.Errorf(nil, errors.ErrorPortConflict)
 			}
 			endpoints.Add(ue)
 			endpointsTb = append(endpointsTb, &model.UserEndpoint{
@@ -447,19 +450,14 @@ func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *mod
 
 	notExist, err := s.data.UserEndpointDao.IsUserEndpointsNotExist(ctx, endpoints.Values())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !notExist {
-		return errors.Errorf(nil, errors.ErrorUserEndpointExisted)
+		return nil, errors.Errorf(nil, errors.ErrorUserEndpointExisted)
 	}
 
-	err = s.data.UserEndpointDao.CreateUserEndpoints(ctx, endpointsTb)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return endpointsTb, nil
 }
 
 func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Notebook) error {
@@ -516,7 +514,25 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 		return nil, err
 	}
 
-	err = s.checkAndCreateUserEndpoint(ctx, nb)
+	endpointsTb, err := s.checkEndpoint(ctx, nb)
+	if err != nil {
+		return nil, err
+	}
+
+	closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
+	defer func() { //如果出错 重要的资源需要删除
+		if err != nil && closeFunc != nil {
+			err1 := closeFunc(ctx)
+			if err1 != nil {
+				s.log.Errorf(ctx, "err: %s", err1)
+			}
+		}
+	}()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.data.UserEndpointDao.CreateUserEndpoints(ctx, endpointsTb)
 	if err != nil {
 		return nil, err
 	}
@@ -527,20 +543,6 @@ func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNote
 	}
 
 	err = s.data.DevelopDao.CreateNotebookJob(ctx, nbJob)
-	if err != nil {
-		return nil, err
-	}
-
-	//数据库操作挪到前面，如果出错，直接不创建k8s vcjob，硬件资源有限的资源，出错需要及时释放掉
-	closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
-	defer func() { //如果出错 重要的资源需要删除
-		if err != nil && closeFunc != nil {
-			err1 := closeFunc(ctx)
-			if err1 != nil {
-				s.log.Errorf(ctx, "err: %s", err1)
-			}
-		}
-	}()
 	if err != nil {
 		return nil, err
 	}
@@ -881,12 +883,14 @@ func (s *developService) createService(ctx context.Context, nb *model.Notebook, 
 		ports := []v1.ServicePort{{
 			Port:       servicePort,
 			TargetPort: intstr.FromInt(servicePort),
+			Name:       fmt.Sprintf("port-%d", servicePort),
 		}}
 		if len(nb.TaskConfigs) > i {
 			for _, endpoint := range nb.TaskConfigs[i].Endpoints {
 				ports = append(ports, v1.ServicePort{
 					Port:       int32(endpoint.Port),
 					TargetPort: intstr.FromInt(int(endpoint.Port)),
+					Name:       fmt.Sprintf("port-%d", int32(endpoint.Port)),
 				})
 			}
 		}

@@ -42,7 +42,7 @@ func (d *userEndpointDao) CreateUserEndpoints(ctx context.Context, userEndpoints
 
 func (d *userEndpointDao) IsUserEndpointsNotExist(ctx context.Context, endpoints []string) (bool, error) {
 	var count int64
-	res := d.db.Where("endpoint in ?", endpoints).Count(&count)
+	res := d.db.Where("endpoint in ?", endpoints).Model(&model.UserEndpoint{}).Count(&count)
 
 	if res.Error != nil {
 		return false, errors.Errorf(res.Error, errors.ErrorDBCountFailed)

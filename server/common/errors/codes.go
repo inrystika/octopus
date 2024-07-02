@@ -20,6 +20,7 @@ const (
 	ErrorSendEmailFailed           = 10016
 	ErrorUserEndpointExisted       = 10017
 	ErrorUserEndpointRepeat        = 10018
+	ErrorPortConflict              = 10019
 
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
@@ -269,6 +270,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorSendEmailFailed:           {codeType: Internal, msg: "send email failed"},
 	ErrorUserEndpointExisted:       {codeType: InvalidArgument, msg: "user endpoint existed"},
 	ErrorUserEndpointRepeat:        {codeType: InvalidArgument, msg: "user endpoint repeat"},
+	ErrorPortConflict:              {codeType: InvalidArgument, msg: "port conflict"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},
