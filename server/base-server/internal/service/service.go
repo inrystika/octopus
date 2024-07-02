@@ -70,7 +70,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 
 	service.DevelopService, err = develop.NewDevelopService(conf, logger, data,
 		service.WorkspaceService, service.AlgorithmService, service.ImageService, service.DatasetService,
-		service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService, service.UserService)
+		service.ResourceSpecService, service.ResourceService, service.ResourcePoolService, service.BillingService, service.UserService, service.ModelService)
 	if err != nil {
 		return nil, err
 	}

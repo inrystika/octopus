@@ -147,6 +147,9 @@ message Notebook {
   string operation = 29;
   int64 startedAt = 30;
   int64 stoppedAt = 31;
+  string preTrainModelId = 32;
+  string preTrainModelVersion = 33;
+  string preTrainModelName = 34;
 }
 
 message ListNotebookReply {

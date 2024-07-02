@@ -57,6 +57,8 @@ message TrainJobRequest {
   repeated common.api.v1.Mount mounts = 14;
   bool disableMountUserHome = 15;
   bool disableMountModel = 16;
+  string preTrainModelId = 17;
+  string preTrainModelVersion = 18;
 }
 
 message TrainJobTemplateRequest {
@@ -242,6 +244,9 @@ message TrainJob{
   string imageUrl = 23;
   string resourcePool=24;
   string operation = 25;
+  string preTrainModelId = 26;
+  string preTrainModelVersion = 27;
+  string preTrainModelName = 28;
 }
 
 

@@ -426,6 +426,10 @@ type startJobInfo struct {
 }
 
 func (s *developService) checkAndCreateUserEndpoint(ctx context.Context, nb *model.Notebook) error {
+	if len(nb.TaskConfigs) == 0 {
+		return nil
+	}
+
 	endpoints := set.NewStrings()
 	endpointsTb := make([]*model.UserEndpoint, 0)
 	for _, taskConfigs := range nb.TaskConfigs {
