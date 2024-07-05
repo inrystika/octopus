@@ -139,7 +139,10 @@ func dbInit(confData *conf.Data) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	idxRemove := "idx_resource_name"
+	if db.Migrator().HasIndex(&resources.Resource{}, idxRemove) {
+		db.Migrator().DropIndex(&resources.Resource{}, idxRemove)
+	}
 	err = db.AutoMigrate(&model.Workspace{})
 	if err != nil {
 		return nil, err
