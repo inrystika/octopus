@@ -9,7 +9,6 @@ import (
 	"server/base-server/internal/data/influxdb"
 	v1 "server/common/api/v1"
 	"server/common/errors"
-	"server/common/transaction"
 	"server/common/utils"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 )
 
 type DevelopDao interface {
-	Transaction(ctx context.Context, fc func(ctx context.Context) error) error
 	CreateNotebook(ctx context.Context, notebook *model.Notebook) error
 	GetNotebook(ctx context.Context, id string) (*model.Notebook, error)
 	UpdateNotebookSelective(ctx context.Context, notebook *model.Notebook) error
@@ -43,27 +41,20 @@ type DevelopDao interface {
 
 type developDao struct {
 	log      *log.Helper
-	db       transaction.GetDB
+	db       *gorm.DB
 	influxdb influxdb.Influxdb
 }
 
 func NewDevelopDao(db *gorm.DB, influxdb influxdb.Influxdb, logger log.Logger) DevelopDao {
 	return &developDao{
-		log: log.NewHelper("DevelopDao", logger),
-		db: func(ctx context.Context) *gorm.DB {
-			return transaction.GetDBFromCtx(ctx, db)
-		},
+		log:      log.NewHelper("DevelopDao", logger),
+		db:       db,
 		influxdb: influxdb,
 	}
 }
 
-func (d *developDao) Transaction(ctx context.Context, fc func(ctx context.Context) error) error {
-	return transaction.Transaction(ctx, d.db(ctx), fc)
-}
-
 func (d *developDao) CreateNotebook(ctx context.Context, notebook *model.Notebook) error {
-	db := d.db(ctx)
-	res := db.Create(notebook)
+	res := d.db.Create(notebook)
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
 	}
@@ -71,9 +62,8 @@ func (d *developDao) CreateNotebook(ctx context.Context, notebook *model.Noteboo
 }
 
 func (d *developDao) GetNotebook(ctx context.Context, id string) (*model.Notebook, error) {
-	db := d.db(ctx)
 	nb := &model.Notebook{}
-	res := db.First(nb, "id = ?", id)
+	res := d.db.First(nb, "id = ?", id)
 
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -86,11 +76,10 @@ func (d *developDao) GetNotebook(ctx context.Context, id string) (*model.Noteboo
 }
 
 func (d *developDao) UpdateNotebookSelective(ctx context.Context, notebook *model.Notebook) error {
-	db := d.db(ctx)
 	if notebook.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("id = ?", notebook.Id).Updates(notebook)
+	res := d.db.Where("id = ?", notebook.Id).Updates(notebook)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -99,11 +88,10 @@ func (d *developDao) UpdateNotebookSelective(ctx context.Context, notebook *mode
 }
 
 func (d *developDao) UpdateNotebookSelectiveByJobId(ctx context.Context, notebook *model.Notebook) error {
-	db := d.db(ctx)
 	if notebook.NotebookJobId == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("notebook_job_id = ?", notebook.NotebookJobId).Updates(notebook)
+	res := d.db.Where("notebook_job_id = ?", notebook.NotebookJobId).Updates(notebook)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -112,11 +100,10 @@ func (d *developDao) UpdateNotebookSelectiveByJobId(ctx context.Context, noteboo
 }
 
 func (d *developDao) UpdateNotebookByJobIdOnNotCompleted(ctx context.Context, notebook *model.Notebook) error {
-	db := d.db(ctx)
 	if notebook.NotebookJobId == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("notebook_job_id = ? and status not in ?", notebook.NotebookJobId, utils.CompletedStates).Updates(notebook)
+	res := d.db.Where("notebook_job_id = ? and status not in ?", notebook.NotebookJobId, utils.CompletedStates).Updates(notebook)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -125,12 +112,11 @@ func (d *developDao) UpdateNotebookByJobIdOnNotCompleted(ctx context.Context, no
 }
 
 func (d *developDao) DeleteNotebook(ctx context.Context, id string) error {
-	db := d.db(ctx)
 	if id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	res := db.Where("id = ?", id).Delete(&model.Notebook{})
+	res := d.db.Where("id = ?", id).Delete(&model.Notebook{})
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBDeleteFailed)
 	}
@@ -139,7 +125,6 @@ func (d *developDao) DeleteNotebook(ctx context.Context, id string) error {
 }
 
 func (d *developDao) ListNotebook(ctx context.Context, query *model.NotebookQuery) ([]*model.Notebook, int64, error) {
-	db := d.db(ctx)
 	notebooks := make([]*model.Notebook, 0)
 
 	querySql := "1 = 1"
@@ -184,7 +169,7 @@ func (d *developDao) ListNotebook(ctx context.Context, query *model.NotebookQuer
 		params = append(params, query.Name)
 	}
 
-	db = db.Where(querySql, params...)
+	db := d.db.Where(querySql, params...)
 
 	var totalSize int64
 	res := db.Model(&model.Notebook{}).Count(&totalSize)
@@ -217,8 +202,7 @@ func (d *developDao) ListNotebook(ctx context.Context, query *model.NotebookQuer
 }
 
 func (d *developDao) CreateNotebookJob(ctx context.Context, notebookJob *model.NotebookJob) error {
-	db := d.db(ctx)
-	res := db.Create(notebookJob)
+	res := d.db.Create(notebookJob)
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBCreateFailed)
 	}
@@ -226,9 +210,8 @@ func (d *developDao) CreateNotebookJob(ctx context.Context, notebookJob *model.N
 }
 
 func (d *developDao) GetNotebookJob(ctx context.Context, id string) (*model.NotebookJob, error) {
-	db := d.db(ctx)
 	nb := &model.NotebookJob{}
-	res := db.First(nb, "id = ?", id)
+	res := d.db.First(nb, "id = ?", id)
 
 	if res.Error != nil {
 		if stderrors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -241,11 +224,10 @@ func (d *developDao) GetNotebookJob(ctx context.Context, id string) (*model.Note
 }
 
 func (d *developDao) UpdateNotebookJobSelective(ctx context.Context, notebookJob *model.NotebookJob) error {
-	db := d.db(ctx)
 	if notebookJob.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("id = ?", notebookJob.Id).Updates(notebookJob)
+	res := d.db.Where("id = ?", notebookJob.Id).Updates(notebookJob)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -254,11 +236,10 @@ func (d *developDao) UpdateNotebookJobSelective(ctx context.Context, notebookJob
 }
 
 func (d *developDao) UpdateNotebookJobOnNotCompleted(ctx context.Context, notebookJob *model.NotebookJob) error {
-	db := d.db(ctx)
 	if notebookJob.Id == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
-	res := db.Where("id = ? and status not in ?", notebookJob.Id, utils.CompletedStates).Updates(notebookJob)
+	res := d.db.Where("id = ? and status not in ?", notebookJob.Id, utils.CompletedStates).Updates(notebookJob)
 
 	if res.Error != nil {
 		return errors.Errorf(res.Error, errors.ErrorDBUpdateFailed)
@@ -267,12 +248,11 @@ func (d *developDao) UpdateNotebookJobOnNotCompleted(ctx context.Context, notebo
 }
 
 func (d *developDao) DeleteNotebookJobByNbId(ctx context.Context, nbId string) error {
-	db := d.db(ctx)
 	if nbId == "" {
 		return errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 	}
 
-	res := db.Where("notebook_id = ?", nbId).Delete(&model.NotebookJob{})
+	res := d.db.Where("notebook_id = ?", nbId).Delete(&model.NotebookJob{})
 	if res.Error != nil {
 		return errors.Errorf(nil, errors.ErrorDBDeleteFailed)
 	}
@@ -281,7 +261,6 @@ func (d *developDao) DeleteNotebookJobByNbId(ctx context.Context, nbId string) e
 }
 
 func (d *developDao) ListNotebookJob(ctx context.Context, query *model.NotebookJobQuery) ([]*model.NotebookJob, error) {
-	db := d.db(ctx)
 	notebookJobs := make([]*model.NotebookJob, 0)
 
 	querySql := "1 = 1"
@@ -311,7 +290,7 @@ func (d *developDao) ListNotebookJob(ctx context.Context, query *model.NotebookJ
 		params = append(params, query.Ids)
 	}
 
-	db = db.Where(querySql, params...)
+	db := d.db.Where(querySql, params...)
 
 	if query.PageIndex != 0 {
 		db = db.Limit(query.PageSize).Offset((query.PageIndex - 1) * query.PageSize)

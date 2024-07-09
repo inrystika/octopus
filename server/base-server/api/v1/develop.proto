@@ -33,6 +33,16 @@ service Develop {
   rpc GetNotebookMetric (GetNotebookMetricRequest) returns (GetNotebookMetricReply);
 }
 
+message Endpoint {
+  string endpoint = 1;
+  uint32 port = 2;
+}
+
+message TaskConfig {
+  repeated Endpoint endpoints = 1;
+}
+
+
 message CreateNotebookRequest {
   string userId = 1[(validate.rules).string = {min_len: 1}];
   string workspaceId = 2[(validate.rules).string = {min_len: 1}];
@@ -53,6 +63,9 @@ message CreateNotebookRequest {
   string command = 16;
   bool disableMountUserHome = 17;
   int64 autoStopDuration = 18;
+  repeated TaskConfig taskConfigs = 19;
+  string preTrainModelId = 20;
+  string preTrainModelVersion = 21;
 }
 
 message CreateNotebookReply {
@@ -134,6 +147,9 @@ message Notebook {
   string operation = 29;
   int64 startedAt = 30;
   int64 stoppedAt = 31;
+  string preTrainModelId = 32;
+  string preTrainModelVersion = 33;
+  string preTrainModelName = 34;
 }
 
 message ListNotebookReply {

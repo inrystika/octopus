@@ -34,6 +34,9 @@ type TrainJob struct {
 	DataSetId            string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集Id'"`
 	DataSetVersion       string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集版本'"`
 	DatasetName          string                     `gorm:"type:varchar(100);not null;default:'';comment:'数据集名称''"`
+	PreTrainModelId      string                     `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Id"`
+	PreTrainModelVersion string                     `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Version"`
+	PreTrainModelName    string                     `gorm:"type:varchar(100);not null;default:'';comment:预训练模型名称"`
 	IsDistributed        bool                       `gorm:"default:false;comment:'是否是分布式'"`
 	Config               Configs                    `gorm:"type:json;comment:'task信息'"`
 	Operation            string                     `gorm:"type:varchar(100);not null;default:'';comment:任务停止说明"`

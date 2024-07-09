@@ -57,6 +57,7 @@ type developService struct {
 	billingService      api.BillingServiceServer
 	userService         api.UserServiceServer
 	updatedJob          chan *vcBatch.Job
+	modelService        api.ModelServiceServer
 }
 
 type DevelopService interface {
@@ -97,11 +98,24 @@ func buildNotebookUrl(id string, idx int) string {
 	return fmt.Sprintf("/notebook_%s_%s", id, buildTaskName(idx))
 }
 
+func buildUserEndpoint(endpoint string) string {
+
+	if !strings.HasPrefix(endpoint, "/") {
+		endpoint = "/" + endpoint
+	}
+
+	if !strings.HasSuffix(endpoint, "/") {
+		endpoint = endpoint + "/"
+	}
+
+	return "/userendpoint" + endpoint
+}
+
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
 	resourceService api.ResourceServiceServer, resourcePoolService api.ResourcePoolServiceServer,
-	billingService api.BillingServiceServer, userService api.UserServiceServer) (DevelopService, error) {
+	billingService api.BillingServiceServer, userService api.UserServiceServer, modelService api.ModelServiceServer) (DevelopService, error) {
 
 	log := log.NewHelper("DevelopService", logger)
 
@@ -118,6 +132,7 @@ func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 		resourcePoolService: resourcePoolService,
 		billingService:      billingService,
 		userService:         userService,
+		modelService:        modelService,
 		updatedJob:          make(chan *vcBatch.Job, 1000),
 	}
 
@@ -211,6 +226,20 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 		algorithmPath = algorithmVersion.Algorithm.Path
 	}
 
+	preTrainModelPath := ""
+	if nb.PreTrainModelId != "" {
+		modelVersion, err := s.modelService.QueryModelVersion(ctx, &api.QueryModelVersionRequest{
+			ModelId: nb.PreTrainModelId,
+			Version: nb.PreTrainModelVersion,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		nb.PreTrainModelName = modelVersion.Model.ModelName
+		preTrainModelPath = modelVersion.ModelVersion.Path
+	}
+
 	datasetPath := ""
 	if nb.DatasetId != "" && nb.DatasetVersion != "" {
 		datasetVersion, err := s.datasetService.GetDatasetVersion(ctx, &api.GetDatasetVersionRequest{DatasetId: nb.DatasetId, Version: nb.DatasetVersion})
@@ -296,7 +325,7 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 
 	for _, m := range nb.Mounts {
 		if m.Octopus != nil {
-			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) {
+			if !slices.Contains(user.User.Buckets, m.Octopus.Bucket) && m.Octopus.Bucket != nb.UserId {
 				return nil, errors.Errorf(nil, errors.ErrorInvalidRequestParameter)
 			}
 		}
@@ -318,14 +347,15 @@ func (s *developService) checkPermAndAssign(ctx context.Context, nb *model.Noteb
 	}
 
 	return &startJobInfo{
-		queue:         queue,
-		imageAddr:     imageAddr,
-		algorithmPath: algorithmPath,
-		datasetPath:   datasetPath,
-		resources:     k8sResources,
-		nodeSelectors: nodeSelectors,
-		shm:           shm,
-		command:       command,
+		queue:             queue,
+		imageAddr:         imageAddr,
+		algorithmPath:     algorithmPath,
+		datasetPath:       datasetPath,
+		preTrainModelPath: preTrainModelPath,
+		resources:         k8sResources,
+		nodeSelectors:     nodeSelectors,
+		shm:               shm,
+		command:           command,
 	}, nil
 }
 
@@ -384,179 +414,213 @@ func (s *developService) startJob(ctx context.Context, nb *model.Notebook, nbJob
 }
 
 type startJobInfo struct {
-	queue         string
-	imageAddr     string
-	algorithmPath string
-	datasetPath   string
-	command       string
-	resources     map[v1.ResourceName]resource.Quantity
-	nodeSelectors map[string]string
-	shm           *resource.Quantity
+	queue             string
+	imageAddr         string
+	algorithmPath     string
+	datasetPath       string
+	preTrainModelPath string
+	command           string
+	resources         map[v1.ResourceName]resource.Quantity
+	nodeSelectors     map[string]string
+	shm               *resource.Quantity
+}
+
+func (s *developService) checkEndpoint(ctx context.Context, nb *model.Notebook) ([]*model.UserEndpoint, error) {
+	if len(nb.TaskConfigs) == 0 {
+		return nil, nil
+	}
+
+	endpoints := set.NewStrings()
+	endpointsTb := make([]*model.UserEndpoint, 0)
+	for _, taskConfigs := range nb.TaskConfigs {
+		for _, endpoint := range taskConfigs.Endpoints {
+			ue := buildUserEndpoint(endpoint.Endpoint)
+			if endpoints.Contains(ue) {
+				return nil, errors.Errorf(nil, errors.ErrorUserEndpointRepeat)
+			}
+			if endpoint.Port == servicePort {
+				return nil, errors.Errorf(nil, errors.ErrorPortConflict)
+			}
+			endpoints.Add(ue)
+			endpointsTb = append(endpointsTb, &model.UserEndpoint{
+				Endpoint: ue,
+			})
+		}
+	}
+
+	notExist, err := s.data.UserEndpointDao.IsUserEndpointsNotExist(ctx, endpoints.Values())
+	if err != nil {
+		return nil, err
+	}
+
+	if !notExist {
+		return nil, errors.Errorf(nil, errors.ErrorUserEndpointExisted)
+	}
+
+	return endpointsTb, nil
+}
+
+func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Notebook) error {
+	endpoints := make([]string, 0)
+	for _, taskEndpoints := range nb.TaskConfigs {
+		for _, endpoint := range taskEndpoints.Endpoints {
+			endpoints = append(endpoints, buildUserEndpoint(endpoint.Endpoint))
+		}
+	}
+
+	err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *developService) CreateNotebook(ctx context.Context, req *api.CreateNotebookRequest) (*api.CreateNotebookReply, error) {
 	nbId := utils.GetUUIDStartWithAlphabetic() //k8s service首字母不允许数字 为方便 uuid处理一下
-	err := s.data.DevelopDao.Transaction(ctx, func(ctx context.Context) error {
-		_, size, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{
-			UserId:      req.UserId,
-			WorkspaceId: req.WorkspaceId,
-			Name:        req.Name,
-		})
-		if size > 0 {
-			return errors.Errorf(nil, errors.ErrorNotebookRepeat)
-		}
-
-		jobId := utils.GetUUIDStartWithAlphabetic()
-
-		nb := &model.Notebook{}
-		err = copier.Copy(nb, req)
-		if err != nil {
-			return err
-		}
-		nb.Id = nbId
-		nb.Status = constant.PREPARING
-		nb.NotebookJobId = jobId
-		nb.TaskNumber = int(req.TaskNumber)
-		if req.AutoStopDuration == 0 {
-			nb.AutoStopDuration = s.conf.Service.Develop.AutoStopIntervalSec
-		}
-
-		nbJob := &model.NotebookJob{
-			Id:         jobId,
-			NotebookId: nbId,
-			Status:     constant.PREPARING,
-			Detail:     "{}",
-		}
-
-		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
-		if err != nil {
-			return err
-		}
-
-		//startJobInfo := &startJobInfo{ //test
-		//	queue:         "common-pool",
-		//	imageAddr:     "nginx:latest",
-		//	algorithmPath: "default-workspace/ddbe4b31-cc13-416f-aa80-97495abb80c2/codes/id1",
-		//	resources:     map[v1.ResourceName]resource.Quantity{"cpu": resource.MustParse("1")},
-		//	nodeSelectors: map[string]string{"resourceType": "debug_cpu"},
-		//}
-
-		err = s.data.DevelopDao.CreateNotebook(ctx, nb)
-		if err != nil {
-			return err
-		}
-
-		err = s.data.DevelopDao.CreateNotebookJob(ctx, nbJob)
-		if err != nil {
-			return err
-		}
-
-		//数据库操作挪到前面，如果出错，直接不创建k8s vcjob，硬件资源有限的资源，出错需要及时释放掉
-		closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
-		defer func() { //如果出错 重要的资源需要删除
-			if err != nil && closeFunc != nil {
-				err1 := closeFunc(ctx)
-				if err1 != nil {
-					s.log.Errorf(ctx, "err: %s", err1)
-				}
-			}
-		}()
-		if err != nil {
-			return err
-		}
-
-		err1 := s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
-			Time:       time.Now(),
-			NotebookId: nb.Id,
-			Type:       commapi.NotebookEventRecordType_CREATE,
-		})
-		if err1 != nil { // 插入事件记录出错只打印
-			s.log.Error(ctx, "create notebook event record error:", err)
-		}
-
-		return nil
+	_, size, err := s.data.DevelopDao.ListNotebook(ctx, &model.NotebookQuery{
+		UserId:      req.UserId,
+		WorkspaceId: req.WorkspaceId,
+		Name:        req.Name,
 	})
+	if size > 0 {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookRepeat)
+	}
+
+	jobId := utils.GetUUIDStartWithAlphabetic()
+
+	nb := &model.Notebook{}
+	err = copier.Copy(nb, req)
 	if err != nil {
 		return nil, err
+	}
+	nb.Id = nbId
+	nb.Status = constant.PREPARING
+	nb.NotebookJobId = jobId
+	nb.TaskNumber = int(req.TaskNumber)
+	if req.AutoStopDuration == 0 {
+		nb.AutoStopDuration = s.conf.Service.Develop.AutoStopIntervalSec
+	}
+
+	nbJob := &model.NotebookJob{
+		Id:         jobId,
+		NotebookId: nbId,
+		Status:     constant.PREPARING,
+		Detail:     "{}",
+	}
+
+	startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
+	if err != nil {
+		return nil, err
+	}
+
+	endpointsTb, err := s.checkEndpoint(ctx, nb)
+	if err != nil {
+		return nil, err
+	}
+
+	closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
+	defer func() { //如果出错 重要的资源需要删除
+		if err != nil && closeFunc != nil {
+			err1 := closeFunc(ctx)
+			if err1 != nil {
+				s.log.Errorf(ctx, "err: %s", err1)
+			}
+		}
+	}()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.data.UserEndpointDao.CreateUserEndpoints(ctx, endpointsTb)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.data.DevelopDao.CreateNotebook(ctx, nb)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.data.DevelopDao.CreateNotebookJob(ctx, nbJob)
+	if err != nil {
+		return nil, err
+	}
+
+	err1 := s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		Time:       time.Now(),
+		NotebookId: nb.Id,
+		Type:       commapi.NotebookEventRecordType_CREATE,
+	})
+	if err1 != nil { // 插入事件记录出错只打印
+		s.log.Error(ctx, "create notebook event record error:", err)
 	}
 
 	return &api.CreateNotebookReply{Id: nbId}, nil
 }
 
 func (s *developService) StartNotebook(ctx context.Context, req *api.StartNotebookRequest) (*api.StartNotebookReply, error) {
-	err := s.data.DevelopDao.Transaction(ctx, func(ctx context.Context) error {
-		nb, err := s.data.DevelopDao.GetNotebook(ctx, req.Id)
-		if err != nil {
-			return err
-		}
+	nb, err := s.data.DevelopDao.GetNotebook(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
 
-		if !utils.IsCompletedState(nb.Status) {
-			return errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
-		}
+	if !utils.IsCompletedState(nb.Status) {
+		return nil, errors.Errorf(nil, errors.ErrorNotebookStatusForbidden)
+	}
 
-		jobId := utils.GetUUIDStartWithAlphabetic()
-		nbJob := &model.NotebookJob{
-			Id:         jobId,
-			NotebookId: nb.Id,
-			Status:     constant.PREPARING,
-			Detail:     "{}",
-		}
+	jobId := utils.GetUUIDStartWithAlphabetic()
+	nbJob := &model.NotebookJob{
+		Id:         jobId,
+		NotebookId: nb.Id,
+		Status:     constant.PREPARING,
+		Detail:     "{}",
+	}
 
-		startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
-		if err != nil {
-			return err
-		}
+	startJobInfo, err := s.checkPermAndAssign(ctx, nb, nbJob)
+	if err != nil {
+		return nil, err
+	}
 
-		err = s.data.DevelopDao.CreateNotebookJob(ctx, nbJob)
-		if err != nil {
-			return err
-		}
+	err = s.data.DevelopDao.CreateNotebookJob(ctx, nbJob)
+	if err != nil {
+		return nil, err
+	}
 
-		if req.AutoStopDuration != 0 {
-			nb.AutoStopDuration = req.AutoStopDuration
-		}
+	if req.AutoStopDuration != 0 {
+		nb.AutoStopDuration = req.AutoStopDuration
+	}
 
-		err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
-			Id:               nb.Id,
-			NotebookJobId:    jobId,
-			Status:           constant.PREPARING,
-			AutoStopDuration: nb.AutoStopDuration,
-		})
-		if err != nil {
-			return err
-		}
-
-		//数据库操作挪到前面，如果出错，直接不创建k8s vcjob，硬件资源有限的资源，出错需要及时释放掉
-		closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
-		if err != nil {
-			return err
-		}
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err != nil {
-				err1 := closeFunc(ctx)
-				if err1 != nil {
-					s.log.Errorf(ctx, "err: %s", err1)
-				}
-			}
-		}()
-
-		err1 := s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
-			Time:       time.Now(),
-			NotebookId: nb.Id,
-			Type:       commapi.NotebookEventRecordType_START,
-		})
-		if err1 != nil { // 插入事件记录出错只打印
-			s.log.Error(ctx, "create notebook event record error:", err)
-		}
-
-		return nil
+	err = s.data.DevelopDao.UpdateNotebookSelective(ctx, &model.Notebook{
+		Id:               nb.Id,
+		NotebookJobId:    jobId,
+		Status:           constant.PREPARING,
+		AutoStopDuration: nb.AutoStopDuration,
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	//数据库操作挪到前面，如果出错，直接不创建k8s vcjob，硬件资源有限的资源，出错需要及时释放掉
+	closeFunc, err := s.startJob(ctx, nb, nbJob, startJobInfo)
+	defer func() {
+		if err != nil {
+			err1 := closeFunc(ctx)
+			if err1 != nil {
+				s.log.Errorf(ctx, "err: %s", err1)
+			}
+		}
+	}()
+
+	err1 := s.data.DevelopDao.CreateNotebookEventRecord(ctx, &model.NotebookEventRecord{
+		Time:       time.Now(),
+		NotebookId: nb.Id,
+		Type:       commapi.NotebookEventRecordType_START,
+	})
+	if err1 != nil { // 插入事件记录出错只打印
+		s.log.Error(ctx, "create notebook event record error:", err)
+	}
+
 	return &api.StartNotebookReply{Id: req.Id}, nil
 }
 
@@ -593,6 +657,15 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 			Name:      volume,
 			MountPath: s.conf.Service.DockerDatasetPath,
 			SubPath:   startJobInfo.datasetPath,
+			ReadOnly:  true,
+		})
+	}
+
+	if startJobInfo.preTrainModelPath != "" {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      volume,
+			MountPath: common.DockerPreTrainModePath,
+			SubPath:   startJobInfo.preTrainModelPath,
 			ReadOnly:  true,
 		})
 	}
@@ -807,6 +880,21 @@ func (s *developService) StopNotebook(ctx context.Context, req *api.StopNotebook
 
 func (s *developService) createService(ctx context.Context, nb *model.Notebook, nbJob *model.NotebookJob) error {
 	for i := 0; i < nb.TaskNumber; i++ {
+		ports := []v1.ServicePort{{
+			Port:       servicePort,
+			TargetPort: intstr.FromInt(servicePort),
+			Name:       fmt.Sprintf("port-%d", servicePort),
+		}}
+		if len(nb.TaskConfigs) > i {
+			for _, endpoint := range nb.TaskConfigs[i].Endpoints {
+				ports = append(ports, v1.ServicePort{
+					Port:       int32(endpoint.Port),
+					TargetPort: intstr.FromInt(int(endpoint.Port)),
+					Name:       fmt.Sprintf("port-%d", int32(endpoint.Port)),
+				})
+			}
+		}
+
 		err := s.data.Cluster.CreateService(ctx, &v1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildServiceName(nbJob.Id, i),
@@ -817,10 +905,7 @@ func (s *developService) createService(ctx context.Context, nb *model.Notebook, 
 					"volcano.sh/task-spec": buildTaskName(i),
 					"volcano.sh/job-name":  nbJob.Id,
 				},
-				Ports: []v1.ServicePort{{
-					Port:       servicePort,
-					TargetPort: intstr.FromInt(servicePort),
-				}},
+				Ports: ports,
 			},
 		})
 		if err != nil {
@@ -849,6 +934,43 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 		if s.conf.Service.Develop.IsSetUploadFileSize {
 			upLoadFileSize = "1000m" // 为空时jupyter文件上传大小不能超过1M，非空时不限制上传文件大小
 		}
+		rules := []v1beta1.IngressRule{
+			{
+				IngressRuleValue: v1beta1.IngressRuleValue{
+					HTTP: &v1beta1.HTTPIngressRuleValue{
+						Paths: []v1beta1.HTTPIngressPath{
+							{
+								Path: buildNotebookUrl(nb.Id, i),
+								Backend: v1beta1.IngressBackend{
+									ServiceName: buildServiceName(nbJob.Id, i),
+									ServicePort: intstr.FromInt(servicePort),
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		if len(nb.TaskConfigs) > i {
+			for _, endpoint := range nb.TaskConfigs[i].Endpoints {
+				rules = append(rules, v1beta1.IngressRule{
+					IngressRuleValue: v1beta1.IngressRuleValue{
+						HTTP: &v1beta1.HTTPIngressRuleValue{
+							Paths: []v1beta1.HTTPIngressPath{
+								{
+									Path: buildUserEndpoint(endpoint.Endpoint),
+									Backend: v1beta1.IngressBackend{
+										ServiceName: buildServiceName(nbJob.Id, i),
+										ServicePort: intstr.FromInt(int(endpoint.Port)),
+									},
+								},
+							},
+						},
+					},
+				})
+			}
+		}
+
 		err := s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      buildIngressName(nbJob.Id, i),
@@ -858,23 +980,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 				},
 			},
 			Spec: v1beta1.IngressSpec{
-				Rules: []v1beta1.IngressRule{
-					{
-						IngressRuleValue: v1beta1.IngressRuleValue{
-							HTTP: &v1beta1.HTTPIngressRuleValue{
-								Paths: []v1beta1.HTTPIngressPath{
-									{
-										Path: buildNotebookUrl(nb.Id, i),
-										Backend: v1beta1.IngressBackend{
-											ServiceName: buildServiceName(nbJob.Id, i),
-											ServicePort: intstr.FromInt(servicePort),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+				Rules: rules,
 			},
 		})
 		if err != nil {
@@ -931,6 +1037,10 @@ func (s *developService) DeleteNotebook(ctx context.Context, req *api.DeleteNote
 		return nil, err
 	}
 
+	err = s.deleteUserEndpoint(ctx, nb)
+	if err != nil {
+		return nil, err
+	}
 	return &api.DeleteNotebookReply{Id: req.Id}, nil
 }
 

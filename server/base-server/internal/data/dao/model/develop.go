@@ -1,6 +1,9 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	v1 "server/common/api/v1"
@@ -28,6 +31,9 @@ type Notebook struct {
 	DatasetId            string                `gorm:"type:varchar(100);not null;default:'';comment:数据集Id"`
 	DatasetVersion       string                `gorm:"type:varchar(100);not null;default:'';comment:数据集版本"`
 	DatasetName          string                `gorm:"type:varchar(100);not null;default:'';comment:数据集名称"`
+	PreTrainModelId      string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Id"`
+	PreTrainModelVersion string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型Version"`
+	PreTrainModelName    string                `gorm:"type:varchar(100);not null;default:'';comment:预训练模型名称"`
 	ResourceSpecId       string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格Id"`
 	ResourceSpecName     string                `gorm:"type:varchar(100);not null;default:'';comment:资源规格名称"`
 	NotebookJobId        string                `gorm:"type:varchar(100);not null;index;comment:JobId"`
@@ -39,11 +45,36 @@ type Notebook struct {
 	Command              string                `gorm:"type:text;comment:启动命令"`
 	DisableMountUserHome bool                  `gorm:"default:false;comment:是否不挂载userhome目录"`
 	AutoStopDuration     int64                 `gorm:"type:int;not null;default:0;comment:自动停止时间（秒）"`
+	TaskConfigs          TaskConfigs           `gorm:"type:json;comment:任务配置"`
 	DeletedAt            soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
 }
 
 func (Notebook) TableName() string {
 	return "notebook"
+}
+
+type Endpoint struct {
+	Endpoint string `json:"endpoint"`
+	Port     uint   `json:"port"`
+}
+
+type TaskConfig struct {
+	Endpoints []*Endpoint `json:"endpoints"`
+}
+
+type TaskConfigs []TaskConfig
+
+func (r TaskConfigs) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *TaskConfigs) Scan(input interface{}) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(input.([]byte), r)
+	default:
+		return fmt.Errorf("cannot Scan() from: %#v", v)
+	}
 }
 
 type NotebookJob struct {

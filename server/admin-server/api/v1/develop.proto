@@ -95,6 +95,9 @@ message Notebook {
   string command = 29;
   int64 autoStopDuration = 30;
   string operation = 31;
+  string preTrainModelId = 32;
+  string preTrainModelVersion = 33;
+  string preTrainModelName = 34;
 }
 
 message ListNotebookReply {

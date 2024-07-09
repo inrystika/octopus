@@ -147,7 +147,7 @@ func GenSwagger() error {
 			if ext := filepath.Ext(path); ext != ".proto" {
 				return nil
 			}
-			if strings.Contains(path, "vendor") {
+			if strings.Contains(path, "vendor") || strings.Contains(path, "modeldeploy.proto") {
 				return nil
 			}
 

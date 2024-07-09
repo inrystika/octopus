@@ -122,6 +122,8 @@ message TrainJobRequest {
   repeated common.api.v1.Mount mounts = 13;
   bool disableMountUserHome = 14;
   bool disableMountModel = 15;
+  string preTrainModelId = 16;
+  string preTrainModelVersion = 17;
 }
 
 message Config {
@@ -347,6 +349,9 @@ message TrainJob{
   string imageUrl = 23;
   //资源池
   string resourcePool=24;
+  string preTrainModelId = 25;
+  string preTrainModelVersion = 26;
+  string preTrainModelName = 27;
 }
 
 message TrainJobTemplate{

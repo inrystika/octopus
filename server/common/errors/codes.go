@@ -18,6 +18,10 @@ const (
 	ErrorFormatParseFailed         = 10014 // 格式解析失败
 	ErrorInternal                  = 10015 // 内部错误
 	ErrorSendEmailFailed           = 10016
+	ErrorUserEndpointExisted       = 10017
+	ErrorUserEndpointRepeat        = 10018
+	ErrorPortConflict              = 10019
+
 	// http请求相关错误
 	ErrorHttpNewRequest     = 10020 // 获取http request实体失败
 	ErrorHttpDoRequest      = 10021 // http请求失败
@@ -139,6 +143,7 @@ const (
 	ErrorNotebookNoFoundRuntimeContainer  = 14012 // notebook未找到运行中的容器
 	ErrorNotebookResourcePoolForbidden    = 14013 // notebook使用资源池不允许操作
 	ErrorNotebookMountExternalForbidden   = 14014 // 用户不允许外部挂载
+	ErrorNotebookModelNoPermission        = 14015 // notebook使用模型不在权限范围内
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden         = 15001 // 训练使用镜像不在权限范围内
@@ -263,6 +268,9 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorFormatParseFailed:         {codeType: Internal, msg: "format parse failed"},
 	ErrorInternal:                  {codeType: Internal, msg: "internal error"},
 	ErrorSendEmailFailed:           {codeType: Internal, msg: "send email failed"},
+	ErrorUserEndpointExisted:       {codeType: InvalidArgument, msg: "user endpoint existed"},
+	ErrorUserEndpointRepeat:        {codeType: InvalidArgument, msg: "user endpoint repeat"},
+	ErrorPortConflict:              {codeType: InvalidArgument, msg: "port conflict"},
 	// http请求相关错误
 	ErrorHttpNewRequest:     {codeType: Internal, msg: "http new request failed"},
 	ErrorHttpDoRequest:      {codeType: Internal, msg: "http do request failed"},
@@ -372,6 +380,7 @@ var codeMsgMap = map[int]codeMsg{
 	ErrorNotebookNoFoundRuntimeContainer:  {codeType: NotFound, msg: "no found runtime container"},
 	ErrorNotebookResourcePoolForbidden:    {codeType: OutOfRange, msg: "resource pool forbidden"},
 	ErrorNotebookMountExternalForbidden:   {codeType: OutOfRange, msg: "mount external forbidden"},
+	ErrorNotebookModelNoPermission:        {codeType: OutOfRange, msg: "model no permission"},
 
 	/* 15001~16000 训练管理错误*/
 	ErrorTrainImageForbidden:         {codeType: PermissionDenied, msg: "image Auth forbidden"},

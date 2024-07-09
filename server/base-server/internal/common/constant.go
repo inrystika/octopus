@@ -12,4 +12,5 @@ const (
 
 const (
 	OctopusServiceRoleLabel = "octopus.openi.pcl.cn/role"
+	DockerPreTrainModePath  = "/pretrainmodel"
 )
