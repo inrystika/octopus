@@ -37,32 +37,40 @@
       </el-col>
       <el-col :span="12">
         <div>
-          是否分布式:
-          <span>{{ this.profileInfo.tasks.length > 1 ? '是' : '否' }}</span>
+          选用模型:
+          <span>{{ profileInfo.modelShow }}</span>
         </div>
       </el-col>
     </el-row>
     <el-row>
+      <el-col :span="12">
+        <div>
+          是否分布式:
+          <span>{{ this.profileInfo.tasks.length > 1 ? '是' : '否' }}</span>
+        </div>
+      </el-col>
       <el-col :span="12">
         <div>
           资源规格:
           <span>{{ profileInfo.resourceSpecName }}</span>
         </div>
       </el-col>
+    </el-row>
+    <el-row>
       <el-col :span="12">
         <div>
           任务状态:
           <span>{{ statusText[profileInfo.status][1] }}</span>
         </div>
       </el-col>
-    </el-row>
-    <el-row>
       <el-col :span="12">
         <div>
           自定义启动命令:
           <span>{{ profileInfo.command }}</span>
         </div>
       </el-col>
+    </el-row>
+    <el-row>
       <el-col :span="12">
         <div>
           自动停止:
@@ -101,6 +109,7 @@ export default {
       return
     }
     this.profileInfo.datasetShow = this.profileInfo.datasetName + ":" + this.profileInfo.datasetVersion
+    this.profileInfo.modelShow = this.profileInfo.preTrainModelName + ":" + this.profileInfo.preTrainModelVersion
   }
 
 }
