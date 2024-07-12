@@ -952,16 +952,16 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 			},
 		}
 		if len(nb.TaskConfigs) > i {
-			for _, taskConfig := range nb.TaskConfigs {
+			for _, endpoint := range nb.TaskConfigs[i].Endpoints {
 				rules = append(rules, v1beta1.IngressRule{
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
 								{
-									Path: buildUserEndpoint(taskConfig.Endpoints[i].Endpoint),
+									Path: buildUserEndpoint(endpoint.Endpoint),
 									Backend: v1beta1.IngressBackend{
 										ServiceName: buildServiceName(nbJob.Id, i),
-										ServicePort: intstr.FromInt(int(taskConfig.Endpoints[i].Port)),
+										ServicePort: intstr.FromInt(int(endpoint.Port)),
 									},
 								},
 							},
