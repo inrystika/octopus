@@ -104,12 +104,8 @@ export default {
   },
   created() {
     this.profileInfo = this.notebookData
-    if(!this.profileInfo.datasetName) {
-      this.profileInfo.datasetShow = ''
-      return
-    }
-    this.profileInfo.datasetShow = this.profileInfo.datasetName + ":" + this.profileInfo.datasetVersion
-    this.profileInfo.modelShow = this.profileInfo.preTrainModelName + ":" + this.profileInfo.preTrainModelVersion
+    this.profileInfo.datasetShow = !this.profileInfo.datasetName ? "" : this.profileInfo.datasetName + ":" + this.profileInfo.datasetVersion
+    this.profileInfo.modelShow = !this.profileInfo.preTrainModelName ? "" : this.profileInfo.preTrainModelName + ":" + this.profileInfo.preTrainModelVersion
   }
 
 }
