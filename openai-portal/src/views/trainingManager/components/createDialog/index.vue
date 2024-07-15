@@ -9,13 +9,13 @@
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
                 <div class="tip" v-if="flag!=2">
-                  <p style="font-size:12px">
+                  <p style="font-size:11px">
                     <i class="el-alert__icon el-icon-warning"></i>
                     算法存储在<span>/code</span>中，
                     数据集存储在<span>/dataset</span>中，
                     用户目录在<span>/userhome</span>中，
-                    模型存储在<span>/pretrainmodel</span>中，
-                    训练输出请存储在<span>/model</span>中以供后续下载
+                    选择的模型存储在<span>/pretrainmodel</span>中，
+                    训练输出请存储在<span>/model</span>中,以供后续下载
                   </p>
                 </div>
                 <el-form-item :label="desc" :label-width="formLabelWidth">
