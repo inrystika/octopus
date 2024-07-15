@@ -12,7 +12,7 @@
                   算法存储在<span>/code</span>中，
                   数据集存储在<span>/dataset</span>中，
                   用户目录在<span>/userhome</span>中，
-                  模型存储在<span>/pretrainmodel</span>中
+                  选择的模型存储在<span>/pretrainmodel</span>中
                 </div>
                 <el-form-item label="描述" :label-width="formLabelWidth" prop="desc">
                     <el-input v-model="ruleForm.desc" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请输入NoteBook描述"
@@ -594,9 +594,9 @@
                             algorithmVersion: this.ruleForm.algorithmVersion || "",
                             datasetId: this.ruleForm.dataSetId || "",
                             datasetVersion: this.ruleForm.dataSetVersion || "",
-                            preTrainModelId: this.ruleForm.modelId,
-                            preTrainModelName: this.$refs.modelNameRef.selected.label,
-                            preTrainModelVersion: this.ruleForm.modelVersion,
+                            preTrainModelId: this.ruleForm.modelId || "",
+                            preTrainModelName: this.$refs.modelNameRef.selected.label || "",
+                            preTrainModelVersion: this.ruleForm.modelVersion || "",
                             taskNumber: this.ruleForm.taskNumber,
                             resourcePool: this.ruleForm.resourcePool,
                             command: this.ruleForm.command,
