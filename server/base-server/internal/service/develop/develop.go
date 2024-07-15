@@ -468,9 +468,11 @@ func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
-	if err != nil {
-		return err
+	if len(endpoints) > 0 {
+		err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
