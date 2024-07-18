@@ -193,6 +193,8 @@ data:
         source:
           capacity: "{{ .Values.pvc.minio.requests }}"
 {{ toYaml .Values.pv.minio.storageType | indent 10 }}
+      storages:
+{{ toYaml .Values.storages | indent 8 }}
 ---
 
 apiVersion: apps/v1

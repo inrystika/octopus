@@ -12,6 +12,7 @@ message Bootstrap {
   Service service = 4;
   Administrator administrator = 5;
   bytes storage = 6;
+  bytes storages = 7;
 }
 
 message App {

@@ -22,6 +22,7 @@ type UserService struct {
 	log             *log.Helper
 	data            *data.Data
 	defaultPVS      common.PersistentVolumeSourceExtender
+	storages        []*common.StorageExtender
 	ftpProxyService api.FtpProxyServiceServer
 }
 
@@ -33,11 +34,17 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ft
 	if pvs.Size() == 0 {
 		panic("mod init failed, missing config [module.storage.source]")
 	}
+
+	storages, err := common.BuildStorages(conf.Storages)
+	if err != nil {
+		panic(err)
+	}
 	return &UserService{
 		conf:            conf,
 		log:             log.NewHelper("UserService", logger),
 		data:            data,
 		defaultPVS:      *pvs,
+		storages:        storages,
 		ftpProxyService: ftpProxyService,
 	}
 }

@@ -167,6 +167,23 @@ func initStorageConf(c config.Config) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Errorf(nil, errors.ErrorJsonMarshal)
 	}
+
+	return storageConf, nil
+}
+
+func initStoragesConf(c config.Config) ([]byte, error) {
+	var m []map[string]interface{}
+	value := c.Value("module.storages")
+	err := value.Scan(&m)
+	if err != nil {
+		return nil, err
+	}
+
+	storageConf, err := json.Marshal(m)
+	if err != nil {
+		return nil, errors.Errorf(nil, errors.ErrorJsonMarshal)
+	}
+
 	return storageConf, nil
 }
 
@@ -203,6 +220,12 @@ func initConf() (*conf.Bootstrap, config.Config, error) {
 		return nil, nil, err
 	}
 	conf.Storage = storageConf
+
+	storagesBytes, err := initStoragesConf(c)
+	if err != nil {
+		return nil, nil, err
+	}
+	conf.Storages = storagesBytes
 
 	return &conf, c, nil
 }

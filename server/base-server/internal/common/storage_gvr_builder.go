@@ -29,6 +29,23 @@ func BuildStorageSource(b []byte) (*PersistentVolumeSourceExtender, error) {
 	return pcs, nil
 }
 
+type StorageExtender struct {
+	StorageType struct {
+		v1.PersistentVolumeSource
+	} `json:"storageType"`
+	Requests string `json:"requests,omitempty"`
+}
+
+func BuildStorages(b []byte) ([]*StorageExtender, error) {
+	var pcs []*StorageExtender
+	err := json.Unmarshal(b, &pcs)
+	if err != nil {
+		return nil, err
+	}
+
+	return pcs, nil
+}
+
 func GetStoragePersistentVolume(name string) string {
 	return fmt.Sprintf(OctopusPersistentVolumeFmt, name)
 }
