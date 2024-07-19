@@ -11,6 +11,7 @@ import (
 	v1 "server/common/api/v1"
 	"server/common/errors"
 	"server/common/log"
+	sftpgov2 "server/common/sftpgo/v2/openapi"
 	"server/common/utils"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,13 +19,16 @@ import (
 
 type UserService struct {
 	api.UnimplementedUserServiceServer
-	conf            *conf.Bootstrap
-	log             *log.Helper
-	data            *data.Data
-	defaultPVS      common.PersistentVolumeSourceExtender
-	storages        []*common.StorageExtender
-	ftpProxyService api.FtpProxyServiceServer
+	conf       *conf.Bootstrap
+	log        *log.Helper
+	data       *data.Data
+	defaultPVS common.PersistentVolumeSourceExtender
+	storages   []*common.StorageExtender
 }
+
+const (
+	UNLIMITED = 0
+)
 
 func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ftpProxyService api.FtpProxyServiceServer) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
@@ -40,12 +44,11 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ft
 		panic(err)
 	}
 	return &UserService{
-		conf:            conf,
-		log:             log.NewHelper("UserService", logger),
-		data:            data,
-		defaultPVS:      *pvs,
-		storages:        storages,
-		ftpProxyService: ftpProxyService,
+		conf:       conf,
+		log:        log.NewHelper("UserService", logger),
+		data:       data,
+		defaultPVS: *pvs,
+		storages:   storages,
 	}
 }
 
@@ -449,7 +452,7 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.ftpProxyService.CreateOrUpdateFtpAccount(ctx, &api.CreateOrUpdateFtpAccountRequest{
+	err = s.createOrUpdateFtpAccount(ctx, &CreateOrUpdateFtpAccountRequest{
 		Username: req.FtpUserName,
 		Email:    user.Email,
 		Password: req.FtpPassword,
@@ -523,4 +526,80 @@ func (s *UserService) UpdateUserMinioBuckets(ctx context.Context, req *api.Updat
 	}
 
 	return &api.UpdateUserMinioBucketsReply{}, nil
+}
+
+type CreateOrUpdateFtpAccountRequest struct {
+	Username string
+	Email    string
+	Password string
+	HomeDir  string
+}
+
+func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateOrUpdateFtpAccountRequest) error {
+	var err error
+	password := ""
+	if req.Password != "" {
+		password, err = utils.EncryptPassword(req.Password)
+		if err != nil {
+			return err
+		}
+	}
+
+	fuser, err := s.data.Ftp.GetFtpUser(ctx, req.Username)
+	if err != nil && !errors.IsError(errors.ErrorSFtpGOUserNotExist, err) {
+		return err
+	}
+
+	if fuser == nil {
+		fuser = sftpgov2.NewUser()
+		//去掉minio中转
+		//fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
+		permissions := map[string][]sftpgov2.Permission{
+			"/": {sftpgov2.PERMISSION_STAR},
+		}
+
+		fuser.SetStatus(1)
+		fuser.SetUid(0)
+		fuser.SetGid(0)
+		fuser.SetMaxSessions(UNLIMITED)
+		fuser.SetQuotaSize(UNLIMITED)
+		fuser.SetQuotaFiles(UNLIMITED)
+		fuser.SetExpirationDate(UNLIMITED)
+		fuser.SetPermissions(permissions)
+		//fuser.SetFilesystem(*fileSystemConfig)
+		fuser.SetHomeDir(req.HomeDir)
+		fuser.SetUploadBandwidth(UNLIMITED)
+		fuser.SetDownloadBandwidth(UNLIMITED)
+
+		fuser.SetUsername(req.Username)
+		fuser.SetEmail(req.Email)
+		fuser.SetPassword(password)
+
+		_, err = s.data.Ftp.CreateFtpUser(ctx, fuser)
+		if err != nil {
+			return err
+		}
+	} else {
+		if req.Username != "" {
+			fuser.SetUsername(req.Username)
+		}
+		if req.Email != "" {
+			fuser.SetEmail(req.Email)
+		}
+		if req.Password != "" {
+			fuser.SetPassword(password)
+		}
+		if req.HomeDir != "" {
+			fileSystemConfig := sftpgov2.NewFilesystemConfig()
+			fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__0)
+			fuser.SetFilesystem(*fileSystemConfig)
+			fuser.SetHomeDir(req.HomeDir)
+		}
+		err := s.data.Ftp.UpdateFtpUser(ctx, *fuser, 1)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
