@@ -13,6 +13,7 @@ import (
 	"server/common/log"
 	sftpgov2 "server/common/sftpgo/v2/openapi"
 	"server/common/utils"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -185,7 +186,12 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 }
 
 func (s *UserService) initUser(ctx context.Context, userId string) error {
-	err := s.data.Minio.CreateBucket(common.GetUserBucket(userId))
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: userId})
+	if err != nil {
+		return err
+	}
+
+	err = s.data.Minio.CreateBucket(common.GetUserBucket(userId))
 	if err != nil {
 		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
 			return err
@@ -220,6 +226,16 @@ func (s *UserService) initUser(ctx context.Context, userId string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if user.FtpUserName != "" { // 额外的存储是新加的，通过用户登录构建SFTP虚拟文件夹
+		utils.HandlePanic(ctx, func(i ...interface{}) {
+			err := s.createOrUpdateFtpAccount(ctx, &CreateOrUpdateFtpAccountRequest{
+				FtpUserName: user.FtpUserName,
+				UserId:      userId,
+			})
+			log.Error(ctx, err)
+		})()
 	}
 
 	return nil
@@ -453,10 +469,10 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 		return nil, err
 	}
 	err = s.createOrUpdateFtpAccount(ctx, &CreateOrUpdateFtpAccountRequest{
-		Username: req.FtpUserName,
-		Email:    user.Email,
-		Password: req.FtpPassword,
-		HomeDir:  s.buildFtpHomeDir(ctx, req.UserId),
+		FtpUserName: req.FtpUserName,
+		Email:       user.Email,
+		Password:    req.FtpPassword,
+		UserId:      req.UserId,
 	})
 	if err != nil {
 		return nil, err
@@ -529,10 +545,10 @@ func (s *UserService) UpdateUserMinioBuckets(ctx context.Context, req *api.Updat
 }
 
 type CreateOrUpdateFtpAccountRequest struct {
-	Username string
-	Email    string
-	Password string
-	HomeDir  string
+	FtpUserName string
+	Email       string
+	Password    string
+	UserId      string
 }
 
 func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateOrUpdateFtpAccountRequest) error {
@@ -545,12 +561,12 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 		}
 	}
 
-	fuser, err := s.data.Ftp.GetFtpUser(ctx, req.Username)
+	fuser, err := s.data.Ftp.GetFtpUser(ctx, req.FtpUserName)
 	if err != nil && !errors.IsError(errors.ErrorSFtpGOUserNotExist, err) {
 		return err
 	}
 
-	if fuser == nil {
+	if fuser == nil && req.Password != "" {
 		fuser = sftpgov2.NewUser()
 		//去掉minio中转
 		//fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
@@ -567,39 +583,81 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 		fuser.SetExpirationDate(UNLIMITED)
 		fuser.SetPermissions(permissions)
 		//fuser.SetFilesystem(*fileSystemConfig)
-		fuser.SetHomeDir(req.HomeDir)
+		fuser.SetHomeDir(s.buildFtpHomeDir(ctx, req.UserId))
 		fuser.SetUploadBandwidth(UNLIMITED)
 		fuser.SetDownloadBandwidth(UNLIMITED)
 
-		fuser.SetUsername(req.Username)
+		fuser.SetUsername(req.FtpUserName)
 		fuser.SetEmail(req.Email)
 		fuser.SetPassword(password)
+		s.assignVF(fuser, req)
 
 		_, err = s.data.Ftp.CreateFtpUser(ctx, fuser)
 		if err != nil {
 			return err
 		}
 	} else {
-		if req.Username != "" {
-			fuser.SetUsername(req.Username)
+		needUpdate := false
+		if req.FtpUserName != "" {
+			fuser.SetUsername(req.FtpUserName)
 		}
 		if req.Email != "" {
+			needUpdate = true
 			fuser.SetEmail(req.Email)
 		}
 		if req.Password != "" {
+			needUpdate = true
 			fuser.SetPassword(password)
 		}
-		if req.HomeDir != "" {
+		if !strings.HasPrefix(fuser.GetHomeDir(), "/minio") {
+			needUpdate = true
 			fileSystemConfig := sftpgov2.NewFilesystemConfig()
 			fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__0)
 			fuser.SetFilesystem(*fileSystemConfig)
-			fuser.SetHomeDir(req.HomeDir)
+			fuser.SetHomeDir(s.buildFtpHomeDir(ctx, req.UserId))
 		}
-		err := s.data.Ftp.UpdateFtpUser(ctx, *fuser, 1)
-		if err != nil {
-			return err
+
+		needUpdate = s.assignVF(fuser, req)
+
+		if needUpdate {
+			err := s.data.Ftp.UpdateFtpUser(ctx, *fuser, 1)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
+}
+
+func (s *UserService) assignVF(fuser *sftpgov2.User, req *CreateOrUpdateFtpAccountRequest) bool {
+	needUpdate := false
+	vfMap := map[string]sftpgov2.VirtualFolder{}
+	for _, vf := range fuser.VirtualFolders {
+		vfMap[vf.GetName()] = vf
+	}
+
+	for i, _ := range s.storages {
+		_, exist := vfMap[buildExtraUserHomeVFName(i, req.UserId)]
+		if !exist {
+			needUpdate = true
+			folder := sftpgov2.NewVirtualFolder(buildExtraUserHomeVirtualPath(i))
+			folder.SetName(buildExtraUserHomeVFName(i, req.UserId))
+			folder.SetMappedPath(buildExtraUserHomeMappedPath(i, req.UserId))
+			fuser.VirtualFolders = append(fuser.VirtualFolders, *folder)
+		}
+	}
+	return needUpdate
+}
+
+func buildExtraUserHomeVFName(idx int, userId string) string {
+	return fmt.Sprintf("%s-userhome%v", userId, idx+1)
+}
+
+func buildExtraUserHomeVirtualPath(idx int) string {
+	return fmt.Sprintf("/userhome%v", idx+1)
+}
+
+func buildExtraUserHomeMappedPath(idx int, userId string) string {
+	return fmt.Sprintf("/storage%v/%s", idx, userId)
 }
