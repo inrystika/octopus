@@ -23,25 +23,29 @@
                             data.dataSetVersion:'' }}</span></div>
                 </el-col>
                 <el-col :span="12">
-                    <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
+                    <div>选用模型:
+                      <span>
+                        {{ (data.preTrainModelName&&data.preTrainModelVersion)?data.preTrainModelName + ":" + data.preTrainModelVersion:'' }}
+                      </span>
+                    </div>
                 </el-col>
             </el-row>
             <el-row>
+                <el-col :span="12">
+                    <div>是否分布式:<span>{{ data.isDistributed?'是':'否' }}</span></div>
+                </el-col>
                 <el-col v-if="!show" :span="12">
                     <div>资源规格:<span>{{ data.config[0].resourceSpecName + '' + data.config[0].resourceSpecPrice + '机时/h'
                             }}</span>
                     </div>
                 </el-col>
+            </el-row>
+            <el-row>
                 <el-col v-if="!show" :span="12">
                     <div>运行命令:<span>{{ command(data.config[0]) }}</span></div>
                 </el-col>
-            </el-row>
-            <el-row>
                 <el-col :span="12">
                     <div>任务状态:<span style="margin-left: 10px">{{ statusText[data.status][1] }}</span></div>
-                </el-col>
-                <el-col :span="12">
-                    <div></div>
                 </el-col>
             </el-row>
         </div>

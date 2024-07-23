@@ -8,8 +8,15 @@
                     class="[flag ==2 ： 'name'? '']">
                     <el-input v-model="ruleForm.name" maxlength="30" show-word-limit />
                 </el-form-item>
-                <div class="tip" v-if="flag!=2"><i
-                        class="el-alert__icon el-icon-warning"></i>算法存储在<span>/code</span>中，数据集存储在<span>/dataset</span>中，用户目录在<span>/userhome</span>中，训练输出请存储在<span>/model</span>中以供后续下载
+                <div class="tip" v-if="flag!=2">
+                  <p style="font-size:11px">
+                    <i class="el-alert__icon el-icon-warning"></i>
+                    算法存储在<span>/code</span>中，
+                    数据集存储在<span>/dataset</span>中，
+                    用户目录在<span>/userhome</span>中，
+                    选择的模型存储在<span>/pretrainmodel</span>中，
+                    训练输出请存储在<span>/model</span>中,以供后续下载
+                  </p>
                 </div>
                 <el-form-item :label="desc" :label-width="formLabelWidth">
                     <el-input v-model="ruleForm.desc" type="textarea" maxlength="300" show-word-limit />
@@ -86,6 +93,52 @@
                         </el-select>
                     </el-form-item>
                 </div>
+                <!-- 模型三级框 -->
+                <div>
+                  <el-form-item label="模型类型" prop="modelSource" :class="{inline:modelName}">
+                    <el-select 
+                      v-model="ruleForm.modelSource" 
+                      clearable 
+                      placeholder="请选择"
+                      @clear="clearModelVersionOption"
+                      @change="changeModelSource"
+                    >
+                      <el-option label="我的模型" value="myModel" />
+                      <el-option label="公共模型" value="commonModel" />
+                      <el-option label="预置模型" value="preModel" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item v-if="modelName" label="模型名称" prop="preTrainModelId" style="display: inline-block;">
+                    <el-select
+                      ref="modelNameRef" 
+                      v-model="ruleForm.preTrainModelId" 
+                      v-loadmore="loadModelName" 
+                      placeholder="请选择模型名称"
+                      filterable 
+                      remote 
+                      :remote-method="remoteModel" 
+                      @change="changeModelName"
+                      @click.native="getModelItem"
+                    >
+                      <el-option 
+                        v-for="item in modelNameOption" 
+                        :key="item.modelId" 
+                        :label="item.modelName"
+                        :value="item.modelId" 
+                      />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item v-if="preTrainModelVersion" label="模型版本" prop="preTrainModelVersion" style="display: inline-block;">
+                    <el-select v-model="ruleForm.preTrainModelVersion" v-loadmore="loadModelVersion" placeholder="请选择数据集版本">
+                      <el-option 
+                        v-for="item in modelVersionOption" 
+                        :key="item.versionDetail.modelId+item.versionDetail.version"
+                        :label="item.versionDetail.version" 
+                        :value="item.versionDetail.version" 
+                      />
+                    </el-select>
+                  </el-form-item>
+                </div>
                 <el-divider />
                 <el-form-item label="分布式" prop="distributed" style="display:inline-block;">
                     <el-select v-model="ruleForm.isDistributed">
@@ -155,6 +208,7 @@
     import { getPresetAlgorithmList, getPublicAlgorithmList, getMyAlgorithmList, getAlgorithmVersionList } from '@/api/modelDev'
     import { getMyImage, getPublicImage, getPreImage } from '@/api/imageManager'
     import { getMyDatasetList, getPublicDatasetList, getPresetDatasetList, getVersionList } from '@/api/datasetManager'
+    import { getMyModel, getPreModel, getPublicModel, getPublicList, getNoPublicList } from "@/api/modelManager";
     import { randomName } from '@/utils/index'
     export default {
         name: "DialogCreateForm",
@@ -173,11 +227,13 @@
             }
         },
         data() {
-            var checkDatasetVersion = (rule, value, callback) => {
-                if (this.ruleForm.dataSetId && !value) {
-                    callback(new Error("请选择数据集版本"));
-                }
-                return callback();
+            var checkVersion = (idField, errorMessage) => {
+                return (rule, value, callback) => {
+                    if (this.ruleForm[idField] && !value) {
+                        callback(new Error(errorMessage));
+                    }
+                    return callback();
+                };
             };
             return {
                 specificationVisible: false,
@@ -197,6 +253,9 @@
                     dataSetSource: '',
                     dataSetId: '',
                     dataSetVersion: '',
+                    modelSource: "",
+                    preTrainModelId: "",
+                    preTrainModelVersion: "",
                     isDistributed: false,
                     config: [{
                         name: '',
@@ -236,15 +295,11 @@
                     imageId: [
                         { required: true, message: '请选择镜像名称', trigger: 'change' }
                     ],
-                    // dataSetSource: [
-                    //     { required: true, message: '请选择数据集类型', trigger: 'change' }
-                    // ],
-                    // dataSetId: [
-                    //     { required: true, message: '请选择数据集名称', trigger: 'change' }
-                    // ],
                     dataSetVersion: [
-                        // { required: true, message: '请选择数据集版本', trigger: 'change' },
-                        { validator: checkDatasetVersion, trigger: "blur" }
+                        { validator: checkVersion('dataSetId', "请选择数据集版本"), trigger: "blur" }
+                    ],
+                    preTrainModelVersion: [
+                        { validator: checkVersion('preTrainModelId', "请选择模型版本"), trigger: "blur" }
                     ],
                     isDistributed: [
                         { required: true, message: '请选择是否为分布式', trigger: 'change' }
@@ -287,6 +342,15 @@
                 dataSetVersionCount: 1,
                 dataSetNameTotal: undefined,
                 dataSetVersionTotal: undefined,
+                // 模型三级框
+                modelName: false,
+                preTrainModelVersion: false,
+                modelNameOption: [],
+                modelVersionOption: [],
+                modelNameCount: 1,
+                modelVersionCount: 1,
+                modelNameTotal: undefined,
+                modelVersionTotal: undefined,
                 resourceOptions: [],
                 data: {},
                 temp: { algorithmId: '' },
@@ -294,6 +358,7 @@
                 algorithmNameTemp: '',
                 imageTemp: '',
                 dataSetTemp: '',
+                modelTemp: '',
                 name: '',
                 desc: ''
 
@@ -365,6 +430,162 @@
             this.ruleForm.name = this.randomName('trainjob')
         },
         methods: {
+            clearModelVersionOption() {
+              this.modelVersionOption = []
+            },
+            changeModelSource() {
+              this.modelName = true;
+              this.modelNameCount = 1;
+              this.modelNameOption = []
+              this.ruleForm.preTrainModelId = ""
+              this.ruleForm.preTrainModelVersion = ""
+              this.modelChange = true;
+              this.getModelNameList();
+            },
+            changeModelName() {
+              this.preTrainModelVersion = true;
+              this.modelVersionCount = 1;
+              this.modelVersionOption = []
+              this.ruleForm.preTrainModelVersion = ""
+              this.getModelVersionList();
+            },
+            getModelNameList(searchKey) {
+              if (this.ruleForm.modelSource === "myModel") {
+                getMyModel({
+                  pageIndex: this.modelNameCount,
+                  pageSize: 10,
+                  nameLike: searchKey
+                }).then(response => {
+                  if (response.data.models === null) {
+                    response.data.models = []
+                  } else {
+                    this.modelNameOption = this.modelNameOption.concat(response.data.models);
+                    this.modelNameTotal = response.data.totalSize;
+                  }
+                });
+              } else if (this.ruleForm.modelSource === "preModel") {
+                getPreModel({
+                  pageIndex: this.modelNameCount,
+                  pageSize: 10,
+                  nameLike: searchKey
+                }).then(response => {
+                  if (response.data.models !== null) {
+                    this.modelNameOption = this.modelNameOption.concat(
+                        response.data.models
+                    );
+                    this.modelNameTotal = response.data.totalSize;
+                  } else {
+                    response.data.models = [];
+                  }
+                });
+              } else if (this.ruleForm.modelSource === "commonModel") {
+                getPublicModel({
+                  pageIndex: this.modelNameCount,
+                  pageSize: 10,
+                  nameLike: searchKey
+                }).then(response => {
+                  if (response.data.models !== null) {
+                    this.modelNameOption = this.modelNameOption.concat(
+                      response.data.models
+                    );
+                    this.modelNameTotal = response.data.totalSize;
+                  } else {
+                    response.data.models = [];
+                  }
+                });
+              }
+            },
+            getModelVersionList() {
+              const data = {};
+              data.modelId = this.ruleForm.preTrainModelId;
+              data.pageIndex = this.modelVersionCount;
+              data.pageSize = 10;
+              if(this.ruleForm.modelSource === "commonModel") {
+                getPublicList(data).then(response => {
+                  if (response.data.modelVersions !== null) {
+                    this.modelVersionOption = this.modelVersionOption.concat(
+                      response.data.modelVersions
+                    );
+                    this.modelVersionTotal = response.data.totalSize;
+                  }
+              });
+              
+              } else {
+                getNoPublicList(data).then(response => {
+                  if (response.data.modelVersions !== null) {
+                    this.modelVersionOption = this.modelVersionOption.concat(
+                      response.data.modelVersions
+                    );
+                    this.modelVersionTotal = response.data.totalSize;
+                  }
+                });
+                console.log("this.modelVersionOption:",this.modelVersionOption )
+              }
+            },
+            loadModelName() {
+              this.modelNameCount = this.modelNameCount + 1;
+              if (this.modelNameOption.length < this.modelNameTotal) {
+                this.getModelNameList(this.modelTemp);
+              }
+            },
+            loadModelVersion() {
+              this.modelVersionCount = this.modelVersionCount + 1;
+              if (this.modelVersionOption.length < this.modelVersionTotal) {
+                this.getModelVersionList();
+              }
+            },
+            // 远程请求数据集名称
+            remoteModel(searchKey) {
+              if (searchKey === '') {
+                this.modelTemp = ''
+              } else {
+                this.modelTemp = searchKey
+              }
+              this.modelNameOption = []
+              this.modelNameCount = 1
+              this.getModelNameList(this.modelTemp);
+            },
+            getModelItem() {
+                this.modelTemp = ''
+                this.modelNameCount = 1
+                if (this.ruleForm.modelSource === "myModel") {
+                  getMyModel({
+                    pageIndex: this.modelNameCount,
+                    pageSize: 10,
+                  }).then(response => {
+                    if (response.data.models === null) {
+                      response.data.models = []
+                    } else {
+                      this.modelNameOption = response.data.models;
+                      this.modelNameTotal = response.data.totalSize;
+                    }
+                  });
+                } else if (this.ruleForm.modelSource === "preModel") {
+                  getPreModel({
+                    pageIndex: this.modelNameCount,
+                    pageSize: 10,
+                  }).then(response => {
+                    if (response.data.models !== null) {
+                      this.modelNameOption = response.data.models
+                      this.modeltNameTotal = response.data.totalSize;
+                    } else {
+                      response.data.models = [];
+                    }
+                  });
+                } else if (this.ruleForm.modelSource === "commonModel") {
+                  getPublicModel({
+                    pageIndex: this.modelNameCount,
+                    pageSize: 10,
+                  }).then(response => {
+                    if (response.data.models !== null) {
+                      this.modelNameOption = response.data.models
+                      this.modelNameTotal = response.data.totalSize;
+                    } else {
+                      response.data.models = [];
+                    }
+                  });
+                }
+            },
             randomName(val) {
                 return randomName(val)
             },
@@ -495,11 +716,18 @@
                             delete data.dataSetId
                             delete data.dataSetVersion
                         }
+                        if (!data.preTrainModelId) {
+                            delete data.preTrainModelId
+                            delete data.preTrainModelVersion
+                        } else {
+                          data.preTrainModelName = this.$refs.modelNameRef.selected.label
+                        }
                         delete data.command;
                         delete data.resourceSpecId
                         delete data.algorithmSource
                         delete data.imageSource
                         delete data.dataSetSource
+                        delete data.modelSource
                         delete data.disResourcePool
 
                         if (this.flag === 3) {
