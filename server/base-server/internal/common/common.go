@@ -118,8 +118,8 @@ func AssignExtraHome(job *typeJob.Job) {
 		})
 	}
 
-	for _, task := range job.Spec.Tasks {
-		task.Template.Spec.Volumes = append(task.Template.Spec.Volumes, volumes...)
-		task.Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts, volumeMounts...)
+	for i, task := range job.Spec.Tasks {
+		job.Spec.Tasks[i].Template.Spec.Volumes = append(task.Template.Spec.Volumes, volumes...)
+		job.Spec.Tasks[i].Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts, volumeMounts...)
 	}
 }
