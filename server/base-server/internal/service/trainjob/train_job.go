@@ -762,7 +762,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	}
 	Job.Spec.Tasks = tasks
 	Job.Status = typeJob.JobStatus{}
-	if job.DisableMountUserHome {
+	if !job.DisableMountUserHome {
 		common.AssignExtraHome(Job)
 	}
 
