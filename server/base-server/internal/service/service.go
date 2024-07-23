@@ -9,7 +9,6 @@ import (
 	"server/base-server/internal/service/billing"
 	"server/base-server/internal/service/dataset"
 	"server/base-server/internal/service/develop"
-	"server/base-server/internal/service/ftpproxy"
 	"server/base-server/internal/service/image"
 	"server/base-server/internal/service/lable"
 	"server/base-server/internal/service/model"
@@ -40,7 +39,6 @@ type Service struct {
 	BillingService            api.BillingServiceServer
 	LableService              api.LableServiceServer
 	ModelDeployService        api.ModelDeployServiceServer
-	FtpProxyService           api.FtpProxyServiceServer
 	PlatformStatisticsService api.PlatformStatisticsServer
 }
 
@@ -53,8 +51,7 @@ func NewService(ctx context.Context, conf *conf.Bootstrap, logger log.Logger, da
 		return nil, err
 	}
 
-	service.FtpProxyService = ftpproxy.NewFtpProxyService(conf, data)
-	service.UserService = user.NewUserService(conf, logger, data, service.FtpProxyService)
+	service.UserService = user.NewUserService(conf, logger, data)
 	service.AdminUserService = user.NewAdminUserService(conf, logger, data)
 	service.ResourceService = resources.NewResourceService(ctx, conf, logger, data)
 	service.ResourceSpecService = resources.NewResourceSpecService(conf, logger, data)

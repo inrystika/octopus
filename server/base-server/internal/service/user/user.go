@@ -29,7 +29,7 @@ const (
 	UNLIMITED = 0
 )
 
-func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ftpProxyService api.FtpProxyServiceServer) api.UserServiceServer {
+func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
 	if err != nil {
 		panic(err)
@@ -634,7 +634,10 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 			fuser.SetQuotaFiles(1)
 		}
 
-		needUpdate = s.assignVF(fuser, req)
+		update := s.assignVF(fuser, req)
+		if update {
+			needUpdate = true
+		}
 
 		if needUpdate {
 			err := s.data.Ftp.UpdateFtpUser(ctx, *fuser, 1)

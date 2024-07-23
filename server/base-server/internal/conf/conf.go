@@ -1,5 +1,14 @@
 package conf
 
-import "server/base-server/internal/common"
+import (
+	v1 "k8s.io/api/core/v1"
+)
 
-var Storages []*common.StorageExtender
+var Storages []*StorageExtender
+
+type StorageExtender struct {
+	StorageType struct {
+		v1.PersistentVolumeSource
+	} `json:"storageType"`
+	Requests string `json:"requests,omitempty"`
+}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"server/base-server/internal/common"
 	"server/base-server/internal/data"
 	"server/base-server/internal/server"
 	"server/common/errors"
@@ -172,7 +171,7 @@ func initStorageConf(c config.Config) ([]byte, error) {
 	return storageConf, nil
 }
 
-func initStoragesConf(c config.Config) ([]*common.StorageExtender, error) {
+func initStoragesConf(c config.Config) ([]*conf.StorageExtender, error) {
 	var m []map[string]interface{}
 	value := c.Value("module.storages")
 	err := value.Scan(&m)
@@ -185,7 +184,7 @@ func initStoragesConf(c config.Config) ([]*common.StorageExtender, error) {
 		return nil, errors.Errorf(nil, errors.ErrorJsonMarshal)
 	}
 
-	var pcs []*common.StorageExtender
+	var pcs []*conf.StorageExtender
 	err = json.Unmarshal(bytes, &pcs)
 	if err != nil {
 		return nil, err
