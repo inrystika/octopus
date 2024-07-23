@@ -468,9 +468,11 @@ func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Noteb
 		}
 	}
 
-	err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
-	if err != nil {
-		return err
+	if len(endpoints) > 0 {
+		err := s.data.UserEndpointDao.DeleteUserEndpoints(ctx, endpoints)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -807,6 +809,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
 	}
 	Job.Spec.Tasks = tasks
+	if !nb.DisableMountUserHome {
+		common.AssignExtraHome(Job)
+	}
 
 	err := s.data.Cluster.CreateJob(ctx, Job)
 	if err != nil {

@@ -56,7 +56,7 @@ data:
     imageAddr: swr.cn-south-1.myhuaweicloud.com/openioctopus/pytorchserver
     version: 2.0.2
   sftpgo:
-    baseUrl: 192.168.242.41:30022
+    baseUrl: 192.168.242.41:31428
     username: admin
     password: abcde
   prometheus:
@@ -104,4 +104,11 @@ module:
       capacity: "100Gi"
       nfs:
         server: 192.168.203.72
-        path: "/data/datasets/data/octopus-dev-minio"
+        path: "/data/minio"
+  storages: []
+#  storages:
+#    - requests: 100Gi
+#      storageType:
+#        nfs:
+#          server: 192.168.203.72
+#          path: /data/storage0

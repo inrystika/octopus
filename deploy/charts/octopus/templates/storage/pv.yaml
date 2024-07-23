@@ -85,3 +85,21 @@ spec:
   accessModes:
     - ReadWriteMany
 {{ toYaml .Values.pv.sftpgo.storageType | indent 2 }}
+
+---
+{{- range $key, $val := .Values.storages }}
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: octopus-storage{{ $key }}-pv
+  labels:
+    pv: storage{{ $key }}-pv
+spec:
+  capacity:
+    storage: {{ .requests }}
+  accessModes:
+    - ReadWriteMany
+{{ toYaml .storageType | indent 2 }}
+---
+{{- end }}

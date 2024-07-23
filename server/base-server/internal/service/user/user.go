@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -11,21 +12,24 @@ import (
 	v1 "server/common/api/v1"
 	"server/common/errors"
 	"server/common/log"
+	sftpgov2 "server/common/sftpgo/v2/openapi"
 	"server/common/utils"
-
-	"golang.org/x/crypto/bcrypt"
+	"strings"
 )
 
 type UserService struct {
 	api.UnimplementedUserServiceServer
-	conf            *conf.Bootstrap
-	log             *log.Helper
-	data            *data.Data
-	defaultPVS      common.PersistentVolumeSourceExtender
-	ftpProxyService api.FtpProxyServiceServer
+	conf       *conf.Bootstrap
+	log        *log.Helper
+	data       *data.Data
+	defaultPVS common.PersistentVolumeSourceExtender
 }
 
-func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ftpProxyService api.FtpProxyServiceServer) api.UserServiceServer {
+const (
+	UNLIMITED = 0
+)
+
+func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data) api.UserServiceServer {
 	pvs, err := common.BuildStorageSource(conf.Storage)
 	if err != nil {
 		panic(err)
@@ -33,12 +37,12 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ft
 	if pvs.Size() == 0 {
 		panic("mod init failed, missing config [module.storage.source]")
 	}
+
 	return &UserService{
-		conf:            conf,
-		log:             log.NewHelper("UserService", logger),
-		data:            data,
-		defaultPVS:      *pvs,
-		ftpProxyService: ftpProxyService,
+		conf:       conf,
+		log:        log.NewHelper("UserService", logger),
+		data:       data,
+		defaultPVS: *pvs,
 	}
 }
 
@@ -175,7 +179,12 @@ func (s *UserService) FindUser(ctx context.Context, req *api.FindUserRequest) (*
 }
 
 func (s *UserService) initUser(ctx context.Context, userId string) error {
-	err := s.data.Minio.CreateBucket(common.GetUserBucket(userId))
+	user, err := s.data.UserDao.Find(ctx, &model.UserQuery{Id: userId})
+	if err != nil {
+		return err
+	}
+
+	err = s.data.Minio.CreateBucket(common.GetUserBucket(userId))
 	if err != nil {
 		if !errors.IsError(errors.ErrorMinioBucketExisted, err) {
 			return err
@@ -210,6 +219,37 @@ func (s *UserService) initUser(ctx context.Context, userId string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	for idx, storage := range conf.Storages {
+		pv := common.BuildStoragePersistentVolume(common.GetExtraHomeVFName(idx, userId), storage.Requests)
+		pv.Spec.PersistentVolumeSource = storage.StorageType.PersistentVolumeSource
+		_, err = s.data.Cluster.GetPersistentVolume(ctx, pv.Name)
+		if err != nil {
+			_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+			if err != nil {
+				return err
+			}
+		}
+
+		pvc := common.BuildStoragePersistentVolumeChaim(userId, common.GetExtraHomeVFName(idx, userId), storage.Requests)
+		_, err = s.data.Cluster.GetPersistentVolumeClaim(ctx, pvc.Namespace, pvc.Name)
+		if err != nil {
+			_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if user.FtpUserName != "" { // 额外的存储是新加的，通过用户登录构建SFTP虚拟文件夹
+		utils.HandlePanic(ctx, func(i ...interface{}) {
+			err := s.createOrUpdateFtpAccount(ctx, &CreateOrUpdateFtpAccountRequest{
+				FtpUserName: user.FtpUserName,
+				UserId:      userId,
+			})
+			log.Error(ctx, err)
+		})()
 	}
 
 	return nil
@@ -442,11 +482,11 @@ func (s *UserService) UpdateUserFtpAccount(ctx context.Context, req *api.UpdateU
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.ftpProxyService.CreateOrUpdateFtpAccount(ctx, &api.CreateOrUpdateFtpAccountRequest{
-		Username: req.FtpUserName,
-		Email:    user.Email,
-		Password: req.FtpPassword,
-		HomeDir:  s.buildFtpHomeDir(ctx, req.UserId),
+	err = s.createOrUpdateFtpAccount(ctx, &CreateOrUpdateFtpAccountRequest{
+		FtpUserName: req.FtpUserName,
+		Email:       user.Email,
+		Password:    req.FtpPassword,
+		UserId:      req.UserId,
 	})
 	if err != nil {
 		return nil, err
@@ -516,4 +556,128 @@ func (s *UserService) UpdateUserMinioBuckets(ctx context.Context, req *api.Updat
 	}
 
 	return &api.UpdateUserMinioBucketsReply{}, nil
+}
+
+type CreateOrUpdateFtpAccountRequest struct {
+	FtpUserName string
+	Email       string
+	Password    string
+	UserId      string
+}
+
+func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateOrUpdateFtpAccountRequest) error {
+	var err error
+	password := ""
+	if req.Password != "" {
+		password, err = utils.EncryptPassword(req.Password)
+		if err != nil {
+			return err
+		}
+	}
+
+	fuser, err := s.data.Ftp.GetFtpUser(ctx, req.FtpUserName)
+	if err != nil && !errors.IsError(errors.ErrorSFtpGOUserNotExist, err) {
+		return err
+	}
+
+	if fuser == nil && req.Password != "" {
+		fuser = sftpgov2.NewUser()
+		//去掉minio中转
+		//fileSystemConfig := s.newFileSystemConfig(req.HomeS3Bucket, req.HomeS3Object)
+		permissions := map[string][]sftpgov2.Permission{
+			"/": {sftpgov2.PERMISSION_STAR},
+		}
+
+		fuser.SetStatus(1)
+		fuser.SetUid(0)
+		fuser.SetGid(0)
+		fuser.SetMaxSessions(UNLIMITED)
+		fuser.SetQuotaSize(1)
+		fuser.SetQuotaFiles(1)
+		fuser.SetExpirationDate(UNLIMITED)
+		fuser.SetPermissions(permissions)
+		//fuser.SetFilesystem(*fileSystemConfig)
+		fuser.SetHomeDir(common.GetTmpHomePath(req.UserId))
+		fuser.SetUploadBandwidth(UNLIMITED)
+		fuser.SetDownloadBandwidth(UNLIMITED)
+
+		fuser.SetUsername(req.FtpUserName)
+		fuser.SetEmail(req.Email)
+		fuser.SetPassword(password)
+		s.assignVF(fuser, req)
+
+		_, err = s.data.Ftp.CreateFtpUser(ctx, fuser)
+		if err != nil {
+			return err
+		}
+	} else {
+		needUpdate := false
+		if req.FtpUserName != "" {
+			fuser.SetUsername(req.FtpUserName)
+		}
+		if req.Email != "" {
+			needUpdate = true
+			fuser.SetEmail(req.Email)
+		}
+		if req.Password != "" {
+			needUpdate = true
+			fuser.SetPassword(password)
+		}
+
+		if !strings.HasPrefix(fuser.GetHomeDir(), common.GetTmpHomePath(req.UserId)) {
+			needUpdate = true
+			fileSystemConfig := sftpgov2.NewFilesystemConfig()
+			fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__0)
+			fuser.SetFilesystem(*fileSystemConfig)
+			fuser.SetHomeDir(common.GetTmpHomePath(req.UserId))
+			fuser.SetQuotaSize(1)
+			fuser.SetQuotaFiles(1)
+		}
+
+		update := s.assignVF(fuser, req)
+		if update {
+			needUpdate = true
+		}
+
+		if needUpdate {
+			err := s.data.Ftp.UpdateFtpUser(ctx, *fuser, 1)
+			if err != nil {
+				return err
+			}
+			log.Infof(ctx, "%s update ftp", req.UserId)
+		}
+
+	}
+
+	return nil
+}
+
+func (s *UserService) assignVF(fuser *sftpgov2.User, req *CreateOrUpdateFtpAccountRequest) bool {
+	needUpdate := false
+	vfMap := map[string]sftpgov2.VirtualFolder{}
+	for _, vf := range fuser.VirtualFolders {
+		vfMap[vf.GetName()] = vf
+	}
+
+	for i, _ := range conf.Storages {
+		_, exist := vfMap[common.GetExtraHomeVFName(i, req.UserId)]
+		if !exist {
+			needUpdate = true
+			folder := sftpgov2.NewVirtualFolder(common.GetExtraHomeVirtualPath(i))
+			folder.SetName(common.GetExtraHomeVFName(i, req.UserId))
+			folder.SetMappedPath(common.GetExtraHomeMappedPath(i, req.UserId))
+			fuser.VirtualFolders = append(fuser.VirtualFolders, *folder)
+		}
+	}
+
+	_, exist := vfMap[common.GetUserHomeVFName(req.UserId)]
+	if !exist {
+		needUpdate = true
+		folder := sftpgov2.NewVirtualFolder(common.GetUserHomeVirtualPath())
+		folder.SetName(common.GetUserHomeVFName(req.UserId))
+		folder.SetMappedPath(common.GetUserHomeMappedPath(req.UserId))
+		fuser.VirtualFolders = append(fuser.VirtualFolders, *folder)
+	}
+
+	return needUpdate
 }
