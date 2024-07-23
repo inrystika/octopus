@@ -762,6 +762,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	}
 	Job.Spec.Tasks = tasks
 	Job.Status = typeJob.JobStatus{}
+	common.AssignExtraHome(Job)
 
 	err = s.data.Cluster.CreateJob(ctx, Job)
 	closes = append(closes, func(ctx context.Context) error {

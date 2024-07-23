@@ -4,10 +4,11 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"path"
-	commapi "server/common/api/v1"
-
 	"k8s.io/apimachinery/pkg/util/rand"
+	"path"
+	"server/base-server/internal/conf"
+	commapi "server/common/api/v1"
+	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -65,4 +66,60 @@ func GetVolumes(mounts Mounts, octopusVolume string) ([]v1.Volume, []v1.VolumeMo
 func GetCacheName() string {
 	return "cache" + rand.String(10)
 
+}
+
+func GetTmpHomePath(userId string) string {
+	return "/tmp/" + userId
+}
+
+func GetUserHomeVFName(userId string) string {
+	return fmt.Sprintf("%s-userhome", userId)
+}
+
+func GetUserHomeVirtualPath() string {
+	return fmt.Sprintf("/userhome")
+}
+
+func GetUserHomeMappedPath(userId string) string {
+	return fmt.Sprintf("/minio/%s/%s", userId, USERHOME)
+}
+
+func GetExtraHomeVFName(idx int, userId string) string {
+	return fmt.Sprintf("%s-extrahome%v", userId, idx)
+}
+
+func GetExtraHomeVirtualPath(idx int) string {
+	return fmt.Sprintf("/extrahome%v", idx)
+}
+
+func GetExtraHomeMappedPath(idx int, userId string) string {
+	return fmt.Sprintf("/storage%v/%s", idx, userId)
+}
+
+func AssignExtraHome(job *typeJob.Job) {
+	volumes := make([]v1.Volume, 0)
+	volumeMounts := make([]v1.VolumeMount, 0)
+	for idx, _ := range conf.Storages {
+		name := fmt.Sprintf("extrahome%v", idx)
+		volumes = append(volumes, v1.Volume{
+			Name: name,
+			VolumeSource: v1.VolumeSource{
+				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+					ClaimName: GetStoragePersistentVolumeChaim(GetExtraHomeVFName(idx, job.Namespace)),
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      name,
+			MountPath: GetExtraHomeVirtualPath(idx),
+			SubPath:   job.Namespace,
+			ReadOnly:  false,
+		})
+	}
+
+	for _, task := range job.Spec.Tasks {
+		task.Template.Spec.Volumes = append(task.Template.Spec.Volumes, volumes...)
+		task.Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts, volumeMounts...)
+	}
 }

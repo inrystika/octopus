@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
 	"server/base-server/internal/conf"
@@ -14,8 +15,6 @@ import (
 	sftpgov2 "server/common/sftpgo/v2/openapi"
 	"server/common/utils"
 	"strings"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -24,7 +23,6 @@ type UserService struct {
 	log        *log.Helper
 	data       *data.Data
 	defaultPVS common.PersistentVolumeSourceExtender
-	storages   []*common.StorageExtender
 }
 
 const (
@@ -40,16 +38,11 @@ func NewUserService(conf *conf.Bootstrap, logger log.Logger, data *data.Data, ft
 		panic("mod init failed, missing config [module.storage.source]")
 	}
 
-	storages, err := common.BuildStorages(conf.Storages)
-	if err != nil {
-		panic(err)
-	}
 	return &UserService{
 		conf:       conf,
 		log:        log.NewHelper("UserService", logger),
 		data:       data,
 		defaultPVS: *pvs,
-		storages:   storages,
 	}
 }
 
@@ -225,6 +218,27 @@ func (s *UserService) initUser(ctx context.Context, userId string) error {
 		_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
 		if err != nil {
 			return err
+		}
+	}
+
+	for idx, storage := range conf.Storages {
+		pv := common.BuildStoragePersistentVolume(common.GetExtraHomeVFName(idx, userId), storage.Requests)
+		pv.Spec.PersistentVolumeSource = storage.StorageType.PersistentVolumeSource
+		_, err = s.data.Cluster.GetPersistentVolume(ctx, pv.Name)
+		if err != nil {
+			_, err = s.data.Cluster.CreatePersistentVolume(ctx, pv)
+			if err != nil {
+				return err
+			}
+		}
+
+		pvc := common.BuildStoragePersistentVolumeChaim(userId, common.GetExtraHomeVFName(idx, userId), storage.Requests)
+		_, err = s.data.Cluster.GetPersistentVolumeClaim(ctx, pvc.Namespace, pvc.Name)
+		if err != nil {
+			_, err = s.data.Cluster.CreatePersistentVolumeClaim(ctx, pvc)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -578,12 +592,12 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 		fuser.SetUid(0)
 		fuser.SetGid(0)
 		fuser.SetMaxSessions(UNLIMITED)
-		fuser.SetQuotaSize(UNLIMITED)
-		fuser.SetQuotaFiles(UNLIMITED)
+		fuser.SetQuotaSize(1)
+		fuser.SetQuotaFiles(1)
 		fuser.SetExpirationDate(UNLIMITED)
 		fuser.SetPermissions(permissions)
 		//fuser.SetFilesystem(*fileSystemConfig)
-		fuser.SetHomeDir(s.buildFtpHomeDir(ctx, req.UserId))
+		fuser.SetHomeDir(common.GetTmpHomePath(req.UserId))
 		fuser.SetUploadBandwidth(UNLIMITED)
 		fuser.SetDownloadBandwidth(UNLIMITED)
 
@@ -609,12 +623,15 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 			needUpdate = true
 			fuser.SetPassword(password)
 		}
-		if !strings.HasPrefix(fuser.GetHomeDir(), "/minio") {
+
+		if !strings.HasPrefix(fuser.GetHomeDir(), common.GetTmpHomePath(req.UserId)) {
 			needUpdate = true
 			fileSystemConfig := sftpgov2.NewFilesystemConfig()
 			fileSystemConfig.SetProvider(sftpgov2.FSPROVIDERS__0)
 			fuser.SetFilesystem(*fileSystemConfig)
-			fuser.SetHomeDir(s.buildFtpHomeDir(ctx, req.UserId))
+			fuser.SetHomeDir(common.GetTmpHomePath(req.UserId))
+			fuser.SetQuotaSize(1)
+			fuser.SetQuotaFiles(1)
 		}
 
 		needUpdate = s.assignVF(fuser, req)
@@ -624,7 +641,9 @@ func (s *UserService) createOrUpdateFtpAccount(ctx context.Context, req *CreateO
 			if err != nil {
 				return err
 			}
+			log.Infof(ctx, "%s update ftp", req.UserId)
 		}
+
 	}
 
 	return nil
@@ -637,27 +656,25 @@ func (s *UserService) assignVF(fuser *sftpgov2.User, req *CreateOrUpdateFtpAccou
 		vfMap[vf.GetName()] = vf
 	}
 
-	for i, _ := range s.storages {
-		_, exist := vfMap[buildExtraUserHomeVFName(i, req.UserId)]
+	for i, _ := range conf.Storages {
+		_, exist := vfMap[common.GetExtraHomeVFName(i, req.UserId)]
 		if !exist {
 			needUpdate = true
-			folder := sftpgov2.NewVirtualFolder(buildExtraUserHomeVirtualPath(i))
-			folder.SetName(buildExtraUserHomeVFName(i, req.UserId))
-			folder.SetMappedPath(buildExtraUserHomeMappedPath(i, req.UserId))
+			folder := sftpgov2.NewVirtualFolder(common.GetExtraHomeVirtualPath(i))
+			folder.SetName(common.GetExtraHomeVFName(i, req.UserId))
+			folder.SetMappedPath(common.GetExtraHomeMappedPath(i, req.UserId))
 			fuser.VirtualFolders = append(fuser.VirtualFolders, *folder)
 		}
 	}
+
+	_, exist := vfMap[common.GetUserHomeVFName(req.UserId)]
+	if !exist {
+		needUpdate = true
+		folder := sftpgov2.NewVirtualFolder(common.GetUserHomeVirtualPath())
+		folder.SetName(common.GetUserHomeVFName(req.UserId))
+		folder.SetMappedPath(common.GetUserHomeMappedPath(req.UserId))
+		fuser.VirtualFolders = append(fuser.VirtualFolders, *folder)
+	}
+
 	return needUpdate
-}
-
-func buildExtraUserHomeVFName(idx int, userId string) string {
-	return fmt.Sprintf("%s-userhome%v", userId, idx+1)
-}
-
-func buildExtraUserHomeVirtualPath(idx int) string {
-	return fmt.Sprintf("/userhome%v", idx+1)
-}
-
-func buildExtraUserHomeMappedPath(idx int, userId string) string {
-	return fmt.Sprintf("/storage%v/%s", idx, userId)
 }
