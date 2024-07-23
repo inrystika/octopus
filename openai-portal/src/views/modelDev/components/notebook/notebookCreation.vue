@@ -595,7 +595,7 @@
                             datasetId: this.ruleForm.dataSetId || "",
                             datasetVersion: this.ruleForm.dataSetVersion || "",
                             preTrainModelId: this.ruleForm.modelId || "",
-                            preTrainModelName: this.$refs.modelNameRef.selected.label || "",
+                            preTrainModelName: this.$refs.modelNameRef?.selected.label || "",
                             preTrainModelVersion: this.ruleForm.modelVersion || "",
                             taskNumber: this.ruleForm.taskNumber,
                             resourcePool: this.ruleForm.resourcePool,
