@@ -78,3 +78,7 @@ run:
     - base-server/internal/data/dao/model_deploy.go
     - base-server/internal/conf/conf.go
     - admin-server/internal/service/billing.go
+
+issues:
+  exclude:
+    - "not declared by package conf"
