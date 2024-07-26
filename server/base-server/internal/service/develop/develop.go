@@ -809,6 +809,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 		{Event: vcBus.PodFailedEvent, Action: vcBus.RestartJobAction},
 	}
 	Job.Spec.Tasks = tasks
+	if !nb.DisableMountUserHome {
+		common.AssignExtraHome(Job)
+	}
 
 	err := s.data.Cluster.CreateJob(ctx, Job)
 	if err != nil {

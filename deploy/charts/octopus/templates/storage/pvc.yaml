@@ -98,3 +98,21 @@ spec:
   selector:
     matchLabels:
       pv: sftpgo-pv
+
+---
+{{- range $key, $val := .Values.storages }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: octopus-storage{{ $key }}-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: {{ .requests }}
+  selector:
+    matchLabels:
+      pv: storage{{ $key }}-pv
+---
+{{- end }}

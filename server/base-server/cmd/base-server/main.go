@@ -167,7 +167,30 @@ func initStorageConf(c config.Config) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Errorf(nil, errors.ErrorJsonMarshal)
 	}
+
 	return storageConf, nil
+}
+
+func initStoragesConf(c config.Config) ([]*conf.StorageExtender, error) {
+	var m []map[string]interface{}
+	value := c.Value("module.storages")
+	err := value.Scan(&m)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return nil, errors.Errorf(nil, errors.ErrorJsonMarshal)
+	}
+
+	var pcs []*conf.StorageExtender
+	err = json.Unmarshal(bytes, &pcs)
+	if err != nil {
+		return nil, err
+	}
+
+	return pcs, nil
 }
 
 func initConf() (*conf.Bootstrap, config.Config, error) {
@@ -182,19 +205,19 @@ func initConf() (*conf.Bootstrap, config.Config, error) {
 	if err := c.Load(); err != nil {
 		return nil, nil, err
 	}
-	var conf conf.Bootstrap
-	if err := c.Scan(&conf); err != nil {
+	var bs conf.Bootstrap
+	if err := c.Scan(&bs); err != nil {
 		return nil, nil, err
 	}
 	if Name != "" {
-		conf.App.Name = Name
+		bs.App.Name = Name
 	} else {
-		Name = conf.App.Name
+		Name = bs.App.Name
 	}
 	if Version != "" {
-		conf.App.Version = Version
+		bs.App.Version = Version
 	} else {
-		Version = conf.App.Version
+		Version = bs.App.Version
 	}
 
 	// json Marshal []byte
@@ -202,7 +225,12 @@ func initConf() (*conf.Bootstrap, config.Config, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	conf.Storage = storageConf
+	bs.Storage = storageConf
 
-	return &conf, c, nil
+	conf.Storages, err = initStoragesConf(c)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &bs, c, nil
 }

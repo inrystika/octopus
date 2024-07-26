@@ -76,4 +76,9 @@ run:
     - train_job.go
     - api/v1/configkey.go
     - base-server/internal/data/dao/model_deploy.go
+    - base-server/internal/conf/conf.go
     - admin-server/internal/service/billing.go
+
+issues:
+  exclude:
+    - "not declared by package conf"

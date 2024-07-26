@@ -157,6 +157,15 @@ func (s *AuthService) RegisterAndBind(ctx context.Context, req *api.RegisterRequ
 	if err != nil {
 		return nil, err
 	}
+
+	checkOrInitUser := &innterapi.CheckOrInitUserRequest{
+		Id: newUser.User.Id,
+	}
+	_, err = s.data.UserClient.CheckOrInitUser(ctx, checkOrInitUser)
+	if err != nil {
+		return nil, err
+	}
+
 	//生成token
 	token, err := jwt.CreateToken(newUser.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 	if err != nil {
@@ -187,6 +196,15 @@ func (s *AuthService) GetTokenByBind(ctx context.Context, req *api.GetTokenReque
 	}
 	//已绑定返回token,未绑定返回空
 	if reply.User != nil {
+		// to do check or init user account for old account
+		checkOrInitUser := &innterapi.CheckOrInitUserRequest{
+			Id: reply.User.Id,
+		}
+		_, err = s.data.UserClient.CheckOrInitUser(ctx, checkOrInitUser)
+		if err != nil {
+			return nil, err
+		}
+
 		token, err := jwt.CreateToken(reply.User.Id, s.conf.Server.Http.JwtSecrect, time.Second*time.Duration(s.conf.Service.TokenExpirationSec))
 		if err != nil {
 			return nil, err

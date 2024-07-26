@@ -8,6 +8,7 @@ import (
 	"server/base-server/internal/data/dao/algorithm_dao"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/data/dao/model/resources"
+	"server/base-server/internal/data/ftp"
 	"server/base-server/internal/data/influxdb"
 	"server/base-server/internal/data/minio"
 	"server/base-server/internal/data/prometheus"
@@ -43,6 +44,7 @@ type Data struct {
 	PlatformStatisticsDao dao.PlatformStatisticsDao
 	UserEndpointDao       dao.UserEndpointDao
 	Prometheus            prometheus.Prometheus
+	Ftp                   *ftp.Ftp
 }
 
 func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
@@ -90,6 +92,7 @@ func NewData(bc *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	d.LableDao = dao.NewLableDao(db, logger)
 	d.PlatformStatisticsDao = dao.NewPlatformStatisticsDao(db)
 	d.UserEndpointDao = dao.NewUserEndpointDao(db)
+	d.Ftp = ftp.NewFtp(bc)
 
 	return d, func() {
 		clusterCancel()

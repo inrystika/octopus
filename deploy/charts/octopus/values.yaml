@@ -101,6 +101,15 @@ pv:
         server: 192.168.203.72
         path: /data/sftpgo
 
+# 当上述minio目录存储空间不够时可在此添加额外的存储，用户可以通过sftp使用，非必须
+storages: []
+#storages:
+#  - requests: 100Gi
+#    storageType:
+#      nfs:
+#        server: 192.168.203.72
+#        path: /data/storage0
+
 # base-server
 baseserver:
   replicas: 1
@@ -484,6 +493,9 @@ sftpgo:
     - name: "minio"
       persistentVolumeClaim:
         claimName: "octopus-minio-pvc"
+#    - name: "storage0"
+#      persistentVolumeClaim:
+#        claimName: "octopus-storage0-pvc"
   volumeMounts:
     - name: "data"
       mountPath: "/var/lib/sftpgo"
@@ -493,6 +505,8 @@ sftpgo:
       subPath: "data"
     - name: "minio"
       mountPath: "/minio"
+#    - name: "storage0"
+#      mountPath: "/storage0"
   envVars:
     - name: "SFTPGO_DEFAULT_ADMIN_USERNAME"
       value: "admin"
