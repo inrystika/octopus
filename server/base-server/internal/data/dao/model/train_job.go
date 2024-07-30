@@ -53,6 +53,7 @@ type TrainJob struct {
 	Mounts               common.Mounts              `gorm:"type:json;comment:挂载外部存储"`
 	DisableMountUserHome bool                       `gorm:"default:false;comment:是否不挂载userhome目录"`
 	DisableMountModel    bool                       `gorm:"default:false;comment:是否不挂载model目录"`
+	TensorboardEndpoint  string                     `gorm:"type:varchar(100);not null;default:'';comment:tensorboard访问地址"`
 	dao.Model
 
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:name_userId_spaceId,priority:4"`
