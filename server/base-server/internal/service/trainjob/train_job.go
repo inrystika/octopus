@@ -122,6 +122,11 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	trainJob.Id = trainJobId
 	trainJob.Status = constant.PREPARING
 	trainJob.Detail = "{}"
+	tensorboardEnable, _ := s.tensorboardEnable(trainJob)
+	if tensorboardEnable {
+		trainJob.TensorboardEndpoint = buildTensorboardEndpoint(trainJob.Id)
+	}
+
 	//各类参数校验
 	startJobInfo, err := s.checkPermForJob(ctx, trainJob)
 	if err != nil {
@@ -138,7 +143,6 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 		return nil, err
 	}
 
-	tensorboardEnable, _ := s.tensorboardEnable(trainJob)
 	if tensorboardEnable {
 		err = s.createService(ctx, trainJob)
 		if err != nil {
@@ -173,7 +177,7 @@ func (s *trainJobService) buildCmd(job *model.TrainJob, config *model.Config, id
 
 	tensorboardEnable, tensorboardMount := s.tensorboardEnable(job)
 	if tensorboardEnable && idx == 0 {
-		cmd = fmt.Sprintf(tensorboardCommand, tensorboardPort, tensorboardMount.ContainerPath, buildTensorboardEndpoint(job.Id)) + cmd
+		cmd = fmt.Sprintf(tensorboardCommand, tensorboardPort, tensorboardMount.ContainerPath, job.TensorboardEndpoint) + cmd
 	}
 
 	if len(config.Parameters) == 0 {
@@ -931,7 +935,6 @@ func (s *trainJobService) convertJobFromDb(jobDb *model.TrainJob) (*api.TrainJob
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
-	r.TensorboardEndpoint = buildTensorboardEndpoint(jobDb.Id)
 	r.CreatedAt = jobDb.CreatedAt.Unix()
 	r.UpdatedAt = jobDb.UpdatedAt.Unix()
 	if jobDb.StartedAt != nil {
@@ -1635,7 +1638,7 @@ func (s *trainJobService) createService(ctx context.Context, job *model.TrainJob
 				HTTP: &v1beta1.HTTPIngressRuleValue{
 					Paths: []v1beta1.HTTPIngressPath{
 						{
-							Path: buildTensorboardEndpoint(job.Id),
+							Path: job.TensorboardEndpoint,
 							Backend: v1beta1.IngressBackend{
 								ServiceName: buildTensorboardSvcName(job.Id),
 								ServicePort: intstr.FromInt(tensorboardPort),
