@@ -8,6 +8,7 @@ import (
 	"path"
 	"server/base-server/internal/conf"
 	commapi "server/common/api/v1"
+	"strings"
 	typeJob "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
@@ -122,4 +123,17 @@ func AssignExtraHome(job *typeJob.Job) {
 		job.Spec.Tasks[i].Template.Spec.Volumes = append(task.Template.Spec.Volumes, volumes...)
 		job.Spec.Tasks[i].Template.Spec.Containers[0].VolumeMounts = append(task.Template.Spec.Containers[0].VolumeMounts, volumeMounts...)
 	}
+}
+
+func BuildUserEndpoint(endpoint string) string {
+
+	if !strings.HasPrefix(endpoint, "/") {
+		endpoint = "/" + endpoint
+	}
+
+	if !strings.HasSuffix(endpoint, "/") {
+		endpoint = endpoint + "/"
+	}
+
+	return "/userendpoint" + endpoint
 }

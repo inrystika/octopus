@@ -98,19 +98,6 @@ func buildNotebookUrl(id string, idx int) string {
 	return fmt.Sprintf("/notebook_%s_%s", id, buildTaskName(idx))
 }
 
-func buildUserEndpoint(endpoint string) string {
-
-	if !strings.HasPrefix(endpoint, "/") {
-		endpoint = "/" + endpoint
-	}
-
-	if !strings.HasSuffix(endpoint, "/") {
-		endpoint = endpoint + "/"
-	}
-
-	return "/userendpoint" + endpoint
-}
-
 func NewDevelopService(conf *conf.Bootstrap, logger log.Logger, data *data.Data,
 	workspaceService api.WorkspaceServiceServer, algorithmService api.AlgorithmServiceServer,
 	imageService api.ImageServiceServer, datasetService api.DatasetServiceServer, resourceSpecService api.ResourceSpecServiceServer,
@@ -434,7 +421,7 @@ func (s *developService) checkEndpoint(ctx context.Context, nb *model.Notebook) 
 	endpointsTb := make([]*model.UserEndpoint, 0)
 	for _, taskConfigs := range nb.TaskConfigs {
 		for _, endpoint := range taskConfigs.Endpoints {
-			ue := buildUserEndpoint(endpoint.Endpoint)
+			ue := common.BuildUserEndpoint(endpoint.Endpoint)
 			if endpoints.Contains(ue) {
 				return nil, errors.Errorf(nil, errors.ErrorUserEndpointRepeat)
 			}
@@ -464,7 +451,7 @@ func (s *developService) deleteUserEndpoint(ctx context.Context, nb *model.Noteb
 	endpoints := make([]string, 0)
 	for _, taskEndpoints := range nb.TaskConfigs {
 		for _, endpoint := range taskEndpoints.Endpoints {
-			endpoints = append(endpoints, buildUserEndpoint(endpoint.Endpoint))
+			endpoints = append(endpoints, common.BuildUserEndpoint(endpoint.Endpoint))
 		}
 	}
 
@@ -799,9 +786,9 @@ func (s *developService) submitJob(ctx context.Context, nb *model.Notebook, nbJo
 	Job.Spec.MinAvailable = int32(nb.TaskNumber)
 	Job.Spec.Queue = startJobInfo.queue
 	Job.Spec.SchedulerName = "volcano"
-	//打开后在nginx的node上ping其他node的pod，网络不通导致jupyter打不开，先屏蔽
 	Job.Spec.Plugins = map[string][]string{
 		"env": {},
+		// enable后nginx无法转发导致jupyter页面无法访问，后续再单独增加networkpolicy允许nginx访问
 		"svc": {"--disable-network-policy=true"},
 	}
 	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
@@ -963,7 +950,7 @@ func (s *developService) createIngress(ctx context.Context, nb *model.Notebook, 
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
 								{
-									Path: buildUserEndpoint(endpoint.Endpoint),
+									Path: common.BuildUserEndpoint(endpoint.Endpoint),
 									Backend: v1beta1.IngressBackend{
 										ServiceName: buildServiceName(nbJob.Id, i),
 										ServicePort: intstr.FromInt(int(endpoint.Port)),

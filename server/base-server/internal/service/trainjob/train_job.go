@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/strings/slices"
 	api "server/base-server/api/v1"
 	"server/base-server/internal/common"
@@ -12,6 +14,7 @@ import (
 	"server/base-server/internal/data"
 	"server/base-server/internal/data/dao/model"
 	"server/base-server/internal/service/algorithm"
+	commapi "server/common/api/v1"
 	"server/common/constant"
 	"server/common/errors"
 	"server/common/log"
@@ -41,6 +44,8 @@ const (
 	cpuResource         = "cpu"
 	memResource         = "memory"
 	readonlyCodeDir     = "/readonlycode"
+	tensorboardCommand  = `! [ -x "$(command -v tensorboard)" ] && pip install tensorboard -i https://pypi.tuna.tsinghua.edu.cn/simple; (nohup tensorboard --port=%v --logdir=%s --host=0.0.0.0 --path_prefix=%s 2>&1  | tee /tmp/tensorboard.log &);`
+	tensorboardPort     = 6006
 )
 
 type trainJobService struct {
@@ -132,6 +137,15 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	if err != nil {
 		return nil, err
 	}
+
+	tensorboardEnable, _ := s.tensorboardEnable(trainJob)
+	if tensorboardEnable {
+		err = s.createService(ctx, trainJob)
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+	}
+
 	//create recorde
 	err = s.data.TrainJobDao.CreateTrainJob(ctx, trainJob)
 	if err != nil {
@@ -141,11 +155,27 @@ func (s *trainJobService) TrainJob(ctx context.Context, req *api.TrainJobRequest
 	return &api.TrainJobReply{JobId: trainJobId}, nil
 }
 
-func (s *trainJobService) buildCmd(job *model.TrainJob, config *model.Config) []string {
+func (s *trainJobService) tensorboardEnable(job *model.TrainJob) (bool, *commapi.Mount) {
+	for _, mount := range job.Mounts {
+		if mount.IsTensorboardLogDir {
+			return true, mount
+		}
+	}
+
+	return false, nil
+}
+
+func (s *trainJobService) buildCmd(job *model.TrainJob, config *model.Config, idx int) []string {
 	cmd := config.Command
 	if job.AlgorithmId != "" {
 		cmd = fmt.Sprintf("cp -r %s/* %s;cd %s;%s ", readonlyCodeDir, s.conf.Service.DockerCodePath, s.conf.Service.DockerCodePath, config.Command)
 	}
+
+	tensorboardEnable, tensorboardMount := s.tensorboardEnable(job)
+	if tensorboardEnable && idx == 0 {
+		cmd = fmt.Sprintf(tensorboardCommand, tensorboardPort, tensorboardMount.ContainerPath, buildTensorboardEndpoint(job.Id)) + cmd
+	}
+
 	if len(config.Parameters) == 0 {
 		return []string{"sh", "-c", cmd}
 	} else {
@@ -673,7 +703,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 		task.Replicas = int32(i.TaskNumber)
 		task.Template = v1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job"},
+				Labels: map[string]string{s.conf.Service.ResourceLabelKey: "train_job", "volcano.sh/task-spec": taskName},
 			},
 			Spec: v1.PodSpec{
 				RestartPolicy: "Never",
@@ -686,7 +716,7 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 							Limits:   startJobInfo.specs[i.ResourceSpecId].resources,
 						},
 						VolumeMounts: volumeMounts,
-						Command:      s.buildCmd(job, i),
+						Command:      s.buildCmd(job, i, idx),
 						Env:          envs,
 					},
 				},
@@ -754,7 +784,8 @@ func (s *trainJobService) submitJob(ctx context.Context, job *model.TrainJob, st
 	Job.Spec.SchedulerName = "volcano"
 	Job.Spec.Plugins = map[string][]string{
 		"env": {},
-		"svc": {},
+		// enable后nginx无法转发导致jupyter页面无法访问，后续再单独增加networkpolicy允许nginx访问
+		"svc": {"--disable-network-policy=true"},
 	}
 	Job.Spec.Policies = []vcBatch.LifecyclePolicy{
 		{Event: vcBus.PodEvictedEvent, Action: vcBus.RestartJobAction},
@@ -808,6 +839,15 @@ func (s *trainJobService) StopJob(ctx context.Context, req *api.StopJobRequest) 
 	err = s.data.Cluster.DeleteJob(ctx, job.UserId, req.Id)
 	if err != nil {
 		s.log.Error(ctx, err)
+	}
+
+	tensorboardEnable, _ := s.tensorboardEnable(job)
+	if tensorboardEnable {
+		err = s.deleteService(ctx, job)
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+
 	}
 
 	return &api.StopJobReply{StoppedAt: time.Now().Unix()}, nil
@@ -891,6 +931,7 @@ func (s *trainJobService) convertJobFromDb(jobDb *model.TrainJob) (*api.TrainJob
 	if err != nil {
 		return nil, errors.Errorf(err, errors.ErrorStructCopy)
 	}
+	r.TensorboardEndpoint = buildTensorboardEndpoint(jobDb.Id)
 	r.CreatedAt = jobDb.CreatedAt.Unix()
 	r.UpdatedAt = jobDb.UpdatedAt.Unix()
 	if jobDb.StartedAt != nil {
@@ -1554,4 +1595,84 @@ func (s *trainJobService) getCompany(
 		}
 	}
 	return "", nil
+}
+
+func buildTensorboardSvcName(jobId string) string {
+	return fmt.Sprintf("tensorboard-%s", jobId)
+}
+
+func buildTensorboardEndpoint(jobId string) string {
+	return common.BuildUserEndpoint("tensorboard_" + jobId)
+}
+
+func (s *trainJobService) createService(ctx context.Context, job *model.TrainJob) error {
+	ports := []v1.ServicePort{{
+		Port:       tensorboardPort,
+		TargetPort: intstr.FromInt(tensorboardPort),
+		Name:       fmt.Sprintf("port-%d", tensorboardPort),
+	}}
+
+	err := s.data.Cluster.CreateService(ctx, &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      buildTensorboardSvcName(job.Id),
+			Namespace: job.UserId,
+		},
+		Spec: v1.ServiceSpec{
+			Selector: map[string]string{
+				"volcano.sh/task-spec": "task0",
+				"volcano.sh/job-name":  job.Id,
+			},
+			Ports: ports,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	rules := []v1beta1.IngressRule{
+		{
+			IngressRuleValue: v1beta1.IngressRuleValue{
+				HTTP: &v1beta1.HTTPIngressRuleValue{
+					Paths: []v1beta1.HTTPIngressPath{
+						{
+							Path: buildTensorboardEndpoint(job.Id),
+							Backend: v1beta1.IngressBackend{
+								ServiceName: buildTensorboardSvcName(job.Id),
+								ServicePort: intstr.FromInt(tensorboardPort),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err = s.data.Cluster.CreateIngress(ctx, &v1beta1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      buildTensorboardSvcName(job.Id),
+			Namespace: job.UserId,
+		},
+		Spec: v1beta1.IngressSpec{
+			Rules: rules,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *trainJobService) deleteService(ctx context.Context, job *model.TrainJob) error {
+	err := s.data.Cluster.DeleteIngress(ctx, job.UserId, buildTensorboardSvcName(job.Id))
+	if err != nil {
+		return err
+	}
+
+	err = s.data.Cluster.DeleteService(ctx, job.UserId, buildTensorboardSvcName(job.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
