@@ -352,6 +352,7 @@ message TrainJob{
   string preTrainModelId = 25;
   string preTrainModelVersion = 26;
   string preTrainModelName = 27;
+  string tensorboardEndpoint = 28;
 }
 
 message TrainJobTemplate{
