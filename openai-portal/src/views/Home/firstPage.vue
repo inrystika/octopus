@@ -11,8 +11,10 @@
                             label-position="left" label-width="0px" class="demo-ruleForm login-page">
                             <div v-if="itemShow" class="title"> <span class="welcome">欢迎使用</span><span
                                     class="octopus">启智章鱼</span></div>
-                            <div v-if="!itemShow" class="pkuTitle"> <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH
-                                    }}</span></div>
+                            <div v-if="!itemShow" class="pkuTitle"> 
+                              <span class="welcome">欢迎使用</span>
+                              <span class="pku">{{ this.GLOBAL.THEME_TITLE_ZH}}</span>
+                            </div>
                             <el-form-item prop="email">
                                 <el-input v-model="loginForm.email" type="text" auto-complete="off"
                                     placeholder="请输入用户账号" />
@@ -200,12 +202,15 @@
 
     .pkuTitle {
         font-size: 24px;
+        text-align: left;
         margin-bottom: 66px;
     }
 
     .pku {
         text-align: center;
+        margin-left: 5px;
         font-weight: bold;
+        color: #502374;
     }
 
     .login-container {
