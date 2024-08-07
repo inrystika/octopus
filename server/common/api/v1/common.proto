@@ -17,6 +17,7 @@ message Mount {
   bool readOnly = 2;
   Nfs nfs = 3;
   Octopus octopus = 4;
+  bool isTensorboardLogDir = 5;
 }
 
 message UserPermission {
