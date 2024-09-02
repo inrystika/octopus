@@ -5,7 +5,10 @@
       <img v-if="logo" :src="this.GLOBAL.THEME_LOGO_ADDR?this.GLOBAL.THEME_LOGO_ADDR:logoCollapse" class="sidebar-logo">         
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <div v-if="this.GLOBAL.THEME_LOGO_ADDR"><p class="sidebar-title">{{this.GLOBAL.THEME_TITLE_ZH}}</p></div>
+        <div v-if="this.GLOBAL.THEME_LOGO_ADDR">
+          <img :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo">
+          <p class="sidebar-title">{{this.GLOBAL.THEME_TITLE_ZH}}</p>
+        </div>
         <div v-else><img v-if="logo" :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo"></div>
       </router-link>
     </transition>
@@ -52,9 +55,11 @@
     & .sidebar-logo-link {
       height: 100%;
       width: 100%;
+      display: flex;
+      justify-content: center;
 
       & .sidebar-logo {
-        width: 110px;
+        width: 50px;
         height: 50px;
         vertical-align: middle;
         margin-right: 12px;
