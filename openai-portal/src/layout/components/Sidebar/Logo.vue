@@ -6,7 +6,7 @@
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <div v-if="this.GLOBAL.THEME_LOGO_ADDR">
-          <img :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo">
+          <img :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo-custom">
           <p class="sidebar-title">{{this.GLOBAL.THEME_TITLE_ZH}}</p>
         </div>
         <div v-else><img v-if="logo" :src="this.GLOBAL.THEME_LOGO_ADDR?GLOBAL.THEME_LOGO_ADDR:logo" class="sidebar-logo"></div>
@@ -58,8 +58,14 @@
       display: flex;
       justify-content: center;
 
-      & .sidebar-logo {
+      & .sidebar-logo-custom {
         width: 50px;
+        height: 50px;
+        vertical-align: middle;
+        margin-right: 12px;
+      }
+      & .sidebar-logo {
+        width: 110px;
         height: 50px;
         vertical-align: middle;
         margin-right: 12px;
