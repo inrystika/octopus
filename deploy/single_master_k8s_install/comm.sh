@@ -102,7 +102,7 @@ install_docker() {
 
         tee /etc/docker/daemon.json <<EOF
 {
-    "registry-mirrors": ["https://6kx4zyno.mirror.aliyuncs.com"],
+    "registry-mirrors": [ "https://docker.m.daocloud.io","https://docker.udayun.com", "https://noohub.ru", "https://huecker.io","https://dockerhub.timeweb.cloud"],
     "exec-opts": ["native.cgroupdriver=systemd"]
 }
 EOF
