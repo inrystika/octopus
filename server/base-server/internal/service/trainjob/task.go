@@ -316,6 +316,11 @@ func (s *trainJobService) trainJobUpdateStaus(ctx context.Context) {
 						if err != nil {
 							s.log.Error(context.TODO(), "DeleteJob err when onJobUpdate:"+job.Name, err)
 						}
+
+						err := s.deleteService(ctx, trainJob)
+						if err != nil {
+							s.log.Error(ctx, "deleteService err:"+job.Name, err)
+						}
 					}
 				case <-ctx.Done():
 					return
