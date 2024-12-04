@@ -43,3 +43,103 @@ spec:
         - name: dev
           hostPath:
             path: /dev
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: "dcu-exporter"
+  labels:
+    app.kubernetes.io/name: "dcu-exporter"
+    app.kubernetes.io/version: "v2.0.1"
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "dcu-exporter"
+      app.kubernetes.io/version: "v2.0.1"
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: &portStr '16080'
+        prometheus.io/path: 'metrics'
+      labels:
+        app.kubernetes.io/name: "dcu-exporter"
+        app.kubernetes.io/version: "v2.0.1"
+      name: "dcu-exporter"
+    spec:
+      nodeSelector:
+        hardware-type: HYGONDCU
+      hostNetwork: true
+      serviceAccountName: {{ template "prometheus.fullname" . }}
+      containers:
+      - image: "image.sourcefind.cn:5000/dcu/admin/base/dcu-exporter:v2.0.1"
+        securityContext:
+          privileged: true
+        env:
+        - name: "DCU_EXPORTER_LISTEN"
+          value: *portStr
+        name: "dcu-exporter"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: "metrics"
+          containerPort: &portInt 16080
+          hostPort: *portInt
+        volumeMounts:
+          - name: "var"
+            readOnly: true
+            mountPath: "/var/lib/kubelet"
+          - name: "kfd"
+            readOnly: true
+            mountPath: "/dev/kfd"
+          - name: "mkfd"
+            readOnly: true
+            mountPath: "/dev/mkfd"
+          - name: "dri"
+            readOnly: true
+            mountPath: "/dev/dri"
+          - name: "hostname"
+            readOnly: true
+            mountPath: "/etc/hostname"
+          - name: "vdev"
+            readOnly: true
+            mountPath: "/etc/vdev"
+      volumes:
+      - name: "var"
+        hostPath:
+          path: "/var/lib/kubelet"
+      - name: "kfd"
+        hostPath:
+          path: "/dev/kfd"
+      - name: "mkfd"
+        hostPath:
+          path: "/dev/mkfd"
+      - name: "dri"
+        hostPath:
+          path: "/dev/dri"
+      - name: "hostname"
+        hostPath:
+          path: "/etc/hostname"
+      - name: "vdev"
+        hostPath:
+          path: "/etc/vdev"
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: "dcu-exporter"
+  labels:
+    app.kubernetes.io/name: "dcu-exporter"
+    app.kubernetes.io/version: "v2.0.1"
+spec:
+  selector:
+    app.kubernetes.io/name: "dcu-exporter"
+    app.kubernetes.io/version: "v2.0.1"
+  ports:
+  - name: "metrics"
+    port: 16080
+  type: NodePort
