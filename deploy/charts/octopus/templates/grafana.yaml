@@ -355,7 +355,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "dcgm_mem_copy_utilization{pod_name=\"$pod_name\"} or (100 * container_npu_used_memory{pod_name=\"$pod_name\"} / container_npu_total_memory{pod_name=\"$pod_name\"}) or (enflame_gcu_memory_usage{pod_name=\"$pod_name\"} * 100) or (mlu_memory_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_mem_utilization{pod=\"$pod\"} or (dcu_usedmemory_bytes{dcu_pod_name=\"$pod_name\"} / dcu_memorycap_bytes{dcu_pod_name=\"$pod_name\"})",
+              "expr": "dcgm_mem_copy_utilization{pod_name=\"$pod_name\"} or (100 * container_npu_used_memory{pod_name=\"$pod_name\"} / container_npu_total_memory{pod_name=\"$pod_name\"}) or (enflame_gcu_memory_usage{pod_name=\"$pod_name\"} * 100) or (mlu_memory_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_mem_utilization{pod=\"$pod\"} or (100 * dcu_usedmemory_bytes{dcu_pod_name=\"$pod_name\"} / dcu_memorycap_bytes{dcu_pod_name=\"$pod_name\"})",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "Device memory utilization",
