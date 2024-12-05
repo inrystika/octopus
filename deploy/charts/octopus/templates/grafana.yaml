@@ -897,7 +897,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": " sum((count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\"} or vector(0))-1) / count(DCGM_FI_DEV_GPU_TEMP) or vector(0))*100",
+              "expr": " count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\"}) / count(DCGM_FI_DEV_GPU_TEMP) * 100 or vector(0)",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
@@ -980,7 +980,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\"} or vector(0))-1",
+              "expr": "count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -1061,7 +1061,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(DCGM_FI_DEV_GPU_TEMP or vector(0)) - 1",
+              "expr": "count(DCGM_FI_DEV_GPU_TEMP) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -1292,7 +1292,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(DCGM_FI_DEV_GPU_UTIL{pod=~\".*\"}) / count(DCGM_FI_DEV_GPU_UTIL) ) or vector(0))",
+              "expr": "sum(DCGM_FI_DEV_GPU_UTIL) / count(DCGM_FI_DEV_GPU_UTIL) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster GPU utilization(avg)",
@@ -3995,7 +3995,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "(count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\",name=~\"^$Node$\"} or vector(0))-1)/ (count(DCGM_FI_DEV_GPU_TEMP{name=~\"^$Node$\"} or vector(0)) - 1) * 100",
+              "expr": "count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\",name=~\"^$Node$\"}) / count(DCGM_FI_DEV_GPU_TEMP{name=~\"^$Node$\"}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4078,7 +4078,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\",name=~\"^$Node$\"} or vector(0))-1",
+              "expr": "count(DCGM_FI_DEV_GPU_UTIL{pod=~\".+\",name=~\"^$Node$\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4162,7 +4162,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(DCGM_FI_DEV_GPU_TEMP{name=~\"^$Node$\"} or vector(0)) - 1",
+              "expr": "count(DCGM_FI_DEV_GPU_TEMP{name=~\"^$Node$\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4971,7 +4971,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(DCGM_FI_DEV_GPU_UTIL{pod=~\".*\",name=~\"^$Node$\"}) / count(DCGM_FI_DEV_GPU_UTIL{pod=~\".*\",name=~\"^$Node$\"}) ) or vector(0))",
+              "expr": "sum(DCGM_FI_DEV_GPU_UTIL{name=~\"^$Node$\"}) / count(DCGM_FI_DEV_GPU_UTIL{name=~\"^$Node$\"}) or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node GPU utilization (avg)",
@@ -5057,7 +5057,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(DCGM_FI_DEV_FB_USED){name=~\"^$Node$\"} / (sum(DCGM_FI_DEV_FB_USED){name=~\"^$Node$\"} + sum(DCGM_FI_DEV_FB_FREE){name=~\"^$Node$\"}) * 100 or vector(0)",
+              "expr": "sum(DCGM_FI_DEV_FB_USED{name=~\"^$Node$\"}) / (sum(DCGM_FI_DEV_FB_USED{name=~\"^$Node$\"}) + sum(DCGM_FI_DEV_FB_FREE{name=~\"^$Node$\"})) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node GPU memory utilization(avg)",
