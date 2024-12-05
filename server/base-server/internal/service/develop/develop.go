@@ -1390,14 +1390,7 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 	if err != nil {
 		return nil, err
 	}
-	gpuUtil, err := s.data.Prometheus.QueryGpuUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
-	if err != nil {
-		return nil, err
-	}
-	gpuMemUtil, err := s.data.Prometheus.QueryGpuMemUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
-	if err != nil {
-		return nil, err
-	}
+
 	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
 	if err != nil {
 		return nil, err
@@ -1421,8 +1414,6 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 
 	res := &api.GetNotebookMetricReply{
 		MemUsage:             memUsage,
-		GpuUtil:              gpuUtil,
-		GpuMemUsage:          gpuMemUtil,
 		AccCardUtil:          accCardUtil,
 		AccCardMemUsage:      accCardMemUtil,
 		NetworkReceiveBytes:  networkReceiveBytes,

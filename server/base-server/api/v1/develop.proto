@@ -241,8 +241,6 @@ message GetNotebookMetricRequest {
 message GetNotebookMetricReply {
   repeated double cpuUsage = 1;
   repeated double memUsage = 2;
-  repeated double gpuUtil = 3;
-  repeated double gpuMemUsage = 4;
   repeated double memUsagePercent = 5;
   repeated double accCardUtil = 6;
   repeated double accCardMemUsage = 7;
