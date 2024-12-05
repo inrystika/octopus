@@ -266,7 +266,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "dcgm_gpu_utilization{pod_name=\"$pod_name\"} or container_npu_utilization{pod_name=\"$pod_name\"} or enflame_gcu_usage{pod_name=\"$pod_name\"} or (mlu_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_gpu_utilization{pod=\"$pod\"} or dcu_utilizationrate{dcu_pod_name=\"$pod_name\"}",
+              "expr": "DCGM_FI_DEV_GPU_UTIL{pod_name=\"$pod_name\"} or container_npu_utilization{pod_name=\"$pod_name\"} or enflame_gcu_usage{pod_name=\"$pod_name\"} or (mlu_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_gpu_utilization{pod=\"$pod\"} or dcu_utilizationrate{dcu_pod_name=\"$pod_name\"}",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -355,7 +355,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "dcgm_mem_copy_utilization{pod_name=\"$pod_name\"} or (100 * container_npu_used_memory{pod_name=\"$pod_name\"} / container_npu_total_memory{pod_name=\"$pod_name\"}) or (enflame_gcu_memory_usage{pod_name=\"$pod_name\"} * 100) or (mlu_memory_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_mem_utilization{pod=\"$pod\"} or (100 * dcu_usedmemory_bytes{dcu_pod_name=\"$pod_name\"} / dcu_memorycap_bytes{dcu_pod_name=\"$pod_name\"})",
+              "expr": "(DCGM_FI_DEV_FB_USED{pod_name=\"$pod_name\"} / (DCGM_FI_DEV_FB_FREE{pod_name=\"$pod_name\"} + DCGM_FI_DEV_FB_USED{pod_name=\"$pod_name\"})) or (100 * container_npu_used_memory{pod_name=\"$pod_name\"} / container_npu_total_memory{pod_name=\"$pod_name\"}) or (enflame_gcu_memory_usage{pod_name=\"$pod_name\"} * 100) or (mlu_memory_utilization * on(uuid) group_right mlu_container{pod=\"$pod\"}) or ix_mem_utilization{pod=\"$pod\"} or (100 * dcu_usedmemory_bytes{dcu_pod_name=\"$pod_name\"} / dcu_memorycap_bytes{dcu_pod_name=\"$pod_name\"})",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "Device memory utilization",
@@ -897,7 +897,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": " sum((count(dcgm_gpu_utilization{container_name=~\".+\"} or vector(0))-1) / count(dcgm_gpu_temp{uuid=~\".+\"}) or vector(0))*100",
+              "expr": " sum((count(DCGM_FI_DEV_GPU_UTIL{container_name=~\".+\"} or vector(0))-1) / count(dcgm_gpu_temp{uuid=~\".+\"}) or vector(0))*100",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
@@ -980,7 +980,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(dcgm_gpu_utilization{container_name=~\".+\"} or vector(0))-1",
+              "expr": "count(DCGM_FI_DEV_GPU_UTIL{container_name=~\".+\"} or vector(0))-1",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -1292,7 +1292,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_gpu_utilization{pod_name=~\".*\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\"}) ) or vector(0))",
+              "expr": "sum((sum(DCGM_FI_DEV_GPU_UTIL{pod_name=~\".*\"}) / count(DCGM_FI_DEV_GPU_UTIL{pod_name=~\".*\"}) ) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster GPU utilization(avg)",
@@ -1378,7 +1378,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".*\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\"})) or vector(0))",
+              "expr": "sum(DCGM_FI_DEV_FB_USED) / (sum(DCGM_FI_DEV_FB_USED) + sum(DCGM_FI_DEV_FB_FREE)) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Cluster GPU memory utilization(avg)",
@@ -3995,7 +3995,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "(count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1)/ (count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1) * 100",
+              "expr": "(count(DCGM_FI_DEV_GPU_UTIL{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1)/ (count(dcgm_gpu_temp{uuid=~\".+\",name=~\"^$Node$\"} or vector(0)) - 1) * 100",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4078,7 +4078,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "count(dcgm_gpu_utilization{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1",
+              "expr": "count(DCGM_FI_DEV_GPU_UTIL{container_name=~\".+\",name=~\"^$Node$\"} or vector(0))-1",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4971,7 +4971,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_gpu_utilization{pod_name=~\".*\",name=~\"^$Node$\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\",name=~\"^$Node$\"}) ) or vector(0))",
+              "expr": "sum((sum(DCGM_FI_DEV_GPU_UTIL{pod_name=~\".*\",name=~\"^$Node$\"}) / count(DCGM_FI_DEV_GPU_UTIL{pod_name=~\".*\",name=~\"^$Node$\"}) ) or vector(0))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node GPU utilization (avg)",
@@ -5057,7 +5057,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((sum(dcgm_mem_copy_utilization{pod_name=~\".*\",name=~\"^$Node$\"}) / count(dcgm_gpu_utilization{pod_name=~\".*\",name=~\"^$Node$\"})) or vector(0))",
+              "expr": "sum(DCGM_FI_DEV_FB_USED){name=~\"^$Node$\"} / (sum(DCGM_FI_DEV_FB_USED){name=~\"^$Node$\"} + sum(DCGM_FI_DEV_FB_FREE){name=~\"^$Node$\"}) * 100 or vector(0)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Node GPU memory utilization(avg)",
