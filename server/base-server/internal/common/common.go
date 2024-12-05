@@ -1,11 +1,13 @@
 package common
 
 import (
+	"context"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"path"
+	api "server/base-server/api/v1"
 	"server/base-server/internal/conf"
 	commapi "server/common/api/v1"
 	"strings"
@@ -136,4 +138,24 @@ func BuildUserEndpoint(endpoint string) string {
 	}
 
 	return "/userendpoint" + endpoint
+}
+
+func GetCompany(
+	ctx context.Context,
+	resources *api.ResourceList,
+	resourceSpec *api.ResourceSpec) (string, error) {
+
+	companyResource := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech", "hygon"}
+	for _, v := range companyResource {
+		for _, r := range resources.Resources {
+			for k, _ := range resourceSpec.ResourceQuantity {
+				if r.Name == k {
+					if strings.Contains(r.ResourceRef, v) || strings.Contains(r.Name, v) {
+						return v, nil
+					}
+				}
+			}
+		}
+	}
+	return "", nil
 }

@@ -87,6 +87,9 @@ func (p *prometheus) QueryAccCardUtil(
 	if company == "iluvatar" {
 		query = fmt.Sprintf(`ix_gpu_utilization{pod="%s"}`, podName) // iluvatar GPU utilization
 	}
+	if company == "hygon" {
+		query = fmt.Sprintf(`dcu_utilizationrate{dcu_pod_name="%s"}`, podName)
+	}
 	return p.query(query, start, size, step)
 }
 
@@ -111,6 +114,10 @@ func (p *prometheus) QueryAccCardMemUtil(
 	if company == "iluvatar" {
 		query = fmt.Sprintf(`ix_mem_utilization{pod="%s"}`, podName) // iluvatar GPU memory utilization
 	}
+	if company == "hygon" {
+		query = fmt.Sprintf(`100 * dcu_usedmemory_bytes{dcu_pod_name="%s"} / dcu_memorycap_bytes{dcu_pod_name="%s"}`, podName)
+	}
+
 	return p.query(query, start, size, step)
 }
 
