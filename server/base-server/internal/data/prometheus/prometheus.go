@@ -78,7 +78,7 @@ func (p *prometheus) QueryAccCardUtil(
 	}
 	query := fmt.Sprintf(`%s{pod_name="%s"}`, items[company], podName)
 	if company == "nvidia" {
-		query = fmt.Sprint(`DCGM_FI_DEV_GPU_UTIL{pod="%s"}`, podName)
+		query = fmt.Sprintf(`DCGM_FI_DEV_GPU_UTIL{pod="%s"}`, podName)
 	}
 	if company == "cambricon" {
 		query = fmt.Sprintf(`mlu_utilization * on(uuid) group_right mlu_container{pod="%s"}`, podName) // MLU utilization
