@@ -58,16 +58,6 @@ func (p *prometheus) QueryMemUsage(ctx context.Context, podName string, start in
 	return p.query(query, start, size, step)
 }
 
-func (p *prometheus) QueryGpuUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
-	query := fmt.Sprintf(`dcgm_gpu_utilization{pod_name="%s"}`, podName)
-	return p.query(query, start, size, step)
-}
-
-func (p *prometheus) QueryGpuMemUtil(ctx context.Context, podName string, start int64, size int, step int) ([]float64, error) {
-	query := fmt.Sprintf(`dcgm_mem_copy_utilization{pod_name="%s"}`, podName)
-	return p.query(query, start, size, step)
-}
-
 func (p *prometheus) QueryAccCardUtil(
 	ctx context.Context, podName, company string, start int64, size int, step int) ([]float64, error) {
 
