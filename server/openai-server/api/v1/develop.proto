@@ -282,9 +282,9 @@ message GetNotebookMetricReply {
   repeated double cpuUsage = 1;
   //字节
   repeated double memUsage = 2;
-  //百分比
+  //百分比（已废弃，请使用accCardUtil）
   repeated double gpuUtil = 3;
-  //百分比
+  //百分比（已废弃，请使用accCardMemUsage）
   repeated double gpuMemUsage = 4;
   //百分比
   repeated double memUsagePercent = 5;
