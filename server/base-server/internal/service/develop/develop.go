@@ -1377,7 +1377,7 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 	if err != nil {
 		return nil, err
 	}
-	company, err := s.getCompany(ctx, resources, resourceSpec.ResourceSpec)
+	company, err := common.GetCompany(ctx, resources, resourceSpec.ResourceSpec)
 	if err != nil {
 		return nil, err
 	}
@@ -1390,14 +1390,7 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 	if err != nil {
 		return nil, err
 	}
-	gpuUtil, err := s.data.Prometheus.QueryGpuUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
-	if err != nil {
-		return nil, err
-	}
-	gpuMemUtil, err := s.data.Prometheus.QueryGpuMemUtil(ctx, podName, req.Start, int(req.Size), int(req.Step))
-	if err != nil {
-		return nil, err
-	}
+
 	accCardUtil, err := s.data.Prometheus.QueryAccCardUtil(ctx, podName, company, req.Start, int(req.Size), int(req.Step))
 	if err != nil {
 		return nil, err
@@ -1421,8 +1414,6 @@ func (s *developService) GetNotebookMetric(ctx context.Context, req *api.GetNote
 
 	res := &api.GetNotebookMetricReply{
 		MemUsage:             memUsage,
-		GpuUtil:              gpuUtil,
-		GpuMemUsage:          gpuMemUtil,
 		AccCardUtil:          accCardUtil,
 		AccCardMemUsage:      accCardMemUtil,
 		NetworkReceiveBytes:  networkReceiveBytes,
@@ -1514,24 +1505,4 @@ func (s *developService) getMemUsagePercent(
 		}
 	}
 	return nil, errors.Errorf(nil, errors.ErrorResourceNotExist)
-}
-
-func (s *developService) getCompany(
-	ctx context.Context,
-	resources *api.ResourceList,
-	resourceSpec *api.ResourceSpec) (string, error) {
-
-	companyResource := []string{"nvidia", "huawei", "cambricon", "enflame", "iluvatar", "metax-tech"}
-	for _, v := range companyResource {
-		for _, r := range resources.Resources {
-			for k, _ := range resourceSpec.ResourceQuantity {
-				if r.Name == k {
-					if strings.Contains(r.ResourceRef, v) || strings.Contains(r.Name, v) {
-						return v, nil
-					}
-				}
-			}
-		}
-	}
-	return "", nil
 }

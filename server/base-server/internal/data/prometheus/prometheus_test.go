@@ -22,14 +22,4 @@ func TestCpuUsage(t *testing.T) {
 		panic(err)
 	}
 	fmt.Println(metricValues)
-	metricValues, err = p.QueryGpuUtil(ctx, podName, start, 100, step)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(metricValues)
-	metricValues, err = p.QueryGpuMemUtil(ctx, podName, start, 100, step)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(metricValues)
 }
