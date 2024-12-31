@@ -89,13 +89,15 @@
                     }}</span>
                 </div>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="12" v-if="endpoint1 !== '' && endpoint2 !== ''">
                 <div>
                     <el-row :gutter="20">
                         <el-col :span="3"><div>访问配置</div></el-col>
                         <el-col :span="21">
                             <el-row :gutter="20">
-                                <el-col :span="24" style="margin-top: 0px;text-align:center"
+                                <el-col
+                                    :span="24"
+                                    style="margin-top: 0px; text-align: center"
                                     ><div>
                                         <div>
                                             <el-col
@@ -118,17 +120,23 @@
                                 >
                             </el-row>
                             <el-row :gutter="20">
-                                <el-col :span="24" style="text-align:center"
+                                <el-col :span="24" style="text-align: center"
                                     ><div>
                                         <div v-if="endpoint1 !== ''">
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>task0</div></el-col
                                             >
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>
                                                     /userendpoint/{{
                                                         endpoint1
@@ -137,7 +145,10 @@
                                             >
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>{{ port1 }}</div></el-col
                                             >
                                         </div>
@@ -145,17 +156,23 @@
                                 >
                             </el-row>
                             <el-row :gutter="20">
-                                <el-col :span="24" style="text-align:center"
+                                <el-col :span="24" style="text-align: center"
                                     ><div>
                                         <div v-if="endpoint2 !== ''">
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>task0</div></el-col
                                             >
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>
                                                     /userendpoint/{{
                                                         endpoint2
@@ -164,7 +181,10 @@
                                             >
                                             <el-col
                                                 :span="6"
-                                                style="margin: 0px;font-weight:400"
+                                                style="
+                                                    margin: 0px;
+                                                    font-weight: 400;
+                                                "
                                                 ><div>{{ port2 }}</div></el-col
                                             >
                                         </div>
