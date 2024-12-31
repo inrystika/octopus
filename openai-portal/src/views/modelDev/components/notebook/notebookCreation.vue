@@ -6,6 +6,8 @@
             :visible.sync="CreateFormVisible"
             :before-close="handleDialogClose"
             :close-on-click-modal="false"
+              custom-class="dialog"
+           
         >
             <el-form
                 ref="ruleForm"
@@ -354,9 +356,9 @@
                         style="margin-bottom: 10px; font-weight: 800"
                     >
                         <el-row :gutter="20">
-                            <el-col :span="3"><div>任务名称</div></el-col>
-                            <el-col :span="4"><div>访问路径</div></el-col>
-                            <el-col :span="3"><div>容器端口</div></el-col>
+                            <el-col :span="4"><div>任务名称</div></el-col>
+                            <el-col :span="5"><div>访问路径</div></el-col>
+                            <el-col :span="5"><div>容器端口</div></el-col>
                         </el-row>
                     </el-form-item>
                     <el-form-item label="">
@@ -368,14 +370,14 @@
                             "
                         >
                             <el-row :gutter="20">
-                                <el-col :span="2"
+                                <el-col :span="3"
                                     ><div>
                                         <span style="padding-left: 20px"
                                             >task0</span
                                         >
                                     </div></el-col
                                 >
-                                <el-col :span="5"
+                                <el-col :span="6"
                                     ><div>
                                         <span>/userendpoint/</span>
                                         <el-input
@@ -386,7 +388,7 @@
                                         <span>/</span>
                                     </div></el-col
                                 >
-                                <el-col :span="5">
+                                <el-col :span="6">
                                     <span></span
                                     ><el-input
                                         v-model="port1"
@@ -405,14 +407,14 @@
                             "
                         >
                             <el-row :gutter="20">
-                                <el-col :span="2"
+                                <el-col :span="3"
                                     ><div>
                                         <span style="padding-left: 20px"
                                             >task1</span
                                         >
                                     </div></el-col
                                 >
-                                <el-col :span="5"
+                                <el-col :span="6"
                                     ><div>
                                         <span>/userendpoint/</span>
                                         <el-input
@@ -423,7 +425,7 @@
                                         ><span>/</span>
                                     </div></el-col
                                 >
-                                <el-col :span="5">
+                                <el-col :span="6">
                                     <el-input
                                         v-model="port2"
                                         placeholder="端口"
@@ -1485,5 +1487,13 @@ export default {
 }
 .wrapper {
     margin-top: 5px;
+    // min-width: 400px;
+}
+// .el-dialog {
+//   min-width: 1300px; /* 你想要的最小宽度 */
+// }
+.dialog {
+    // min-height: 800px;
+    min-width: 1000px;
 }
 </style>
