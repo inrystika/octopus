@@ -349,6 +349,16 @@
                             <el-option label="2" value="2" />
                         </el-select>
                     </el-form-item>
+                    <el-form-item
+                        label="访问配置"
+                        style="margin-bottom: 10px; font-weight: 800"
+                    >
+                        <el-row :gutter="20">
+                            <el-col :span="3"><div>任务名称</div></el-col>
+                            <el-col :span="4"><div>访问路径</div></el-col>
+                            <el-col :span="3"><div>容器端口</div></el-col>
+                        </el-row>
+                    </el-form-item>
                     <el-form-item label="">
                         <div
                             class="wrapper"
@@ -357,18 +367,35 @@
                                 ruleForm.taskNumber == 2
                             "
                         >
-                            <el-input
-                                v-model="endpoint1"
-                                placeholder="路径"
-                                style="width: 20%"
-                            ></el-input
-                            ><span class="interval">:</span
-                            ><el-input
-                                v-model="port1"
-                                placeholder="端口"
-                                style="width: 20%"
-                                oninput="value=value.replace(/[^0-9.]/g,'')"
-                            ></el-input>
+                            <el-row :gutter="20">
+                                <el-col :span="2"
+                                    ><div>
+                                        <span style="padding-left: 20px"
+                                            >task0</span
+                                        >
+                                    </div></el-col
+                                >
+                                <el-col :span="5"
+                                    ><div>
+                                        <span>/userendpoint/</span>
+                                        <el-input
+                                            v-model="endpoint1"
+                                            placeholder="路径"
+                                            style="width: 40%"
+                                        ></el-input>
+                                        <span>/</span>
+                                    </div></el-col
+                                >
+                                <el-col :span="5">
+                                    <span></span
+                                    ><el-input
+                                        v-model="port1"
+                                        placeholder="端口"
+                                        style="width: 40%"
+                                        oninput="value=value.replace(/[^0-9.]/g,'')"
+                                    ></el-input
+                                ></el-col>
+                            </el-row>
                         </div>
                         <div
                             class="wrapper"
@@ -377,18 +404,34 @@
                                 !(ruleForm.taskNumber == 1)
                             "
                         >
-                            <el-input
-                                v-model="endpoint2"
-                                placeholder="路径"
-                                style="width: 20%"
-                            ></el-input
-                            ><span class="interval">:</span
-                            ><el-input
-                                v-model="port2"
-                                placeholder="端口"
-                                style="width: 20%"
-                                oninput="value=value.replace(/[^0-9.]/g,'')"
-                            ></el-input>
+                            <el-row :gutter="20">
+                                <el-col :span="2"
+                                    ><div>
+                                        <span style="padding-left: 20px"
+                                            >task1</span
+                                        >
+                                    </div></el-col
+                                >
+                                <el-col :span="5"
+                                    ><div>
+                                        <span>/userendpoint/</span>
+                                        <el-input
+                                            v-model="endpoint2"
+                                            placeholder="路径"
+                                            style="width: 40%"
+                                        ></el-input
+                                        ><span>/</span>
+                                    </div></el-col
+                                >
+                                <el-col :span="5">
+                                    <el-input
+                                        v-model="port2"
+                                        placeholder="端口"
+                                        style="width: 40%"
+                                        oninput="value=value.replace(/[^0-9.]/g,'')"
+                                    ></el-input
+                                ></el-col>
+                            </el-row>
                         </div>
                     </el-form-item>
                     <!-- <el-form-item label="自定义启动命令" prop="command">
@@ -853,30 +896,112 @@ export default {
                     });
                     return;
                 }
-                let taskConfigs = [
-                    {
-                        endpoints: [
-                            {
-                                endpoint: this.endpoint1,
-                                port:
-                                    this.port1 == "" ? 0 : parseInt(this.port1),
-                            },
-                        ],
-                    },
-                    {
-                        endpoints: [
-                            {
-                                endpoint: this.endpoint2,
-                                port:
-                                    this.port2 == "" ? 0 : parseInt(this.port2),
-                            },
-                        ],
-                    },
-                ];
-                if (this.ruleForm.taskNumber == 1) {
-                    taskConfigs.length = 1;
+                // let taskConfigs = [
+                //     {
+                //         endpoints: [
+                //             {
+                //                 endpoint: this.endpoint1,
+                //                 port:
+                //                     this.port1 == "" ? 0 : parseInt(this.port1),
+                //             },
+                //         ],
+                //     },
+                //     {
+                //         endpoints: [
+                //             {
+                //                 endpoint: this.endpoint2,
+                //                 port:
+                //                     this.port2 == "" ? 0 : parseInt(this.port2),
+                //             },
+                //         ],
+                //     },
+                // ];
+                if (
+                    (this.endpoint1 !== "" && this.port1 == "") ||
+                    (this.port1 !== "" && this.endpoint1 == "")
+                ) {
+                    this.$message({
+                        message: "路径和端口必须同时填写或者不同不填写",
+                        type: "warning",
+                    });
+                    return;
                 }
-                console.log(taskConfigs);
+                if (
+                    (this.endpoint2 !== "" && this.port2 == "") ||
+                    (this.port2 !== "" && this.endpoint2 == "")
+                ) {
+                    this.$message({
+                        message: "路径和端口必须同时填写或者不同不填写",
+                        type: "warning",
+                    });
+                    return;
+                }
+                let flag = true;
+                let data;
+                if (this.endpoint1 == "" && this.endpoint2 == "") {
+                    flag = false;
+                } else {
+                    flag = true;
+                }
+                if (this.endpoint1 != "" && this.endpoint2 == "") {
+                    data = [
+                        {
+                            endpoints: [
+                                {
+                                    endpoint: this.endpoint1,
+                                    port:
+                                        this.port1 == ""
+                                            ? 0
+                                            : parseInt(this.port1),
+                                },
+                            ],
+                        },
+                        {},
+                    ];
+                }
+                if (this.endpoint2 != "" && this.endpoint1 == "") {
+                    data = [
+                        {},
+                        {
+                            endpoints: [
+                                {
+                                    endpoint: this.endpoint2,
+                                    port:
+                                        this.port2 == ""
+                                            ? 0
+                                            : parseInt(this.port2),
+                                },
+                            ],
+                        },
+                    ];
+                }
+                if (this.endpoint2 != "" && this.endpoint1 != "") {
+                    data = [
+                        {
+                            endpoints: [
+                                {
+                                    endpoint: this.endpoint1,
+                                    port:
+                                        this.port1 == ""
+                                            ? 0
+                                            : parseInt(this.port1),
+                                },
+                            ],
+                        },
+                        {
+                            endpoints: [
+                                {
+                                    endpoint: this.endpoint2,
+                                    port:
+                                        this.port2 == ""
+                                            ? 0
+                                            : parseInt(this.port2),
+                                },
+                            ],
+                        },
+                    ];
+                }
+                // console.log(taskConfigs);
                 if (valid) {
                     this.showUpload = true;
                     const param = {
@@ -897,8 +1022,11 @@ export default {
                         resourcePool: this.ruleForm.resourcePool,
                         command: this.ruleForm.command,
                         autoStopDuration: this.ruleForm.autoStopDuration * 3600,
-                        taskConfigs: taskConfigs,
+                        // taskConfigs: taskConfigs,
                     };
+                    if (flag) {
+                        param.taskConfigs = data;
+                    }
                     if (!this.isAutoStop) {
                         param.autoStopDuration = -1;
                     }
@@ -1356,6 +1484,6 @@ export default {
     font-weight: 800;
 }
 .wrapper {
-    margin-top: 10px;
+    margin-top: 5px;
 }
 </style>
