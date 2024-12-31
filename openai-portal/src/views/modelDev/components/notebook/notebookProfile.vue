@@ -132,7 +132,7 @@
                                                 ><div>
                                                     /userendpoint/{{
                                                         endpoint1
-                                                    }}
+                                                    }}/
                                                 </div></el-col
                                             >
                                             <el-col
@@ -159,7 +159,7 @@
                                                 ><div>
                                                     /userendpoint/{{
                                                         endpoint2
-                                                    }}
+                                                    }}/
                                                 </div></el-col
                                             >
                                             <el-col
