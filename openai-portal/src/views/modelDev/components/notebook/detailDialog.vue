@@ -64,6 +64,6 @@ export default {
 <style lang="scss">
 .dialog {
     min-height: 800px;
-    min-width: 1000px;
+    min-width: 1200px;
 }
 </style>
