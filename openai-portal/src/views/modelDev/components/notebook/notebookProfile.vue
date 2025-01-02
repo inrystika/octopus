@@ -92,7 +92,7 @@
             <el-col :span="12" v-if="endpoint1 !== '' && endpoint2 !== ''">
                 <div>
                     <el-row :gutter="20">
-                        <el-col :span="3"><div>访问配置</div></el-col>
+                        <el-col :span="3"><div>访问配置:</div></el-col>
                         <el-col :span="21">
                             <el-row :gutter="20">
                                 <el-col
@@ -165,7 +165,7 @@
                                                     margin: 0px;
                                                     font-weight: 400;
                                                 "
-                                                ><div>task0</div></el-col
+                                                ><div>task1</div></el-col
                                             >
                                             <el-col
                                                 :span="6"
