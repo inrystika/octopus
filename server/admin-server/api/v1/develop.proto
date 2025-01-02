@@ -60,10 +60,16 @@ message ListNotebookRequest {
   string workspaceId = 10[(validate.rules).string = {max_len: 36}];
 }
 
+message Endpoint {
+  string endpoint = 1;
+  uint32 port = 2;
+}
+
 message Notebook {
   message Task {
     string url = 1;
     string name = 2;
+    repeated Endpoint endpoints = 3;
   }
   int64 createdAt = 1;
   int64 updatedAt = 2;

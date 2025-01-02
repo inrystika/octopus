@@ -63,6 +63,7 @@
     },
     created() {
       this.notebookInfo = this.notebookData
+   
       if (!this.show) {
         this.taskIndex = 1
         this.getNotebookInfo()

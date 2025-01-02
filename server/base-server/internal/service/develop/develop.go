@@ -1086,7 +1086,18 @@ func (s *developService) convertNotebook(ctx context.Context, notebooksTbl []*mo
 		notebook.UpdatedAt = n.UpdatedAt.Unix()
 		notebook.ResourceSpecPrice = priceMap[n.NotebookJobId]
 		for i := 0; i < n.TaskNumber; i++ {
-			notebook.Tasks = append(notebook.Tasks, &api.Notebook_Task{Name: buildTaskName(i), Url: buildNotebookUrl(n.Id, i)})
+			task := &api.Notebook_Task{
+				Name: buildTaskName(i),
+				Url:  buildNotebookUrl(n.Id, i)}
+			if len(n.TaskConfigs) > i && len(n.TaskConfigs[i].Endpoints) > 0 {
+				for _, e := range n.TaskConfigs[i].Endpoints {
+					task.Endpoints = append(task.Endpoints, &api.Endpoint{
+						Endpoint: e.Endpoint,
+						Port:     uint32(e.Port),
+					})
+				}
+			}
+			notebook.Tasks = append(notebook.Tasks, task)
 		}
 		notebook.ExitMsg = s.getExitMsg(ctx, jobMap[n.NotebookJobId])
 		notebook.Operation = jobMap[n.NotebookJobId].Operation
