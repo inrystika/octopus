@@ -63,6 +63,7 @@ export default {
 </script>
 <style lang="scss">
   .dialog {
-    min-height: 800px
+    min-height: 800px;
+    min-width:1200px
   }
 </style>

@@ -270,12 +270,4 @@ export default {
     float: right;
     margin: 20px;
 }
-.wrapper {
-    // margin-top: 10px;
-    // text-align: left;
-    // // display: inline-block;
-    // margin-left: 80px;
-    // position: relative;
-    // top: -27px;
-}
 </style>
